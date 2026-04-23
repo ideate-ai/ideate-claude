@@ -1,0 +1,34 @@
+id: interview-refine-029
+type: interview
+cycle: 29
+trigger: post-review-documentation-sync
+entries:
+  - q: What is the trigger for this refinement?
+    a: "Cycle 28 capstone review findings: 6 Minor code-quality findings (M1-M6), 1 Significant spec-adherence finding (S1: WI-852 scope path mismatch), 2 gap-analyst findings (SG1 telemetry surface undocumented, SG2 cross-refs S1). Verdict was Pass with Follow-ups. Spec-reviewer and gap-analyst both hit turn-budget limits mid-investigation. Additionally, a convergence-checker bug was triaged as WI-860 on 2026-04-16: ideate_get_convergence_status returns condition_b:false when legacy artifacts occupy the workspace cycle slot autopilot happens to cycle through."
+    domain: workflow
+    timestamp: 2026-04-16T00:00:00Z
+  - q: Ground-truth check revealed WI-850 and WI-852 target files are already absent from disk. How should we handle these?
+    a: Close both as done with resolution notes. WI-850's targets (.ideate/metrics/, legacy report scripts) are gone; WI-852's removal targets are clean in the actual architecture doc (docs/platform/architecture-overview.md), README, and graphql schema. Status field drift happened during the abortive PH-048 execution; no re-execution needed. New telemetry surface documentation is tracked separately as WI-867 under SG1.
+    domain: artifact-structure
+    timestamp: 2026-04-16T00:00:00Z
+  - q: Which findings to address in this refinement, which to defer or dismiss?
+    a: "Address all of them in-cycle: M1-M6 and SG1 as new work items; WI-860 already triaged; plus bump reviewer budgets (spec-reviewer 100→180, gap-analyst 200→250) to reduce risk of cycle-28's turn-exhaustion recurring."
+    domain: workflow
+    timestamp: 2026-04-16T00:00:00Z
+  - q: One phase or split?
+    a: Two phases driven by file-scope clustering. PH-048 'Tool-usage corrections' (M1-M6 → WI-861..WI-866) clusters around mcp/artifact-server/src/tools/tool-usage.ts, server.ts, types.ts, scripts/report-tool-usage.sh, and the associated tests — one shared context for the executor. PH-049 'Doc surface + convergence fix' (WI-867 + WI-860) bundles the orthogonal architecture doc addition and the convergence-checker bug; disjoint file scopes, parallelizable.
+    domain: workflow
+    timestamp: 2026-04-16T00:00:00Z
+  - q: Do existing guiding principles still hold?
+    a: All principles hold. No amendments, deprecations, or new principles this cycle. P-33 (operational telemetry outside graph) continues to govern; D-210 (tool_usage standalone) and D-211 (remove agent-side emit_metric) remain intact.
+    domain: null
+    timestamp: 2026-04-16T00:00:00Z
+  - q: Execution strategy?
+    a: "Batched parallel with worktrees at parallelism 3, incremental review per item. PH-048 runs in two waves due to file-scope overlap: wave 1 (WI-861, WI-862, WI-865 — no cross-file overlap), wave 2 (WI-863 depends WI-861, WI-864 depends WI-861, WI-866 depends WI-862). PH-049's two items run full-parallel after PH-048 closes."
+    domain: workflow
+    timestamp: 2026-04-16T00:00:00Z
+cycle_modified: 27
+content_hash: 4106b430314cfb97a6f4a5aac572e7af929290aca1f1a465cba3bf85c89c0d98
+token_count: 799
+mode: refine
+date: 2026-04-16

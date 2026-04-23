@@ -1,0 +1,8 @@
+id: interviews/refine-011/agent-system
+type: interview
+cycle: 11
+source_path: steering/interviews/refine-011/agent-system.md
+entries:
+  - {id: IQ-011-001, question: "Q-3 — skills/review/SKILL.md:193 still lists spawn_session as the primary agent-spawning mechanism and Agent tool as fallback. skills/execute/SKILL.md and skills/plan/SKILL.md were already corrected in prior cycles. Should skills/review/SKILL.md be updated to match?", answer: Yes — Agent tool is primary, spawn_session is an optional enhancement for installations with outpost configured., domain: null, seq: 1}
+content_hash: dcff81b72d41fce96e6cf49b8f5a6716e9ea7574699ea2f9cc02371a72e60479
+token_count: 148

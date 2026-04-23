@@ -1,0 +1,14 @@
+id: P-06
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture)
+established: planning phase
+amended: cycle 016 — clarified YAML as write target, SQLite as read-only derived cache
+description: All inter-phase state resides in YAML files in the `.ideate/` directory. No in-memory state carries between skill invocations. Each skill starts cold and reads what it needs exclusively through the ideate MCP artifact server. Skills do not read or write YAML files directly — the MCP server is the mandatory interface between skills and the artifact directory. The SQLite index is a derived cache backing the MCP tools; skills never interact with it directly.
+cycle_created: 1
+cycle_modified: null
+content_hash: "4a18038df79be6d5a8c8cba186d4f27e4e0c70770b478c43f1f198b6ca9f3fa5"
+token_count: 203
+file_path: .ideate/policies/P-06.yaml

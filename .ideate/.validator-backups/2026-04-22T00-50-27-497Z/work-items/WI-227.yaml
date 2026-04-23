@@ -1,0 +1,25 @@
+id: WI-227
+type: work_item
+title: "Migration script — handle empty domain directories gracefully"
+status: done
+complexity: low
+scope:
+  - {path: scripts/migrate-to-v3.ts, op: modify}
+depends: []
+blocks: []
+criteria:
+  - Check domain dir for expected files before migrate calls
+  - Empty domains log info-level and continue
+  - Partial domains process existing files without WARNING
+  - Individual migrate functions use silent returns
+module: null
+domain: project-boundaries
+notes: |
+  # WI-227: Migration Fix
+
+  migrateDomains: Added hasFiles check. Empty domains get console.log. migratePolicies/migrateDecisions/migrateQuestions: Changed warn() to silent return.
+cycle_created: 28
+cycle_modified: null
+content_hash: ""
+token_count: 0
+file_path: .ideate/work-items/WI-227.yaml

@@ -1,0 +1,42 @@
+id: gap-analysis
+type: cycle_summary
+scope: full-audit-20260328
+reviewer: gap-analyst
+content: |-
+  ## Gap Analysis — Full Audit 2026-03-28
+
+  **Verdict**: Fail
+
+  ## Critical Gaps
+
+  ### EC1: Implementation notes never rendered in handleGetWorkItemContext
+  - context.ts:301-323 treats DB column 'notes' (inline text) as a file path and calls readFileSync. Always throws ENOENT. Catch block renders 'Notes file not found.'
+  - Impact: All work item workers receive no implementation notes. This is the normal execution case.
+  - Fix: Read notes directly from workItemRow.notes DB column without file read.
+
+  ## Significant Gaps
+
+  ### EC2: handleAssembleContext exposes file_path in error response (context.ts:959) — see code-reviewer S1
+
+  ### II1: Autopilot review phase vs domain-curator write protocol contradiction
+  - autopilot phases/review.md instructs curator to call ideate_write_artifact directly.
+  - agents/domain-curator.md says 'Do not write artifacts directly' — return content for skill to parse.
+  - Standalone review skill correctly parses and writes. Autopilot does not.
+
+  ### II2: skills/refine/SKILL.md uses type 'journal' instead of 'journal_entry'
+  - refine/SKILL.md:70 — calls ideate_artifact_query({type: 'journal'}). Correct type is 'journal_entry'. Silent zero results.
+
+  ### MI2: ARCHITECTURE.md section 9.2 documents file-based notes model (root cause of EC1)
+  - ARCHITECTURE.md:587 says 'notes file is read from disk.' Storage is inline in DB column.
+
+  ## Minor Gaps
+
+  ### MI1: ARCHITECTURE.md edge type count 11 but schema defines 13 (governed_by, informed_by added)
+  ### MI3: Null-signal semantics not in ARCHITECTURE.md (OQ-3)
+  ### IR1: ARCHITECTURE.md:585 mentions 'file path' in ideate_get_work_item_context response; code is P-33 compliant (no paths) — stale doc.
+
+  ## Resolved Known Issues
+  - OQ-1, OQ-5, OQ-6, OQ-7, OQ-8 resolved.
+content_hash: 950f0eddc649a49b13820ff1f9e1421d3b8fab837c9790766c84801f25ebc745
+token_count: 470
+file_path: .ideate/cycles/000/gap-analysis.yaml

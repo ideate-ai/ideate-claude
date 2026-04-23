@@ -1,0 +1,97 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |-
+  ## Decision Log — Cycle 24
+
+  ### Planning
+  D24-01: Defer edge_type_weights validation (cycle 23 IR1 — silent-ignore is defensive)
+  D24-02: Scope WI-776 to convergence_threshold + max_nodes as sole significant finding
+  D24-03: Scope WI-777 to 3 missing batchMutate test cases
+  D24-04: Use typeof guard pattern matching existing validating.ts conventions
+
+  ### Execution
+  D24-05: Accept WI-776 — Pass, 0 findings, 6 tests added
+  D24-06: Accept WI-777 — Pass, 0 findings, 3 tests added
+
+  ### Review
+  D24-07: typeof guard divergence (M1) classified minor, no code change needed
+  D24-08: edge_type_weights re-raised as significant by gap-analyst despite cycle 23 deferral
+
+  ## Open Questions
+  OQ24-01: Should edge_type_weights receive explicit validation or should silent-ignore become permanent policy?
+  OQ24-02: PH-041.yaml should be updated to include WI-776 and WI-777 in its work_items list.
+content_hash: b6bcc7ad5afe2a7c77dc5523161d9ac6ad91f3d249faf317c7be98d8fdb5397f
+token_count: 1055
+file_path: .ideate/cycles/068/decision-log.yaml
+cycle: 24
+decisions:
+  - id: D-CY23-01
+    topic: Inline vs above-line comment placement for reserved keyword advisories
+    outcome: Inline trailing comments used; spec said 'above'. Minor positioning divergence.
+  - id: D-CY23-02
+    topic: constraints labeled as reserved keyword
+    outcome: Factually inaccurate — CONSTRAINT (singular) is reserved, CONSTRAINTS (plural table name) is not.
+  - id: D-CY23-03
+    topic: trigger quoting requirement documentation
+    outcome: Comment overstates quoting need — SQLite allows trigger unquoted in DML. Production code already uses it unquoted.
+  - id: D-CY23-04
+    topic: cols.length assertion omitted from 8 new describe blocks
+    outcome: Systematic omission flagged by 3 reviewers independently. nodes table establishes the pattern at line 74 but new blocks don't follow it.
+  - id: D-CY23-05
+    topic: NOT NULL tests omitted for projects and phases
+    outcome: Gap identified by code-reviewer (M3) and gap-analyst (MI2). Only extension tables with column tests but no NOT NULL assertions.
+  - id: D-CY23-06
+    topic: Unspecified reserved keyword comment in CASCADE test
+    outcome: Comment added in WI-766 CASCADE test for constraints table, outside WI-766 spec. Consistent with WI-763 intent.
+  - id: D-CY23-07
+    topic: ALL_NODE_TYPES test renamed to 'is readonly array'
+    outcome: Name misleading — test checks Array.isArray and length > 0, not immutability. Naming carry-forward.
+open_questions:
+  - id: OQ-CY23-01
+    question: Are reserved keyword comments factually accurate? Should they be corrected?
+    source: M1, M2
+  - id: OQ-CY23-02
+    question: Should cols.length assertions be added to all 10 extension table describe blocks?
+    source: N1, M3, MI2
+  - id: OQ-CY23-03
+    question: Should NOT NULL tests be added for projects and phases?
+    source: M3, MI2
+  - id: OQ-CY23-04
+    question: Should 'is readonly array' test be renamed to match assertions?
+    source: M4
+  - id: OQ-CY23-05
+    question: Should idx_nodes_type_file_path index be added to index tests?
+    source: MI1
+  - id: OQ-CY23-06
+    question: Should NOT NULL constraints be fully tested for interview_questions?
+    source: MI3
+  - id: OQ-CY23-07
+    question: Should work_item_type DEFAULT value be asserted?
+    source: IR1
+  - id: OQ-CY23-08
+    question: Should timestamp column get a reserved keyword advisory like trigger?
+    source: IR2
+cross_references:
+  - id: CR1
+    topic: projects/phases NOT NULL gap
+    reviewers:
+      - code-reviewer M3
+      - gap-analyst MI2
+  - id: CR2
+    topic: cols.length assertion omission
+    reviewers:
+      - spec-reviewer N1
+      - gap-analyst MI2
+  - id: CR3
+    topic: reserved keyword comment accuracy
+    reviewers:
+      - code-reviewer M1/M2
+      - spec-reviewer AC1/U1
+      - gap-analyst IR2
+  - id: CR4
+    topic: WI-767 test name vs content
+    reviewers:
+      - code-reviewer M4
+convergence: Zero critical, zero significant. Cleanest cycle since cycle 20. Residual gaps are column-count assertions and NOT NULL coverage for projects, phases, interview_questions.
+cycle_modified: 23

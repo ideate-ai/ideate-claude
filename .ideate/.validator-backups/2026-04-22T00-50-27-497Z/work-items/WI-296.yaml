@@ -1,0 +1,28 @@
+id: WI-296
+type: work_item
+title: Fix README PPR config example — correct field names and defaults
+status: done
+complexity: low
+scope:
+  - path: README.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - README PPR config uses edge_type_weights not edge_weights
+  - README PPR config uses default_token_budget not token_budget
+  - Default shown is 50000 not 8000
+  - "Edge type keys match actual: depends_on, governed_by, informed_by, references, blocks"
+  - ideate_assemble_context example uses seed_ids not seeds
+  - schema_version in examples is 2 not 3
+  - ideate_artifact_index removed from tool reference
+  - Artifact directory structure diagram shows v3 .ideate/ layout
+  - ideate_get_config documented in tool reference
+domain: project-boundaries
+notes: Comprehensive README accuracy pass. Fix PPR config example field names, update artifact directory diagram from v2 to v3, remove stale ideate_artifact_index reference, add ideate_get_config to tool reference.
+resolution: "README overhauled: PPR config field names, artifact structure v3, tool refs, schema_version."
+cycle_created: 39
+cycle_modified: null
+content_hash: 747a5e5abb68a17daaeeff48589920cfc654dd499ccf4ca54f69be4d60eda2c9
+token_count: 279
+file_path: .ideate/work-items/WI-296.yaml

@@ -1,0 +1,10 @@
+id: C-11
+type: constraint
+category: process
+status: active
+description: Continuous review during execution. Review overlaps with execution. Completed items are reviewed immediately while other items continue. The final comprehensive review is additive, not the sole quality check.
+cycle_created: 1
+cycle_modified: null
+content_hash: "93723d622d622b5e29fb9bf82cc83ccbf705c6d442b612c8b82e6b1246eeac02"
+token_count: 95
+file_path: .ideate/constraints/C-11.yaml

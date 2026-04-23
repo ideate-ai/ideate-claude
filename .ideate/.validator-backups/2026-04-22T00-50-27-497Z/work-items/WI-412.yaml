@@ -1,0 +1,104 @@
+id: WI-412
+type: work_item
+title: Restore metrics_event YAML path routing and dispatch; fix P-46 bidirectional test
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/write-transaction.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - handleWriteArtifact does NOT have an early-return redirect for metrics_event — metrics_event goes through the normal two-phase write path
+  - resolveArtifactPath has a case for 'metrics_event' routing to path.join(ideateDir, 'metrics', id + '.yaml')
+  - The handleWriteArtifact transaction dispatch block has an else-if branch for type === 'metrics_event' calling upsertMetricsEvent with all MetricsEventRow fields
+  - metrics_event is back in the P-46 cases array with a checkFields assertion for event_name
+  - metrics_event is removed from EXCLUDED_TYPES in the P-46 test (only work_item and journal_entry remain excluded)
+  - "The P-46 coverage test checks both directions: every expectedType is in coveredTypes AND every coveredType (non-excluded) is in expectedTypes"
+  - The write-transaction.test.ts interviewFiles() assertion uses fs.existsSync check rather than toHaveLength(0) for the interview_question rollback test
+  - All tests pass (npm test)
+domain: artifact-structure
+notes: |-
+  Root cause of C1/C2 in cycle 5: WI-411 removed the metrics_event dispatch branch and replaced it with an inline fs.appendFileSync to metrics.jsonl. But handleGetMetrics queries the SQLite metrics_events table exclusively; it does not read metrics.jsonl. The indexer has a 'metrics_events' case (indexer.ts:265) and will correctly index any YAML file with type='metrics_event' from a scanned directory.
+
+  ## Fix for write.ts
+
+  1. Remove the early-return redirect block for metrics_event (added in WI-411):
+  ```typescript
+  // REMOVE this block:
+  if (type === 'metrics_event') {
+    const metricsPath = path.join(ctx.ideateDir, 'metrics.jsonl');
+    fs.appendFileSync(metricsPath, JSON.stringify(content) + '\n', 'utf8');
+    return 'Metric appended successfully';
+  }
+  ```
+
+  2. Add case in resolveArtifactPath:
+  ```typescript
+  case 'metrics_event':
+    return path.join(ideateDir, 'metrics', `${id}.yaml`);
+  ```
+
+  3. Re-add imports that were removed:
+    - type MetricsEventRow
+    - upsertMetricsEvent
+
+  4. Re-add dispatch branch in transaction block (after the finding branch):
+  ```typescript
+  } else if (type === 'metrics_event') {
+    const meRow: MetricsEventRow = {
+      id,
+      event_name: (content.event_name as string) ?? '',
+      timestamp: (content.timestamp as string | null) ?? null,
+      payload: content.payload ? JSON.stringify(content.payload) : null,
+      input_tokens: (content.input_tokens as number | null) ?? null,
+      output_tokens: (content.output_tokens as number | null) ?? null,
+      cache_read_tokens: (content.cache_read_tokens as number | null) ?? null,
+      cache_write_tokens: (content.cache_write_tokens as number | null) ?? null,
+      outcome: (content.outcome as string | null) ?? null,
+      finding_count: (content.finding_count as number | null) ?? null,
+      finding_severities: (content.finding_severities as string | null) ?? null,
+      first_pass_accepted: (content.first_pass_accepted as number | null) ?? null,
+      rework_count: (content.rework_count as number | null) ?? null,
+      work_item_total_tokens: (content.work_item_total_tokens as number | null) ?? null,
+      cycle_total_tokens: (content.cycle_total_tokens as number | null) ?? null,
+      cycle_total_cost_estimate: (content.cycle_total_cost_estimate as string | null) ?? null,
+      convergence_cycles: (content.convergence_cycles as number | null) ?? null,
+      context_artifact_ids: content.context_artifact_ids ? JSON.stringify(content.context_artifact_ids) : null,
+    };
+    upsertMetricsEvent(ctx.drizzleDb, meRow);
+  }
+  ```
+
+  ## Fix for tools.test.ts (P-46 block)
+
+  1. Remove 'metrics_event' from EXCLUDED_TYPES (only work_item and journal_entry remain)
+  2. Add metrics_event back to cases array:
+  ```typescript
+  {
+    type: 'metrics_event', id: 'ME-p46',
+    content: { event_name: 'test-event' },
+    tableName: 'metrics_events',
+    checkFields: (row) => { expect(row.event_name).toBe('test-event'); },
+  },
+  ```
+  3. Add reverse assertion to the coverage test:
+  ```typescript
+  for (const t of coveredTypes) {
+    if (!EXCLUDED_TYPES.has(t)) expect(expectedTypes).toContain(t);
+  }
+  ```
+
+  ## Fix for write-transaction.test.ts
+
+  In the interview_question rollback test, replace `expect(interviewFiles()).toHaveLength(0)` with just relying on the `expect(fs.existsSync(expectedPath)).toBe(false)` check already present. The count assertion is fragile because other tests may write to interviews/. Remove the toHaveLength(0) line.
+resolution: "Removed metrics_event early-return redirect (WI-411 regression). Added case 'metrics_event' in resolveArtifactPath routing to metrics/{id}.yaml. Restored MetricsEventRow/upsertMetricsEvent imports and dispatch branch in transaction block. Updated P-46 test: metrics_event back in cases with event_name checkFields, removed from EXCLUDED_TYPES, coverage test now bidirectional. Fixed fragile interviewFiles().toHaveLength(0) to not.toContain(). 485 tests pass."
+cycle_created: 6
+cycle_modified: 3
+content_hash: dea5aa7883ae8c5e43fdd9e37f0b18567351403af8d5c706d8bf1c19306acc57
+token_count: 1352
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-412.yaml

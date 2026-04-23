@@ -1,0 +1,33 @@
+id: code-quality
+type: cycle_summary
+scope: full-audit-20260328
+reviewer: code-reviewer
+content: |-
+  ## Code Quality Review — Full Audit 2026-03-28
+
+  **Verdict**: Fail
+
+  ## Significant Findings
+
+  ### S1: handleAssembleContext exposes file_path in tool response (P-33 violation)
+  - File: mcp/artifact-server/src/tools/context.ts:959
+  - Error fallback renders row.file_path (absolute filesystem path) into assembled context string returned to caller.
+  - Fix: replace with artifact ID reference: *Content not available for {row.id} ({row.type})*
+
+  ### S2: Proxy-human deferral signal 3-way inconsistency
+  - execute.md:213 checks DEFER; proxy-human.md:90 writes DEFERRED; schema.ts:308 defines lowercase deferred.
+  - Impact: autopilot deferral check never matches. All deferred Andon events silently treated as approved.
+  - Fix: standardize on schema lowercase deferred throughout.
+
+  ## Minor Findings
+
+  ### M1: ideate_bootstrap_project description stale (says 'Returns JSON with paths' but OQ-1 resolved)
+  ### M2: metrics.test.ts insertNode helper uses 'metric_event' instead of 'metrics_event'
+  ### M3: Missing closing backtick in execute.md:269
+  ### M4: No test for handleAssembleContext file-read failure branch
+
+  ## Resolved Known Issues Confirmed
+  - OQ-1, OQ-2, OQ-5, OQ-8, Q-91 all resolved.
+content_hash: 2023ecb110586e923ef5a0d8f5cc21df2bfaed772db320c2f2e2686829b95e00
+token_count: 328
+file_path: .ideate/cycles/000/code-quality.yaml

@@ -1,0 +1,21 @@
+id: interview-refine-020
+type: interview
+title: Refinement Interview - Cycle 020
+date: 2026-04-07
+trigger: Cycle 19 review findings
+entries:
+  - question: All 7 significant findings addressed?
+    answer: Yes. Also capturing Q4 edge weight docs in WI-673.
+    domain: adapter-equivalence
+  - question: Spec-adherence re-run result?
+    answer: P-58 gap confirmed (RemoteAdapter offline tests missing - addressed by WI-671). P-59 compliant. GP-14/GP-08 not applicable to adapter source.
+    domain: workflow
+  - question: WI-660 file path?
+    answer: Deferred.
+    domain: workflow
+  - question: WI-660 optional enhancements?
+    answer: Edge weight customization doc captured in WI-673. Server-side PPR validation out of scope.
+    domain: adapter-equivalence
+cycle_modified: 19
+content_hash: 45fab908454e2a75d8e0a95a3bcd84db7b9804ff5a74eac1bdfc9cd5f22caae6
+token_count: 195

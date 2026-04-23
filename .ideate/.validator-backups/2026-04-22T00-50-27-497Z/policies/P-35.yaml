@@ -1,0 +1,13 @@
+id: P-35
+type: domain_policy
+cycle_created: 0
+cycle_modified: null
+derived_from:
+  - GP-1 (Spec Sufficiency)
+  - GP-8 (Durable Knowledge Capture)
+description: Architecture documentation (ARCHITECTURE.md and similar) must be updated when implementation changes affect component counts, startup sequences, or data flow. When tools are added, removed, or renamed, or when startup order changes, the corresponding documentation sections must be updated in the same cycle. Out-of-sync documentation is a correctness gap that misleads future maintainers and reviewers.
+domain: artifact-structure
+file_path: .ideate/policies/P-35.yaml
+status: active
+content_hash: bfb43490fd6af04459f8e3a0eebf880b84965d160e95ea644d3d2472c8cb41cf
+token_count: 151

@@ -1,0 +1,18 @@
+id: interviews/refine-063/_general
+type: interview
+title: Refinement Interview — Cycle 063
+cycle: 63
+domain: null
+entries:
+  - question: What are you here to refine?
+    answer: Rename 'autopilot' to 'autopilot' and address the 8 minor findings from cycle 062 review.
+    domain: null
+  - question: How should we handle the MCP tool name change?
+    answer: Rename tools, no aliases. Create a migration tool to update existing .ideate/ artifacts.
+    domain: artifact-structure
+  - question: Should existing .ideate/ artifacts be migrated?
+    answer: Yes, the migration tool should handle this.
+    domain: artifact-structure
+content_hash: 6621230613700c74eef246e00c6640bf5241ff6f80739277160df66df142b463
+token_count: 155
+file_path: .ideate/interviews/interviews/refine-063/_general.yaml

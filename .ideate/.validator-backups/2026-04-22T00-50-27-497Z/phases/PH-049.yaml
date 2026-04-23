@@ -1,0 +1,31 @@
+id: PH-049
+type: phase
+name: Doc surface + convergence fix
+description: SG1 documentation + WI-860 convergence-checker fix
+phase_type: implementation
+project: PR-002
+status: complete
+work_items:
+  - WI-860
+  - WI-867
+success_criteria:
+  - architecture-overview.md documents the tool_usage telemetry surface, cross-referenced to P-33 / D-210.
+  - ideate_get_convergence_status no longer returns condition_b:false based on stale/legacy artifacts in a reused cycle slot.
+  - Regression test covers the legacy-artifact-collision reproducer.
+steering: Work items touch disjoint file scopes; can run in full parallel. No shared worktree risk. Runs after PH-048 so WI-867 can reference the now-corrected telemetry surface without re-work.
+cycle_modified: 27
+content_hash: 16f3f7a2a63a008144b173393746aa54c1a696c5dd23ceb0e54ada8e86b72ee1
+token_count: 498
+started_date: 2026-04-16
+completed_date: 2026-04-16
+success_criteria_met:
+  - criterion: architecture-overview.md documents tool_usage telemetry surface
+    status: met
+    evidence: WI-867 done; arch-overview doc cross-references P-33 / D-210
+  - criterion: ideate_get_convergence_status no longer condition_b:false on stale/legacy artifacts
+    status: met
+    evidence: WI-860 done; WI-871/872/873/875 closed related cycle-31/32/33 convergence-parity work
+  - criterion: Regression test covers legacy-artifact-collision reproducer
+    status: met
+    evidence: WI-873 added getConvergenceData(2) equivalence test in equivalence-query.test.ts; WI-874 pending for the broader convergence-checker false-negative class
+closure_note: Closed via proxy-human decision PHD-033-01 (circuit-breaker Andon). 6 WIs delivered (WI-860, WI-867, WI-871, WI-872, WI-873, WI-875). Cycle 33 capstone found 1 Significant (F-CYCLE-33-S1, doc wording), closed by WI-875 with mechanical verification. Cycle 34 formal capstone skipped per proxy decision. WI-874 (convergence-checker legacy-artifact-collision class) remains pending and deferred to a post-PR-002 phase.

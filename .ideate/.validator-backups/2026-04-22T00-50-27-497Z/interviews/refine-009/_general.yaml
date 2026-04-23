@@ -1,0 +1,10 @@
+id: interviews/refine-009/_general
+type: interview
+cycle: 9
+source_path: steering/interviews/refine-009/_general.md
+entries:
+  - {id: IQ-009-001, question: What specific change do you want to make?, answer: In code projects, ideate often misses obvious mistakes in testing. The in-cycle review fails to actually run the program to see if it will start up under nominal conditions. Finishing a work item that breaks an app is a fundamental requirement miss, not a small mistake., domain: null, seq: 1}
+  - {id: IQ-009-002, question: Should this be a hard requirement (mandatory test execution steps) or guidance?, answer: Not a hard requirement — this kind of testing can take many forms. Provide better guidance in the prompts to understand how the app should be used and use a mix of static and dynamic testing strategies., domain: null, seq: 2}
+  - {id: IQ-009-003, question: What does the healthy balance look like between excessive review overhead and never breaking an app?, answer: "The purpose of ideate is to automate project iteration cycles in the same manner that humans do — domain driven design, parallel workstreams, incremental quality validation including Andon for critical mistakes. Finishing a work item which breaks an app is a fundamental requirement miss and isn't a small mistake. Bugs happen and there is room for error, but egregious mistakes (app can't run) are unacceptable. The balance: never leave the codebase unable to start after a completed work item, but don't run the full test suite on every single incremental review.", domain: null, seq: 3}
+content_hash: "5a72645c4a39d26796c432ddb06fc39a515ca1e99f8f595f8589c23a7cb6dda4"
+token_count: 400

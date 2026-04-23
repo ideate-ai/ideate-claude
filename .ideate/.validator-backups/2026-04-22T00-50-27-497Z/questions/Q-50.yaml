@@ -1,0 +1,14 @@
+id: Q-50
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: No current runtime failure. A Phase 2 tool importing from both modules encounters a compilation error or shadows one constant.
+source: archive/cycles/017/spec-adherence.md (naming consistency); archive/cycles/017/decision-log.md OQ-9
+resolution: WI-166 renamed the config.ts constant to `CONFIG_SCHEMA_VERSION`. The schema.ts constant retains `CURRENT_SCHEMA_VERSION`. Naming is asymmetric but no longer collides. See D-79.
+resolved_in: 18
+description: "`config.ts` exports `CURRENT_SCHEMA_VERSION = 2` (IdeateConfig JSON schema version) and `schema.ts` exports `CURRENT_SCHEMA_VERSION = 3` (SQLite `user_version`). Should these be renamed to `CONFIG_SCHEMA_VERSION` and `DB_SCHEMA_VERSION`?"
+cycle_created: 1
+cycle_modified: null
+content_hash: ff718f73fc94cbcd6baacf831912fc47068890431e953c1702ff3547441b0b65
+token_count: 220
+file_path: .ideate/questions/Q-50.yaml

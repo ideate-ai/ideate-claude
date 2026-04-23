@@ -1,0 +1,131 @@
+id: WI-171
+type: work_item
+title: MCP server performance and correctness
+status: obsolete
+complexity: large
+scope:
+  - path: mcp/artifact-server/src/schema.ts
+    op: modify
+  - path: mcp/artifact-server/src/db.ts
+    op: modify
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/schema.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/indexer.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - CREATE INDEX IF NOT EXISTS idx_{table}_file_path ON {table}(file_path) added for each typed table in schema.ts
+  - All prepared hash-check statements created once before the file loop in rebuildIndex, not inside the loop
+  - nodeFileRefs Drizzle table definition declares primaryKey([nodeId, filePath])
+  - edges Drizzle table definition declares a unique constraint on (sourceId, targetId, edgeType)
+  - All onConflictDoNothing() and onConflictDoUpdate() calls remain valid with the updated Drizzle definitions
+  - Both BFS loops in detectCycles use an index-pointer pattern instead of Array.shift()
+  - interview_responses table DDL removed from schema.ts
+  - interviewResponses Drizzle table definition removed from db.ts
+  - '"interview_response" removed from TYPE_TO_TABLE, TYPE_TO_DRIZZLE_TABLE, buildRow switch, and ALL_TYPED_TABLES in indexer.ts'
+  - CURRENT_SCHEMA_VERSION incremented (5 → 6) for the interview_responses removal
+  - Schema test verifies interview_responses table no longer exists after schema creation
+  - Indexer test updated to remove interview_response from TYPE_TO_TABLE assertions
+  - "deleteStaleRows unused db: Database.Database parameter removed"
+  - PRAGMA foreign_keys = ON removed (no FK constraints exist to enforce)
+  - checkSchemaVersion deletes WAL and SHM files alongside index.db on version mismatch
+  - walkDir logs a warning to stderr on directory read error instead of silently continuing
+  - tokenCount function has an inline comment documenting the length/4 approximation and its known imprecision
+  - TYPE_TO_TABLE in indexer.ts has a comment noting it must be kept in sync with TYPE_TO_DRIZZLE_TABLE in db.ts
+  - CURRENT_SCHEMA_VERSION in schema.ts has a comment explaining the intentional naming asymmetry with CONFIG_SCHEMA_VERSION in config.ts (per D-79)
+  - npm run build succeeds; all tests pass
+module: null
+domain: null
+notes: |
+  # WI-171: MCP server performance and correctness
+
+  ## Overview
+
+  This item bundles all cycle 018 significant and minor findings that touch `schema.ts`, `db.ts`, and `indexer.ts`. All changes are in the MCP artifact server core. File scopes are disjoint from WI-170 (watcher), WI-172 (migration script), and WI-173 (docs).
+
+  ## Changes by Finding
+
+  ### S2 — file_path indexes + pre-create prepared statements
+
+  **schema.ts**: Add `CREATE INDEX IF NOT EXISTS idx_{table}_file_path ON {table}(file_path)` for each typed table. These go at the end of `createSchema()`, after the existing table DDL. Tables requiring the index: work_items, findings, domain_policies, domain_decisions, domain_questions, guiding_principles, constraints, module_specs, research_findings, journal_entries, document_artifacts, interview_responses (even though being removed, the index creation will just be dropped along with the table).
+
+  Actually since interview_responses is being removed (Q-59 below), do not add an index for it.
+
+  **indexer.ts**: In `rebuildIndex`, the hash-check loop currently calls `db.prepare()` inside the per-file iteration. Move all `db.prepare()` calls for hash lookups to before the file loop. Store them in a map keyed by table name. Inside the loop, look up the pre-created statement.
+
+  ### S3 — Drizzle/DDL constraint alignment
+
+  **db.ts**:
+  - `nodeFileRefs` table: add `primaryKey: { columns: [nodeFileRefs.nodeId, nodeFileRefs.filePath] }` to the Drizzle table definition
+  - `edges` table: add `unique: { columns: [edges.sourceId, edges.targetId, edges.edgeType] }` to the Drizzle table definition
+
+  These must align with the raw-SQL DDL in `schema.ts`. The existing `onConflictDoNothing()` and `onConflictDoUpdate()` calls in `indexer.ts` should continue to work correctly once Drizzle has the constraint metadata.
+
+  ### S4 — detectCycles O(n²) → index-pointer BFS
+
+  **indexer.ts**: In `detectCycles`, both BFS loops (Kahn's topological sort and the cycle-component BFS) use `queue.shift()` which is O(n). Replace with an index-pointer pattern:
+
+  ```typescript
+  // Instead of: const current = queue.shift()!
+  // Use:
+  let head = 0;
+  // ...
+  const current = queue[head++];
+  ```
+
+  This reduces complexity from O(n²) to O(n + e). Apply to both BFS loops in the function.
+
+  ### Q-59 — Remove interview_responses table
+
+  **schema.ts**: Delete the `interview_responses` DDL block. Increment `CURRENT_SCHEMA_VERSION` from 5 to 6.
+
+  **db.ts**: Delete the `interviewResponses` Drizzle table definition and its TypeScript interface.
+
+  **indexer.ts**: Remove `"interview_response"` from:
+  - `TYPE_TO_TABLE` map
+  - `TYPE_TO_DRIZZLE_TABLE` map
+  - `buildRow` switch statement case
+  - `ALL_TYPED_TABLES` array (if it exists)
+
+  **schema.test.ts**: Add (or update) a test verifying the `interview_responses` table does NOT exist after schema creation.
+
+  **indexer.test.ts**: Remove `"interview_response"` from any TYPE_TO_TABLE assertion that checks for it.
+
+  ### Minor fixes
+
+  **deleteStaleRows unused param** (`indexer.ts`): Remove the `db: Database.Database` parameter from `deleteStaleRows`. The function uses the module-level `db` binding. Remove from call site(s) as well.
+
+  **PRAGMA foreign_keys** (`schema.ts`): Remove `PRAGMA foreign_keys = ON` from `createSchema`. No FK constraints exist; the pragma has no effect.
+
+  **WAL/SHM cleanup** (`schema.ts`): In `checkSchemaVersion`, when the version mismatch branch deletes `index.db`, also delete `index.db-wal` and `index.db-shm` if they exist. Use `fs.rmSync(path, { force: true })` for each.
+
+  **walkDir silent errors** (`indexer.ts`): In the `walkDir` function, catch directory read errors and log to stderr: `console.error('[ideate] walkDir: failed to read directory', dir, err)`. Continue processing (don't throw).
+
+  **tokenCount doc comment** (`indexer.ts`): Add inline comment on the `tokenCount` calculation: `// Rough approximation: characters / 4. No tokenizer dependency; expect ±50% accuracy.`
+
+  **TYPE_TO_TABLE sync guard** (`indexer.ts`): Above the `TYPE_TO_TABLE` constant, add: `// Must be kept in sync with TYPE_TO_DRIZZLE_TABLE in db.ts. Both map the same 22 type values.` (update the count once interview_response is removed).
+
+  **CURRENT_SCHEMA_VERSION comment** (`schema.ts`): Above `CURRENT_SCHEMA_VERSION`, add: `// SQLite user_version for the artifact index schema. Note: CONFIG_SCHEMA_VERSION in config.ts is a separate version for the .ideate/config.json format (D-79).`
+
+  **rebuildIndex race window comment** (`indexer.ts`): Above the `detectCycles` call in `rebuildIndex`, add: `// Note: cycle detection runs after the transaction commits. A concurrent write during detection could produce a false positive. This window is accepted as low-risk for single-writer workloads.`
+
+  ## Test updates
+
+  - `schema.test.ts`: Add test that `interview_responses` table does not exist post-schema-creation
+  - `indexer.test.ts`: Update TYPE_TO_TABLE assertions to exclude `interview_response`
+  - Existing tests must all pass after the schema version bump (the delete-and-rebuild on mismatch handles this automatically in test setup)
+
+  ## Schema version
+
+  `CURRENT_SCHEMA_VERSION`: 5 → 6
+
+  The existing `checkSchemaVersion` mechanism handles this: any `index.db` with `user_version = 5` will be deleted and rebuilt automatically on next server start.
+cycle_created: 1
+cycle_modified: null
+content_hash: 2bb353d065e802a47773c9eb63d317983e45ef00ca16f9e2b896879d3035e2b4
+token_count: 1981
+file_path: .ideate/work-items/WI-171.yaml
+resolution: Criteria written for pre-class-table-inheritance schema; superseded by v3 architecture. Per-extension-table indexes moot (only nodes has file_path).

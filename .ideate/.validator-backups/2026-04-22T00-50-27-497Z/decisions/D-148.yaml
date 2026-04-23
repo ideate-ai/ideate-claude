@@ -1,0 +1,11 @@
+id: D-148
+type: domain_decision
+domain: artifact-structure
+title: P-33 scope extended to inputSchema parameter descriptions
+description: P-33's prohibition on exposing storage implementation details now explicitly covers inputSchema parameter descriptions in MCP tool definitions, not just top-level tool descriptions, error messages, and responses.
+rationale: Cycle 2 spec-adherence review found ideate_emit_metric's payload parameter description referencing 'metrics/' paths and 'SQLite' storage. P-33's prior scope did not unambiguously include inputSchema field-level descriptions, leaving a gap where storage details could leak through parameter documentation visible to tool consumers.
+cycle: 2
+status: settled
+content_hash: 6e9c76077848041acb70ee969a1e6af915aa49626e71ec7bece1f351b7be8a23
+token_count: 179
+file_path: .ideate/decisions/D-148.yaml

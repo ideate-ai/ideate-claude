@@ -1,0 +1,69 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |
+  # Spec Adherence Review — PH-050 Cycle 1
+
+  ## Verdict: Pass
+
+  **Principle Adherence Verdict**: Pass
+
+  Both WI-876 and WI-877 are substantially implemented and meet their acceptance criteria. Principle GP-14 (MCP Abstraction Boundary) upheld — neither worker touched `.ideate/` directly; all storage operations route through the adapter interface.
+
+  ## Architecture Deviations
+
+  None.
+
+  ## Unmet Acceptance Criteria
+
+  ### WI-876
+  - [x] AC1–AC4: Met. See analysis.ts:164-175 (missing warning with cycleDir + checkedFiles + checkedPaths), analysis.ts:124-129 (content snippet), JSDoc at 45-68 enumerating 6 accepted patterns, 9 new tests in tools.test.ts:1182+.
+  - [ ] AC5 — retroactive verification against cycles 31/32/33: Partially verifiable. Code changes structurally sufficient (grep confirms the target files match step1 regex). No automated test exercises cycles 31/32/33 through live MCP. Criterion is manual/runtime. Risk: minor.
+  - [x] AC6 — no regression: Met. condition_a logic untouched at analysis.ts:181-185.
+
+  ### WI-877
+  - [x] AC1 (deployment-notes.md documents require.cache + 2026-04-16 incident): Met.
+  - [x] AC2 (reload mechanism + tradeoff documented): Met via restart.sh (option c) + startup log (option b). Tradeoff rationale at deployment-notes.md:81-99.
+  - [x] AC3 (startup log records build timestamp): Met. server.ts:42-51 logBuildStamp IIFE.
+  - [x] AC4 (manual test documented): Met. 8-step procedure at deployment-notes.md:130-186.
+  - [x] AC5 (no remote-backend impact, opt-in, local-only): Met. restart.sh matches only this repo's dist/index.js path.
+
+  ## Principle Violations
+
+  None.
+
+  ## Principle Adherence Evidence
+
+  - GP-14: analysis.ts:158 fetches convergence data exclusively through `ctx.adapter.getConvergenceData(cycleNumber)`; no direct .ideate/ reads. Missing-summary warning constructs cycleDir string for diagnostic text only.
+
+  ## Undocumented Additions
+
+  ### U1 (minor)
+  scripts/restart.sh is not listed in WI-877 scope field, but WI-877 AC2 explicitly identifies `mcp/artifact-server/scripts/` as a target location. No scope violation.
+
+  ## Naming/Pattern Inconsistencies
+
+  None. parsePrincipleVerdict follows parse* convention; logBuildStamp follows log.* pattern.
+
+  ## Phase PH-050 Success Criteria
+
+  1. WI-874 closed as already-addressed: Met (prior cycle).
+  2. WI-876 diagnostic warnings: Met.
+  3. WI-877 deployment hygiene: Met.
+content_hash: 2cb4eb527e73bc81bc7440257c5208ecc6eb068bf82b287bc9e562f4ee59c772
+token_count: 933
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 36
+cycle_modified: 27
+verdict: Fail
+principle_verdict: Pass
+scope: WI-873 adherence to architecture, guiding principles, constraints, and 11 acceptance criteria
+summary: "ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null, non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was corrected via ideate_write_artifact re-writes)."
+findings_summary:
+  critical: 0
+  significant: 1
+  minor: 0
+significant_findings_refs:
+  - F-CYCLE-33-S1
+principle_adherence_verdict: Pass
+principle_adherence_notes: "**Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873 scope files."

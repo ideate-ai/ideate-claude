@@ -1,0 +1,424 @@
+id: RF-domain-knowledge-layer
+type: research_finding
+topic: "Design Proposal: Domain Knowledge Layer for ideate Artifacts (v2)"
+status: active
+date: null
+content: |
+  # Design Proposal: Domain Knowledge Layer for ideate Artifacts (v2)
+  
+  ## The Problem (recap)
+  
+  The current artifact structure is flat and append-only. Every review cycle loads the full accumulated history, making each cycle heavier than the last. Additionally, the review skill is a fixed pipeline — no way to ask targeted questions or inspect specific areas without running a full capstone review.
+  
+  ## Core Concepts
+  
+  **Archive layer**: every raw artifact ever generated, stored verbatim and immutably. The canonical record.
+  
+  **Domain layer**: a distilled index into the archive. Domain files contain brief summaries and citations; the archive holds the full content. Nothing is duplicated.
+  
+  **Flexible review**: the review skill is scope-aware. Cycle review is the default mode (post-execution). Targeted reviews are invoked with a natural language scope or flags, route output to `archive/adhoc/`, and trigger the curator only when they produce policy-grade findings.
+  
+  **Domain curator**: a dedicated agent that populates and maintains the domain layer from the archive. Runs after each review (cycle or targeted). First-class feature.
+  
+  ---
+  
+  ## Artifact Structure
+  
+  ```
+  {artifact-dir}/
+  ├── steering/
+  │   ├── guiding-principles.md         (unchanged)
+  │   ├── constraints.md                (unchanged)
+  │   ├── research/                     (unchanged)
+  │   └── interviews/                   (REPLACES single interview.md)
+  │       ├── plan.md                   (planning interview — tagged after domain creation)
+  │       ├── refine-001.md             (first refinement interview)
+  │       └── refine-002.md             (subsequent refinements, one file per cycle)
+  │
+  ├── plan/                             (unchanged)
+  │   ├── overview.md
+  │   ├── architecture.md
+  │   ├── modules/
+  │   ├── execution-strategy.md
+  │   └── work-items/
+  │
+  ├── journal.md                        (unchanged, append-only)
+  │
+  ├── archive/                          (ALL generated artifacts — immutable once written)
+  │   ├── incremental/                  (per work-item reviews from execute)
+  │   │   └── NNN-name.md
+  │   └── cycles/                       (capstone review suites, one dir per cycle)
+  │       ├── 001/
+  │       │   ├── code-quality.md
+  │       │   ├── spec-adherence.md
+  │       │   ├── gap-analysis.md
+  │       │   └── summary.md
+  │       ├── 002/
+  │       │   └── ...
+  │       └── adhoc/                    (targeted/ad-hoc review outputs)
+  │           └── {YYYYMMDD-slug}/
+  │               └── review.md
+  │
+  └── domains/                          (distilled knowledge — summaries + citations to archive/)
+      ├── index.md                      (domain registry, current cycle number, domain scope descriptions)
+      └── {domain-name}/
+          ├── policies.md               (durable rules, GP source, cycle established, status)
+          ├── decisions.md              (registry: brief summary + archive citation per decision)
+          └── questions.md              (open/resolved questions + archive citations)
+  ```
+  
+  ### What lives where
+  
+  **`archive/`** — verbatim outputs from agents. Never modified after writing. The audit trail.
+  
+  **`domains/`** — summaries and pointers. An agent reading `decisions.md` gets the essential facts and can follow a citation into `archive/` when full context is needed. Content is never duplicated between layers.
+  
+  ### Domain file formats
+  
+  **`decisions.md`** entry — carries enough rationale for confident application, full context available via citation:
+  ```markdown
+  ## D-15: Connection pooling required
+  - **Decision**: All database access uses the shared connection pool. Direct connections prohibited.
+  - **Rationale**: Connection exhaustion observed at 50 concurrent users in cycle 002 load tests.
+    Shared pool prevents resource leaks under concurrency without per-request overhead.
+  - **Assumes**: Max ~100 concurrent users (per interview constraints). Revisit if this changes.
+  - **Source**: archive/cycles/003/code-quality.md#C3
+  - **Policy**: policies.md#P-7
+  - **Status**: settled
+  ```
+  
+  The entry is not a bare pointer — it carries the essential reasoning so agents can apply the decision correctly in edge cases and recognize when a new situation differs from the decision's original assumptions. The archive citation is a fallback for deep dives, not the primary context. Entries should be ~6-10 lines. Full duplication of archive content is not the goal.
+  
+  **`policies.md`** entry:
+  ```markdown
+  ## P-7: Database connection pooling
+  All database access uses the shared connection pool. No direct connections.
+  - **Derived from**: GP-2 (Minimal Inference), GP-8 (Durable Knowledge Capture)
+  - **Established**: cycle 003, decision D-15
+  - **Status**: active
+  ```
+  
+  **`questions.md`** entry:
+  ```markdown
+  ## Q-12: Pool size under high write load
+  - **Question**: Is the default pool size (20) sufficient for the projected write throughput?
+  - **Source**: archive/cycles/003/gap-analysis.md#G-8
+  - **Impact**: Degraded write performance if pool exhausts under peak load.
+  - **Status**: open
+  - **Reexamination trigger**: if write throughput requirements increase beyond current estimates
+  ```
+  
+  ---
+  
+  ## Flexible Review Modes
+  
+  `/ideate:review` is scope-aware. The mode is determined from the invocation:
+  
+  | Invocation | Mode | Agents spawned | Output location |
+  |---|---|---|---|
+  | `/ideate:review` (no args) | Cycle review | code-reviewer, spec-reviewer, gap-analyst, journal-keeper, curator | `archive/cycles/{N}/` |
+  | `/ideate:review --domain architecture` | Domain review | code-reviewer + gap-analyst scoped to domain | `archive/adhoc/{date}-domain-architecture/` |
+  | `/ideate:review "how does X feature fit the current model"` | Feature-fit review | architect (analyze mode) + spec-reviewer | `archive/adhoc/{date}-feature-{slug}/` |
+  | `/ideate:review --full` | Full audit | All agents, all domains loaded | `archive/adhoc/{date}-full-audit/` |
+  | `/ideate:review --domain testing --scope "test coverage gaps"` | Targeted domain review | gap-analyst scoped to testing domain | `archive/adhoc/{date}-{slug}/` |
+  
+  ### How the mode selector works
+  
+  Phase 1 of the review skill determines mode:
+  1. If no arguments: cycle review (current default behavior, updated for new archive paths)
+  2. If `--domain {name}`: load that domain's policies + questions + source files, spawn scoped reviewers
+  3. If `--full`: load all domain policies + all domain questions + latest cycle summary + full source tree
+  4. If natural language description: classify intent → feature-fit, integration, or retrospective → select agent set accordingly
+  
+  ### Context loading per mode
+  
+  **Cycle review** (what each capstone reviewer receives):
+  - Current cycle's incremental reviews only (from archive/incremental/, scoped by cycle via journal)
+  - Domain policies for all domains (small, stable)
+  - Source code
+  - Architecture + overview
+  
+  **Feature-fit review**:
+  - The feature description (from user input)
+  - All domain policies + questions (full picture of settled model)
+  - Architecture doc
+  - Source code in areas the feature would touch (derived from description)
+  - No incremental reviews needed
+  
+  **Domain review**:
+  - That domain's full files (policies, decisions with archive citations, questions)
+  - Source files associated with that domain (derived from decisions + architecture)
+  - Relevant incremental reviews for that domain's files
+  
+  **Full audit**:
+  - All domain policies + questions (summary layer)
+  - Latest cycle summary
+  - Source code
+  - Does NOT re-read all raw archive — domains already distill the history
+  
+  ### Curator after ad-hoc reviews
+  
+  The curator runs after cycle reviews unconditionally. After ad-hoc reviews, it runs only if the review produced findings that are:
+  - Policy-grade (new durable rule discovered)
+  - Question-grade (unresolved issue worth tracking)
+  - Conflict-grade (contradicts an existing policy)
+  
+  Otherwise, the ad-hoc review output lives in `archive/adhoc/` and the domain layer is unchanged.
+  
+  ---
+  
+  ## Domain Curator Design
+  
+  A dedicated agent. Added as the final phase of the review SKILL after journal-keeper (cycle reviews) or conditionally after targeted reviews.
+  
+  **Inputs:**
+  - Completed review output files (cycle or adhoc)
+  - `domains/index.md` + all existing domain files
+  - `steering/guiding-principles.md` (policy-grade threshold reference)
+  
+  **Process:**
+  1. Read each finding and decision from the review output
+  2. Classify by domain (one or more); determine policy-grade vs. historical
+  3. Append to `decisions.md` (brief summary + citation) for each relevant domain
+  4. Promote policy-grade decisions to `policies.md` with full entry
+  5. Update `questions.md`: mark resolved questions, append new ones
+  6. Create new domain directories if a distinct decision cluster emerges
+  7. Flag conflicts: when a finding contradicts an existing policy, mark the policy `provisional — under review` and add an open question. Does not overwrite silently.
+  
+  **Policy-grade threshold:**
+  A decision becomes a policy only if it is:
+  - **Actionable**: stateable as a rule a future worker follows
+  - **Durable**: expected to hold going forward, not provisional
+  - **Future-applicable**: relevant to work items that don't exist yet
+  - **Non-obvious**: not already captured by guiding principles
+  
+  **Policy conflicts:** Curator records both the existing policy and the contradicting decision in `decisions.md`, sets the policy status to `provisional — under review`, and adds a `questions.md` entry for user resolution.
+  
+  ---
+  
+  ## Bootstrapping (Plan Phase → First Curator Run)
+  
+  ### During `/ideate:plan` (cycle 0)
+  
+  After architecture is complete:
+  
+  1. Planner identifies 2–4 candidate domains from interview transcript and architecture — looking for language shifts, different change cadences, different decision authorities.
+  
+  2. **Tags the plan interview**: Goes back through `steering/interviews/plan.md` and adds domain tags to each question section. Tags are inline in the file (`<!-- domains: architecture, data-model -->`). This is a post-interview, pre-execution step — domains are now known, so the tagging can be precise.
+  
+  3. Creates `domains/{name}/` for each with sparse initial files:
+     - `policies.md`: GPs projected into domain-specific rules. Each GP applied to this domain = first policy entries. Sparse but grounded.
+     - `decisions.md`: planning-phase decisions written here immediately (tech selections, architectural choices, interface contracts). Sourced to `plan/architecture.md` or `steering/interviews/plan.md#Q3`.
+     - `questions.md`: open questions from planning that belong to this domain.
+  
+  4. Creates `domains/index.md` with domain list, cycle counter at 0, scope descriptions.
+  
+  Planning decisions are the first domain decisions. Workers in cycle 1 start with real policy context, not just guiding principles.
+  
+  ### First curator run (after cycle 1 review)
+  
+  The richest run — processes the full consequences of architecture decisions for the first time:
+  - Validates, amends, or confirms plan-phase policies against actual implementation
+  - First `decisions.md` entries reference both `archive/cycles/001/` and `plan/architecture.md`
+  - May create a new domain or split an overly coarse one if review reveals an unclassified decision cluster
+  
+  Domain splits are additive: rename parent, create two children, entries in both reference original sources.
+  
+  ---
+  
+  ## Migration Tool
+  
+  A shell script at `scripts/migrate-to-domains.sh`. One-time use. Not a skill.
+  
+  ```bash
+  # Usage: ./scripts/migrate-to-domains.sh <artifact-dir>
+  ```
+  
+  **What it does:**
+  1. Creates `archive/incremental/` and copies existing `reviews/incremental/*.md` there
+  2. Creates `archive/cycles/001/` and copies existing `reviews/final/*.md` there
+  3. Calls `claude -p` with a domain curator prompt to bootstrap `domains/` from the existing artifacts:
+     - Reads `journal.md`, `archive/cycles/001/`, `steering/`, `plan/architecture.md`
+     - Identifies domains
+     - Writes initial `domains/` structure with policies, decisions (with citations to `archive/`), and questions
+  4. Writes `domains/index.md` with cycle counter set to 1 (one cycle already archived)
+  5. Prints a summary of domains created and decisions classified
+  
+  Does not delete the original `reviews/` directory — leaves that to the user after verifying the migration looks correct.
+  
+  ---
+  
+  ## How Each Skill Changes
+  
+  ### `/ideate:plan`
+  New final step: bootstrap domain layer. Identify domains, create `domains/` structure, project GPs into initial per-domain policies, write planning decisions into each domain's `decisions.md`.
+  
+  ### `/ideate:execute`
+  Unchanged in execution logic. Write paths change: incremental reviews go to `archive/incremental/NNN-name.md` (same content, new location).
+  
+  Workers optionally receive relevant domain policies as supplemental context (based on work item file scope → domain mapping).
+  
+  ### `/ideate:review`
+  - Phase 1: determine review mode from arguments
+  - Context loading: current-cycle incremental reviews from `archive/incremental/` scoped by cycle; domain policies instead of full history
+  - Output: `archive/cycles/{N}/` for cycle reviews, `archive/adhoc/{date-slug}/` for targeted
+  - New final phase: spawn domain curator
+  
+  ### `/ideate:refine`
+  Load: `archive/cycles/{latest}/summary.md` + all `domains/*/policies.md` + all `domains/*/questions.md`. Does not load all incremental reviews. Gets the distilled picture, not raw history.
+  
+  ---
+  
+  ## What This Solves
+  
+  | Problem | Current | After |
+  |---|---|---|
+  | Capstone reviewer context | O(all cycles × items) | O(current cycle items + domain policies) |
+  | Decision synthesis | Full re-synthesis each cycle | Curator appends delta; archive holds full history |
+  | Refine context | All history + all incremental reviews | Latest summary + domain policies + open questions |
+  | Audit trail | Full but unsearchable | Full + indexed via decisions.md citations |
+  | Targeted review | Not possible without full cycle | Any scope, any mode, routes to adhoc archive |
+  | Domain classification | None | Explicit, searchable, cited |
+  | Policy derivation | Implicit (guiding principles) | GP → domain policy, with lineage |
+  | Content duplication | N/A | Zero — domain files cite archive, never duplicate |
+  
+  ---
+  
+  ## Interview Structure
+  
+  ### Per-cycle, per-domain files
+  
+  Each plan/refine cycle produces one interview file per domain, plus a `_general.md` for questions that span domains or precede domain creation. A compiled human-readable transcript is generated as a secondary artifact for outside review — never loaded into context.
+  
+  ```
+  steering/interviews/
+  ├── plan/
+  │   ├── architecture.md       (questions tagged to architecture domain)
+  │   ├── data-model.md         (questions tagged to data-model domain)
+  │   ├── ux.md
+  │   ├── _general.md           (pre-domain questions, cross-cutting topics)
+  │   └── _full.md              (compiled transcript — human reading only, never loaded)
+  ├── refine-001/
+  │   ├── api-contracts.md
+  │   └── _general.md
+  └── refine-NNN/
+      └── ...
+  ```
+  
+  Files are small enough to load in full without waste. Domain-scoped loading is precise: a feature-fit review on API contracts loads `interviews/plan/api-contracts.md` and `interviews/refine-*/api-contracts.md` — nothing else.
+  
+  ### When files are created
+  
+  **Plan interview**: Conducted as a single conversation. Immediately after domain creation, the plan phase splits it into per-domain files and adds question IDs. `_full.md` is the original transcript preserved for readability.
+  
+  **Refine interviews**: Same process — conducted as a conversation, then split by domain by the curator after the cycle review.
+  
+  ### How citations work
+  
+  Domain `decisions.md` entries reference specific questions:
+  ```
+  - **Source**: steering/interviews/plan/data-model.md#Q3
+  ```
+  
+  ### Context loading by skill
+  
+  | Skill | Interview context loaded |
+  |---|---|
+  | `/ideate:plan` | Full `interviews/plan/_general.md` + all domain files as created |
+  | `/ideate:refine` | Current-cycle refine files in full + prior cycles' domain-matched files |
+  | Capstone reviewers | None directly — domain files already cite relevant questions |
+  | Feature-fit review | Domain-matched interview files for the relevant domains only |
+  | Domain curator | Current-cycle interview files in full (for splitting and tagging) |
+  
+  ---
+  
+  ## Plan Artifact Decay
+  
+  Plan files and domain files have different roles as the project matures:
+  
+  | Artifact | Young project | Mature project |
+  |---|---|---|
+  | `plan/architecture.md` | Primary steering context | Historical record of original design |
+  | `plan/overview.md` | Describes what's being built | Describes what was originally intended |
+  | `domains/*/policies.md` | Sparse, derived from GPs | Rich, current settled state |
+  | `domains/*/decisions.md` | Few entries | Full evolutionary record with citations |
+  
+  The original plan describes the system as it was designed. After many refinement cycles, it may describe something that no longer quite exists. The domain layer is the living record — it's kept current by the curator with every cycle.
+  
+  **Structural consequence**: the living architecture belongs in `domains/architecture/policies.md`, not only in `plan/architecture.md`. The plan file is the snapshot at project start (archived, never modified). The domain file is current truth (curator-maintained). Skills load from domains for current state; load from plan only when original intent matters.
+  
+  Skills shift their loading accordingly:
+  - Refine: loads domain policies (current), not original plan/architecture (historical)
+  - Capstone reviewers: load domain policies + current cycle artifacts, not original plan
+  - Plan archive files: cited in `decisions.md` entries as sources, not loaded as active steering
+  
+  ---
+  
+  ## Design Document Placement
+  
+  This document is saved to `specs/steering/research/domain-knowledge-layer.md` as the canonical location for design research that informs architectural decisions in ideate — consistent with the existing research files (`session-multiplexing.md`, `spec-sufficiency.md`, etc.).
+  
+  Under the new scheme, this brainstorming session would be the refine interview for this cycle, split into per-domain files under `specs/steering/interviews/refine-NNN/`. Since that structure does not exist yet, `research/` is the appropriate pre-migration home. After Track B (migration), the domain curator extracts key decisions from this document into `specs/domains/` with citations back to this file.
+  
+  ---
+  
+  ## Execution Order
+  
+  Implementation has two tracks. Track B depends on Track A completing first.
+  
+  ### Track A — Build the new system (in the current ideate structure)
+  
+  These work items can be executed with the current ideate workflow. Phases within each group are parallelizable.
+  
+  **Group 1 (no dependencies, fully parallel):**
+  - Create `agents/domain-curator.md`
+  - Create `scripts/migrate-to-domains.sh`
+  - Save design document to `specs/steering/research/domain-knowledge-layer.md`
+  
+  **Group 2 (depends on Group 1 being conceptually settled, parallelizable):**
+  - Update `skills/execute/SKILL.md` — change incremental review write path to `archive/incremental/`
+  - Update `skills/plan/SKILL.md` — add domain bootstrap step
+  - Update `skills/review/SKILL.md` — mode selector, scoped context loading, curator phase
+  - Update `skills/refine/SKILL.md` — load domain policies + questions instead of all incremental reviews
+  
+  **Group 3 (depends on all above):**
+  - Write `README.md` — all components must be finalized before documentation
+  
+  ### Track B — Migrate ideate's own `specs/` to the new structure
+  
+  Runs after Track A is complete and verified. This is when ideate starts using its own new architecture.
+  
+  **Step 1**: Run `scripts/migrate-to-domains.sh specs/`
+  - Copies `specs/reviews/incremental/` → `specs/archive/incremental/`
+  - Copies `specs/reviews/final/` → `specs/archive/cycles/001/`
+  - Runs domain curator to bootstrap `specs/domains/` from existing archive content
+  
+  **Step 2**: Restructure interview
+  - The current `specs/steering/interview.md` is a multi-session append-only file
+  - Move to `specs/steering/interviews/legacy.md` for now (preserving history)
+  - Future refine sessions use the new per-cycle, per-domain structure
+  
+  **Step 3**: Verify
+  - Confirm `specs/domains/` was populated correctly
+  - Confirm archive paths resolve correctly from domain citations
+  - All future ideate development uses the new structure
+  
+  ### The meta-constraint
+  
+  This development cycle runs in the old structure — `specs/reviews/`, monolithic `interview.md`, no domain layer. That's expected. The migration in Track B is the moment ideate adopts its own new architecture. After that, the next refine cycle will be the first to use per-domain interview files and produce domain-scoped incremental reviews.
+  
+  ---
+  
+  ## Open Questions
+  
+  1. **GP vs. domain policy boundary**: A GP stays universal when its implication is identical across all domains. It generates a domain policy when its application is substantively different per domain — when the domain-specific rule is more actionable than the GP alone.
+  
+  2. **Incremental review scoping**: Should the curator classify which incremental reviews belong to which domains, enabling domain reviews to load only domain-relevant items from `archive/incremental/`?
+  
+  3. **Refine + domain interaction**: Does `/ideate:refine` load all domain policies + questions, or only domains relevant to the scope of the change? Scoped loading is leaner but requires the refine skill to determine scope before loading context.
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "8bd49fc119a5e80026dd3e1a626e6d67238a3dedbd5c6017b7f42c52cc1d5fb5"
+token_count: 5503
+file_path: .ideate/research/RF-domain-knowledge-layer.yaml

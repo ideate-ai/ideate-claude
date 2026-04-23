@@ -1,0 +1,25 @@
+id: WI-290
+type: work_item
+title: Version bump to 3.1.0 + update architecture.yaml tool table
+status: done
+complexity: low
+scope:
+  - path: .claude-plugin/plugin.json
+    op: modify
+  - path: .claude-plugin/marketplace.json
+    op: modify
+  - path: .ideate/plan/architecture.yaml
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - plugin.json and marketplace.json version is 3.1.0
+  - architecture.yaml tool table includes all 17 tools
+domain: project-boundaries
+notes: "Bump 3.0.6 to 3.1.0. Add 6 missing tools to architecture.yaml tool table: ideate_get_config, ideate_assemble_context, ideate_update_work_items, ideate_write_artifact, ideate_emit_event, ideate_get_metrics."
+resolution: Bumped to 3.1.0. Architecture tool table updated to 17 tools.
+cycle_created: 38
+cycle_modified: null
+content_hash: a26e15d4aba9637a4d64f07ac0b07be68831e450eb575d648b9d27aa3ff104b5
+token_count: 198
+file_path: .ideate/work-items/WI-290.yaml

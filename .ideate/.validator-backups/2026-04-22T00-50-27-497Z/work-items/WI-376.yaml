@@ -1,0 +1,31 @@
+id: WI-376
+type: work_item
+title: Fix metrics test insertNode type string from 'metric_event' to 'metrics_event'
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/__tests__/metrics.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - In metrics.test.ts, the insertNode helper uses type string `'metrics_event'` (matching schema.ts and db.ts)
+  - The type string matches the authoritative schema.ts MetricsEvent interface type field
+  - "All tests in the metrics test suite pass: `npx vitest run src/__tests__/metrics.test.ts` in mcp/artifact-server/"
+domain: artifact-structure
+notes: |-
+  Single-character fix in the test helper.
+
+  Read metrics.test.ts line ~55. The insertNode helper inserts a node with type `'metric_event'`. The correct type is `'metrics_event'` (with 's').
+
+  Verify the correct string by reading:
+  1. `mcp/artifact-server/src/schema.ts` — find MetricsEvent interface, check `type` field value
+  2. `mcp/artifact-server/src/db.ts` — find TYPE_TO_EXTENSION_TABLE, check key for metrics events table
+
+  Change `'metric_event'` to `'metrics_event'` in the insertNode helper. Run the test suite to confirm all tests pass.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 5b0fa0894f34406575a39daaffca522db6e6d38c5dda97488eccbfd7a6198a55
+token_count: 305
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-376.yaml

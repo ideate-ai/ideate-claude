@@ -1,0 +1,13 @@
+id: D-12
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: All MCP orchestration infrastructure (session-spawner, remote-worker, roles system, manager agent) was removed from ideate and placed in a separate project at `~/code/outpost`.
+rationale: MCP orchestration had expanded beyond its original scope for ideate; separating concerns allows independent evolution of each project's principles and constraints (archive/cycles/001/decision-log.md D1, journal 2026-03-11 refine entry).
+cycle_created: 1
+cycle_modified: null
+content_hash: "22235c78736730aa6651e03f5f6776e44f605f2a58ffe556b81d5b5123f15788"
+token_count: 160
+file_path: .ideate/decisions/D-12.yaml

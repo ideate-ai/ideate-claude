@@ -1,0 +1,30 @@
+id: WI-312
+type: work_item
+title: "Add guiding principle GP-14: MCP Abstraction Boundary"
+status: done
+complexity: low
+scope:
+  - path: .ideate/principles/GP-14.yaml
+    op: create
+depends: []
+blocks: []
+criteria:
+  - GP-14 exists with status active
+  - GP-14 name is 'MCP Abstraction Boundary' or equivalent
+  - GP-14 states that skills and agents interact with artifacts exclusively through MCP tools
+  - GP-14 states that skills/agents are naive to storage format, directory structure, file naming, and serialization
+  - GP-14 states artifact references use designations (WI-120, GP-01) not filenames
+  - GP-14 acknowledges the bootstrap exception (ideate_bootstrap_project creates .ideate/ before MCP starts)
+domain: workflow
+notes: |-
+  # WI-312: Add GP-14 MCP Abstraction Boundary
+
+  ## Principle text
+
+  Skills and agents interact with the artifact layer exclusively through MCP tools. They are naive to the underlying storage format (YAML, SQLite), directory structure (.ideate/ layout), file naming conventions (.yaml extensions), and serialization details. Skills pass structured data to MCP tools and receive structured data back. Artifact references use designations (WI-120, GP-01, P-06) not filenames (WI-120.yaml, GP-01.yaml). The MCP server owns all I/O operations on the artifact directory — no skill or agent reads, writes, globs, or greps .ideate/ files directly. The only exception is the bootstrap phase (ideate_bootstrap_project) which creates the initial .ideate/ structure before the MCP server can start. Structured field names (title, criteria, status, depends, etc.) are part of the logical data model and remain visible to skills — they are the API contract, not implementation detail.
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: d9726755072a45ea0f898d2dfea6fa3100b376f343090e468ced7d51daad37e7
+token_count: 442
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-312.yaml

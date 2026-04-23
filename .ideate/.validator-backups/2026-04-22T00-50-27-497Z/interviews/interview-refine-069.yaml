@@ -1,0 +1,18 @@
+id: interview-refine-069
+type: interview
+title: Refinement Interview — Cycle 069
+cycle: 69
+date: 2026-03-28
+trigger: post-review correction
+entries:
+  - question: "Q-90: Should P-17 be amended to permit ideate_update_config as a sanctioned runtime write path for config.json?"
+    answer: MCP should be the preferred path whenever possible. Unless there is an explicit need to write config directly, we should not. Direct writes are reserved for bootstrap and migration only.
+    domain: artifact-structure
+    decision: P-17 amended. ideate_update_config is the sanctioned runtime write path. Direct file writes to config.json restricted to bootstrap scaffolding and schema migration scripts.
+  - question: "Q-91: What merge semantics should handleUpdateConfig use for model_overrides to enable key deletion? Options: (1) replace-all, (2) null-signal."
+    answer: Null signal. There should be an option for 'default (modelname)' — the settings skill should display the default model name when no override is set.
+    domain: artifact-structure
+    decision: Null-signal semantics adopted. A key set to null in patch.model_overrides deletes that key from the stored map. Settings skill displays 'default (sonnet)' or 'default (opus)' instead of dash. Clear model override sends null-signal patch.
+content_hash: 94baca5187e31624ef9aebf12e3474af35835b81b3c5c5c6a5d9e1376eeb61b0
+token_count: 324
+file_path: .ideate/interviews/interview-refine-069.yaml

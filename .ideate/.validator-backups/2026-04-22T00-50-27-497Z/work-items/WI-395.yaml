@@ -1,0 +1,30 @@
+id: WI-395
+type: work_item
+title: Remove or sanitize .ideate paths from MCP tool responses
+status: done
+complexity: medium
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/*.ts
+depends:
+  - WI-394
+blocks: []
+criteria:
+  - No MCP tool response contains .ideate/ file paths
+  - Artifact IDs are used instead of file paths where needed
+  - Response types updated to remove file_path field if present
+domain: agent-system
+notes: |-
+  After WI-394 audit, implement the sanitization:
+
+  1. Remove file_path from response types where present
+  2. Replace with artifact_id where needed
+  3. Ensure skills can work with artifact IDs only
+
+  This is a prerequisite for cloud-hosted MCP backend.
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 4fb65d83eb6b9c2f2c6f8f03c9530603085763b6415c629404f03cc7e16770da
+token_count: 188
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-395.yaml

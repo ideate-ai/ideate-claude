@@ -1,53 +1,97 @@
 id: review-manifest
 type: cycle_summary
-content: |
+content: >
   # PH-048 Review Manifest — Cycle 29
 
+
   Phase: PH-048 (StorageAdapter hardening)
+
   Cycle start commit: 1a0d686
+
   Cycle end commit: 1a0d686 (cycle uncommitted; workers made in-tree edits)
+
 
   ## Work Items
 
+
   | ID | Title | Status | Scope | Incremental Verdict | Findings |
+
   |----|-------|--------|-------|---------------------|----------|
-  | WI-861 | Wire session_id/cycle/phase telemetry columns | done | src/server.ts, src/tools/tool-usage.ts, src/types.ts | Pass | F-WI861 (3 minor) |
+
+  | WI-861 | Wire session_id/cycle/phase telemetry columns | done | src/server.ts, src/tools/tool-usage.ts, src/types.ts
+  | Pass | F-WI861 (3 minor) |
+
   | WI-862 | report-tool-usage.sh respects config.backend | done | scripts/report-tool-usage.sh | Pass | F-WI862 |
-  | WI-863 | getToolUsage adapter-contract coverage | done (after rework) | src/__tests__/adapter-contract.test.ts, src/validating.ts | Pass after rework | F-WI863 |
-  | WI-864 | Document both-view truncation semantics | done (after rework) | src/tools/tool-usage.ts, README.md, src/__tests__/tool-usage-tool.test.ts | Pass after rework + direction check | F-WI864 |
-  | WI-865 | Refresh stale '11 tool handlers' header | done (override) | src/__tests__/tools.test.ts | Pass (override) | F-WI865 |
-  | WI-866 | --limit 0 intent in report-tool-usage.sh | done (after rework) | scripts/report-tool-usage.sh | Pass after rework | F-WI866 |
+
+  | WI-863 | getToolUsage adapter-contract coverage | done (after rework) | src/__tests__/adapter-contract.test.ts,
+  src/validating.ts | Pass after rework | F-WI863 |
+
+  | WI-864 | Document both-view truncation semantics | done (after rework) | src/tools/tool-usage.ts, README.md,
+  src/__tests__/tool-usage-tool.test.ts | Pass after rework + direction check | F-WI864 |
+
+  | WI-865 | Refresh stale '11 tool handlers' header | done (override) | src/__tests__/tools.test.ts | Pass (override) |
+  F-WI865 |
+
+  | WI-866 | --limit 0 intent in report-tool-usage.sh | done (after rework) | scripts/report-tool-usage.sh | Pass after
+  rework | F-WI866 |
+
 
   ## Notes for Capstone
 
-  - WI-865: worker deleted ~75 lines of dead metrics-test blocks outside spec scope to make tests compile after removal of src/tools/metrics.ts. Override justified; curator should surface 'necessary cleanup' as policy question.
-  - WI-864: first review failed on directional comment error ('oldest' vs 'newest'). Fixed in rework. Direction assertion added to test-9 to lock invariant.
-  - WI-863: first review failed on AC-4 (negative shape) and AC-4 (limit/interface clarification). Fixed via ValidatingAdapter validation + contract comment.
-  - WI-866: first review failed on --cycle 0 regression (zero-reject loop caught --cycle too). Fixed by splitting validation.
+
+  - WI-865: worker deleted ~75 lines of dead metrics-test blocks outside spec scope to make tests compile after removal
+  of src/tools/metrics.ts. Override justified; curator should surface 'necessary cleanup' as policy question.
+
+  - WI-864: first review failed on directional comment error ('oldest' vs 'newest'). Fixed in rework. Direction
+  assertion added to test-9 to lock invariant.
+
+  - WI-863: first review failed on AC-4 (negative shape) and AC-4 (limit/interface clarification). Fixed via
+  ValidatingAdapter validation + contract comment.
+
+  - WI-866: first review failed on --cycle 0 regression (zero-reject loop caught --cycle too). Fixed by splitting
+  validation.
+
   - All items touched by two waves: wave 1 (WI-861/862/865 disjoint), wave 2 (WI-863/864/866 with dependencies).
+
 
   ## Files Changed in Cycle
 
+
   - mcp/artifact-server/src/server.ts (telemetry wiring)
+
   - mcp/artifact-server/src/tools/tool-usage.ts (truncation comment)
+
   - mcp/artifact-server/src/types.ts (comment update)
+
   - mcp/artifact-server/src/validating.ts (getToolUsage shape validation)
+
   - mcp/artifact-server/src/__tests__/telemetry-wiring.test.ts (NEW, 10 tests)
+
   - mcp/artifact-server/src/__tests__/adapter-contract.test.ts (14 new contract tests)
+
   - mcp/artifact-server/src/__tests__/tool-usage-tool.test.ts (ROW-4/ROW-5 direction assertions)
+
   - mcp/artifact-server/src/__tests__/tools.test.ts (header + dead-test deletions)
+
   - mcp/artifact-server/README.md (tool-usage reporting section)
+
   - scripts/report-tool-usage.sh (backend dispatch + limit validation)
+
 
   ## Review Scope
 
-  Full review. Capstone should assess cross-cutting consistency (telemetry end-to-end, docs match code, script UX), adherence to GP-14 (MCP abstraction), P-33 (telemetry outside artifact graph), and test-invariant quality patterns flagged in cycle 28.
+
+  Full review. Capstone should assess cross-cutting consistency (telemetry end-to-end, docs match code, script UX),
+  adherence to GP-14 (MCP abstraction), P-33 (telemetry outside artifact graph), and test-invariant quality patterns
+  flagged in cycle 28.
 content_hash: b7195eda834bca3c57261fa47a4c960061ba7f271bdba5a7337d521b087a5a16
 token_count: 923
-file_path: .ideate/cycles/068/review-manifest.yaml
+file_path: cycles/029/review-manifest.yaml
 cycle: 29
 scope: WI-759, WI-760, WI-761, WI-762
-description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+description: >-
+  Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760),
+  projects column assertion (WI-761), phases column assertion (WI-762)
 work_items:
   - WI-759
   - WI-760

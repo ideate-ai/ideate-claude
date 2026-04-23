@@ -1,0 +1,22 @@
+id: interview-refine-012
+type: interview
+title: Refinement Interview — PR-003 Migration Tool Refinement
+cycle: 12
+entries:
+  - question: What are the project acceptance criteria?
+    answer: "Three criteria: (1) 100% parity between YAML→SQLite and YAML→Neo4j. (2) Audit SQLite indexer for latent defects, fix in both backends. (3) Comprehensive equivalence tests proving identical query results from either backend."
+    domain: artifact-structure
+  - question: What process should we follow?
+    answer: Spike first to understand the problem space. Triage findings into work items with measurable results. Split into multiple phases. Both databases must be pristine and behave identically from the plugin's perspective.
+    domain: workflow
+  - question: Scope of equivalence tests?
+    answer: Full coverage of all 21 StorageAdapter methods. queryNodes, getNode, etc. must return identical results regardless of backend. Backend is invisible to the MCP consumer.
+    domain: artifact-structure
+  - question: Where do equivalence tests live?
+    answer: In this repo (ideate) for now, portable later. Test fixtures should spin up the server via Docker. No cross-repo dependency at test time. Docker is fine as long as it's representative of production.
+    domain: workflow
+  - question: Phase structure?
+    answer: "Phase 1: Diagnostic spike. Phase 2: Defect remediation. Phase 3: Equivalence test infrastructure. Phase 4: Production validation with real data."
+    domain: workflow
+content_hash: 98daf10e2094c6794b56b70bc710db0077a277658f8c413946e80526a9b2a864
+token_count: 371

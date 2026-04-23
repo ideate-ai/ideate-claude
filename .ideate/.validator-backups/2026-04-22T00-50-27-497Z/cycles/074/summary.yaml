@@ -1,0 +1,93 @@
+id: summary
+type: cycle_summary
+content: |
+  # Cycle 74 Summary — PH-051 Capstone
+
+  ## Scope
+
+  Three work items addressing convergence-check correctness:
+  - WI-886: research spike for Q-164 (stale SQLite convergence reads)
+  - WI-887: reader.ts::getConvergenceData YAML-ground-truth verification fix
+  - WI-885: skills/autopilot/SKILL.md cycle-number resolution (Q-160 option c)
+
+  ## Verdicts
+
+  - code-reviewer: Fail
+  - spec-reviewer: Pass (Principle Verdict: Pass)
+  - gap-analyst: Fail
+  - Full test suite: 1528 pass / 0 fail
+
+  ## Condition A (zero Critical/Significant)
+
+  **FAIL**. Six unique significant findings across three reviewers (with overlap).
+
+  ## Condition B (principle adherence)
+
+  **PASS**. GP-14 and adapter-layer boundaries respected. No console.log; structured log.warn with [q164] tag. No bun. No direct .ideate/ references added.
+
+  ## Significant Findings (consolidated)
+
+  1. **q160 monotonic-advance test is weak** — assertions use `>= prev` not `> prev`; sequence is flat (28,28,28) with fixed current_cycle dominating. Test does not lock in the strictly-increasing property it claims. (reviewers: code S1, spec M1, gap S3)
+  2. **Step 4 mid-session restart guard is untested** — the exact scenario that required step 4 (review-phase interruption before domain-index write) is not covered. Helper does not implement the guard. (code S2)
+  3. **YAML ENOENT fallback path untested** — the only safety net for watcher-lag (mechanism B) and historical write-path bugs (mechanism C) has no regression test. (gap S1)
+  4. **YAML `addressed_by: null` literal untested** — the explicit-null vs missing-key distinction is not covered; a future refactor could silently misclassify. (gap S2)
+  5. **Q-160 option-(c) known limitation is unrecorded** — algorithm does not scan existing cycle-directory slots; collision is still possible if directories exist above both counters. This cycle itself hit the limitation (algorithm yielded 28; manually picked 74). No follow-up question, WI, or annotation in D-217. (gap S4)
+  6. **WI-886 research deliverable RF-q164-stale-reads.yaml is absent** from .ideate/research/. WI-886 acceptance criterion unmet. Test file line 20 has a dangling citation. (spec S1)
+
+  ## Minor Findings
+
+  - insertFinding in tools.test.ts generates [q164] warn noise in CI (pre-existing; surfaced by the fix)
+  - getConvergenceData JSDoc does not document the YAML-verification step
+  - No observability aggregation for SQL/YAML mismatch frequency
+  - SKILL.md resume path does not specify non-numeric current_cycle fallback
+  - q160 test title 'strictly increases' misdescribes `>=` assertions
+
+  ## Convergence
+
+  Not converged. Condition A failed; Condition B passed.
+
+  ## Recommended Next Actions
+
+  All six significant findings are tractable and tightly scoped. Proposed follow-up WIs:
+
+  - **WI-next-A** (tests): strengthen q160 regression tests — fix monotonic assertions to strict `>`; add step-4 guard test with previousCycleNumber helper parameter; add YAML ENOENT test; add YAML explicit-null test. Single file: q160/q164-regression.test.ts. Low complexity.
+  - **WI-next-B** (docs): create RF-q164-stale-reads research artifact via ideate_write_artifact, capturing WI-886's diagnosis of mechanisms A/B/C and the rejected v-hypothesis. Closes WI-886 deliverable.
+  - **WI-next-C** (domain): file a follow-up question Q-NNN recording the Q-160 option-(c) known limitation (does not scan existing cycle-directory slots). Optionally amend D-217 to acknowledge.
+  - **WI-next-D** (minor, optional): JSDoc on getConvergenceData; [q164] aggregate counter; resume-path fallback guard in SKILL.md.
+content_hash: da0e86963110c10813ad8ab60369ef54c8e1997e3572a4d9a1ef8dfd16eb9af6
+token_count: 1286
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 74
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: WI-876, WI-877
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001

@@ -1,0 +1,98 @@
+id: review-manifest
+type: cycle_summary
+content: |
+  # PH-045 Cycle 3 Review Manifest
+
+  ## Cycle 3 work items (4 total, all done)
+
+  | WI | Title | Verdict | Files |
+  |----|-------|---------|-------|
+  | WI-807 | queryNodes Domain/Cycle empty columns + adapter guard tests | Pass | tools/query.ts, __tests__/tools.test.ts |
+  | WI-808 | Metrics adapter aggregation (N+1 fix) + 3D filter test + dead code | Pass (1 minor) | adapter.ts, adapters/local/{index,reader}.ts, adapters/remote/index.ts, tools/metrics.ts, validating.ts, __tests__/metrics.test.ts, __tests__/validating.test.ts |
+  | WI-810 | Leak 13: server.ts indexFiles/removeFiles → adapter | Pass | adapter.ts, adapters/local/index.ts, adapters/remote/index.ts, server.ts, validating.ts, __tests__/{validating,metrics}.test.ts |
+  | WI-812 | Doc updates §3.3 + adapter-contract Implementation Constraints | Pass (override; reviewer hallucinated line ranges) | docs/platform/architecture-overview.md, mcp/artifact-server/docs/adapter-contract.md |
+
+  ## Files modified this cycle (13 source/doc files)
+
+  - mcp/artifact-server/src/adapter.ts (interface: +indexFiles/removeFiles/getMetricsEvents/MetricsEventRow/MetricsEventProperties; +agent_type to NodeFilter)
+  - mcp/artifact-server/src/adapters/local/index.ts (LocalAdapter: +indexFiles/removeFiles/getMetricsEvents)
+  - mcp/artifact-server/src/adapters/local/reader.ts (LocalReaderAdapter.getMetricsEvents — single SQL JOIN)
+  - mcp/artifact-server/src/adapters/remote/index.ts (RemoteAdapter: +stubs)
+  - mcp/artifact-server/src/server.ts (watcher → adapter.indexFiles/removeFiles + null-guard)
+  - mcp/artifact-server/src/tools/query.ts (Cycle column wired from cycle_created; Domain header removed)
+  - mcp/artifact-server/src/tools/metrics.ts (handleGetMetrics → adapter.getMetricsEvents; dead code removed)
+  - mcp/artifact-server/src/validating.ts (+pass-through wrappers)
+  - mcp/artifact-server/src/__tests__/tools.test.ts (column regression + 3 adapter-required guard tests)
+  - mcp/artifact-server/src/__tests__/metrics.test.ts (3D filter tests; vacuous test fixed; mock adapter updated)
+  - mcp/artifact-server/src/__tests__/validating.test.ts (mock adapter updated)
+  - docs/platform/architecture-overview.md (§3.3 rewritten post-WI-804)
+  - mcp/artifact-server/docs/adapter-contract.md (Implementation Constraints section)
+
+  ## Cycle 2 capstone findings status (5 significant, 7 minor)
+
+  All 5 significant addressed by cycle 3:
+  - CR-S1 (queryNodes empty Domain/Cycle) → WI-807 ✓
+  - CR-S2 (handleGetMetrics N+1) → WI-808 ✓
+  - GA-S1 (no adapter-required guard tests) → WI-807 ✓
+  - GA-S2 (Leak 13 server.ts) → WI-810 ✓
+  - GA-S3 (3D filter test gap) → WI-808 ✓
+
+  Minor findings addressed: CR-M1 (dead total_total_tokens), CR-M2 (vacuous metrics.jsonl test), CR-M3 (column regression test), GA-M2 (adapter-contract doc), SR-U1 (architecture-overview §3.3) — all done by cycle 3.
+
+  ## Build verification
+
+  - tsc --noEmit clean
+  - Full test suite: 1400 passed / 332 skipped (1732 total)
+  - Commit: b714555
+
+  ## Review mode
+
+  Full review (cycle 3 = last_full_review_cycle (0) + full_review_interval (3)).
+content_hash: 42bba4949aeeaf2b3849a31bcf33819592211ea28eac82cb5594ef57ddef9cdc
+token_count: 1326
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 3
+scope: WI-759, WI-760, WI-761, WI-762
+description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+work_items:
+  - id: WI-803
+    title: Remove ctx.db / LocalAdapter fallbacks from tools/context.ts (Leak 3)
+    complexity: medium
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/context.ts
+      - mcp/artifact-server/src/__tests__/tools.test.ts
+  - id: WI-804
+    title: Remove ctx.db fallback from tools/query.ts handleArtifactQuery (Leaks 8-12 residual)
+    complexity: small
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/query.ts
+      - mcp/artifact-server/src/__tests__/tools.test.ts
+  - id: WI-805
+    title: Remove ctx.db fallback from tools/metrics.ts handleGetMetrics (Leak 7)
+    complexity: medium
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/metrics.ts
+      - mcp/artifact-server/src/__tests__/metrics.test.ts
+incremental_reviews:
+  WI-759: pass
+  WI-760: pass
+  WI-761: pass
+  WI-762: pass
+cycle_modified: 27
+phase: PH-045
+review_mode: differential
+last_full_review_cycle: 0
+full_review_interval: 3
+cycle_start_commit: 6d42131e649dab6fc69b6efc3e6060030fe9fb3b
+cycle_end_commit: c26d604a54070bd84494d685b87871a0fc7aada6
+changed_files:
+  - mcp/artifact-server/src/__tests__/metrics.test.ts
+  - mcp/artifact-server/src/__tests__/tools.test.ts
+  - mcp/artifact-server/src/tools/context.ts
+  - mcp/artifact-server/src/tools/metrics.ts
+  - mcp/artifact-server/src/tools/query.ts
+prior_cycle_findings_summary: "PH-045 cycle 1 surfaced critical=0, significant=8, minor=16. Cycle 2 work items (WI-803/804/805) target three of those significant findings: Leak 3 (context.ts), Leaks 8-12 residual (query.ts), Leak 7 (metrics.ts)."
+notes: Slim manifest constructed because ideate_get_review_manifest returned >100k chars. Reviewers should query specific work items and findings via MCP tools as needed.

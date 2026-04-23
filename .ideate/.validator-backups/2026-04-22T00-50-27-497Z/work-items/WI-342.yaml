@@ -1,0 +1,34 @@
+id: WI-342
+type: work_item
+title: Extend write_artifact for domain types
+status: done
+complexity: medium
+scope: []
+depends:
+  - WI-340
+blocks: []
+criteria:
+  - "write_artifact accepts type: domain_policy, domain_decision, domain_question"
+  - Domain artifacts written to correct location via MCP
+  - domain-curator agent updated to use MCP instead of direct file writes
+  - Resolves Q-082
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Extend ideate_write_artifact to accept domain artifact types. This resolves Q-082 (domain-curator policy violations) by providing MCP interface for domain writes.
+
+  New types:
+  - type: 'domain_policy' → { domain, title, policy_text, source, amended_by?, status }
+  - type: 'domain_decision' → { domain, title, decision, rationale, alternatives_considered, source }
+  - type: 'domain_question' → { domain, question, impact, source, status, resolution?, resolved_in? }
+
+  Files to modify:
+  - mcp/artifact-server/src/tools/write.ts
+  - mcp/artifact-server/src/schema.ts (add domain artifact types)
+  - agents/domain-curator.md (update to use MCP)
+resolution: Extended ideate_write_artifact to support domain_policy, domain_decision, and domain_question types. Added extension table inserts for domain artifacts. Added tests for all three domain types. Resolved Q-082 by confirming domain-curator agent correctly uses MCP interface.
+cycle_created: null
+cycle_modified: null
+content_hash: 19e84462cfda859593b04f63e8ee79ffb7a5a7599fba6c657ebaec7afcbfaed4
+token_count: 355
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-342.yaml

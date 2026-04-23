@@ -1,0 +1,46 @@
+id: WI-329
+type: work_item
+title: Rename MCP autopilot-state tools to autopilot-state
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/autopilot-state.ts
+    op: delete
+  - path: mcp/artifact-server/src/tools/autopilot-state.ts
+    op: create
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Tool ideate_get_autopilot_state exists and returns autopilot-state.yaml content (file name on disk unchanged for now)
+  - Tool ideate_update_autopilot_state exists and updates autopilot-state.yaml content
+  - Old tool names ideate_get_autopilot_state and ideate_update_autopilot_state no longer exist in TOOLS array
+  - Tool handler file is autopilot-state.ts not autopilot-state.ts
+  - tools/index.ts dispatch cases updated to new tool names
+  - npm run build succeeds
+  - npm run test passes
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  1. Copy `tools/autopilot-state.ts` to `tools/autopilot-state.ts`
+  2. In `autopilot-state.ts`:
+     - Rename exported functions: `handleGetBrrrState` → `handleGetAutopilotState`, `handleUpdateBrrrState` → `handleUpdateAutopilotState`
+     - The underlying YAML file (`autopilot-state.yaml`) can be renamed by the migration tool (WI-331)
+  3. In `tools/index.ts`:
+     - Update import from `./autopilot-state.js` to `./autopilot-state.js`
+     - Update TOOLS array: rename tool definitions from `ideate_get_autopilot_state`/`ideate_update_autopilot_state` to `ideate_get_autopilot_state`/`ideate_update_autopilot_state`
+     - Update switch cases in handleTool dispatcher
+  4. Delete `tools/autopilot-state.ts`
+  5. Run build and tests
+
+  ## Existing code
+  - `mcp/artifact-server/src/tools/autopilot-state.ts` — exports handleGetBrrrState, handleUpdateBrrrState
+  - `mcp/artifact-server/src/tools/index.ts` — imports and dispatches these handlers
+resolution: MCP tools renamed. autopilot-state.ts created, autopilot-state.ts deleted. Tool names, dispatch, and tests updated. Build clean, 338 tests pass.
+cycle_created: null
+cycle_modified: null
+content_hash: af28275a6e488fc4baa191204cf8efd059e7f4662d14c5c188db253f5f46cbb9
+token_count: 499
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-329.yaml

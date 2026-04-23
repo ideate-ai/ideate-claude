@@ -1,0 +1,13 @@
+id: Q-116
+type: domain_question
+domain: artifact-structure
+title: Cycle 3 artifacts CS-003, CQ-003, GA-003 missing top-level cycle field
+description: "The WI-423 fix is forward-only. Existing cycle_summary artifacts CS-003, CQ-003, and GA-003 in .ideate/cycles/003/ had no top-level cycle: field. On index rebuild, document_artifacts.cycle for these three artifacts would be null, making them invisible to handleGetConvergenceStatus(3)."
+source: cycle 4 gap-analysis-004 Gap 1
+impact: After server restart + rebuild, convergence status for cycle 3 loses three of four review artifacts from the cycle-filtered view.
+status: resolved
+resolution: "WI-425 backfilled cycle: 3 into CS-003.yaml, CQ-003.yaml, and GA-003.yaml. Additionally, WI-424's three-branch WHERE clause provides a fallback for any remaining null-cycle artifacts."
+resolved_in: 5
+content_hash: 0cd9ee2c081904242aa280a16fb6736dcee5a807c5dd6a683b0cd08b4ff2f68a
+token_count: 211
+file_path: .ideate/questions/Q-116.yaml

@@ -11,70 +11,122 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - skills/execute/SKILL.md Phase 8 Critical Findings section contains an explicit exception for "Startup failure after ..." findings
+  - >-
+    skills/execute/SKILL.md Phase 8 Critical Findings section contains an explicit exception for "Startup failure after
+    ..." findings
   - The exception states the finding is always treated as scope-changing and always routes to Andon
   - The exception appears before the general fixable-within-scope rule
-  - skills/autopilot/phases/execute.md finding-handling block contains an equivalent exception as the first Critical finding bullet
+  - >-
+    skills/autopilot/phases/execute.md finding-handling block contains an equivalent exception as the first Critical
+    finding bullet
   - No other sections in either file are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-120: Add startup-failure exception to execute finding-handling
+
 
   ## Context
 
-  `agents/code-reviewer.md` (WI-117) instructs the reviewer to mark startup failure Critical findings as "scope-changing — this is an Andon-level issue." However, the finding-handling logic in both execute skills routes Critical findings by asking whether they are scope-changing, which the executor judges case by case. A trivially-fixable startup failure (missing import, syntax error) may be judged as fixable within scope and silently corrected.
 
-  This gap was identified as gap-analysis II1 in Cycle 007. Policy P-22 was added to the workflow domain in response: "Startup failure Critical findings are unconditionally scope-changing." This work item encodes P-22 into the execute skill files.
+  `agents/code-reviewer.md` (WI-117) instructs the reviewer to mark startup failure Critical findings as "scope-changing
+  — this is an Andon-level issue." However, the finding-handling logic in both execute skills routes Critical findings
+  by asking whether they are scope-changing, which the executor judges case by case. A trivially-fixable startup failure
+  (missing import, syntax error) may be judged as fixable within scope and silently corrected.
+
+
+  This gap was identified as gap-analysis II1 in Cycle 007. Policy P-22 was added to the workflow domain in response:
+  "Startup failure Critical findings are unconditionally scope-changing." This work item encodes P-22 into the execute
+  skill files.
+
 
   ## Changes
 
+
   ### File 1: `skills/execute/SKILL.md`
+
 
   Location: Phase 8 Critical Findings section (around line 398–402). The current text reads:
 
+
   ```
+
   ## Critical Findings
 
-  If the finding is fixable within the work item's scope without changing the plan: fix it, note in the journal as significant rework.
 
-  If the finding is **scope-changing** (requires changes to other work items, architectural changes, or contradicts guiding principles): do NOT fix. Add the finding to the Andon cord queue (Phase 9). Continue with other work items if possible.
+  If the finding is fixable within the work item's scope without changing the plan: fix it, note in the journal as
+  significant rework.
+
+
+  If the finding is **scope-changing** (requires changes to other work items, architectural changes, or contradicts
+  guiding principles): do NOT fix. Add the finding to the Andon cord queue (Phase 9). Continue with other work items if
+  possible.
+
   ```
+
 
   Insert the following BEFORE the existing "If the finding is fixable..." paragraph:
 
-  ```
-  **Exception — Startup failure**: Any Critical finding titled "Startup failure after [work item name]" is always treated as scope-changing. Do NOT attempt to fix it. Route to the Andon cord immediately, regardless of whether the fix appears simple or contained.
 
   ```
+
+  **Exception — Startup failure**: Any Critical finding titled "Startup failure after [work item name]" is always
+  treated as scope-changing. Do NOT attempt to fix it. Route to the Andon cord immediately, regardless of whether the
+  fix appears simple or contained.
+
+
+  ```
+
 
   ### File 2: `skills/autopilot/phases/execute.md`
 
+
   Location: Review finding handling block (around line 154–160). The current text reads:
 
+
   ```
+
   - **Critical findings fixable within scope**: Fix. Note as significant rework in the journal entry.
-  - **Critical findings that are scope-changing or worktree merge conflicts**: Do NOT fix. Route to Andon cord → proxy-human (see below).
+
+  - **Critical findings that are scope-changing or worktree merge conflicts**: Do NOT fix. Route to Andon cord →
+  proxy-human (see below).
+
   ```
+
 
   Replace the two critical finding bullet lines with three bullet lines:
 
+
   ```
-  - **Critical findings — "Startup failure after ..."**: Always scope-changing. Do NOT fix. Route to Andon cord → proxy-human immediately, regardless of apparent fixability.
+
+  - **Critical findings — "Startup failure after ..."**: Always scope-changing. Do NOT fix. Route to Andon cord →
+  proxy-human immediately, regardless of apparent fixability.
+
   - **Critical findings fixable within scope**: Fix. Note as significant rework in the journal entry.
-  - **Critical findings that are scope-changing or worktree merge conflicts**: Do NOT fix. Route to Andon cord → proxy-human (see below).
+
+  - **Critical findings that are scope-changing or worktree merge conflicts**: Do NOT fix. Route to Andon cord →
+  proxy-human (see below).
+
   ```
+
 
   ## Acceptance Criteria
 
-  1. `skills/execute/SKILL.md` Phase 8 Critical Findings section contains an explicit exception for "Startup failure after ..." findings
+
+  1. `skills/execute/SKILL.md` Phase 8 Critical Findings section contains an explicit exception for "Startup failure
+  after ..." findings
+
   2. The exception states the finding is always treated as scope-changing and always routes to Andon
+
   3. The exception appears before the general "fixable within scope" rule (so it is evaluated first)
-  4. `skills/autopilot/phases/execute.md` finding-handling block contains an equivalent exception as the first Critical finding bullet
+
+  4. `skills/autopilot/phases/execute.md` finding-handling block contains an equivalent exception as the first Critical
+  finding bullet
+
   5. No other sections in either file are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: cb35bd3f8fd8c880411e58f920e18d2b38f2460176ea594bf7743cc7c4b901bb
 token_count: 1016
-file_path: .ideate/work-items/WI-120.yaml
+file_path: work-items/WI-120.yaml
 resolution: Superseded by WI-121 before application; code went directly to diagnose-and-fix

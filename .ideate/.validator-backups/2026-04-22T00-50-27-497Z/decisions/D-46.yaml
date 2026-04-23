@@ -1,0 +1,13 @@
+id: D-46
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 10
+supersedes: null
+description: "WI-127 replaced \"Note in the journal as significant rework\" in both `skills/execute/SKILL.md:402` and `skills/autopilot/phases/execute.md:158` with an exact quoted template: `` `Rework: Startup failure root cause diagnosed and fixed. {brief description of fix}.` ``"
+rationale: The unfixable startup-failure path (WI-124, cycle 010) used an exact quoted template. The fixable path used prose with no template string, creating an asymmetry and a latent journal-parsing risk. The template format mirrors the unfixable-path convention established in cycle 010.
+cycle_created: 1
+cycle_modified: null
+content_hash: bd730987d10dfed643ac165237f71eb0d2f4a9df119d809d0ff8e1ec58abc244
+token_count: 190
+file_path: .ideate/decisions/D-46.yaml

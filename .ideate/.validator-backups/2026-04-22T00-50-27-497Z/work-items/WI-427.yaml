@@ -1,0 +1,34 @@
+id: WI-427
+type: work_item
+title: "Convergence correctness: parsePrincipleVerdict JSON unwrap + handleArchiveCycle transaction"
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/analysis.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "resolveContent in analysis.ts unwraps JSON-encoded da_content: try JSON.parse(da_content).content, fall through to raw string on parse failure"
+  - "parsePrincipleVerdict correctly finds **Principle Violation Verdict**: Pass/Fail in both raw string and JSON.stringify-encoded content"
+  - handleArchiveCycle DELETE loop in write.ts wrapped in ctx.db.transaction(...).exclusive()
+  - All existing tests pass
+  - "New test: parsePrincipleVerdict returns correct verdict when da_content is JSON.stringify({content: '**Principle Violation Verdict**: Pass'})"
+  - "New test: handleArchiveCycle DELETE is atomic"
+domain: artifact-structure
+notes: |-
+  Addresses CQ S1 (parsePrincipleVerdict JSON path) and CQ S2 (handleArchiveCycle untransacted deletes) from cycle 5 review.
+
+  For CQ S1: In resolveContent in analysis.ts, when row.da_content is present, attempt JSON.parse(row.da_content) and extract .content if it is a string before passing to parsePrincipleVerdict. Fall through to raw string on any error.
+
+  For CQ S2: In handleArchiveCycle in write.ts, the DELETE FROM nodes WHERE file_path = ? loop at ~lines 304-311 must be wrapped in ctx.db.transaction(() => { ... }).exclusive(). See P-44 amendment from cycle 5 and D-154.
+resolution: null
+cycle_created: 5
+cycle_modified: 5
+content_hash: 8c1758110086954e991199a6f5b3f326f747aa9117cbeb0697825b96c4946032
+token_count: 422
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-427.yaml

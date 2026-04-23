@@ -1,0 +1,25 @@
+id: WI-242
+type: work_item
+title: Fix cycle_modified in handleUpdateWorkItems
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - handleUpdateWorkItems reads current cycle from domains/index.yaml (or .md fallback)
+  - cycle_modified is set to the current cycle number when updating a work item
+  - If cycle number cannot be determined, cycle_modified remains null (no error)
+domain: artifact-structure
+notes: |-
+  # WI-242: Fix cycle_modified
+
+  In handleUpdateWorkItems, after merging fields, read the current cycle number from .ideate/domains/index.yaml (key: current_cycle) or .ideate/domains/index.md. Set cycle_modified on the updated item. If unreadable, leave as null.
+resolution: null
+cycle_created: 30
+cycle_modified: null
+content_hash: 60810874d54e66b458a74da11ebe34275e1721a52f26984ef073eb00d28f60b5
+token_count: 204
+file_path: .ideate/work-items/WI-242.yaml

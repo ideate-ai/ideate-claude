@@ -16,37 +16,55 @@ criteria:
   - All tests pass (npm test exits 0)
 module: null
 domain: null
-notes: |
+notes: >
   # WI-193: Add depth > 1 graph traversal test
+
 
   ## Test Design
 
+
   Add a new test to `mcp/artifact-server/src/__tests__/tools.test.ts` inside the `handleArtifactQuery` describe block.
 
+
   ### Setup
+
   1. Create 3 nodes in the test DB: `WI-TEST-A`, `WI-TEST-B`, `WI-TEST-C` (all type `work_item`)
+
   2. Create 2 depends_on edges: A→B, B→C
+
   3. Create corresponding work_items extension rows (title required)
 
+
   ### Test: "traverses dependency chain at depth > 1"
+
   ```typescript
+
   const result = await handleArtifactQuery(ctx, {
     related_to: "WI-TEST-A",
     edge_types: ["depends_on"],
     direction: "outgoing",
     depth: 3,
   });
+
   // Assert: result contains WI-TEST-B (depth 1) and WI-TEST-C (depth 2)
+
   // Assert: no duplicate rows
+
   // Assert: result is a markdown table with Edge, Dir, Depth columns
+
   ```
 
+
   ### Why this catches S1 and S2
-  - S1 (cycle protection): If a cycle existed (A→B→A), UNION ALL would produce infinite rows up to depth limit. UNION deduplicates.
-  - S2 (ambiguous id): The ORDER BY uses the column from the CTE output. If it's ambiguous, SQLite throws an error or sorts wrong.
+
+  - S1 (cycle protection): If a cycle existed (A→B→A), UNION ALL would produce infinite rows up to depth limit. UNION
+  deduplicates.
+
+  - S2 (ambiguous id): The ORDER BY uses the column from the CTE output. If it's ambiguous, SQLite throws an error or
+  sorts wrong.
 cycle_created: 1
 cycle_modified: null
 content_hash: fbf29301d1ba92a60f626e384fc7db81098ad7477e86fc60f39b1c17e08f8d88
 token_count: 450
-file_path: .ideate/work-items/WI-193.yaml
-resolution: "Verified complete: tools.test.ts has depth > 1 graph traversal test with 3-node chain"
+file_path: work-items/WI-193.yaml
+resolution: 'Verified complete: tools.test.ts has depth > 1 graph traversal test with 3-node chain'

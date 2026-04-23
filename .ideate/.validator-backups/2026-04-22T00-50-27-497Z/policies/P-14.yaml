@@ -1,0 +1,15 @@
+id: P-14
+type: domain_policy
+domain: project-boundaries
+status: active
+derived_from:
+  - GP-7 (Recursive Decomposition)
+  - GP-8 (Durable Knowledge Capture)
+established: cycle 001
+amended: cycle 026 — rewritten. Original policy prohibited all MCP servers in ideate; the v3 artifact server is now an intrinsic component. Removed outpost-specific references. Boundary clarified as artifact access (internal) vs. compute orchestration (external).
+description: "The ideate repository contains the SDLC workflow (skills, agents, plugin manifest) and the MCP artifact server (`mcp/artifact-server/`) which provides the runtime index and tool interface for artifact access. Session orchestration infrastructure (remote worker daemons, multi-session coordination, role systems) belongs in external projects configured as additional MCP servers. The boundary is: artifact data access is internal to ideate; compute orchestration is external."
+cycle_created: 1
+cycle_modified: null
+content_hash: "8e22116ab2762c8a232d0a831a93a40d90a05b2f055bfdbab9cb7a8b890b97c8"
+token_count: 258
+file_path: .ideate/policies/P-14.yaml

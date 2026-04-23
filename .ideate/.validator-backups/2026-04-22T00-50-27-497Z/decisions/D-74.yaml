@@ -1,0 +1,13 @@
+id: D-74
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 17
+supersedes: null
+description: Cycle 017 produced a 10-to-0 incremental Pass rate alongside a 0-to-3 capstone Pass rate on the same work items. The `deleteStaleRows` omission (WI-154) was missed by the incremental reviewer and independently caught by all three capstone reviewers. The migration finding object gaps (WI-157) were similarly missed incrementally but caught by two capstone reviewers.
+rationale: Recorded as fact. The divergence demonstrates that incremental reviewers examining a single work item cannot detect cross-item spec completeness gaps or acceptance criteria that require comparison against the full code context.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5ac489092e7e5ac5fa84e0cdc64d12a9b4c8158e3aab5c0b7684d5b0b555597a"
+token_count: 205
+file_path: .ideate/decisions/D-74.yaml

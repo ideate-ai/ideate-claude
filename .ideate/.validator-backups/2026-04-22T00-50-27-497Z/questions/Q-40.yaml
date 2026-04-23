@@ -1,0 +1,14 @@
+id: Q-40
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Becomes critical at the first Phase 2 DDL change. Phase 1 deployments will carry stale schema with no visible error. Option (a) is recommended by the gap analyst.
+source: archive/cycles/016/gap-analysis.md G5; archive/cycles/016/decision-log.md Q3
+resolution: WI-152 implemented `user_version` pragma and exported `checkSchemaVersion` for DDL-mismatch detection.
+resolved_in: 17
+description: "`createSchema` uses `CREATE TABLE IF NOT EXISTS` throughout. When Phase 2 introduces DDL changes (new columns, new tables), existing `index.db` files will not be upgraded — the new DDL silently has no effect. Options: (a) delete-and-rebuild on schema version mismatch using SQLite `user_version` pragma; (b) versioned migration runners; (c) document \"delete index.db to upgrade.\""
+cycle_created: 1
+cycle_modified: null
+content_hash: "3bf8f1ac9431264e6524c056f7ece1827fd178f76992fa99bf0cbd95200df9b5"
+token_count: 241
+file_path: .ideate/questions/Q-40.yaml

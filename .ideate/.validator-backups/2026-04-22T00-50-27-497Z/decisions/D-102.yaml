@@ -1,0 +1,13 @@
+id: D-102
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: "Q-68 (stale `.d.ts`/`.js.map` files not cleaned by `build:migration`) and Q-71 (`pretest` exits 0 on stale or absent `.js`) were combined into WI-178 rather than planned as two separate work items, because both changes targeted `mcp/artifact-server/package.json` exclusively with no logical dependency between them."
+rationale: Both questions were build-tooling hygiene with a shared single-file scope. One work item avoids unnecessary parallelism overhead for two-line changes in the same file; combining also prevents a potential edit conflict if both work items ran in parallel.
+cycle_created: 1
+cycle_modified: null
+content_hash: "1eb238b0aac2a7563558737f1dc4dab24d426887fc1d822d9ecb56a8832c669b"
+token_count: 197
+file_path: .ideate/decisions/D-102.yaml

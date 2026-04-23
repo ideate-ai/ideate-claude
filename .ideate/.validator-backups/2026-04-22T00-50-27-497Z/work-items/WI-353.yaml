@@ -1,0 +1,26 @@
+id: WI-353
+type: work_item
+title: Add test coverage for handleEmitEvent
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - Unit tests cover handleEmitEvent in mcp/artifact-server/src/tools/events.ts
+  - "Tests cover: valid event emission, missing required fields, hook execution"
+  - All tests pass with npm test
+domain: artifact-structure
+notes: |-
+  Add unit tests for the events.ts module. The handleEmitEvent function dispatches events to registered hooks. Cover the main execution path and error handling.
+
+  Files to modify:
+  - mcp/artifact-server/src/__tests__/events.test.ts (create if needed)
+
+  Reference existing test patterns from tools.test.ts.
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: b56192c667ca80bef48f4a5de16459dc48888fe41e01b49b54b76e7dccf884aa
+token_count: 186
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-353.yaml

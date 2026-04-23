@@ -1,0 +1,22 @@
+id: WI-271
+type: work_item
+title: Remove Write tool fallback from plan/SKILL.md Phase 3
+status: done
+complexity: low
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - No grep match for 'Write tool' or 'fall back to Write' in Phase 3 of skills/plan/SKILL.md
+  - Phase 3 artifact writes use ideate_write_artifact exclusively
+  - Section 2.4 (already fixed by WI-268) remains unchanged
+domain: workflow
+notes: "Line ~241 in Phase 3 says 'fall back to Write tool only for artifact types not yet supported by MCP write tools'. This is now factually incorrect — ideate_write_artifact handles all artifact types. Remove the fallback clause. Replace with: 'All artifact writes in this phase use ideate_write_artifact.' Leave Section 2.4 untouched (already fixed in cycle 034)."
+resolution: Removed Write tool fallback from plan/SKILL.md Phase 3; now uses ideate_write_artifact exclusively
+cycle_created: 35
+cycle_modified: null
+content_hash: 18015df01c65b981499fe321381d4affe82b398361c6edeb6b1b8535da975fdf
+token_count: 240
+file_path: .ideate/work-items/WI-271.yaml

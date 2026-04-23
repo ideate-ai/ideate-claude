@@ -1,0 +1,10 @@
+id: C-15
+type: constraint
+category: scope
+status: active
+description: Software-primary, domain-flexible. Software development is the primary use case and the one optimized for. Other domains (business plans, documentation projects, etc.) should work with the same workflow but may lack domain-specific evaluation tools.
+cycle_created: 1
+cycle_modified: null
+content_hash: "00b96ebffbf39ffdcae15c6d287d5feeea6b401bf026945340ecc866899788f6"
+token_count: 105
+file_path: .ideate/constraints/C-15.yaml

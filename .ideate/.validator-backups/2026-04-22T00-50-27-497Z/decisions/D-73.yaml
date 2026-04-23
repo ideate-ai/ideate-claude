@@ -1,0 +1,13 @@
+id: D-73
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: WI-152 set `CURRENT_SCHEMA_VERSION` in `schema.ts` to 3 (SQLite `user_version`), added `addressed_by TEXT` to findings, `amended_by TEXT` to domain_policies, and `files_failed`/`parse_errors` to `RebuildStats`. A second export named `CURRENT_SCHEMA_VERSION` already exists in `config.ts` (value 2, for IdeateConfig JSON schema). The two constants serve different versioning scopes but share a name.
+rationale: Implements D-059 (schema columns) and resolves cycle 016 OQ-7 (`files_failed`) and OQ-9 (user_version migration path). The name collision is an incidental side effect.
+cycle_created: 1
+cycle_modified: null
+content_hash: "6fc72d61998cd61b9220d35a568bdbd4710c9ecaafcdb5f1a033713541fc5ee5"
+token_count: 198
+file_path: .ideate/decisions/D-73.yaml

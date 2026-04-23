@@ -1,0 +1,14 @@
+id: Q-58
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Any contributor adding a function to `.ts` without updating `.js` will produce unexplained test failures. The gap analyst rated this the highest-priority item for next cycle.
+source: archive/cycles/018/gap-analysis.md II1, MI1; archive/cycles/018/decision-log.md E5, OQ3, R3
+resolution: "WI-172 (cycle 019) added detection; WI-174 (cycle 020) added the `build:migration` npm script and updated pretest warning text. Both the detection and recovery path are now in place. See D-88, D-91."
+resolved_in: 20
+description: The test suite imports from `migrate-to-v3.js`, not the TypeScript source. The `.js` file must be kept manually in sync with `.ts`. This was flagged in WI-162 (M2), WI-163 (M1), and cycle 018 gap analysis (II1/MI1, Significant) without resolution. Should a comment be added to the `.js` file header, or should a `pretest` script in package.json auto-compile `.ts` to `.js`?
+cycle_created: 1
+cycle_modified: null
+content_hash: "2bcf533e8e8629261a1375116569d26ac829e5e0f760f67362440f4587c187d1"
+token_count: 270
+file_path: .ideate/questions/Q-58.yaml

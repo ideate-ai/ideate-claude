@@ -1,0 +1,14 @@
+id: Q-55
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: With 100 artifacts across tables, this is approximately 1300 unindexed queries per rebuild. The overhead compounds with watcher debounce absence (Q-54).
+source: archive/cycles/018/code-quality.md S2; archive/cycles/018/decision-log.md R1
+resolution: WI-171 added `idx_{table}_file_path` indexes on all 13 typed tables in `createSchema` and pre-created hash-check prepared statements before the file loop. See D-85.
+resolved_in: 19
+description: For each YAML file, the rebuild loop iterates all 13 typed tables with `SELECT id, content_hash FROM {table} WHERE file_path = ?`. No typed table has a `file_path` index. Additionally, `db.prepare()` is called inside the inner loop, creating new prepared statements on every iteration. Should `file_path` indexes be added and statements pre-created?
+cycle_created: 1
+cycle_modified: null
+content_hash: "98c69cc9eb111093324234992df275e237a4de8ef580cc90e41c1fa99023b9d5"
+token_count: 246
+file_path: .ideate/questions/Q-55.yaml

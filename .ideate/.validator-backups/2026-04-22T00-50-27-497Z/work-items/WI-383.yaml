@@ -1,0 +1,23 @@
+id: WI-383
+type: work_item
+title: Fix autopilot execute phase to update work item status after completion
+status: done
+complexity: medium
+scope:
+  - op: modify
+    path: skills/autopilot/phases/execute.md
+depends: []
+blocks: []
+criteria:
+  - skills/autopilot/phases/execute.md includes explicit step to call ideate_update_work_items after each work item passes incremental review
+  - ideate_get_execution_status shows completed items after a successful autopilot cycle
+  - All existing tests continue to pass
+  - TypeScript compiles with no errors
+domain: workflow
+notes: "# WI-383: Fix autopilot execute phase to update work item status after completion"
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: e27a995afee663f4e1fefe71bc48d30a8dcd3d9fdd69f45111aefe32a13c98e1
+token_count: 177
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-383.yaml

@@ -1,0 +1,24 @@
+id: WI-243
+type: work_item
+title: Add .ideate/cycles/ to sandbox write allowlist
+status: done
+complexity: low
+scope:
+  - path: .claude/settings.local.json
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - .ideate/cycles/ is in the filesystem write allowlist in settings.local.json
+  - Subagents spawned by the review skill can write files to .ideate/cycles/{NNN}/
+domain: project-boundaries
+notes: |-
+  # WI-243: Sandbox Allowlist
+
+  Add .ideate/cycles/ to the sandbox write allowlist in .claude/settings.local.json. This fixes the issue where reviewer agents cannot write their output files (code-quality.md, spec-adherence.md, gap-analysis.md) to the cycle output directory.
+resolution: "Sandbox already allows .ideate/cycles/ writes via allowWrite: [.]. Reviewer output file issue is agent turn limits, not permissions."
+cycle_created: 30
+cycle_modified: null
+content_hash: a5a80f720e2077ff8985a30366ba542c1521c7c3576719cf9f2881c36697f5b2
+token_count: 216
+file_path: .ideate/work-items/WI-243.yaml

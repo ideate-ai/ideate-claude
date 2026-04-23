@@ -1,0 +1,14 @@
+id: Q-69
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: "Array items containing reserved scalars or YAML indicator characters may be emitted unquoted. Consumers parse `- true` as boolean, `- {key: val}` as an inline mapping, etc., rather than as strings. Migration is a one-time operation on known content; the gap persists for any future content triggering these cases."
+source: archive/cycles/020/gap-analysis.md EC2; archive/cycles/020/decision-log.md Q-69
+resolution: WI-179 expanded the array-item quoting condition to 15 conditions, covering all scalar guard conditions. See D-103.
+resolved_in: 21
+description: "The scalar quoting guard at `migrate-to-v3.ts:76` checks for reserved YAML scalar values (`true`, `false`, `null`, `~`) and YAML indicator characters (`{`, `}`, `[`, `]`, `|`, `>`, `*`, `&`) in addition to leading whitespace. The array-item guard added by WI-175 at line 110 covers only leading whitespace. Should the array-item condition be extended to full parity with the scalar guard?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "8ce78d2f5e54d20bd86f402e9c5be5fea62a7e5298973c50c8b50d1f7e8c1213"
+token_count: 284
+file_path: .ideate/questions/Q-69.yaml

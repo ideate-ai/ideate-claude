@@ -1,0 +1,78 @@
+id: spec-adherence
+type: cycle_summary
+adherence_evidence:
+  - evidence: Implementation correctly maintains SQLite as a derived cache. File writes go to YAML first, then SQLite upsert follows. The file_path field is stored in the database but not exposed in tool responses.
+    principle: GP-08 — Durable Knowledge Capture
+  - evidence: All skills documented use MCP tools exclusively. The review skill uses ideate_artifact_query for data access. The autopilot skill uses ideate_manage_autopilot_state and ideate_write_artifact for state and decisions.
+    principle: GP-14 — MCP Abstraction Boundary
+  - evidence: Tool handlers return artifact designations (IDs) without file_path. The handleArtifactQuery function returns markdown tables with ID, Type, Status columns. The handleGetWorkItemContext returns content by ID without file paths.
+    principle: P-33 — No file paths in responses
+  - evidence: "All 19 tool descriptions are under 50 words. Examples: ideate_get_work_item_context (20 words), ideate_manage_autopilot_state (18 words), ideate_artifact_query (25 words)."
+    principle: P-34 — Surgical tool descriptions
+findings:
+  critical: []
+  minor:
+    - convention: Work items WI-346 and WI-351 indicate Q-07 resolution occurred in cycle 066
+      id: N1
+      recommendation: "Verify if Q-07 should have `resolved_in: 66` instead of `resolved_in: 58`. If the question was already resolved in cycle 58, the cycle 066 work items should reference a different question or be marked as enhancement work rather than resolution work."
+      title: Q-07 resolved_in field discrepancy
+      violation: "/Users/dan/code/ideate/.ideate/questions/Q-07.yaml:12 — `resolved_in: 58` is inconsistent with work item documentation. WI-351 acceptance criteria specify 'resolved_in cycle set to 066'. The question currently shows `resolved_in: 58`, suggesting it may have been previously marked resolved but the implementation was deferred. However, the work items for proxy_human_decision format (WI-346) and Q-07 status update (WI-351) are both cycle 066 work items, so `resolved_in` should be `66` if this implementation cycle is correct."
+  significant: []
+reviewer: spec-reviewer
+verdict: Pass
+work_item_verification:
+  - id: WI-340
+    notes: The file_path field is stored in SQLite but not returned in most tool responses. See Significant Finding S1 for handleAppendJournal exception.
+    status: Complete
+    title: Remove file_path from responses
+  - id: WI-341
+    notes: All descriptions are under 50 words with clear intent and response hints.
+    status: Complete
+    title: Optimize tool descriptions
+  - id: WI-342
+    notes: The handleWriteArtifact function correctly handles domain_policy, domain_decision, and domain_question types with proper extension table inserts.
+    status: Complete
+    title: Extend write_artifact for domain types
+  - id: WI-343
+    notes: Single tool ideate_manage_autopilot_state with action parameter replaces separate get/update tools.
+    status: Complete
+    title: Consolidate autopilot state tools
+  - id: WI-344
+    notes: All tools have appropriate readOnlyHint, destructiveHint, idempotentHint, and openWorldHint annotations.
+    status: Complete
+    title: Add MCP tool annotations
+  - id: WI-345
+    notes: "Review skill uses ideate_artifact_query({type: 'finding', cycle: N}) instead of file globs."
+    status: Complete
+    title: Fix review skill file globs
+  - id: WI-346
+    notes: Schema includes proxy_human_decisions table with triggered_by field creating graph edges.
+    status: Complete
+    title: Define proxy-human decision artifact format
+  - id: WI-347
+    notes: Q-081 and Q-082 are in canonical .ideate/questions/ location.
+    status: Complete
+    title: Migrate domain questions
+  - id: WI-348
+    notes: Both policies exist and are properly formatted.
+    status: Complete
+    title: Add policies P-33 and P-34
+  - id: WI-349
+    notes: Question marked as resolved.
+    status: Complete
+    title: Update Q-081 status
+  - id: WI-350
+    notes: Question marked as resolved.
+    status: Complete
+    title: Update Q-082 status
+  - id: WI-351
+    notes: "Question marked as resolved. Note: resolved_in shows 58, not 66 - see Minor Finding N1."
+    status: Complete
+    title: Update Q-07 status
+  - id: WI-352
+    notes: ARCHITECTURE.md documents all tools, including ideate_write_artifact and ideate_manage_autopilot_state.
+    status: Complete
+    title: Update documentation
+content_hash: 646cf3a146bd1578ca074f4a4a8b4e98f2cdcb6f0501a6d44bfc4b70638f6117
+token_count: 1111
+file_path: .ideate/cycles/066/spec-adherence.yaml

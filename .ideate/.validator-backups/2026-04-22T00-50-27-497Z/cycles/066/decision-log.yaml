@@ -1,0 +1,112 @@
+id: decision-log
+type: cycle_summary
+cross_references:
+  - connection: Four interconnected findings all pointing to incomplete P-33 implementation. S1 and S2 are the primary violations; M1 is downstream test impact; spec review confirms the intended design. Remediation requires fixing write.ts line 123, index.ts line 421, and tools.test.ts lines 566-576.
+    id: CR1
+    items:
+      - code-quality.yaml Finding S1 (handleAppendJournal returns file path)
+      - code-quality.yaml Finding S2 (ideate_write_artifact description says Returns path)
+      - code-quality.yaml Finding M1 (Test validates wrong behavior)
+      - spec-adherence.yaml Adherence Evidence (file_path stored but not exposed)
+    title: P-33 Compliance (File Path Removal)
+  - connection: If Q-07 was truly resolved in cycle 58, the cycle 066 work items are mischaracterized as resolution work. If resolution happened in cycle 066, the resolved_in field is stale. This is a metadata consistency issue.
+    id: CR2
+    items:
+      - spec-adherence.yaml Finding N1 (Q-07 resolved_in shows 58, not 66)
+      - WI-346 (proxy-human format) and WI-351 (Q-07 status update) are cycle 066 work items
+    title: Q-07 Resolution Timing
+  - connection: Clean dependency chain from foundational cleanup (file_path removal) through capability extension (domain types) to artifact format definition (proxy-human) to question resolution. The chain demonstrates proper dependency management.
+    id: CR3
+    items:
+      - WI-340 (remove file_path from responses) blocks WI-342
+      - WI-342 (extend write_artifact for domain types) blocks WI-346
+      - WI-346 (proxy-human format) blocks WI-351 (Q-07 status)
+      - Q-082 resolved via WI-342
+      - Q-07 resolved via WI-346/WI-351
+    title: Domain Type Support Chain
+cycle: 66
+decision_log:
+  - decision: Cycle 066 addresses GP-8 violations (file_path in MCP responses), Q-082 (domain-curator violates policies), Q-081 (review skill file glob references), and Q-07 (proxy-human-log format inconsistency)
+    implications: Sets scope for 13 work items across MCP tool layer and skill layer
+    rationale: These issues were identified during prior cycle review as policy violations and technical debt
+    when: Planning — interview Q1
+  - decision: No architecture changes, no agent definition changes except cross-references, no artifact storage format changes
+    implications: Limits work items to MCP server code and skill markdown files
+    rationale: Focus on fixing existing issues without expanding scope to larger refactoring
+    when: Planning — interview Q2
+  - decision: Not in scope for this cycle; deferred
+    implications: These questions remain open
+    rationale: Rationale not recorded beyond 'Not in scope for this cycle'
+    when: Planning — interview Q3
+  - decision: All principles remain as-is; this cycle reinforces GP-8 (MCP Abstraction Boundary) and P-06 (MCP mandatory interface)
+    implications: Work must conform to existing GP-8 and P-06 constraints
+    rationale: Existing principles provide sufficient guidance; no new principles needed
+    when: Planning — interview Q4
+  - decision: Keep tools separate when they serve different outcomes; consolidate only when serving same outcome at same time (e.g., get_autopilot_state + update_autopilot_state → manage_autopilot_state)
+    implications: Resulted in single consolidation work item (WI-343) for autopilot state tools
+    rationale: Focus on description optimization and P-33 fixes rather than aggressive consolidation
+    when: Planning — interview Q5
+  - decision: Move Q-081 and Q-082 from .ideate/domain_file/domains/ to .ideate/questions/
+    implications: Required WI-347 work item
+    rationale: Consistency — all domain questions should use canonical location
+    when: Planning — interview Q6
+  - decision: Proxy-human decisions use format PH-{cycle}-{seq} stored in .ideate/cycles/{NNN}/proxy-human/ with triggered_by edges to findings/work items
+    implications: Defined WI-346 work item; resolves Q-07
+    rationale: Matches journal entry pattern but with graph edges for queryability
+    when: Planning — interview Q7
+  - decision: Create P-33 (no file paths in responses) and P-34 (surgical descriptions under 50 words)
+    implications: Requires WI-348; provides acceptance criteria for WI-340 and WI-341
+    rationale: Codify best practices discovered through GP-8 analysis; every word costs tokens
+    when: Planning — interview Q8
+  - decision: Execute work items in 5 groups with dependencies honored
+    implications: Group 1 (independent MCP fixes), Group 2 (depends on WI-340), Group 3 (depends on WI-342), Group 4 (status updates), Group 5 (documentation). Parallelism factor of 3; per-item review cadence.
+    rationale: Group 1 (independent MCP fixes), Group 2 (depends on WI-340), Group 3 (depends on WI-342), Group 4 (status updates), Group 5 (documentation)
+    when: Execution — planning stage
+  - decision: Cycle fails code quality review due to P-33 violations
+    implications: Requires remediation before passing
+    rationale: handleAppendJournal returns file path (S1) and ideate_write_artifact description states 'Returns path' (S2)
+    when: Review — code-quality.yaml
+  - decision: Minor findings EC1, EC2, IR1 deferred; no critical or significant gaps
+    implications: Issues remain open for future cycles
+    rationale: Fallback behavior handles edge type weight mismatch; pagination uncommon with 200-item limit; size hints present on most critical tools
+    when: Review — gap-analysis.yaml
+open_questions:
+  - consequence_of_inaction: P-33 policy remains violated; MCP abstraction boundary leak continues
+    impact: Current implementation violates P-33; exposes storage implementation details to tool consumers
+    question: Should handleAppendJournal return 'Wrote journal entry ${entryId} to ${yamlFilePath}' or just 'Wrote journal entry ${entryId}'?
+    source: code-quality.yaml Finding S1; WI-340 criterion states 'No file_path in any tool return type'
+    who_answers: Technical investigation — requires code fix
+  - consequence_of_inaction: Documentation contradicts both P-33 and actual implementation
+    impact: Misleading documentation; implies file paths are returned when they are not
+    question: Should tool description state 'Returns path' or 'Returns confirmation'?
+    source: code-quality.yaml Finding S2
+    who_answers: Technical investigation — requires description fix
+  - consequence_of_inaction: Historical record remains inconsistent; future audits may be confused
+    impact: Inconsistency between question metadata and work item documentation
+    question: "Should Q-07 have resolved_in: 66 (matching cycle 066 work items) or resolved_in: 58 (current value)?"
+    source: "spec-adherence.yaml Finding N1; WI-351 acceptance criteria specify resolved_in: 066"
+    who_answers: User decision — clarification needed on when Q-07 was actually resolved
+  - consequence_of_inaction: Test passes but validates wrong behavior; P-33 enforcement is incomplete
+    impact: Test validates behavior that violates P-33
+    question: Should the test at tools.test.ts:566-576 expect file path inclusion or just artifact ID?
+    source: code-quality.yaml Finding M1
+    who_answers: Technical investigation — test must be updated after S1 fix
+  - consequence_of_inaction: Conceptual confusion; weight values silently ignored for unlisted types
+    impact: Phantom weights for non-existent edge types; missing weights for valid types
+    question: Should PPR default edge_type_weights align with valid edge types from EDGE_TYPES registry?
+    source: gap-analysis.yaml Finding EC1
+    who_answers: Technical investigation — requires schema/PPR alignment
+  - consequence_of_inaction: Pagination incomplete for result sets exceeding 200 items
+    impact: Clients cannot calculate total pages for pagination controls
+    question: Should handleArtifactQuery return total count alongside paginated results?
+    source: gap-analysis.yaml Finding EC2
+    who_answers: Technical investigation — requires query handler update
+  - consequence_of_inaction: P-34 compliance incomplete; some tools lack size hints
+    impact: Inconsistent adherence to P-34 across tool descriptions
+    question: Should ideate_get_domain_state, ideate_get_convergence_status, ideate_get_project_status, and ideate_get_execution_status include response size expectations in descriptions?
+    source: gap-analysis.yaml Finding IR1
+    who_answers: Technical investigation — requires description polish
+reviewer: journal-keeper
+content_hash: 061bce21f2f306b8f506bb89e8e153395841cf2d6bc2460d2ee00d3ee7f2694c
+token_count: 2137
+file_path: .ideate/cycles/066/decision-log.yaml

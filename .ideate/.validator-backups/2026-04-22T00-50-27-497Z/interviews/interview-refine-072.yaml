@@ -1,0 +1,25 @@
+id: interview-refine-072
+type: interview
+title: Refinement Interview — Comprehensive Code Quality Audit
+cycle: 72
+entries:
+  - question: What specific changes do you want to make?
+    answer: A detailed code review of the entire project, noting any areas for improvement outside of already defined principles and domain policies.
+    domain: null
+  - question: What triggered this refinement?
+    answer: Lots of recent changes — want to take stock of the state of the app.
+    domain: null
+  - question: What code is in scope?
+    answer: "All code: MCP artifact server TypeScript, skills/agents Markdown, shell scripts."
+    domain: null
+  - question: What's the intended output?
+    answer: Just a findings report. We can triage as needed. No work items for now.
+    domain: null
+  - question: What dimensions matter most?
+    answer: "All: code structure/DRY, error handling, performance, test quality, API design, dead code, security."
+    domain: null
+  - question: Do the existing guiding principles (GP-01 through GP-15) still hold?
+    answer: Yes, keep principles as-is now but depending on findings they may change later.
+    domain: null
+content_hash: 08deba5436c4624e03cd2026706c0698113b523f73664b2a6a425799c02a2096
+token_count: 287

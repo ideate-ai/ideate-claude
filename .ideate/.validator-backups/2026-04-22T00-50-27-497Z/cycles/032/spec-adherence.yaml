@@ -1,0 +1,46 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  **Verdict**: Pass
+
+  **Principle Adherence Verdict**: Pass
+
+  **Summary**: WI-871 and WI-872 satisfy all stated acceptance criteria. No scope boundary violations. WI-860 notes amendment landed via adapter-layer call (equivalent code path to ideate_update_work_items) — not a GP-14/P-87 violation. Adapter contract equivalence is satisfied for the countNodes severity path that cycle 32 targeted. (A parallel issue in getConvergenceData was surfaced by code-reviewer but is outside cycle 32's stated scope — it was inherited from WI-869 in cycle 31.)
+
+  ---
+
+  **Critical Findings**: None.
+
+  ---
+
+  **Significant Findings**: None.
+
+  ---
+
+  **Minor Findings**:
+
+  ### SA-M1: _countFindingsBySeverity uses a simpler filter expression than getConvergenceData
+
+  - WI-871 criterion 1 says the filter 'mirrors the pattern used in RemoteAdapter.getConvergenceData'. Implementation uses `!== null && !== undefined` (2-clause) while getConvergenceData uses `!== null && !== undefined && !== ""` (3-clause). Functionally equivalent (both exclude empty string) but the pattern is not literally mirrored. This surfaced a bug in getConvergenceData (see code-review S1) that the literal mirroring would have also inherited — so the simpler form is arguably correct. Noted for consistency.
+
+  ### SA-M2: Equivalence test comment understates filter semantics
+
+  - tests/adapters/equivalence-query.test.ts:~316 says 'skip when addressed_by !== null && !== undefined' but doesn't note that empty string is also excluded by the same condition. Minor docstring gap.
+
+  ### SA-M3: Cycle 31 findings not marked addressed_by in their YAML artifacts
+
+  - .ideate/cycles/031/findings/F-CYCLE-31-S1.yaml through S4.yaml have no `addressed_by` field set. WI-871 (S1, S4) and WI-872 (S2, S3) closed these findings functionally via the acceptance-criteria satisfaction chain, but the finding records themselves are not formally closed. The domain-curator in the next cycle should backfill these.
+
+  ### SA-M4: FIXTURE-README.md not updated for cycle 002 fixtures
+
+  - tests/adapters/fixtures/equivalence/FIXTURE-README.md does not document the new F-WI-001-002/003/004 fixtures added by WI-871. Minor discoverability issue.
+
+  ### SA-M5: adapter-contract.md Version History not bumped for WI-872 additions
+
+  - docs/adapter-contract.md Version History table does not list WI-872 as contributing a version. Minor bookkeeping drift.
+content_hash: a6a16fe1be696566fa5dcf0d6e4293e1131ddb348e63471caadd657e817c02a5
+token_count: 664
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 32
+cycle_modified: 27

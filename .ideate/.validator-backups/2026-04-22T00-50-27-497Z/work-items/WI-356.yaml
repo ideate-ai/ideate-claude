@@ -1,0 +1,23 @@
+id: WI-356
+type: work_item
+title: Fix Q-07 resolved_in field discrepancy
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - Q-07 resolved_in field updated from 58 to 66
+  - Change reflects actual implementation cycle
+domain: artifact-structure
+notes: |-
+  Quick fix: Q-07.yaml shows resolved_in: 58 but the work items (WI-346, WI-351) were cycle 066.
+
+  Files to modify:
+  - .ideate/questions/Q-07.yaml
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: b8269ebf6f59a4a9371501ce7787bd5a9b81f23c2d115bfefc0d8c2a9f5db31e
+token_count: 122
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-356.yaml

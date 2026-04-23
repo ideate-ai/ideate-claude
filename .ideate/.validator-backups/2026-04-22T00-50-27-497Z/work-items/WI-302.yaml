@@ -1,0 +1,91 @@
+id: WI-302
+type: work_item
+title: Incremental watcher re-index
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/watcher.ts
+    op: modify
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/watcher.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/indexer.test.ts
+    op: modify
+depends:
+  - WI-301
+blocks: []
+criteria:
+  - File watcher add/change events trigger re-index of only the changed file(s), not a full rebuildIndex
+  - File watcher unlink events remove the deleted file's node, extension row, edges, and file refs from SQLite
+  - The indexer exports a new function (e.g. indexFile or reindexFiles) that handles single-file upsert with edge extraction
+  - Full rebuildIndex is only called on startup — never by the watcher during normal operation
+  - Concurrent tool calls during a watcher-triggered re-index are not blocked (the re-index of a single file is fast enough to not require a gate)
+  - Watcher debounce behavior (500ms) is preserved
+  - "All existing watcher tests pass plus new tests covering: single-file add, single-file change, single-file delete, batch of changes within debounce window"
+  - npm test passes
+domain: artifact-structure
+notes: |-
+  # WI-302: Incremental watcher re-index
+
+  ## Overview
+  Currently the file watcher (watcher.ts) calls full rebuildIndex on any file change. With 1,200+ YAML files this blocks the Node.js event loop for the entire rebuild duration. Tool calls arriving during a watcher-triggered rebuild queue and experience latency equal to the rebuild duration.
+
+  ## Current watcher behavior (watcher.ts)
+  The watcher uses chokidar to watch .ideate/ for YAML file changes. On add/change/unlink events, it debounces at 500ms then calls rebuildIndex(db, drizzleDb, ideateDir) — the same full rebuild used at startup.
+
+  ## Target behavior
+
+  ### New indexer export: `indexFiles`
+  Extract the per-file logic from rebuildIndex into a reusable function:
+
+  ```typescript
+  export function indexFiles(
+    db: Database.Database,
+    drizzleDb: BetterSQLite3Database<typeof dbSchema>,
+    filePaths: string[],
+    ideateDir: string
+  ): { updated: number; failed: number; errors: string[] }
+  ```
+
+  This function:
+  1. For each file path, reads the file, computes hash, checks against stored hash
+  2. If changed: parse YAML, build node row + extension row, upsert into SQLite, re-extract edges
+  3. Returns stats
+
+  ### New indexer export: `removeFiles`
+  ```typescript
+  export function removeFiles(
+    db: Database.Database,
+    drizzleDb: BetterSQLite3Database<typeof dbSchema>,
+    filePaths: string[]
+  ): { removed: number }
+  ```
+
+  Deletes the node, extension row, edges, and file refs for the given file paths.
+
+  ### Updated watcher
+  The watcher collects changed file paths during the debounce window, then:
+  - For add/change events: calls `indexFiles` with the changed paths
+  - For unlink events: calls `removeFiles` with the deleted paths
+  - No longer calls `rebuildIndex`
+
+  ### rebuildIndex refactoring
+  refactored `rebuildIndex` to use `indexFiles` internally for the upsert phase, keeping the stale-row deletion as a separate step that only runs at startup.
+
+  ## Edge cases
+  - If a file is changed and then deleted within the debounce window, the unlink should win
+  - If many files change simultaneously (e.g. git checkout), the batch indexFiles call handles them all in one transaction
+  - Foreign key toggling: indexFiles must handle FK off/on the same way rebuildIndex does
+
+  ## Files
+  - `mcp/artifact-server/src/indexer.ts` — extract indexFiles and removeFiles, refactor rebuildIndex to use indexFiles
+  - `mcp/artifact-server/src/watcher.ts` — use indexFiles/removeFiles instead of rebuildIndex
+  - `mcp/artifact-server/src/__tests__/watcher.test.ts` — new tests for incremental behavior
+  - `mcp/artifact-server/src/__tests__/indexer.test.ts` — tests for indexFiles and removeFiles
+resolution: null
+cycle_created: 40
+cycle_modified: null
+content_hash: 4769e2885c7001cd91de0720ad3e3c6b016c86dd904333e4d6c87878f64f615e
+token_count: 1004
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-302.yaml

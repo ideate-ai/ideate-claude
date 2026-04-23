@@ -1,0 +1,24 @@
+id: gap-analysis-007
+type: cycle_summary
+title: Gap Analysis — Cycle 7
+reviewer: gap-analyst
+content: |-
+  ## Significant Gaps
+
+  None introduced by WI-413.
+
+  ## Minor Gaps
+
+  ### MG1: finding_severities object serialization branch is untested
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts` (P-46 metrics_event case)
+  - **Issue**: The new conditional branch (typeof check + JSON.stringify) is never exercised by any test. The P-46 metrics_event case passes no `finding_severities` field (hits the null branch). A regression in the ternary would go undetected.
+  - **Recommendation**: Defer — add a `checkFields` assertion to the existing metrics_event P-46 case that passes an object for `finding_severities` and verifies the stored DB value round-trips via `JSON.parse`. Low urgency; `parseFindingSeverities` already handles parse failures gracefully.
+
+  ## Deferred Pre-Existing Gaps (unchanged)
+
+  - II1: handleGetConvergenceStatus parses cycle_summary prose instead of querying findings table
+  - II2: handleEmitMetric writes metrics.jsonl while handleGetMetrics reads SQLite only
+  - MI1: metrics/ subdirectory not in IDEATE_SUBDIRS constant in config.ts
+content_hash: 974469669a6eb2264b3575a18024a11cab6645a47060d4b366e3f92db8f91991
+token_count: 294
+file_path: .ideate/cycles/007/gap-analysis-007.yaml

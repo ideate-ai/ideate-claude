@@ -1,0 +1,13 @@
+id: D-51
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: A "Custom Models" section was added to README.md covering model tiers, version pinning env vars, Ollama endpoint configuration, minimum model requirements, and known limitations.
+rationale: No user-facing documentation existed for model configuration. The research output from the refine-013 interview provided the content basis.
+cycle_created: 1
+cycle_modified: null
+content_hash: "33fa5acc2cb8468a668da5ef4b7016b5b5de89f9a89068a796bae3dea9f2fb18"
+token_count: 137
+file_path: .ideate/decisions/D-51.yaml

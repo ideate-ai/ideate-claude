@@ -1,0 +1,39 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: combined
+content: |
+  # Spec Adherence Review - Cycle 38 (autopilot cycle 3 of PH-050)
+
+  ## Verdict: Pass
+
+  All 8 acceptance criteria of WI-879 met. 1503 tests pass.
+
+  ## Principle Adherence
+
+  **Principle Adherence Verdict**: Pass
+
+  GP-14/P-33 upheld (no absolute .ideate/ paths in warnings). GP-08 upheld (durable capture of operational knowledge).
+
+  ## Criteria
+  - C1 newline fix: Pass (rawSnippet.replace(/\n/g,' ') applied; multiline YAML test added)
+  - S5 fixture test: Pass (cycle 998 seeded, verdict=pass asserted)
+  - M1 restart.sh + deployment-notes: Pass
+  - M2 JSDoc: Pass
+  - M3 step2-fail test: Pass
+content_hash: e5973ba50669928c438669efcb00717122ade2f0963a4624bfa59652efe53615
+token_count: 480
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 38
+cycle_modified: 27
+verdict: Fail
+principle_verdict: Pass
+scope: WI-873 adherence to architecture, guiding principles, constraints, and 11 acceptance criteria
+summary: "ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null, non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was corrected via ideate_write_artifact re-writes)."
+findings_summary:
+  critical: 0
+  significant: 1
+  minor: 0
+significant_findings_refs:
+  - F-CYCLE-33-S1
+principle_adherence_verdict: Pass
+principle_adherence_notes: "**Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873 scope files."

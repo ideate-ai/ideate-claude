@@ -1,0 +1,32 @@
+id: WI-337
+type: work_item
+title: Delete skills/plan/ directory
+status: done
+complexity: low
+scope:
+  - path: skills/plan/
+    op: delete
+depends:
+  - WI-336
+blocks: []
+criteria:
+  - skills/plan/ directory no longer exists
+  - skills/plan/SKILL.md no longer exists
+  - No broken references to skills/plan/ remain in the codebase
+domain: workflow
+notes: |-
+  ## Implementation
+
+  Simply delete the skills/plan/ directory after the unified init skill is in place.
+
+  ```
+  rm -rf skills/plan/
+  ```
+
+  Verify no broken references remain by grepping for 'skills/plan' in the codebase.
+resolution: skills/plan/ directory deleted.
+cycle_created: null
+cycle_modified: null
+content_hash: 00dd496e3e01f2094520c58d53b2eabbb0d52034af957cbbb86ceced76d941b7
+token_count: 166
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-337.yaml

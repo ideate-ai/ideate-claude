@@ -1,0 +1,36 @@
+id: F-WI365-1
+type: finding
+work_item: WI-365
+verdict: Pass
+cycle: 69
+content: |-
+  ## Verdict: Pass
+
+  All 7 acceptance criteria satisfied. 4 new tests added; total test count 420, all passing.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  None.
+
+  ## Minor Findings
+
+  ### M1: MCP input schema for ideate_update_config does not document null as valid model_overrides value
+  - **File**: `mcp/artifact-server/src/tools/index.ts`
+  - **Issue**: The patch property schema has no nested property definitions. Callers cannot discover the null-signal deletion mechanism from the schema alone.
+  - **Note**: Fixing requires touching tools/index.ts which is out of scope for WI-365. Deferred to next cycle.
+
+  ### M2: Test-side type cast signals undeclared runtime contract
+  - **File**: `mcp/artifact-server/src/__tests__/config.test.ts`
+  - **Issue**: New tests cast `{ key: null }` to `Record<string, string>` to satisfy TypeScript. The null-signal is a runtime-only contract; IdeateConfigJson.model_overrides type is Record<string, string>.
+  - **Note**: Deferred — changing the interface type has downstream implications requiring separate analysis.
+
+  ## Unmet Acceptance Criteria
+
+  None.
+content_hash: 6d81dc14df1804ccb13198ca45b950d37bfb08e4ee482ff3ec4538b396a1c599
+token_count: 301
+file_path: .ideate/cycles/069/findings/F-WI365-1.yaml

@@ -32,5 +32,5 @@ cycle_created: 1
 cycle_modified: null
 content_hash: 8761cc3e0cb60ceaea9637675f4f5b1b33672b4c11bcda7217c7b2b460301711
 token_count: 238
-file_path: .ideate/work-items/WI-142.yaml
-resolution: "Verified complete: plugin version is 3.0.5"
+file_path: work-items/WI-142.yaml
+resolution: 'Verified complete: plugin version is 3.0.5'

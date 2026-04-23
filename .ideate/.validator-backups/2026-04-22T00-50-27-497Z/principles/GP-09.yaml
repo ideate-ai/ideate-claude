@@ -1,0 +1,11 @@
+id: GP-09
+type: guiding_principle
+name: Domain Agnosticism
+status: active
+description: "The core workflow (explore idea → refine into plan → execute → review → iterate) is not specific to software. The tool should adapt its output format and evaluation criteria to the domain. For software: tests and type checks. For a business plan: key metrics. The evaluation criteria are part of the plan, not hardcoded into the tool."
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: f56cf16db255e6cdf9cb5bf0e40ba029969183171fc12c2afc735142ee6243a1
+token_count: 136
+file_path: .ideate/principles/GP-09.yaml

@@ -4,10 +4,14 @@ domain: agent-system
 status: settled
 cycle: 1
 supersedes: null
-description: These eight agents cover all delegation needs for ideate's SDLC workflow; manager agent was moved to outpost in the architectural split.
-rationale: Manager handles MCP team coordination — an orchestration concern, not an SDLC concern; proxy-human handles Andon events within autopilot cycles, which is SDLC (archive/cycles/001/decision-log.md D5).
+description: >-
+  These eight agents cover all delegation needs for ideate's SDLC workflow; manager agent was moved to outpost in the
+  architectural split.
+rationale: >-
+  Manager handles MCP team coordination — an orchestration concern, not an SDLC concern; proxy-human handles Andon
+  events within autopilot cycles, which is SDLC (archive/cycles/001/decision-log.md D5).
 cycle_created: 1
 cycle_modified: null
-content_hash: "892414545ae06c8fe9884fe2b7ca1e51d5e6f961e0e21a52bec8761027e25ab4"
+content_hash: 892414545ae06c8fe9884fe2b7ca1e51d5e6f961e0e21a52bec8761027e25ab4
 token_count: 138
-file_path: .ideate/decisions/D-08.yaml
+file_path: decisions/D-08.yaml

@@ -1,0 +1,49 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |-
+  Verdict: Fail
+
+  ## Critical Findings
+  - [C1] writer.ts:1316-1328 fs.unlinkSync inside better-sqlite3 transaction callback. If SQLite rolls back, filesystem deletes are already committed. Fix: perform deletes after transaction succeeds.
+
+  ## Significant Findings
+  - [S1] context.ts:202-210 N+1 in traverse() — one db.prepare(...).get(id) per PPR node. Fix: WHERE id IN (?,?...) batched query.
+  - [S2] TYPE_EXTENSION_INFO/TYPE_PREFIX_MAP duplicated across files with diverging content; CONTAINMENT_EDGE_TYPES defined 3x as incompatible types. Fix: hoist to src/constants.ts.
+  - [S3] writer.ts:1021-1034 isLinkedByDepends BFS only traverses in-batch dependsGraph; misses links via pre-existing DB edges — false scope-collision errors. Fix: seed from SQLite.
+  - [S4] writer.ts:23 inArray imported but unused; tsconfig lacks noUnusedLocals.
+
+  ## Minor Findings
+  - [M1] db-helpers.ts:329 genericUpsert table typed any; callers cast. Fix: generic <T extends AnyTable>.
+  - [M2] reader.ts:1192-1193 misleading await on synchronous Drizzle.
+  - [M3] server.ts:274-277 void on async watcher callback silently discards errors.
+  - [M4] reader.ts:237 currentCycle cached, never invalidated on write.
+  - [M5] query.ts:146,168, reader.ts:565 dynamic import of NotFoundError on error path; adapter.js already statically imported.
+  - [M6] context.ts:894, execution.ts:216 void args workaround; enable noUnusedParameters + rename to _args.
+  - [M7] Two nextId implementations in Writer and Reader adapters with different handling.
+
+  ## Suggestions
+  - [SU1] Enable noUnusedLocals + noUnusedParameters in tsconfig.
+  - [SU2] vitest.config.ts forceExit:true hides open-handle leaks.
+  - [SU3] Three copies of characters/4 token heuristic; extract.
+content_hash: 6b94823221e10555a5851d1add35e9a821e0dd8964aa4fd705674ba84f5666f3
+token_count: 620
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 76
+cycle_modified: 27
+verdict: Pass
+scope: full-audit
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+date: "20260417"

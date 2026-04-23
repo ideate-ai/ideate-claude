@@ -1,0 +1,13 @@
+id: D-62
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: The `archive/cycles/{NNN}/` directory with markdown review files (summary.md, code-quality.md, spec-adherence.md, gap-analysis.md, decision-log.md) is eliminated. Review outputs become YAML finding objects in `.ideate/cycles/{NNN}/findings/`. The cycle number is a field on each finding, not a directory. "Show me cycle 16 findings" is a database query, not a directory listing.
+rationale: "The archive served two purposes: audit trail and quality gate memory. Both are replaced by the graph — findings with cycle numbers provide the audit trail; `addressed_by` fields provide quality gate memory. Markdown review files in `archive/` are not indexed by SQLite, creating a gap where findings are invisible to the graph across all three developer scenarios (solo, subset, late joiner)."
+cycle_created: 1
+cycle_modified: null
+content_hash: "18dfc78aa18e2cb4373237b328a456e302e2ff4008470730b6afc63c708ddea7"
+token_count: 250
+file_path: .ideate/decisions/D-62.yaml

@@ -1,0 +1,14 @@
+id: P-03
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - GP-4 (Parallel-First Design)
+established: planning phase
+amended: null
+description: Work items must be scoped to have non-overlapping file ownership so they can run concurrently; sequential ordering is reserved for work items with genuine data dependencies.
+cycle_created: 1
+cycle_modified: null
+content_hash: bcddf731da5b093664f893deba380344d9ae62e369fcaf8afb45e2b5216c4f0b
+token_count: 109
+file_path: .ideate/policies/P-03.yaml

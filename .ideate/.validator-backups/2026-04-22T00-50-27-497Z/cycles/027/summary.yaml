@@ -1,0 +1,117 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary
+
+  ## Overview
+  PH-042 (PPR Divergence Investigation) completed as a spike phase producing 4 research artifacts. The investigation achieved its primary goal: cataloging abstraction leaks, PPR divergences, and equivalence test gaps, then synthesizing them into an actionable implementation roadmap. However, the research artifacts have detail gaps (missing file:line references, unverified feasibility assumptions) and artifact storage issues (wrong directory, stale cycle data in cycles/027).
+
+  ## Phase Convergence
+  Phase: PH-042
+  Cycles completed in this phase: 1 / 5 (threshold)
+  Convergence status: First cycle — assessment pending
+
+  Trend: First cycle in phase — no trend data. Spike phase with no code changes. Findings are about research artifact quality and completeness, not code defects.
+
+  ## Project Progress
+
+  | Success Criterion | Status |
+  |---|---|
+  | Abstraction boundary leaks cataloged | pass — 12 leaks identified across tool handlers |
+  | PPR divergences cataloged | partial — 6 divergences found, but parameter forwarding (alpha, max_iterations, convergence_threshold) not verified |
+  | Equivalence test gaps identified | partial — gaps found but audit examined 6 of 8 test files and counted 20 of 21 methods |
+  | Clean interface proposal produced | partial — proposal is actionable but has undefined Option A/B labels and unverified metrics composition feasibility |
+  | No source code changes | pass — spike work items made no changes; 3 out-of-band commits exist but are unrelated to WI-781-784 |
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [spec-reviewer] Three research artifacts (RF-abstraction-boundary-audit, RF-ppr-divergence-catalog, RF-equivalence-test-audit) stored in steering/research/ instead of research/ — relates to: GP-14 MCP Abstraction Boundary
+  - [spec-reviewer] Stale cycle 068 artifacts in cycles/027 directory (gap-analysis.yaml, spec-adherence.yaml, code-quality.yaml contain wrong cycle metadata; CS-027.yaml describes different project) — relates to: cross-cutting artifact integrity
+  - [spec-reviewer] review-manifest.yaml metadata corruption — correct WI-781-784 content but spurious cycle 068 structured fields — relates to: cross-cutting artifact integrity
+  - [spec-reviewer] RF-abstraction-boundary-audit lacks file:line references required by WI-781 acceptance criteria — relates to: WI-781
+  - [spec-reviewer] RF-ppr-divergence-catalog missing parameter forwarding analysis for alpha, max_iterations, convergence_threshold — relates to: WI-782
+  - [spec-reviewer] RF-equivalence-test-audit does not address Q-122, Q-128, Q-130 as required by WI-783 notes — relates to: WI-783
+  - [gap-analyst] metrics.ts adapter composition feasibility not verified — proposal asserts queryNodes + getNodes works but does not confirm Node.properties contains typed numeric columns — relates to: WI-784
+  - [gap-analyst] D-131/D-134 statusNotIn side-effect flagged in equivalence audit but absent from proposal remediation items — relates to: WI-784
+  - [gap-analyst] Option A and Option B undefined in RF-clean-interface-proposal — referenced 4 times at critical decision points without definition — relates to: WI-784
+  - [gap-analyst] RF-equivalence-test-audit claims 6 test files but 8 exist — equivalence-null.test.ts and adapter-equivalence.test.ts not examined — relates to: WI-783
+
+  ## Minor Findings
+  - [code-reviewer] Untracked source code changes during spike phase — 3 commits modified 12 production files with no WI attribution — relates to: cross-cutting process → carry-forward
+  - [code-reviewer] Vague commit messages ("small fixes and test", "fixes") bypass review traceability — relates to: cross-cutting process → carry-forward
+  - [gap-analyst] CONTAINMENT_EDGE_TYPES dead code also exists in reader.ts lines 378-381 and 569, not just ppr.ts — relates to: WI-782 → carry-forward
+  - [gap-analyst] StorageAdapter interface has 21 methods not 20 as audits claim — relates to: WI-783 → carry-forward
+  - [gap-analyst] context.ts ctx.db fallback paths (9 call sites) not clearly attributed in leak numbering — relates to: WI-781 → carry-forward
+  - [gap-analyst] Four tool handlers (bootstrap.ts, events.ts, config.ts, autopilot-state.ts) not explicitly enumerated in boundary audit — relates to: WI-781 → carry-forward
+  - [spec-reviewer] Research artifact naming inconsistency (RF- prefix in steering/research/ vs plain slugs for older files) — relates to: cross-cutting → carry-forward
+
+  ## Findings Requiring User Input
+  - Research artifacts in wrong directory: The 3 audit artifacts exist only in steering/research/ instead of research/. Should they be copied/moved to research/ before the refine cycle, or is steering/research/ acceptable?
+  - Stale cycle 068 data in cycles/027: gap-analysis.yaml, spec-adherence.yaml, code-quality.yaml, and CS-027.yaml in cycles/027 contain data from a different cycle. Should these be cleaned up before archival?
+  - Out-of-band commits: 3 commits on 2026-04-12 modified 12 production files during a spike-only phase. Should these be retroactively attributed to a work item or accepted as-is?
+
+  ## Proposed Refinement Plan
+  The 10 significant findings are all research artifact quality issues, not code defects. They fall into two categories:
+
+  1. **Artifact storage/integrity issues** (3 findings): Wrong directory for research artifacts, stale cycle data, manifest corruption. These are infrastructure issues that should be fixed before the next refine cycle reads these artifacts.
+
+  2. **Research depth gaps** (7 findings): Missing file:line references, missing parameter forwarding analysis, missing domain question coverage, unverified metrics feasibility, undefined Option A/B, missing test files from audit, missing statusNotIn from proposal. These reduce the actionability of the spike artifacts but do not invalidate the core findings.
+
+  Recommendation: Fix category 1 (artifact storage) as a prerequisite. For category 2, the /ideate:refine cycle can compensate — when decomposing the implementation work items, verify the gaps directly against source code rather than relying solely on the research artifacts. The spike produced a correct high-level roadmap; the gaps are in precision, not direction.
+content_hash: 35cb10e9a491fded9d171e839b00ece45ebcfe8a22d149a28eeaf97e0a2a225c
+token_count: 2269
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 27
+phase: PH-017
+phase_name: Documentation & Cleanup
+date: 2026-04-13
+scope: "9 work items (WI-754 through WI-762): test-quality fixes eliminating vacuous assertions, adding missing coverage, correcting documentation"
+overall_verdict: Pass
+reviewer_verdicts:
+  code-reviewer: Pass
+  spec-reviewer: Pass
+  gap-analyst: Pass
+critical_findings: 0
+significant_findings: 0
+minor_findings: 9
+carry_forward_gaps:
+  - id: CF1
+    title: 8 extension tables lack column-structure tests
+  - id: CF2
+    title: 4 extension tables have partial column-structure tests
+  - id: CF3
+    title: 10 of 16 extension tables lack CASCADE tests
+  - id: CF4
+    title: ALL_NODE_TYPES.length hardcoded count assertion
+acceptance_criteria_status: All machine-verifiable AC for WI-754 through WI-762 satisfied
+test_results: 1217 tests passed, 0 failures
+requires_human_review:
+  - "WI-759: Confirm WI-754.yaml acceptance criteria accurately describes sqlite_* filter approach"
+convergence_assessment: Phase converging well. All in-scope work items pass all three review perspectives. Remaining gaps are outside PH-017 scope and suitable for future phases.
+cycle_modified: 25
+project: PR-002
+verdict: Pass
+work_items_reviewed:
+  - WI-763
+  - WI-764
+  - WI-765
+  - WI-766
+  - WI-767
+work_item_titles:
+  WI-763: Add reserved keyword documentation comments to schema.ts
+  WI-764: Add column-structure tests for 8 untested extension tables
+  WI-765: Expand 4 partial column-structure tests to full coverage
+  WI-766: Add ON DELETE CASCADE tests for 10 extension tables
+  WI-767: Remove hardcoded ALL_NODE_TYPES.length count assertion
+key_findings_summary: "All findings are minor. Three clusters: (1) reserved keyword comment accuracy — constraints mislabeled as reserved, trigger quoting overstated; (2) pattern consistency — 10 extension table describe blocks omit cols.length assertion established by nodes table; projects/phases lack NOT NULL tests; (3) naming — WI-767 test name 'is readonly array' doesn't match assertions."
+carry_forward:
+  - Correct reserved keyword comments in schema.ts (M1, M2)
+  - Add cols.length assertions to 10 extension table describe blocks (N1, MI2)
+  - Add NOT NULL tests for projects and phases tables (M3, MI2)
+  - Add NOT NULL tests for interview_questions (MI3)
+  - Rename 'is readonly array' test to match assertions (M4)
+  - Add idx_nodes_type_file_path to index tests (MI1)
+convergence_trend: Zero critical, zero significant — cleanest cycle since cycle 20. Phase PH-017 is converging. Residual gaps are mechanical (column counts, NOT NULL assertions) rather than architectural.
+reviewer: coordinator

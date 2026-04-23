@@ -14,17 +14,19 @@ scope:
     op: modify
 depends: []
 blocks:
-  - "201"
+  - '201'
 criteria:
-  - "GP-1 amended: subjective choices documented in spec become objective validation targets"
-  - "GP-8 amended: MCP artifact server is required component; skills access artifacts exclusively through MCP tools; availability checks reserved for external tools"
+  - 'GP-1 amended: subjective choices documented in spec become objective validation targets'
+  - >-
+    GP-8 amended: MCP artifact server is required component; skills access artifacts exclusively through MCP tools;
+    availability checks reserved for external tools
   - New GP-13 (Appropriate Validation Strategy) added with machine + human-in-the-loop validation methods
-  - "P-6 amended: MCP is mandatory interface between skills and artifacts"
-  - "P-8 amended: validation method must be explicit; includes human-in-the-loop for subjective criteria"
-  - "P-14 amended: ideate includes MCP artifact server; compute orchestration is external; outpost references removed"
-  - "P-15 amended: outpost references generalized to external projects"
-  - "P-26 amended: MCP artifact server is mandatory access layer"
-  - "New P-32: MCP availability checks for external tools only"
+  - 'P-6 amended: MCP is mandatory interface between skills and artifacts'
+  - 'P-8 amended: validation method must be explicit; includes human-in-the-loop for subjective criteria'
+  - 'P-14 amended: ideate includes MCP artifact server; compute orchestration is external; outpost references removed'
+  - 'P-15 amended: outpost references generalized to external projects'
+  - 'P-26 amended: MCP artifact server is mandatory access layer'
+  - 'New P-32: MCP availability checks for external tools only'
   - domains/index.md project-boundaries description updated to remove outpost references
 module: null
 domain: null
@@ -45,5 +47,5 @@ cycle_created: 1
 cycle_modified: null
 content_hash: f3114aa5be84d3425fa667899500f2d0c8281ad34c8cf688da4786ced95f3f8f
 token_count: 550
-file_path: .ideate/work-items/WI-198.yaml
-resolution: "Principles and policies already amended during v3 development (noted in WI itself: 'Already done during refine')"
+file_path: work-items/WI-198.yaml
+resolution: 'Principles and policies already amended during v3 development (noted in WI itself: ''Already done during refine'')'

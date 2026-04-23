@@ -1,0 +1,84 @@
+id: WI-131
+type: work_item
+title: Add custom model documentation to README
+status: obsolete
+complexity: low
+scope:
+  - path: README.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - README.md contains a "Custom Models" section (or equivalent heading)
+  - Section documents ANTHROPIC_DEFAULT_SONNET_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL, ANTHROPIC_DEFAULT_HAIKU_MODEL env vars
+  - Section documents ANTHROPIC_BASE_URL for custom endpoint routing
+  - Section includes minimum model requirements (context window, tool-use)
+  - Section includes known limitations (session-global endpoint, settings.json env block bugs)
+  - Section includes at least one example configuration block
+  - No existing README sections are removed or reordered
+module: null
+domain: null
+notes: |
+  # Implementation Notes — WI-131
+
+  ## What to add
+
+  A new "Custom Models" section in `README.md` documenting how to configure ideate to use non-default models (Ollama, version pinning, etc.).
+
+  ## Placement
+
+  Add after the existing configuration/setup sections in README.md. Look for the natural insertion point near plugin installation or configuration documentation.
+
+  ## Content to include
+
+  ### 1. Model tier system
+  Explain that ideate uses three model tiers: `haiku` (lightweight), `sonnet` (default), `opus` (capable). Agent definitions declare a default tier; skills override at spawn time when a task needs more capability.
+
+  ### 2. Version pinning
+  Document `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL` env vars. Example: pinning opus to a specific version.
+
+  ### 3. Custom endpoints (Ollama)
+  Document `ANTHROPIC_BASE_URL` for redirecting to Ollama or other Anthropic-compatible endpoints. Include:
+  - Required env vars: `ANTHROPIC_BASE_URL=http://localhost:11434`, `ANTHROPIC_API_KEY=ollama`
+  - How to set via `.claude/settings.json` `env` block (project-scoped)
+  - How to set via shell env vars (session-scoped)
+
+  ### 4. Minimum model requirements
+  - Context window: 64k+ tokens recommended (ideate's prompts are instruction-dense)
+  - Tool-use support required (all agents use Read, Grep, Glob, etc.)
+  - Strong instruction-following needed for multi-phase workflows
+
+  ### 5. Known limitations
+  - Session-global endpoint: all agents in a session use one endpoint (can't mix Anthropic and Ollama)
+  - `settings.json` env block may not reliably override shell env vars in some Claude Code versions (GitHub #8500)
+  - Ollama's Anthropic API compatibility for tool-use and streaming edge cases is not guaranteed
+
+  ### 6. Example configurations
+
+  ```bash
+  # Pin opus to a specific version
+  export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
+
+  # Use Ollama for everything
+  export ANTHROPIC_BASE_URL=http://localhost:11434
+  export ANTHROPIC_API_KEY=ollama
+  export ANTHROPIC_DEFAULT_SONNET_MODEL=qwen3:30b
+  export ANTHROPIC_DEFAULT_OPUS_MODEL=qwen3:235b
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL=qwen3:8b
+  ```
+
+  ## Tone
+
+  Factual, no hype. State what works, what doesn't, and what's unverified. Reference the research file for deeper analysis.
+
+  ## Source material
+
+  - `specs/steering/research/claude-code-custom-models.md` — full research findings
+  - Claude Code model configuration documentation
+  - Ollama Anthropic API compatibility documentation
+cycle_created: 1
+cycle_modified: null
+content_hash: cbed557ae499f86cf071638a90f3270b915481d40b2a8a0c8472bf9294dcc552
+token_count: 857
+file_path: .ideate/work-items/WI-131.yaml
+resolution: Superseded by WI-228 which combines README gaps into single item

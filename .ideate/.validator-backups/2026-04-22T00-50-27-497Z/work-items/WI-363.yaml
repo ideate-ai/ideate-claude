@@ -1,0 +1,62 @@
+id: WI-363
+type: work_item
+title: Update all skills to apply model_overrides from config at spawn time
+status: done
+complexity: medium
+scope:
+  - path: skills/init/SKILL.md
+    op: modify
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/refine/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
+  - path: skills/autopilot/phases/refine.md
+    op: modify
+depends:
+  - WI-360
+blocks: []
+criteria:
+  - Every skill file that spawns an agent includes the model override lookup pattern
+  - "Pattern is consistent: check config.model_overrides[agent_name] first, fall back to hardcoded default"
+  - No hardcoded model defaults are removed — overrides are additive
+  - Phase 0 section in each skill (or first spawn site) documents the override pattern
+  - skills/autopilot/phases/refine.md checked — if it contains agent spawns, pattern is added; if not, no change needed
+domain: workflow
+notes: |-
+  Update all skill documents that spawn agents to check `config.model_overrides` and apply the override if present.
+
+  ## Pattern to add
+
+  After Phase 0 `ideate_get_config()`, the skill holds `{config}`. For every Agent tool call, the model parameter is resolved as:
+
+  > Use `{config}.model_overrides['{agent_name}']` if present and non-empty; otherwise use the hardcoded default from the spawn instruction.
+
+  Insert this rule in Phase 0 (where `{config}.agent_budgets.{agent_name}` is already documented for maxTurns), so both budget and model override resolution are colocated.
+
+  ## Files and spawn sites
+
+  - `skills/init/SKILL.md` — spawns: architect (analyze mode), architect (design mode), researcher, decomposer
+  - `skills/execute/SKILL.md` — spawns: general-purpose worker agents, code-reviewer
+  - `skills/review/SKILL.md` — spawns: spec-reviewer, code-reviewer, gap-analyst, journal-keeper, domain-curator
+  - `skills/refine/SKILL.md` — spawns: architect, researcher, decomposer
+  - `skills/autopilot/phases/execute.md` — spawns: worker agents, code-reviewer, proxy-human
+  - `skills/autopilot/phases/review.md` — spawns: spec-reviewer, code-reviewer, gap-analyst, journal-keeper, domain-curator
+  - `skills/autopilot/phases/refine.md` — check for agent spawns; add pattern only if spawns exist
+
+  ## What does NOT change
+
+  - Hardcoded model defaults remain as fallback values in the spawn instructions.
+  - maxTurns logic is unchanged — this work item is model-override-only.
+  - The new `skills/settings/SKILL.md` (WI-364) does not spawn other agents and does not need this pattern.
+resolution: null
+cycle_created: 68
+cycle_modified: null
+content_hash: dcbb01e317f6df0e3723d070f6c665f11ff6bfc628afe59b545883312f0f7c5a
+token_count: 676
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-363.yaml

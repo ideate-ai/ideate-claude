@@ -1,0 +1,25 @@
+id: interview-refine-070
+type: interview
+cycle_created: 70
+entries:
+  - answer: Execute all 7 pending work items to clear technical debt, close out-of-scope questions as obsolete, and reserve the cycle counting UX brainstorm for a dedicated follow-up cycle.
+    domain: null
+    question: What changes do you want to make in this refinement?
+  - answer: Yes. At the end of this cycle, I want to be in a position to add new features without any tech debt.
+    domain: null
+    question: Should all pending work items be executed in this cycle?
+  - answer: Close them as obsolete. They are out of scope for this project.
+    domain: null
+    question: What should happen to out-of-scope open questions (Q-08, Q-09)?
+  - answer: "Batched parallel. Two batches: artifact-structure items (WI-370, WI-371, WI-375, WI-376) and workflow items (WI-372, WI-373, WI-374). If conflicts are detected, trigger the andon cord."
+    domain: null
+    question: What execution strategy should be used?
+  - answer: Yes, all principles remain unchanged.
+    domain: null
+    question: Do the guiding principles still hold?
+  - answer: This is important enough to warrant a dedicated brainstorming cycle. It has the potential to change principles and domain policies. We'll address it in the next refinement after this tech debt is cleared.
+    domain: null
+    question: What about the cycle counting UX issue?
+content_hash: 1bbdc7bbd92aa28f1e8bf96cd1442077c20648d20053591345f06e8a01f7fb77
+token_count: 347
+file_path: .ideate/interviews/interview-refine-070.yaml

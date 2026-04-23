@@ -1,0 +1,46 @@
+id: WI-205
+type: work_item
+title: Refine skill v3 update — remove MCP fallbacks, fix direct reads
+status: done
+complexity: medium
+scope:
+  - path: skills/refine/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - All ideate MCP tool calls are direct — no availability checks, no manual fallbacks
+  - If ideate MCP tools are not available, skill stops with error message
+  - Phase 3 context loading uses MCP tools instead of direct file reads
+  - ideate_get_context_package, ideate_get_domain_state, ideate_write_work_items, ideate_append_journal all called directly
+  - No outpost references
+  - spawn_session availability check preserved (external tool)
+module: null
+domain: null
+notes: |
+  # WI-205: Refine Skill v3 Update
+
+  ## Changes
+
+  ### Tool calls to update
+  - Phase 3: `ideate_get_context_package` — remove fallback (steps 1-3 manual reads)
+  - Phase 3.1: `ideate_get_domain_state` — remove manual domain file reads fallback
+  - Phase 7h: `ideate_write_work_items` — remove manual YAML append fallback
+  - Phase 7i: `ideate_append_journal` — remove manual file append fallback
+
+  ### Direct file reads to remove (Phase 3, steps 4-10)
+  Phase 3 currently reads files directly after the context package check: overview, architecture, modules, execution strategy, work items, interview, research, journal. These should all go through MCP tools:
+  - `ideate_get_context_package` covers architecture + principles + constraints
+  - `ideate_get_domain_state` covers domain policies + questions
+  - `ideate_artifact_query` can retrieve specific artifacts by type
+  - Work items, interview transcripts, research — use `ideate_artifact_query` with type filters
+
+  ### Outpost
+  - Replace "outpost" → "external MCP servers"
+  - Preserve `spawn_session` availability check
+cycle_created: 1
+cycle_modified: null
+content_hash: 9b2d8047c5750c44ffdb4d07a238f74ac85837a38cafb818eb59d1ff25f5c340
+token_count: 483
+file_path: .ideate/work-items/WI-205.yaml
+resolution: Removed 4 'Look in your tool list' availability check patterns; all ideate MCP tools called directly

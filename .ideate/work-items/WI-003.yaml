@@ -4,37 +4,53 @@ title: Architect Agent
 status: obsolete
 complexity: medium
 scope:
-  - {path: agents/architect.md, op: create}
+  - path: agents/architect.md
+    op: create
 depends:
-  - "001"
+  - '001'
 blocks:
-  - "005"
-  - "006"
+  - '005'
+  - '006'
 criteria:
-  - "`agents/architect.md` exists with valid frontmatter"
-  - "Agent has access to: Read, Grep, Glob, Bash"
-  - "System prompt covers two modes: analyzing existing codebases and designing new architecture"
-  - "When analyzing: maps directory structure, languages, frameworks, module boundaries, data flows, test coverage, dependencies, patterns"
-  - "When designing: decomposes into modules with clear interfaces, identifies parallel vs sequential ordering, defines interface contracts between modules, flags design tensions"
+  - '`agents/architect.md` exists with valid frontmatter'
+  - 'Agent has access to: Read, Grep, Glob, Bash'
+  - 'System prompt covers two modes: analyzing existing codebases and designing new architecture'
+  - >-
+    When analyzing: maps directory structure, languages, frameworks, module boundaries, data flows, test coverage,
+    dependencies, patterns
+  - >-
+    When designing: decomposes into modules with clear interfaces, identifies parallel vs sequential ordering, defines
+    interface contracts between modules, flags design tensions
   - System prompt includes the module spec format (Provides, Requires, Boundary Rules)
   - Agent does not advocate for technologies — presents options with tradeoffs
   - Output format uses clear headers, code blocks for interfaces, explicit module boundary definitions
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 003
-  
-  Model should be `opus` — architecture requires complex multi-factor reasoning. MaxTurns should be 30-40 to allow thorough analysis.
-  
+
+
+  Model should be `opus` — architecture requires complex multi-factor reasoning. MaxTurns should be 30-40 to allow
+  thorough analysis.
+
+
   The architect must understand the module decomposition protocol:
-  1. Each module spec defines: scope, responsibilities, what it provides (exports), what it requires (imports), boundary rules
+
+  1. Each module spec defines: scope, responsibilities, what it provides (exports), what it requires (imports), boundary
+  rules
+
   2. Interface contracts between modules must be defined before work items are created
+
   3. The 100% coverage check: union of all module scopes must equal the full project scope with no gaps or overlaps
-  
-  When designing for an existing codebase (refine phase), the architect should report facts without evaluating whether choices are "good" or "bad."
-resolution: "Architect agent exists at agents/architect.md but has been rewritten multiple times since cycle 1. Original spec superseded."
+
+
+  When designing for an existing codebase (refine phase), the architect should report facts without evaluating whether
+  choices are "good" or "bad."
+resolution: >-
+  Architect agent exists at agents/architect.md but has been rewritten multiple times since cycle 1. Original spec
+  superseded.
 cycle_created: 1
 cycle_modified: null
-content_hash: "8b4b17b28a0e15e25eb17b32b500e01a8511ab1e8ac0194de9a66a29455c400c"
+content_hash: 8b4b17b28a0e15e25eb17b32b500e01a8511ab1e8ac0194de9a66a29455c400c
 token_count: 453
-file_path: .ideate/work-items/WI-003.yaml
+file_path: work-items/WI-003.yaml

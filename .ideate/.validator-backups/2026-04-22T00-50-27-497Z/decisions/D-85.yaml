@@ -1,0 +1,13 @@
+id: D-85
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-171 added `idx_{table}_file_path` indexes on all 13 typed tables in `createSchema`. Hash-check prepared statements are pre-created before the file loop rather than inside it. Resolves Q-55.
+rationale: Each rebuild performed up to 13 unindexed table scans per YAML file (`O(n)` per query without index vs `O(log n)` with). Pre-creating statements outside the loop eliminates repeated `db.prepare()` overhead. Together these changes reduce rebuild time from approximately `O(n * t)` sequential scans to `O(n log n)` indexed lookups.
+cycle_created: 1
+cycle_modified: null
+content_hash: "4bb84dce1075bb1b457b87a43f8815fce202d1438565d77167cda5e36bac1a22"
+token_count: 187
+file_path: .ideate/decisions/D-85.yaml

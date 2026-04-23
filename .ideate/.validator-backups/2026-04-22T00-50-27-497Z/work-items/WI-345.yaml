@@ -1,0 +1,21 @@
+id: WI-345
+type: work_item
+title: Fix review skill file globs (Q-081)
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - skills/review/SKILL.md line 442 uses ideate_artifact_query instead of file glob
+  - "*.md reference changed to *.yaml"
+  - Resolves Q-081
+  - All tests pass
+domain: workflow
+notes: "# WI-345: Fix review skill file globs (Q-081)"
+resolution: 'Completed in cycle 66. Changed review skill line 442 to use ideate_artifact_query({type: "finding", cycle: N}). All tests pass (342 tests). Q-081 resolved.'
+cycle_created: null
+cycle_modified: null
+content_hash: b95f1acc753ed10887b23c9561f83634915948ff2ca7d6a32ac1175b0a57d90d
+token_count: 147
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-345.yaml

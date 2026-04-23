@@ -1,16 +1,18 @@
 id: Cycle-033-Refinement
 type: overview
 architecture_changed: false
-change_summary: "Fix four review findings from Cycle 028: autopilot-state.yaml regression, type name inconsistency, placeholder standardization, and setup script completeness."
+change_summary: >-
+  Fix four review findings from Cycle 028: autopilot-state.yaml regression, type name inconsistency, placeholder
+  standardization, and setup script completeness.
 constraints_changed: none
 findings_addressed:
-  - finding: "C1: autopilot-state.md reference regression"
+  - finding: 'C1: autopilot-state.md reference regression'
     work_item: WI-231
-  - finding: "S1: work-items type name inconsistency"
+  - finding: 'S1: work-items type name inconsistency'
     work_item: WI-232
-  - finding: "S1/S2: {artifact-dir} placeholders"
+  - finding: 'S1/S2: {artifact-dir} placeholders'
     work_item: WI-233
-  - finding: "M1: Missing plan directory"
+  - finding: 'M1: Missing plan directory'
     work_item: WI-234
 new_work_items:
   - WI-231
@@ -30,4 +32,4 @@ scope_includes:
 trigger: Cycle 028 capstone review findings
 content_hash: 1fe2d01f00bbb3032d06eb885db4b87cea04edca9ee866d72f4458df1593bdac
 token_count: 261
-file_path: .ideate/plan/Cycle-033-Refinement.yaml
+file_path: plan/Cycle-033-Refinement.yaml

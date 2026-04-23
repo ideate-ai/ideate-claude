@@ -1,0 +1,14 @@
+id: Q-30
+type: domain_question
+domain: workflow
+status: resolved
+impact: Diagnostic findings on the unfixable path are surfaced to the user at escalation time (Phase 9 context field) but not recorded in the permanent journal. The asymmetry between fixable and unfixable paths is a documentation gap, not a functional failure.
+source: archive/cycles/009/gap-analysis.md MG1; archive/cycles/009/decision-log.md OQ-5
+resolution: WI-124 added an exact quoted journal template to the unfixable path in both `skills/execute/SKILL.md` and `skills/autopilot/phases/execute.md`.
+resolved_in: 10
+description: The fixable startup-failure path instructs "note in the journal as significant rework." The unfixable path says only "route to the Andon cord" with no equivalent journal instruction. Should both skill files add a journal step before Andon routing on the unfixable path?
+cycle_created: 1
+cycle_modified: null
+content_hash: "6b2c43393a79019cd3a73cf844234752148d7cfbe285d124a4f400a2295f35a0"
+token_count: 244
+file_path: .ideate/questions/Q-30.yaml

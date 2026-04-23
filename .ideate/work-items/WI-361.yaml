@@ -1,6 +1,6 @@
 id: WI-361
 type: work_item
-title: "Fix undefined edge types: add governed_by and informed_by to registry"
+title: 'Fix undefined edge types: add governed_by and informed_by to registry'
 status: done
 complexity: low
 scope:
@@ -14,19 +14,29 @@ criteria:
   - EDGE_TYPES enum includes governed_by and informed_by
   - EDGE_TYPE_REGISTRY has entries for both governed_by and informed_by with valid_sources, valid_targets, yaml_field
   - Schema tests verify both enum values and registry entries exist
-  - PPR default weights in config.ts (0.8 for governed_by, 0.6 for informed_by) now match actual registry entries — Q-84 resolved
+  - >-
+    PPR default weights in config.ts (0.8 for governed_by, 0.6 for informed_by) now match actual registry entries — Q-84
+    resolved
   - All existing schema tests still pass
 domain: artifact-structure
-notes: |-
-  Add `governed_by` and `informed_by` to `EDGE_TYPES` enum and `EDGE_TYPE_REGISTRY` in `mcp/artifact-server/src/schema.ts`.
+notes: >-
+  Add `governed_by` and `informed_by` to `EDGE_TYPES` enum and `EDGE_TYPE_REGISTRY` in
+  `mcp/artifact-server/src/schema.ts`.
+
 
   ## Rationale
 
-  The PPR config in `config.ts` defines weights for `governed_by` (0.8) and `informed_by` (0.6), but these edge types are absent from `EDGE_TYPES` and `EDGE_TYPE_REGISTRY`. PPR falls back to weight 1.0 for unrecognized types. This is Q-84.
+
+  The PPR config in `config.ts` defines weights for `governed_by` (0.8) and `informed_by` (0.6), but these edge types
+  are absent from `EDGE_TYPES` and `EDGE_TYPE_REGISTRY`. PPR falls back to weight 1.0 for unrecognized types. This is
+  Q-84.
+
 
   ## Changes
 
+
   ### schema.ts
+
 
   1. Add to `EDGE_TYPES` enum:
      - `governed_by = 'governed_by'` — artifact is governed by a guiding principle, policy, or constraint
@@ -38,14 +48,19 @@ notes: |-
 
   ### schema.test.ts
 
-  Add tests verifying `EDGE_TYPES.governed_by` and `EDGE_TYPES.informed_by` exist, and that `EDGE_TYPE_REGISTRY` has entries for both with non-empty valid_sources and valid_targets.
+
+  Add tests verifying `EDGE_TYPES.governed_by` and `EDGE_TYPES.informed_by` exist, and that `EDGE_TYPE_REGISTRY` has
+  entries for both with non-empty valid_sources and valid_targets.
+
 
   ## Side effects
 
-  Resolves Q-84. The PPR weights 0.8 (governed_by) and 0.6 (informed_by) in the default config will now correctly propagate through the PageRank computation.
+
+  Resolves Q-84. The PPR weights 0.8 (governed_by) and 0.6 (informed_by) in the default config will now correctly
+  propagate through the PageRank computation.
 resolution: null
 cycle_created: 68
 cycle_modified: null
 content_hash: 511f295e8e868d52900bc77150c0883047610c1f270d6ef595cfe417ebc07302
 token_count: 584
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-361.yaml
+file_path: work-items/WI-361.yaml

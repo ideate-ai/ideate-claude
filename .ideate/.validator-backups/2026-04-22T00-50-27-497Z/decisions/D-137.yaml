@@ -1,0 +1,12 @@
+id: D-137
+type: domain_decision
+domain: artifact-structure
+title: Sanitize error messages using err.code and artifact ID
+decision: In MCP tool error responses, use err.code + artifact ID instead of raw err.message, which includes full absolute paths in Node.js filesystem errors.
+rationale: GP-14 and P-33 — MCP responses must not expose .ideate/ paths. Node.js error messages include full absolute paths by default.
+assumes: Pattern applied to handleArchiveCycle. handleUpdateWorkItems failures array still leaks (Q-99).
+source: cycle 1 decision-log D6; WI-395
+status: settled
+content_hash: fa8630e1b651449873ac442bce74e790ba6d40228e48c058de8b3da407043046
+token_count: 144
+file_path: .ideate/decisions/D-137.yaml

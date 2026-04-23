@@ -1,0 +1,131 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  ## Verdict: Fail
+
+  Two significant findings: getMetricsEvents absent from adapter-interface.md; NodeFilter missing four fields.
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  ### S1: getMetricsEvents not documented in adapter-interface.md
+  - File: docs/platform/adapter-interface.md — no occurrence of getMetricsEvents in full file.
+  - Actual: adapter.ts:463 declares the method; reader.ts:538 implements it; WI-827 added 5 contract tests.
+  - Impact: violates adapter-interface.md's stated purpose as canonical reference. Violates P-85 (documentation surface enumeration). WI-827 criterion 'Test covers filters documented in adapter-interface.md' is hollow because doc does not mention the method.
+  - Fix: add signature to Section 3, behavior spec to Section 4.8, error row to Section 5.2.
+
+  ### S2: NodeFilter in adapter-interface.md missing agent_type, phase, work_item, work_item_type
+  - File: docs/platform/adapter-interface.md:142–150 defines NodeFilter with type/status/domain/cycle/severity only.
+  - Actual: adapter.ts:198–208 declares phase, work_item, work_item_type, agent_type — all four are exercised by code (agent_type in WI-827 tests; phase/work_item in RemoteAdapter TypeScript filtering at remote/index.ts:1132–1149).
+  - Impact: RemoteAdapter implementor relying solely on adapter-interface.md will produce an incomplete filter set.
+  - Fix: extend NodeFilter definition to include all four fields.
+
+  ## Principle Adherence: Pass
+  - GP-14 (MCP abstraction boundary): new test content accesses data via adapter methods, not by filename. No leakage.
+  - GP-8 (Durable Knowledge Capture): WI-825/WI-826 partially updated specs, but S1/S2 show gaps remain.
+  - Phase steering — no ctx.db.prepare in tool handlers: verified.
+  - Phase steering — no casts to concrete adapter classes: verified in tools/ directory.
+
+  ## Minor Findings
+
+  ### M1: WI-826 and WI-827 file scope paths incorrect in work item metadata
+  - WI-826.yaml:6 lists mcp/artifact-server/docs/adapter-interface.md; actual path docs/platform/adapter-interface.md.
+  - WI-827.yaml:8 lists mcp/artifact-server/tests/; actual changes in mcp/artifact-server/src/__tests__/.
+  - Metadata error, not implementation error.
+
+  ### M2: WI-827 contract tests in src/__tests__/ rather than tests/
+  - Other contract/equivalence tests live in mcp/artifact-server/tests/; WI-827 added to src/__tests__/adapter-contract.test.ts. Pattern consistent with existing remote-contract.test.ts but creates directory split.
+
+  ## Unmet Acceptance Criteria
+
+  - WI-827 criterion #2: 'Test covers filters documented in adapter-interface.md' — technically unmet because getMetricsEvents is not in adapter-interface.md at all. Deferred as WI-827 M3 in resolution.
+
+  All other criteria for WI-824, WI-825, WI-826 verified met.
+content_hash: 5161fd62c5066b20bbd4fe46d85d35060c2768981fac47329cb064fb2e9c7814
+token_count: 2009
+file_path: .ideate/cycles/068/spec-adherence.yaml
+verdict: Fail
+phase: PH-045
+scope: cycle 1 capstone
+summary: "WI-797, 798, 799, 801, 802 all met. WI-800 partially met: write.ts and analysis.ts cleaned, query.ts NOT cleaned (handleArtifactQuery retains live ctx.db fallback). WI-803 deferral note inaccurately claims query.ts was cleaned. GP-14 / RF-clean-interface-proposal §1 invariant 2 violated by query.ts."
+verdict_reasoning: Production runs correctly because server.ts always sets ctx.adapter, but the test-time bypass and RemoteAdapter-compatibility risks remain. The deferral story for WI-800 is incomplete — WI-803 covers only context.ts, leaving query.ts uncovered.
+architecture_deviations:
+  - id: D1
+    title: query.ts ctx.db fallback is live code, not removed
+    expected: "Architecture §2.3 + WI-800 AC: handleArtifactQuery routes exclusively via adapter.queryGraph/queryNodes. PH-045 steering: 'no ctx.db.prepare in tool handlers'."
+    actual: handleArtifactQuery line 799 routes to runFilterMode/runGraphMode which call ctx.db.prepare at lines 348, 357, 570, 577, 619.
+    evidence: mcp/artifact-server/src/tools/query.ts:799-845
+  - id: D2
+    title: getAdapter() helper pattern not uniformly applied
+    expected: write.ts establishes shared getAdapter(ctx) fail-fast helper; same pattern intended for query/analysis/context.
+    actual: analysis.ts uses inline if (!ctx.adapter) per function (functionally equivalent, pattern divergent). query.ts uses if (ctx.adapter) {...} else {fallback} — NOT a fail-fast guard.
+    evidence:
+      - mcp/artifact-server/src/tools/write.ts:13-18
+      - mcp/artifact-server/src/tools/analysis.ts:107-111
+      - mcp/artifact-server/src/tools/query.ts:702
+unmet_acceptance_criteria:
+  - work_item: WI-800
+    criterion: "Leaks 8-12: analysis.ts and query.ts ctx.db fallbacks removed; all paths route through StorageAdapter."
+    status: partially unmet
+    detail: "analysis.ts: 0 ctx.db references (met). query.ts: 7 ctx.db.prepare calls in runFilterMode/runGraphMode, reachable from handleArtifactQuery line 799 (NOT met). WI is marked done; WI-803 only covers context.ts."
+  - work_item: WI-800
+    criterion: "Leak 3: context.ts LocalContextAdapter test-only fallback removed."
+    status: deferred (acknowledged via WI-803, pending)
+    detail: context.ts has 10 ctx.db references using if (ctx.adapter) {...} else {ctx.db} branches. Deferral path is sound — WI-803 captures this scope correctly.
+principle_violations:
+  - id: P1
+    principle: GP-14 — MCP Abstraction Boundary
+    states: No tool handler may access ctx.db / ctx.drizzleDb. Raw SQLite reserved for adapter implementations.
+    violation: query.ts handler contains live ctx.db.prepare calls reachable from production code path when ctx.adapter is absent. Not dead code — called unconditionally in else branch.
+    evidence: "mcp/artifact-server/src/tools/query.ts:348,357,570,577,619; line 799 'Fallback: direct SQLite path' branch"
+principle_adherence_evidence:
+  - "GP-14: write.ts fully cleaned, getAdapter helper at line 13-18"
+  - "GP-14: analysis.ts fully cleaned, fail-fast at lines 107, 182, 248, 342, 452"
+  - "GP-14 invariant 1: no tool handler imports LocalAdapter/LocalContextAdapter/RemoteAdapter (grep confirmed)"
+  - "WI-799: ppr.ts:61-65 keys lower_snake_case; normalizeEdgeType absent"
+  - "WI-797: reader.ts:954-960 prefers canonical spec-adherence.yaml; regression tests at tools.test.ts:876,908"
+  - "WI-801: link present at architecture-overview.md:142"
+  - "WI-802: strikethrough annotation at ppr-alignment-research.md:263 matching style"
+  - "WI-798: D-212 captures retention rationale; constant active at ppr.ts:178"
+undocumented_additions:
+  - id: U1
+    title: ctx.adapter = undefined in two context.ts test cases
+    location: mcp/artifact-server/src/__tests__/tools.test.ts:333-336,405-410
+    risk: low
+    note: Tests intentionally document pre-WI-803 state. Will surface failures when WI-803 lands — desirable behavior.
+  - id: U2
+    title: WI-803 notes inaccurately describe query.ts as cleaned
+    location: .ideate/work-items/WI-803.yaml:27
+    risk: moderate
+    note: WI-803 background says WI-800 cleaned write/analysis/query — false for query.ts. Future implementer may believe query.ts is clean. Outstanding cleanup scope is larger than WI-803 describes.
+naming_pattern_inconsistencies:
+  - id: N1
+    convention: write.ts module-level getAdapter(ctx) fail-fast helper
+    violation: analysis.ts uses inline per-function checks; query.ts uses conditional fallback (opposite of fail-fast)
+items_met:
+  - WI-797
+  - WI-798 (closed obsolete with D-212 rationale)
+  - WI-799
+  - WI-800 Leak 4 (write.ts)
+  - WI-800 Leaks 8-12 partial (analysis.ts only)
+  - WI-801
+  - WI-802
+cycle: 7
+cycle_modified: 27
+review_mode: full
+principle_verdict: Pass
+findings_count:
+  critical: 0
+  significant: 0
+  minor: 1
+findings:
+  critical: 0
+  significant: 1
+  minor: 2
+mode: differential
+principle_violation_verdict: Pass
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf
+principle_adherence: Pass

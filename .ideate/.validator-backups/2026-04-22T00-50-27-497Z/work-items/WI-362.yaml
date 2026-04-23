@@ -1,0 +1,86 @@
+id: WI-362
+type: work_item
+title: Add ideate_update_config MCP tool
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/config.ts
+    op: create
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+  - path: ARCHITECTURE.md
+    op: modify
+depends:
+  - WI-360
+blocks: []
+criteria:
+  - ideate_update_config tool is registered in TOOLS array and routes correctly
+  - Partial patch updates only specified keys; unmentioned keys are preserved
+  - "agent_budgets merge: individual agent keys added/updated; other agents preserved"
+  - "model_overrides merge: individual agent keys added/updated; other agents preserved"
+  - "ppr merge: individual ppr keys updated; other ppr fields preserved"
+  - "ppr.edge_type_weights merge: individual edge type weights updated; others preserved"
+  - "Validation: agent_budget value of 0 or negative returns error, does not write"
+  - "Validation: model_overrides empty string value returns error, does not write"
+  - "Validation: ppr.alpha outside (0,1) returns error, does not write"
+  - Response includes updated_keys list and no file paths (P-33)
+  - Tool description is under 50 words (P-34)
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Add `ideate_update_config` MCP tool — the write counterpart to `ideate_get_config`.
+
+  ## New file: mcp/artifact-server/src/tools/config.ts
+
+  Export `handleUpdateConfig(args, ctx: ToolContext): Promise<ToolCallResult>`.
+
+  ### Behavior
+
+  1. Read current config via `readIdeateConfig(ctx.artifactDir)` (or `getConfigWithDefaults(current)`).
+  2. Deep-merge `args.patch` into current config:
+     - Top-level scalar fields (project_name, schema_version): direct overwrite if present in patch.
+     - `agent_budgets`: key-level merge — add/update provided keys, preserve others.
+     - `model_overrides`: key-level merge — add/update provided keys, preserve others.
+     - `ppr`: field-level merge — update provided fields, preserve others.
+     - `ppr.edge_type_weights`: key-level merge within ppr.
+  3. Validate merged result:
+     - `agent_budgets` values: positive integer (> 0).
+     - `model_overrides` values: non-empty string.
+     - `ppr.alpha`: number in (0, 1) exclusive.
+     - `ppr.max_iterations`: positive integer.
+     - `ppr.convergence_threshold`: positive number.
+     - `ppr.default_token_budget`: positive integer.
+  4. Write validated config to config.json via `writeConfig(ctx.artifactDir, mergedConfig)`.
+  5. Return `{ status: 'updated', updated_keys: string[] }` — top-level keys changed. No file paths.
+
+  ## Registration in tools/index.ts
+
+  Add to `TOOLS` array:
+  ```
+  {
+    name: 'ideate_update_config',
+    description: 'Update .ideate/config.json settings. Accepts partial patch; deep-merges into current config. Validates before writing. Pass agent_budgets, model_overrides, or ppr keys. Returns updated keys.',
+    inputSchema: { type: 'object', properties: { patch: { type: 'object', description: 'Partial IdeateConfigJson to merge.' } }, required: ['patch'] }
+  }
+  ```
+
+  Add `ideate_update_config` case to `routeToolCall` dispatch.
+
+  ## Tests in config.test.ts
+
+  - Update single agent_budget key — other agents preserved.
+  - Update model_overrides — adds new key, preserves existing.
+  - Update PPR alpha — other PPR fields preserved.
+  - Update single edge_type_weight — other weights preserved.
+  - Validation error: agent_budget = 0 → error, config unchanged.
+  - Validation error: model_overrides value = '' → error, config unchanged.
+  - Validation error: ppr.alpha = 1.5 → error, config unchanged.
+  - updated_keys in response reflects actual changed top-level keys.
+resolution: null
+cycle_created: 68
+cycle_modified: null
+content_hash: c1bf0ace46f1c0647887fa67596d13cb402ff20c89216630215e3179147f1555
+token_count: 942
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-362.yaml

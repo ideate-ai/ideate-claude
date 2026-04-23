@@ -1,0 +1,21 @@
+id: PH-037
+type: phase
+status: complete
+intent: "Deliver autopilot-produced fixes: deleteNode YAML-first rollback (P-44), FILESYSTEM_ERROR throw on non-ENOENT unlink failure, appendJournalEntry TRANSACTION_FAILED equivalence test, and adapter-contract.md documentation cleanup (P-53, getNode validation block, double-failure message)."
+work_items:
+  - WI-702
+  - WI-703
+  - WI-704
+  - WI-705
+  - WI-706
+  - WI-707
+success_criteria:
+  - deleteNode restores YAML file when SQLite transaction fails (P-44 compliant)
+  - deleteNode throws FILESYSTEM_ERROR on non-ENOENT unlink failure
+  - appendJournalEntry TRANSACTION_FAILED test lives in equivalence-journal.test.ts
+  - adapter-contract.md has no P-53 violations, getNode Validation block present, double-failure message includes both error contexts
+  - All tests pass (npm test zero failures)
+cycle_modified: 19
+content_hash: 6a7ca82c85892f022745f0bc04c11b1d6930b2a4e1029b6acc791eb339810896
+token_count: 246
+completed_date: 2026-04-08

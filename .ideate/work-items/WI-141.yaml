@@ -17,18 +17,24 @@ criteria:
   - domains/index.md cross-cutting concerns section does not reference benchmarking
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes — WI-141
 
-  Remove the benchmarking domain directory: specs/domains/benchmarking/ (contains decisions.md, policies.md, questions.md).
+
+  Remove the benchmarking domain directory: specs/domains/benchmarking/ (contains decisions.md, policies.md,
+  questions.md).
+
 
   Update specs/domains/index.md:
+
   - Remove the benchmarking domain entry from the ## Domains section
+
   - Remove any cross-cutting concern entries that reference benchmarking
+
   - Do NOT change current_cycle number
 cycle_created: 1
 cycle_modified: null
 content_hash: 57c5b74f621e2bf7538d5c195e3ab8d5ff675b1581de7d1673e88b6651da7072
 token_count: 252
-file_path: .ideate/work-items/WI-141.yaml
-resolution: "Verified complete: specs/domains/ directory removed entirely"
+file_path: work-items/WI-141.yaml
+resolution: 'Verified complete: specs/domains/ directory removed entirely'

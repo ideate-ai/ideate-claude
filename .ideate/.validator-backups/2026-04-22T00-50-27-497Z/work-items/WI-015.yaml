@@ -1,0 +1,35 @@
+id: WI-015
+type: work_item
+title: Top-Level README
+status: done
+complexity: low
+scope:
+  - {path: README.md, op: create}
+depends: []
+blocks: []
+criteria:
+  - "`README.md` exists at project root"
+  - Describes what ideate is (1-2 paragraphs)
+  - Lists prerequisites (Claude Code CLI)
+  - "Documents installation: how to add the plugin to Claude Code"
+  - "Documents MCP server setup: step-by-step instructions for configuring the session-spawner (optional but recommended for large projects)"
+  - "Documents the four-command workflow: `/ideate:plan`, `/ideate:execute`, `/ideate:review`, `/ideate:refine` with one-line descriptions"
+  - Documents the artifact directory structure (what gets created where)
+  - Notes that the MCP server is optional — the plugin works without it but recursive decomposition is unavailable
+  - "Includes a \"Quick Start\" section showing the minimum path: `/ideate:plan \"my idea\"` → `/ideate:execute` → `/ideate:review`"
+module: null
+domain: null
+notes: |
+  # Implementation Notes: 015
+  
+  Keep it concise. This is a reference document, not a tutorial. The skills themselves contain detailed instructions — the README covers setup and orientation only.
+  
+  For plugin installation, use `claude plugin add` or document the manual installation path (clone repo, add to plugin search path).
+  
+  For MCP setup, reference the session-spawner README for detailed configuration and document the one-line setup: `claude mcp add ideate-session-spawner -- python /path/to/mcp/session-spawner/server.py`.
+resolution: "README.md exists at project root."
+cycle_created: 1
+cycle_modified: null
+content_hash: "66e52810349bf1f640490af16d7419f4448a3f07413d0c016daa9e7c8bac0633"
+token_count: 402
+file_path: .ideate/work-items/WI-015.yaml

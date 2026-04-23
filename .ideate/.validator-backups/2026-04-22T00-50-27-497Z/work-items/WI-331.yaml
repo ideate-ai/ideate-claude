@@ -1,0 +1,47 @@
+id: WI-331
+type: work_item
+title: Create migration script for autopilot → autopilot in .ideate/ artifacts
+status: done
+complexity: medium
+scope:
+  - path: scripts/migrate-autopilot-to-autopilot.sh
+    op: create
+depends:
+  - WI-329
+blocks: []
+criteria:
+  - Script exists at scripts/migrate-autopilot-to-autopilot.sh and is executable
+  - Script renames autopilot-state.yaml to autopilot-state.yaml if it exists
+  - Script replaces 'autopilot' with 'autopilot' in all YAML files under .ideate/ (policies, decisions, questions, work items)
+  - Script replaces ideate_get_autopilot_state with ideate_get_autopilot_state in YAML content
+  - Script replaces ideate_update_autopilot_state with ideate_update_autopilot_state in YAML content
+  - Script is idempotent (safe to run multiple times)
+  - Script reports what it changed
+  - Running the script on ideate's own .ideate/ directory produces no errors
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  Shell script that:
+  1. Takes an optional path argument (defaults to current directory)
+  2. Finds .ideate/ in the given path
+  3. If .ideate/autopilot-state.yaml exists, renames to .ideate/autopilot-state.yaml
+  4. Uses sed to replace in all .yaml files under .ideate/:
+     - `ideate_get_autopilot_state` → `ideate_get_autopilot_state`
+     - `ideate_update_autopilot_state` → `ideate_update_autopilot_state`
+     - `autopilot-state` → `autopilot-state` (in tool references)
+     - `/ideate:autopilot` → `/ideate:autopilot`
+     - `skill: autopilot` → `skill: autopilot` (in metric entries)
+     - `autopilot` → `autopilot` in prose (careful: only whole-word matches)
+  5. Reports count of files modified
+  6. Deletes and rebuilds index.db (or just deletes it — MCP server rebuilds on next start)
+
+  ## Pattern: existing migration scripts
+  - `scripts/migrate-to-v3.sh` — prior migration script for reference
+  - `scripts/migrate-to-optimized.sh` — another migration example
+resolution: Migration script created and tested. 297 YAML files migrated in ideate's own .ideate/. Idempotent, second run reports 0 changes.
+cycle_created: null
+cycle_modified: null
+content_hash: 6cc299a9c2c6a19878eba35ae9318fd11f4678ef9039923adf3d09a0f6404394
+token_count: 529
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-331.yaml

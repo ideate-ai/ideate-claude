@@ -1,0 +1,39 @@
+id: WI-313
+type: work_item
+title: Rewrite plan/SKILL.md — remove all .ideate/ path references and direct I/O
+status: done
+complexity: medium
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain in skills/plan/SKILL.md
+  - No .yaml filename references (use designations like WI-001 not WI-001.yaml)
+  - Bootstrap phase uses ideate_bootstrap_project tool
+  - All artifact writes use MCP tools (ideate_write_artifact, ideate_write_work_items, ideate_append_journal)
+  - Metrics writes use ideate_emit_metric
+  - Next work item ID uses ideate_get_next_id
+  - YAML templates for artifacts are removed — only structured field names passed to MCP tools
+  - Verification phase uses ideate_get_project_status not file existence checks
+  - No Glob/Read/Write instructions targeting .ideate/ files
+domain: workflow
+notes: |-
+  # WI-313: Plan skill MCP abstraction rewrite
+
+  ## Changes
+  - Replace all .ideate/ path references with MCP tool calls
+  - Replace bootstrap directory creation with ideate_bootstrap_project
+  - Replace metrics.jsonl append with ideate_emit_metric
+  - Replace glob for next WI number with ideate_get_next_id
+  - Remove YAML templates — pass structured data to MCP write tools
+  - Replace verification file listing with ideate_get_project_status
+  - Replace all .yaml filename references with designations
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: 3a272852e8bee01b667b60faccfe8553dad05cd96970c3cfbb121199dd629d87
+token_count: 364
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-313.yaml

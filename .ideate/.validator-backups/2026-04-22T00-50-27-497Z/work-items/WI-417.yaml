@@ -1,0 +1,41 @@
+id: WI-417
+type: work_item
+title: "Fix handleEmitMetric write path: absolute file_path + exclusive transaction"
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/metrics.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - handleEmitMetric stores an absolute file_path in the node row (path.join(metricsDir, id + '.yaml') not path.join('metrics', id + '.yaml'))
+  - handleEmitMetric uses ctx.db.transaction(...).exclusive() not the default deferred transaction
+  - The ideate_emit_metric tool description in tools/index.ts no longer references JSONL behavior — updated to describe YAML+SQLite
+  - All 492 tests pass
+domain: artifact-structure
+notes: |-
+  Two correctness fixes in metrics.ts write path:
+
+  1. ABSOLUTE FILE PATH (S1/P-47):
+     Change `const relativePath = path.join('metrics', id + '.yaml')` to:
+     `const yamlPath = path.join(metricsDir, id + '.yaml')`
+     Store `yamlPath` (not `relativePath`) as `file_path` in the node row.
+     Remove the `relativePath` variable entirely.
+
+  2. EXCLUSIVE TRANSACTION (Gap 3/P-44 as amended by D-145):
+     Change `ctx.db.transaction(() => { ... })()` to `ctx.db.transaction(() => { ... }).exclusive()()`
+     Matches the pattern in handleAppendJournal.
+
+  3. STALE TOOL DESCRIPTION (Gap 1, minor, trivial fix):
+     In tools/index.ts, find the ideate_emit_metric tool payload field description.
+     Replace 'Will be stringified and appended as one line.' with:
+     'Written as a YAML file in metrics/ and indexed in SQLite. Queryable via ideate_artifact_query(type="metrics_event") or ideate_get_metrics.'
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: d883104a872be9626ea5bac3b700147c1d421edfd34c8ed059e1af65a50f79b5
+token_count: 428
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-417.yaml

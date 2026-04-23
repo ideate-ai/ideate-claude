@@ -1,0 +1,131 @@
+id: summary
+type: cycle_summary
+cycle: 66
+findings_by_severity:
+  critical: []
+  minor:
+    - description: Q-07 resolved_in field shows 58 but work items indicate cycle 66
+      files:
+        - .ideate/questions/Q-07.yaml:12
+      id: N1
+      recommendation: Verify if resolved_in should be 66 for this implementation cycle
+      severity: Minor
+      status: open
+    - description: Edge type weights in PPR config reference non-existent types (governed_by, informed_by)
+      files:
+        - mcp/artifact-server/src/ppr.ts
+        - mcp/artifact-server/src/config.ts
+      id: EC1
+      recommendation: Defer — fallback to weight 1.0 handles gracefully
+      severity: Minor
+      status: deferred
+    - description: Paginated queries lack total count for pagination UI
+      files:
+        - mcp/artifact-server/src/tools/query.ts
+      id: EC2
+      recommendation: Defer — 200-item limit makes pagination uncommon
+      severity: Minor
+      status: deferred
+    - description: Some tool descriptions lack response size hints per P-34
+      files:
+        - mcp/artifact-server/src/tools/index.ts
+      id: IR1
+      recommendation: Defer — most critical tools have size hints
+      severity: Minor
+      status: deferred
+  significant: []
+metrics:
+  code-reviewer-tokens: 92193
+  gap-analyst-tokens: 101282
+  journal-keeper-tokens: 31191
+  spec-reviewer-tokens: 85198
+  total-tokens: 310664
+remediation:
+  after: All 349 tests pass. P-33 compliance achieved.
+  before: handleAppendJournal returned file path (S1), ideate_write_artifact description said 'Returns path' (S2)
+  changes:
+    - mcp/artifact-server/src/tools/write.ts:123 — removed file path from return
+    - mcp/artifact-server/src/tools/index.ts:421 — changed 'Returns path' to 'Returns confirmation'
+    - mcp/artifact-server/src/__tests__/tools.test.ts:566-576 — updated test to expect artifact designation not file path
+reviewers:
+  code-reviewer:
+    findings:
+      critical: 0
+      minor: 0
+      significant: 0
+    verdict: Pass
+  gap-analyst:
+    findings:
+      critical: 0
+      minor: 3
+      significant: 0
+    verdict: Pass
+  spec-reviewer:
+    findings:
+      critical: 0
+      minor: 1
+      significant: 0
+    verdict: Pass
+scope: MCP Tool Design Improvements
+summary:
+  convergence: All P-33 violations remediated. Cycle ready for convergence.
+  recommendation: Minor findings deferred. Cycle 066 can proceed to domain curation.
+  risk_level: Low — All work items verified, tests pass, policy compliance restored.
+verdict: Pass
+work_items_total: 13
+work_items_verified:
+  - criteria_met: true
+    id: WI-340
+    notes: File path removed from all tool responses
+    title: Remove file_path from responses
+  - criteria_met: true
+    id: WI-341
+    notes: All descriptions under 50 words
+    title: Optimize tool descriptions
+  - criteria_met: true
+    id: WI-342
+    notes: Extension tables properly implemented
+    title: Extend write_artifact for domain types
+  - criteria_met: true
+    id: WI-343
+    notes: Single manage_autopilot_state tool created
+    title: Consolidate autopilot state tools
+  - criteria_met: true
+    id: WI-344
+    notes: All tools have appropriate annotations
+    title: Add MCP tool annotations
+  - criteria_met: true
+    id: WI-345
+    notes: Review skill uses MCP tools
+    title: Fix review skill file globs
+  - criteria_met: true
+    id: WI-346
+    notes: Proxy-human decision format defined
+    title: Define proxy-human decision artifact format
+  - criteria_met: true
+    id: WI-347
+    notes: Questions moved to canonical location
+    title: Migrate domain questions
+  - criteria_met: true
+    id: WI-348
+    notes: P-33 and P-34 created
+    title: Add policies P-33 and P-34
+  - criteria_met: true
+    id: WI-349
+    notes: Q-081 marked resolved
+    title: Update Q-081 status
+  - criteria_met: true
+    id: WI-350
+    notes: Q-082 marked resolved
+    title: Update Q-082 status
+  - criteria_met: true
+    id: WI-351
+    notes: Q-07 marked resolved
+    title: Update Q-07 status
+  - criteria_met: true
+    id: WI-352
+    notes: Architecture updated with all tools
+    title: Update documentation
+content_hash: 0de5fb3086b86caf7dd2839ab291e323f47d2dbfa994c2a5d5dbff151816a769
+token_count: 1030
+file_path: .ideate/cycles/066/summary.yaml

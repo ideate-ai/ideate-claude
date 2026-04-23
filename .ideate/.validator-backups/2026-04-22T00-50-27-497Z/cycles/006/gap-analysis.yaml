@@ -1,0 +1,71 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Fail
+
+  3 Significant gaps and 5 Minor gaps identified across cycles 4-6.
+
+  ## Critical Gaps
+
+  None.
+
+  ## Significant Gaps
+
+  ### MR1: WI-817 has no execution plan and remains pending indefinitely
+  - WI-817 (autopilot internal cycle numbering reuses workspace slots that may contain pre-existing legacy archived artifacts — causes phantom condition_b false in convergence) is triaged with three fix options but unscheduled. Cycle 4 phantom findings are direct evidence of impact. Recommend option (c) (convergence-checker reads only canonical-filename artifacts).
+
+  ### II1/EC1: getMetricsEvents absent from shared adapter contract test suite
+  - `runAdapterContractTests` covers CRUD, edges, traversal, queries, batch ops, getDomainState, getConvergenceData, appendJournalEntry — but not getMetricsEvents. Local-only test exists at `__tests__/adapters/local-getMetricsEvents.test.ts`. RemoteAdapter behavior (two round-trips, TypeScript-side filter) is untested for parity with LocalAdapter (SQL pushdown). Add 3-4 cases (no-filter, cycle filter, agent_type filter, work_item filter, sort order).
+
+  ### II2: WI-817 systemic gap: write→convergence chain broken for autopilot in reused workspaces
+  - WI-797 fixed canonical/legacy-named artifact collision for spec-adherence/code-quality/gap-analysis. But other legacy artifact names (DL-NNN, CS-NNN, etc.) still in same directory may be misread by other convergence logic. Root cause = autopilot reuses workspace cycle slots. Same fix as MR1 (option c).
+
+  ## Minor Gaps
+
+  ### EC2: SR-M1 (test directory layout) and GA-IR1 (indexFiles/removeFiles placement) still have no domain question or work item
+  - Cycle 5 MN1 explicitly recommended creating domain questions for these. Still not done. Risk: silently dropped when cycle review artifacts age out.
+
+  ### EC3/IR1: `autopilot_state` NodeType missing from `adapter-contract.md` Type Definitions
+  - adapter.ts:43,74 includes it; adapter-contract.md NodeType union (24 types) omits it (adapter.ts has 25). One-line doc fix.
+
+  ### MI1: No domain-question tracking for cycle 5's deferred findings (MN1 recommendation)
+  - See EC2. This is the meta-gap: a finding that should have been tracked has been twice-deferred.
+
+  ### MI2: GA-M2 (agent_type full table scan in getMetricsEvents) has no tracking artifact
+  - Cycle 3 finding deferred in cycle 4. No domain question. Agent_type lives in payload JSON column — full scan. Recommend domain question to capture deferred state. Performance acceptable while metrics soft-deprecated (D-211).
+
+  ### IR2: Step1 parser path not exercised by write→convergence roundtrip
+  - WI-819 added a roundtrip test using section-heading format (step2). The canonical authored format (`**Principle Violation Verdict**: Pass`, step1) is tested in unit form but not via full handleWriteArtifact → handleGetConvergenceStatus chain.
+
+  ## Deferred Items Status
+
+  - GA-M2 (cycle 3): agent_type full scan — still deferred, MI2.
+  - SR-M1 (cycle 4): test directory convention — still deferred, EC2.
+  - GA-IR1 (cycle 4): indexFiles/removeFiles placement — still deferred, EC2.
+  - MN1 (cycle 5): recommendation to create domain questions for SR-M1/GA-IR1 — still unacted, MI1.
+  - MN2 (cycle 5): cosmetic undefined-vs-null in WI-820 test — still deferred, no new evidence.
+
+  ## Coverage Assessment
+
+  All PH-045 phase success criteria addressed except WI-817 (triaged, unscheduled). Cycles 4-6 work items (WI-813 through WI-823) all done. Phase has 1 open work item (WI-817) and accumulating documentation drift in ARCHITECTURE.md and adapter-interface.md (per cap6sr D1-D6).
+content_hash: c7b80f23f73f18b7d3d8b0900f0a3e88780b28e84fefdbdb57b153fb5b9e89e3
+token_count: 1105
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Pass with minor gaps
+phase: PH-045
+scope: cycle 1 capstone
+summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 6
+cycle_modified: 27
+review_mode: full
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf

@@ -4,66 +4,99 @@ title: Status Table
 status: obsolete
 complexity: medium
 scope:
-  - {path: mcp/session-spawner/server.py, op: modify}
+  - path: mcp/session-spawner/server.py
+    op: modify
 depends:
-  - "022"
+  - '022'
 blocks:
-  - "025"
+  - '025'
 criteria:
-  - "`_print_status_table() -> None` function exists in `server.py`"
-  - "Function reads `_session_registry` and prints a formatted table to `sys.stderr`"
-  - "Table has exactly these columns in order: `#`, `Session ID`, `Depth`, `Status`, `Duration`, `Team`"
-  - "`Session ID` values are truncated to 12 characters; empty session IDs display as empty string"
-  - "`Status` is `completed` when `success=True`, `timed_out` when `timed_out=True`, `failed` otherwise"
-  - "`Duration` is formatted as `{N}s` with one decimal place (e.g., `12.5s`)"
-  - "`Team` is `-` (ASCII hyphen) when `team_name` is null or empty, otherwise the team_name value"
-  - "Table is printed using plain ASCII box characters (`+`, `-`, `|`) compatible with all terminals"
-  - "`_print_status_table()` is called once at the end of `call_tool()`, after entry is added to `_session_registry` and after `_log_entry()` is called, and before the return statement"
-  - "If `_session_registry` is empty, the function prints nothing"
+  - '`_print_status_table() -> None` function exists in `server.py`'
+  - Function reads `_session_registry` and prints a formatted table to `sys.stderr`
+  - 'Table has exactly these columns in order: `#`, `Session ID`, `Depth`, `Status`, `Duration`, `Team`'
+  - '`Session ID` values are truncated to 12 characters; empty session IDs display as empty string'
+  - '`Status` is `completed` when `success=True`, `timed_out` when `timed_out=True`, `failed` otherwise'
+  - '`Duration` is formatted as `{N}s` with one decimal place (e.g., `12.5s`)'
+  - '`Team` is `-` (ASCII hyphen) when `team_name` is null or empty, otherwise the team_name value'
+  - Table is printed using plain ASCII box characters (`+`, `-`, `|`) compatible with all terminals
+  - >-
+    `_print_status_table()` is called once at the end of `call_tool()`, after entry is added to `_session_registry` and
+    after `_log_entry()` is called, and before the return statement
+  - If `_session_registry` is empty, the function prints nothing
   - Function does not raise exceptions; wraps body in try/except and silently ignores errors
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 023
-  
+
+
   **Table format** (plain ASCII, no Unicode box chars):
+
   ```
+
   +----+--------------+-------+-----------+----------+-----------------+
+
   | #  | Session ID   | Depth | Status    | Duration | Team            |
+
   +----+--------------+-------+-----------+----------+-----------------+
+
   |  1 | sess-abc123  |     1 | completed |    12.5s | workers         |
+
   |  2 | sess-def456  |     2 | failed    |     3.1s | -               |
+
   +----+--------------+-------+-----------+----------+-----------------+
+
   ```
+
   Use ASCII `-` rather than em dash for the "no team" indicator to avoid encoding issues.
-  
+
+
   **Column widths** (minimum, expand if content is wider):
+
   - `#`: 4
+
   - `Session ID`: 12
+
   - `Depth`: 5
+
   - `Status`: 9 (longest value: `completed`)
+
   - `Duration`: 8
+
   - `Team`: 15
-  
+
+
   **stderr printing**: `print(..., file=sys.stderr)`. Add `import sys` if not already present.
-  
+
+
   **Placement**: Define `_print_status_table()` immediately after `_log_entry()`.
-  
+
+
   **Error isolation**: Wrap the entire function body in:
+
   ```python
+
   try:
       ...
   except Exception:
       pass
   ```
+
   Status table printing is best-effort and must not crash the MCP server.
-  
-  **Call placement in call_tool()**: Insert just before the final `return [TextContent(...)]` statement. Must execute even in the timeout path — add the call in the timeout exception handler too (after the session registry entry is appended there).
-  
-  Note: The timeout path currently returns early before the shared post-processing block. Refactor to ensure `_session_registry.append()`, `_log_entry()`, and `_print_status_table()` execute in both success and timeout paths. The simplest approach: don't return early from the timeout handler; instead set a flag and let a single post-processing block handle both cases.
-resolution: "mcp/session-spawner/server.py no longer exists. Architecture replaced by mcp/artifact-server."
+
+
+  **Call placement in call_tool()**: Insert just before the final `return [TextContent(...)]` statement. Must execute
+  even in the timeout path — add the call in the timeout exception handler too (after the session registry entry is
+  appended there).
+
+
+  Note: The timeout path currently returns early before the shared post-processing block. Refactor to ensure
+  `_session_registry.append()`, `_log_entry()`, and `_print_status_table()` execute in both success and timeout paths.
+  The simplest approach: don't return early from the timeout handler; instead set a flag and let a single
+  post-processing block handle both cases.
+resolution: mcp/session-spawner/server.py no longer exists. Architecture replaced by mcp/artifact-server.
 cycle_created: 1
 cycle_modified: null
-content_hash: "1bcc8a93343bd166bff03b1fad2162f936945cb8ccf90fc1b8fe29cd739a2a5f"
+content_hash: 1bcc8a93343bd166bff03b1fad2162f936945cb8ccf90fc1b8fe29cd739a2a5f
 token_count: 793
-file_path: .ideate/work-items/WI-023.yaml
+file_path: work-items/WI-023.yaml

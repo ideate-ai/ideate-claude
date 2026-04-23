@@ -1,0 +1,13 @@
+id: D-112
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "`tools/index.ts` dispatcher plus five group files: `context.ts`, `query.ts`, `execution.ts`, `analysis.ts`, `write.ts`. Non-overlapping file scope enables parallel execution of WI-185 through WI-189."
+rationale: GP-4 (Parallel-First Design) and C-6. Each group file is independently authored with no shared mutable state.
+cycle_created: 1
+cycle_modified: null
+content_hash: e59a35f70a84bb9cfe5fc972ea4e5da07cb07bbee6553e785a5732753a85c691
+token_count: 134
+file_path: .ideate/decisions/D-112.yaml

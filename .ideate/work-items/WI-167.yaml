@@ -13,11 +13,11 @@ scope:
   - path: mcp/artifact-server/src/indexer.ts
     op: modify
 depends:
-  - "160"
-  - "161"
+  - '160'
+  - '161'
 blocks: []
 criteria:
-  - "domainQuestions Drizzle table definition includes addressed_by: text('addressed_by') (nullable)"
+  - 'domainQuestions Drizzle table definition includes addressed_by: text(''addressed_by'') (nullable)'
   - createSchema DDL SQL includes addressed_by TEXT column in domain_questions table
   - CURRENT_SCHEMA_VERSION in schema.ts incremented to 4
   - buildRow for domain_questions includes addressed_by field mapped from doc.addressed_by
@@ -25,52 +25,86 @@ criteria:
   - npm run build succeeds; all existing tests pass
 module: null
 domain: null
-notes: |
+notes: >
   # WI-167: domainQuestions.addressed_by column
+
 
   ## Context
 
-  `EDGE_TYPE_REGISTRY.addressed_by.source_types` in `schema.ts` includes `"domain_question"` as a valid source type for `addressed_by` edges. This means the registry expects `domain_question` YAML objects to have an `addressed_by` field that gets indexed into the `edges` table.
 
-  However, the `domainQuestions` Drizzle table in `db.ts` does not have an `addressed_by` column. The findings table does (added in WI-152). The edge-based tracking works (it goes through the `edges` table) but the column-based denormalization on `domainQuestions` is absent.
+  `EDGE_TYPE_REGISTRY.addressed_by.source_types` in `schema.ts` includes `"domain_question"` as a valid source type for
+  `addressed_by` edges. This means the registry expects `domain_question` YAML objects to have an `addressed_by` field
+  that gets indexed into the `edges` table.
 
-  This means queries that look up `addressed_by` via the `domainQuestions` table column find nothing, even for questions that have been addressed.
+
+  However, the `domainQuestions` Drizzle table in `db.ts` does not have an `addressed_by` column. The findings table
+  does (added in WI-152). The edge-based tracking works (it goes through the `edges` table) but the column-based
+  denormalization on `domainQuestions` is absent.
+
+
+  This means queries that look up `addressed_by` via the `domainQuestions` table column find nothing, even for questions
+  that have been addressed.
+
 
   ## Fix: add addressed_by column
 
+
   ### In schema.ts
 
-  Add `addressed_by TEXT` to the `domain_questions` table DDL in `createSchema`. The column is nullable (a question may not yet be addressed).
 
-  Increment `CURRENT_SCHEMA_VERSION` from 3 to 4. The startup schema version check will delete and recreate the database on version mismatch — this is the correct behavior for the development phase.
+  Add `addressed_by TEXT` to the `domain_questions` table DDL in `createSchema`. The column is nullable (a question may
+  not yet be addressed).
+
+
+  Increment `CURRENT_SCHEMA_VERSION` from 3 to 4. The startup schema version check will delete and recreate the database
+  on version mismatch — this is the correct behavior for the development phase.
+
 
   ### In db.ts
 
+
   Add `addressed_by: text('addressed_by')` (nullable) to the `domainQuestions` Drizzle table definition.
+
 
   ### In indexer.ts (buildRow for domain_questions)
 
-  The `buildRow` function currently maps YAML document fields to database columns. Add `addressed_by` to the domain_questions mapping:
+
+  The `buildRow` function currently maps YAML document fields to database columns. Add `addressed_by` to the
+  domain_questions mapping:
+
 
   ```typescript
+
   addressed_by: toStrOrNull(doc.addressed_by),
+
   ```
 
-  Look for the existing `buildRow` mapping for domain_questions (it will have `id`, `type`, `domain_name`, `title`, etc.) and add `addressed_by` there.
+
+  Look for the existing `buildRow` mapping for domain_questions (it will have `id`, `type`, `domain_name`, `title`,
+  etc.) and add `addressed_by` there.
+
 
   ### In schema.test.ts
 
-  Add a test assertion that the `domain_questions` table has an `addressed_by` column. Follow the pattern used for the existing `addressed_by` test on the `findings` table.
+
+  Add a test assertion that the `domain_questions` table has an `addressed_by` column. Follow the pattern used for the
+  existing `addressed_by` test on the `findings` table.
+
 
   ## Files to examine
 
+
   - `mcp/artifact-server/src/schema.ts` — DDL for `domain_questions` table and `CURRENT_SCHEMA_VERSION` constant
+
   - `mcp/artifact-server/src/db.ts` — `domainQuestions` Drizzle table definition
+
   - `mcp/artifact-server/src/indexer.ts` — `buildRow` function, domain_questions case
-  - `mcp/artifact-server/src/__tests__/schema.test.ts` — existing addressed_by column tests for findings table (use as pattern)
+
+  - `mcp/artifact-server/src/__tests__/schema.test.ts` — existing addressed_by column tests for findings table (use as
+  pattern)
 cycle_created: 1
 cycle_modified: null
 content_hash: cd8cccd9cb2b2a976939af31ef3ab6a355249d85dcaea507b093ff523aa8fedf
 token_count: 841
-file_path: .ideate/work-items/WI-167.yaml
-resolution: "Verified complete: DDL, Drizzle, buildRow, and test all include addressed_by"
+file_path: work-items/WI-167.yaml
+resolution: 'Verified complete: DDL, Drizzle, buildRow, and test all include addressed_by'

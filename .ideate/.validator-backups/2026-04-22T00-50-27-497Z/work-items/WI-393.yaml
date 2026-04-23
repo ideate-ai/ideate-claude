@@ -1,0 +1,45 @@
+id: WI-393
+type: work_item
+title: Add type validation to ideate_artifact_query for unknown types
+status: done
+complexity: small
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/query.ts
+  - op: modify
+    path: mcp/artifact-server/src/__tests__/query.test.ts
+depends: []
+blocks: []
+criteria:
+  - ideate_artifact_query rejects unknown types with descriptive error
+  - Error message lists valid types
+  - Existing tests pass
+  - New tests cover validation
+domain: artifact-structure
+notes: |-
+  # WI-393: Add type validation to ideate_artifact_query
+
+  ## Context
+  Q-94: The refine skill used type 'journal' instead of 'journal_entry' and received empty results silently. This caused it to operate without project history.
+
+  ## Scope
+  - `mcp/artifact-server/src/tools/query.ts` (modify)
+  - `mcp/artifact-server/src/__tests__/query.test.ts` (modify)
+
+  ## Implementation Notes
+  Add validation in `handleArtifactQuery`:
+  1. Check if `type` parameter is in `TYPE_TO_EXTENSION_TABLE`
+  2. If unknown type, throw error with message listing valid types
+  3. Add tests for unknown type handling
+
+  ## Acceptance Criteria
+  - Unknown type returns descriptive error
+  - Error lists valid types
+  - Existing tests pass
+  - New tests cover validation
+resolution: null
+cycle_created: 3
+cycle_modified: 1
+content_hash: 9bcc0fcf27d3cf1c445627a8b641b511d6b9d6e3b8551b4a45c325e7323b0ab7
+token_count: 327
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-393.yaml

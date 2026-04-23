@@ -1,0 +1,13 @@
+id: D-104
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-180 added a version-mismatch test that verifies both the `false` return value and that the database file was deleted from disk. The file deletion is a destructive side-effect of the mismatch path; testing only the return value would leave the destructive operation unverified. Resolves Q-70.
+rationale: Deleting the wrong database is a data-loss risk. When a function's most consequential behavior is a side-effect, that side-effect must be directly asserted in tests. The user delegated scope judgment and the reviewer's assessment that deletion must be tested was applied.
+cycle_created: 1
+cycle_modified: null
+content_hash: b7d7f14e2d9ce789d956e4f3dbf4b1c8694e865e7b2f6a7b4d610540f5670a51
+token_count: 199
+file_path: .ideate/decisions/D-104.yaml

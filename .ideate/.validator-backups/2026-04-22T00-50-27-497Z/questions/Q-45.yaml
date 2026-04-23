@@ -1,0 +1,14 @@
+id: Q-45
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Phase 2 tools surfacing historical findings will be missing the majority of the historical record (all incremental reviews). The WI-146 spec is ambiguous about scope.
+source: archive/cycles/017/gap-analysis.md IG3; archive/cycles/017/decision-log.md OQ-4
+resolution: WI-165 added migration for decision-log.md, summary.md, review-manifest.md, and archive/incremental/ files. WI-168 then registered the 10 previously-unregistered document types (including decision_log, cycle_summary, review_manifest) in the indexer via the document_artifacts table.
+resolved_in: 18
+description: "`migrateArchiveCycles` skips four of seven+ file types per cycle directory, including all incremental review files. The majority of structured review history is not migrated."
+cycle_created: 1
+cycle_modified: null
+content_hash: "7d4b6af4314d1db168958035f0b0f3331980171c1be54c3e525b6752766a2cec"
+token_count: 236
+file_path: .ideate/questions/Q-45.yaml

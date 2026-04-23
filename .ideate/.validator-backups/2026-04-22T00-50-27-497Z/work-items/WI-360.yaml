@@ -1,0 +1,43 @@
+id: WI-360
+type: work_item
+title: Add model_overrides to IdeateConfigJson
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/config.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "IdeateConfigJson interface includes model_overrides?: Record<string, string>"
+  - "getConfigWithDefaults() returns model_overrides: {} when field absent from config.json"
+  - getConfigWithDefaults() returns populated model_overrides when field present
+  - ideate_get_config tool response includes model_overrides field in all cases
+  - All existing config tests still pass
+domain: artifact-structure
+notes: |-
+  Add `model_overrides` field to `IdeateConfigJson` in `mcp/artifact-server/src/config.ts`.
+
+  ## Changes
+
+  ### config.ts
+
+  1. Add `model_overrides?: Record<string, string>` to the `IdeateConfigJson` interface.
+  2. Add `model_overrides: {}` as the default in `getConfigWithDefaults()`. The effective model for any agent is: `config.model_overrides[agentName] ?? hardcoded_default_in_skill`.
+
+  No model validation is performed at the schema level — model string validation belongs in the `ideate_update_config` tool (WI-362).
+
+  ### config.test.ts
+
+  Add tests:
+  - `getConfigWithDefaults()` returns `model_overrides: {}` when field is absent from config.json.
+  - `getConfigWithDefaults()` returns the populated `model_overrides` object when field is present.
+  - `ideate_get_config` tool response includes `model_overrides` field.
+resolution: null
+cycle_created: 68
+cycle_modified: null
+content_hash: 9886ed3e107afeebd2e97be13479ed90e526e6b14bb715cc204ef084426f565e
+token_count: 395
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-360.yaml

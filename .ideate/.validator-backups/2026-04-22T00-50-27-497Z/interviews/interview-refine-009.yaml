@@ -1,0 +1,24 @@
+id: interview-refine-009
+type: interview
+title: "Refinement Interview — Cycle 009: PM Evolution & Metrics Research"
+entries:
+  - question: What specific changes do you want to make?
+    answer: "Four areas: (1) Ensure token metrics (input/output/cache/agent type) are accurately tracked through MCP. Currently all show as 0/unknown. (2) Track similar metrics from plugin side — investigate ~/.claude, ccusage npm package, SubagentStop hooks. (3) Add descriptive metadata to phases/projects with auto-suggest naming. (4) Build out ideate as singular interface for all planning and execution, not just SDLC."
+    domain: null
+  - question: How should we structure this?
+    answer: Research first, then plan subsequent phases according to findings.
+    domain: null
+  - question: For naming metadata — what UX?
+    answer: Auto-suggest with retroactive renaming. /ideate:settings is for global workspace settings, not project/phase management — need a better mechanism.
+    domain: artifact-structure
+  - question: What kinds of work beyond SDLC?
+    answer: Ad-hoc tasks, multi-project coordination, lifecycle management. Want ideate to be standalone project management — Jira replacement. Hooks and reporting for 3rd party integration, but should stand alone.
+    domain: workflow
+  - question: "Re: metrics capture approach?"
+    answer: Investigate ~/.claude or ~/.claude.json for token tracking. ccusage npm package as reference. Need to understand design constraints before committing to implementation.
+    domain: artifact-structure
+  - question: "Re: workflow management model?"
+    answer: Don't copy a specific model. Create a conceptual model that tracks big ideas → actionable work with abstractions for different stakeholders. SDLC is more than engineers — reporting for leadership, cycle planning for ICs, medium-sized objectives in the middle. The hierarchy (workspace/project/phase/cycle) has broad strokes; we need ways to interact at different levels.
+    domain: workflow
+content_hash: 4ebc7dbfbe9cc7e8bf482ff881bdcccfd3817983f7057d8097926d8cdf654b40
+token_count: 497

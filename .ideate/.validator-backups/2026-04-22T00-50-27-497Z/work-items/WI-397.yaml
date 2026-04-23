@@ -1,0 +1,60 @@
+id: WI-397
+type: work_item
+title: Add typed helper functions for Drizzle ORM operations
+status: done
+complexity: medium
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/indexer.ts
+  - op: modify
+    path: mcp/artifact-server/src/tools/write.ts
+  - op: modify
+    path: mcp/artifact-server/src/tools/index.ts
+  - op: modify
+    path: mcp/artifact-server/src/ppr.ts
+  - op: modify
+    path: mcp/artifact-server/src/tools/analysis.ts
+depends: []
+blocks:
+  - WI-398
+criteria:
+  - Drizzle ORM operations use typed helper functions instead of `any` casts
+  - The `// eslint-disable-next-line @typescript-eslint/no-explicit-any` pattern is removed or justified with type-safe alternatives
+  - TypeScript compilation succeeds without the any-related disables
+  - All database operations maintain type safety through the call chain
+domain: artifact-structure
+notes: |-
+  ## Context
+  The codebase uses `// eslint-disable-next-line @typescript-eslint/no-explicit-any` extensively (30+ occurrences) to bypass TypeScript's type checking for Drizzle ORM operations. This pattern bypasses type safety, turning compile-time errors into runtime errors.
+
+  ## Affected Files
+  - `src/indexer.ts`
+  - `src/tools/write.ts`
+  - `src/tools/index.ts`
+  - `src/ppr.ts`
+  - `src/tools/analysis.ts`
+
+  ## Approach
+  1. Create typed helper functions for common Drizzle patterns:
+     - `upsertNode()` with proper types
+     - `upsertWorkItem()` with proper types
+     - `upsertFinding()` with proper types
+  2. Use Drizzle's typed API methods where possible
+  3. Remove `eslint-disable-next-line @typescript-eslint/no-explicit-any` comments
+  4. Verify TypeScript compilation succeeds
+
+  ## Key Pattern to Replace
+  ```typescript
+  // Before
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  .insert(nodes as any).values(nodeRow as any)
+
+  // After
+  .insert(nodes).values(nodeRow)  // with proper types
+  ```
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 399e511e6595156c1051d45aa0fd5adbc5d33d84f62aa239f34967db86ffa1c3
+token_count: 490
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-397.yaml

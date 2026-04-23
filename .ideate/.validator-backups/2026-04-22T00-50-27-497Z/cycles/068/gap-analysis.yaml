@@ -1,0 +1,33 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Fail
+
+  ## Missing Requirements
+  None. All five deliverables from the refinement interview are present.
+
+  ## Significant Gaps
+
+  ### EC1: model_overrides key deletion impossible through ideate_update_config
+  - File: mcp/artifact-server/src/tools/config.ts
+  - The settings skill's 'Clear model override' feature (SKILL.md Phase 2a Option 3) passes the remaining model_overrides map (without the cleared key) as the patch. The merge logic spreads rawStored.model_overrides first, re-injecting the cleared key. Silent non-operation. No test covers this.
+  - Severity: Significant
+
+  ### II1: autopilot/SKILL.md Phase 0 missing model_overrides clause
+  - File: skills/autopilot/SKILL.md:17
+  - All five other skills that spawn agents include the two-part Phase 0 pattern: agent_budgets for maxTurns AND model_overrides for model selection. The autopilot coordinator reads only agent_budgets. The model_overrides clause is entirely absent. The coordinator spawns proxy-human for Andon events directly; users who set model_overrides.proxy-human will see the override honored in execute/review phases but not by the coordinator itself.
+  - Severity: Significant
+
+  ## Minor Gaps
+
+  ### MI1: Plugin version not bumped after new skill and MCP tool
+  - Files: .claude-plugin/plugin.json, .claude-plugin/marketplace.json
+  - P-16 requires version update before cycle completion when skills/agents/interfaces change. Cycle 68 added /ideate:settings (new skill) and ideate_update_config (new MCP tool). Both files still show version 3.3.0.
+  - Severity: Minor
+
+  ## Prior Cycle Gaps Resolved
+  - Q-84 (governed_by/informed_by missing from EDGE_TYPE_REGISTRY): resolved in WI-361.
+content_hash: 70be246aaca5a71d2c3db8cabad7f944dd6d995fb725b33bb252a29acd9528bb
+token_count: 439
+file_path: .ideate/cycles/068/gap-analysis.yaml

@@ -33,18 +33,24 @@ criteria:
   - No question files are deleted — content is preserved, only quoting is fixed
   - After changes, deleting index.db and restarting MCP server results in all 11 questions appearing in the index
 domain: artifact-structure
-notes: |-
+notes: >-
   # WI-309: Fix 11 question files with backtick parse errors
 
+
   ## Overview
-  Addresses code-reviewer M2 from cycle 058 review. Same root cause as WI-303 (backtick in unquoted YAML strings) but in .ideate/questions/ files instead of work-items.
+
+  Addresses code-reviewer M2 from cycle 058 review. Same root cause as WI-303 (backtick in unquoted YAML strings) but in
+  .ideate/questions/ files instead of work-items.
+
 
   Affected files: Q-03, Q-21, Q-39, Q-45, Q-46, Q-49, Q-50, Q-52, Q-61, Q-65, Q-79
 
-  Fix: wrap description strings containing backticks in double quotes, escaping internal double quotes. Same approach as WI-303.
+
+  Fix: wrap description strings containing backticks in double quotes, escaping internal double quotes. Same approach as
+  WI-303.
 resolution: null
 cycle_created: 59
 cycle_modified: null
 content_hash: b1bfc119cf4e274e089c654542d563ad596c8b2f4627be6bfff27bf61266c9ae
 token_count: 387
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-309.yaml
+file_path: work-items/WI-309.yaml

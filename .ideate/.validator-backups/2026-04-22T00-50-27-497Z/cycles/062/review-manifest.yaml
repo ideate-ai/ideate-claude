@@ -1,0 +1,14 @@
+id: review-manifest
+type: cycle_summary
+cycle: 62
+content: |-
+  | WI | Title | Scope | Status | Incremental Review |
+  |---|---|---|---|---|
+  | WI-323 | MCP server dormant mode for graceful first-time startup | mcp/artifact-server/src/index.ts | done | N/A (emergency fix) |
+  | WI-324 | Qualify agent name references in skill files | 8 skill files | done | N/A (emergency fix) |
+  | WI-325 | Add test coverage for MCP dormant mode startup | mcp/artifact-server/src/server.ts, src/__tests__/dormant.test.ts, src/index.ts | done | Pass with rework (2 significant, 2 minor fixed) |
+  | WI-326 | Research LLM prompt testing frameworks | N/A (research) | done | N/A (research artifact) |
+  | WI-327 | Version bump to 3.2.1 and sync plugin cache | plugin.json, marketplace.json, package.json | done | N/A (version bump) |
+content_hash: 246dbec80c26422b65d65d9a800e858463f2cfd325a25f52c7ead0fd8fab5944
+token_count: 204
+file_path: .ideate/cycles/062/review-manifest.yaml

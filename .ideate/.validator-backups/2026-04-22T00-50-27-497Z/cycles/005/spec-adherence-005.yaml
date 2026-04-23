@@ -1,0 +1,30 @@
+id: spec-adherence-005
+type: cycle_summary
+title: Spec Adherence Review — Cycle 5
+reviewer: spec-reviewer
+content: |-
+  ## Principle Violation Verdict: Pass (all policies followed)
+  ## Work Item Verdict: Partial Pass — 2 deviations
+
+  ## WI-411 Criteria Verification
+
+  - **AC1 — metrics_event redirects to handleEmitMetric**: Fail (deviation). Implementation inlines `fs.appendFileSync` rather than calling `handleEmitMetric(ctx, { payload: content })`. The functional behavior differs (no SQLite row written) from the criterion's intent. The WI resolution field documents the rationale (circular import avoidance) but the criterion was not updated before closure.
+  - **AC2 — interview_question routes to interviews/{id}.yaml**: Pass. `resolveArtifactPath` has the exact case at write.ts:719-720.
+  - **AC3 — P-46 test imports TYPE_TO_EXTENSION_TABLE**: Pass. Test uses `Object.keys(dbSchema.TYPE_TO_EXTENSION_TABLE).filter(t => !EXCLUDED_TYPES.has(t))` at tools.test.ts:2205.
+  - **AC4 — NOT NULL field assertions for finding/metrics_event/interview_question**: Partial fail. Finding and interview_question have checkFields assertions. metrics_event was removed from cases (no SQLite row written by redirect); WI-411.yaml criterion 4 required metrics_event field assertions which are absent.
+  - **AC5 — rollback tests for finding/metrics_event/interview_question**: Partial fail. finding and interview_question rollback tests exist. metrics_event rollback test absent. WI notes acknowledge this may be intentional but no explicit documented skip in the test file.
+  - **AC6 — all tests pass**: 484 tests pass (per WI resolution field).
+
+  ## Policy Adherence
+
+  - **P-44**: Pass. YAML write before SQLite transaction; cleanup on failure. Both finding and interview_question use correct two-phase pattern.
+  - **P-45**: Pass. Extension-table upserts route through db-helpers (upsertFinding, upsertInterviewQuestion).
+  - **P-46**: Pass. Every TYPE_TO_EXTENSION_TABLE type has either a dispatch branch or a legitimate early-return redirect. Coverage test enforces this dynamically.
+
+  ## Deviations
+
+  ### D1: metrics_event inlines append instead of calling handleEmitMetric
+  ### D2: metrics_event field assertions and rollback test absent (criteria 4 and 5 not fully met for metrics_event)
+content_hash: 1b7038693059f0b59738bc3015103cf65fd638cf2c9831530f29564257aed6df
+token_count: 573
+file_path: .ideate/cycles/005/spec-adherence-005.yaml

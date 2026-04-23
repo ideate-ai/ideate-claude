@@ -1,0 +1,15 @@
+id: P-46
+type: domain_policy
+title: TYPE_TO_EXTENSION_TABLE dispatch completeness invariant
+rule: Every type registered in TYPE_TO_EXTENSION_TABLE must have a corresponding dispatch branch in handleWriteArtifact that calls the appropriate extension-table upsert function from db-helpers.ts. A compile-time type check or test-time assertion must enforce this completeness invariant so that adding a type to the registry without a dispatch branch is caught before review.
+derived_from:
+  - D-141
+  - D-140
+  - P-42
+  - P-45
+domain: artifact-structure
+established: cycle 3
+status: active
+content_hash: 42dd6a1dc702f0277da22102e19bbee787b3b8e41346f37d604c0f2fac48f7b3
+token_count: 146
+file_path: .ideate/policies/P-46.yaml

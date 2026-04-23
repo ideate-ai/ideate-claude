@@ -1,0 +1,15 @@
+id: P-33
+type: domain_policy
+domain: artifact-structure
+title: MCP tool descriptions and responses must not expose storage implementation details
+description: MCP tool descriptions (in TOOLS array), inputSchema parameter descriptions, error fallback messages, and normal responses must not include file paths or storage implementation details. Tools return artifact designations (WI-120, P-05, D-10) rather than file locations. This abstraction allows the underlying storage to evolve without breaking tool consumers and keeps responses concise.
+established: "65"
+status: active
+amendment_history:
+  - cycle: 0
+    change: "Scope extended: policy now covers tool description strings in TOOLS array and error fallback messages, in addition to tool response payloads. Full-audit 2026-03-28 found three tool descriptions and one error fallback leaking .ideate/ paths to agents."
+  - cycle: 2
+    change: "Scope extended: policy now explicitly covers inputSchema parameter descriptions in addition to top-level tool descriptions, error fallback messages, and responses. Cycle 2 spec-adherence review found ideate_emit_metric payload parameter description mentioning 'metrics/' path and 'SQLite' as storage details."
+content_hash: 579fa831df07b88b82e5934a0eea3dbd22d25f9e26a36a497766b494b17b95d3
+token_count: 303
+file_path: .ideate/policies/P-33.yaml

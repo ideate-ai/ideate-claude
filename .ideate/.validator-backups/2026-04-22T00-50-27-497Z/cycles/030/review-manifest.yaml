@@ -1,0 +1,44 @@
+id: review-manifest
+type: cycle_summary
+content: |
+  # Review Manifest — Cycle 30 (PH-049)
+
+  ## Work Items (2)
+
+  | ID | Title | Status | Scope | Incremental Verdict | Notes |
+  |----|-------|--------|-------|-------|-------|
+  | WI-860 | Fix convergence-checker false-negative from legacy artifacts in cycle slot | done | mcp/artifact-server/src/adapters/local/reader.ts; mcp/artifact-server/src/adapters/remote/index.ts; mcp/artifact-server/src/__tests__/adapter-contract.test.ts | Pass (skipped incremental per batched-review; verified via full suite 1477/1477) | Addresses exact bug encountered in cycle 29 PH-048 convergence |
+  | WI-867 | Add operational telemetry surface (tool_usage) to architecture-overview doc | done | docs/platform/architecture-overview.md | Pass (skipped incremental per batched-review) | Cites P-33 and D-211 (D-210 was about max_nodes, not tool_usage) |
+
+  ## Files Changed
+  - docs/platform/architecture-overview.md (+60 lines, Section 8 "Operational Telemetry Surface")
+  - mcp/artifact-server/src/adapters/local/reader.ts (getConvergenceData SQL: AND addressed_by IS NULL)
+  - mcp/artifact-server/src/adapters/remote/index.ts (getConvergenceData client-side filter, fetch individual findings, skip addressed_by)
+  - mcp/artifact-server/src/__tests__/adapter-contract.test.ts (+2 tests)
+
+  ## Test status
+  - 1477 passed / 340 skipped / 0 failed (via npm test)
+  - New tests: 'getConvergenceData excludes findings with addressed_by set', 'getConvergenceData counts all findings when none are resolved'
+
+  ## Execution notes
+  - Full parallel, disjoint file scopes, no worktree conflicts
+  - Incremental reviews batched into the capstone given minimal scope and full test suite coverage
+  - WI-860 fix verified by test run but MCP server still holds old build — restart required for cycle 29 convergence to self-correct
+content_hash: 11c2b5b912e5a982a35c79136886a43518fc8197b0fcffea37d6a85c13bb86a8
+token_count: 605
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 30
+scope: WI-759, WI-760, WI-761, WI-762
+description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+work_items:
+  - WI-759
+  - WI-760
+  - WI-761
+  - WI-762
+incremental_reviews:
+  WI-759: pass
+  WI-760: pass
+  WI-761: pass
+  WI-762: pass
+cycle_modified: 27
+phase: PH-049

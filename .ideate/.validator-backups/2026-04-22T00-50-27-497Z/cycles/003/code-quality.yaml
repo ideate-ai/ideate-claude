@@ -1,0 +1,47 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |
+  # Cycle 3 Capstone Code Review
+
+  **Verdict: Fail** — 1 significant, 2 minor.
+
+  ## Significant
+
+  ### CR-S1: ValidatingAdapter guard tests missing for indexFiles/removeFiles
+  - File: mcp/artifact-server/src/__tests__/validating.test.ts
+  - validating.ts:462-483 implements INVALID_PATHS guards for indexFiles/removeFiles, but validating.test.ts has no describe blocks for either method. Mock stub records calls but no test exercises guard path.
+  - Fix: add describe blocks mirroring archiveCycle pattern, with one test for non-array input rejection and one for valid pass-through.
+
+  ## Minor
+
+  ### CR-M1: getMetricsEvents cycle filter TS-side instead of SQL
+  - File: mcp/artifact-server/src/adapters/local/reader.ts:544-549, 627
+  - Comment incorrectly claims cycle cannot be SQL-filtered; nodes.cycle_created is in SELECT. Move to WHERE clause.
+
+  ### CR-M2: Stale "mirrors" comments in reader.ts reference removed symbols
+  - File: mcp/artifact-server/src/adapters/local/reader.ts:396, 662, 1200
+  - Comments reference runFilterMode, runGraphMode, buildSummaryMap (deleted by WI-804). Reword.
+
+  ## Build verification
+
+  - tsc --noEmit clean
+  - 1400 tests pass / 332 skipped
+content_hash: 48789caaa29b7b31e550174228203ee77f5cee202e5564265bce94147065a26b
+token_count: 519
+file_path: .ideate/cycles/068/code-quality.yaml
+verdict: Fail
+phase: PH-045
+scope: "cycle 1 capstone (5 done WIs: WI-797, WI-799, WI-800, WI-801, WI-802)"
+summary: "Cycle achieves its primary goals (clean adapter paths in write.ts and analysis.ts, convergence false-positive fix, PPR key normalization, doc cross-references). WI-800 commit claim is overstated: handleArtifactQuery in query.ts still has a live ctx.db fallback (S1). Adapter-guard pattern is inconsistent across the three modified handlers (S2). Doc sync gaps in ppr-alignment-research.md (M1)."
+findings:
+  critical: 0
+  significant: 1
+  minor: 2
+cycle: 3
+cycle_modified: 27
+review_mode: differential
+findings_count:
+  critical: 0
+  significant: 2
+  minor: 3

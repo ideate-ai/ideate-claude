@@ -1,0 +1,32 @@
+id: WI-340
+type: work_item
+title: Remove file_path from MCP tool responses
+status: done
+complexity: medium
+scope: []
+depends: []
+blocks: []
+criteria:
+  - All tool responses in mcp/artifact-server/src/tools/*.ts return artifact designations (WI-120, P-05) without file_path field
+  - ideate_artifact_query response has no file_path
+  - ideate_get_status responses have no file_path
+  - All existing tests pass
+  - No file_path in any tool return type
+domain: artifact-structure
+notes: |-
+  Remove file_path field from all tool response objects in the MCP artifact server. This enforces GP-8 (MCP Abstraction Boundary) and reduces token cost.
+
+  Files to modify:
+  - mcp/artifact-server/src/tools/query.ts (artifact_query, get_next_id)
+  - mcp/artifact-server/src/tools/context.ts (get_context_package, get_work_item_context, assemble_context)
+  - mcp/artifact-server/src/tools/analysis.ts (get_project_status, get_domain_state, etc.)
+  - mcp/artifact-server/src/tools/execution.ts (get_execution_status, get_review_manifest)
+  - mcp/artifact-server/src/tools/metrics.ts (get_metrics)
+
+  The file_path field leaks storage implementation details. Skills should reference artifacts by designation, not file path.
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 8afff048c6f41e898df67ad868288ea2841d30c4d7b4e5301a4e90188de376bd
+token_count: 316
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-340.yaml

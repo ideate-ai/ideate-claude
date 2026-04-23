@@ -1,0 +1,13 @@
+id: review-manifest
+type: cycle_summary
+cycle: 58
+autopilot_cycle: 2
+content: |-
+  | # | Title | File Scope | Incremental Verdict | Findings (C/S/M) |
+  |---|-------|------------|---------------------|------------------|
+  | 1 | WI-377: Fix pre-existing TypeScript type errors blocking tsc --noEmit | mcp/artifact-server/src/__tests__/metrics.test.ts, mcp/artifact-server/src/__tests__/config.test.ts, mcp/artifact-server/src/tools/config.ts | Pass | 0/0/1 |
+  | 2 | WI-378: Remove 3 remaining P-33 violations from tool descriptions in index.ts | mcp/artifact-server/src/tools/index.ts | Pass (after rework) | 0/0/1 (post-rework) |
+  | 3 | WI-379: Fix stale ARCHITECTURE.md entries in section 9.2 | ARCHITECTURE.md | Pass | 0/0/0 |
+content_hash: c9b128e1cad2b143628a353b34784f6a41f05ef471ac19f08baa86e6e5be1b89
+token_count: 183
+file_path: .ideate/cycles/058/review-manifest.yaml

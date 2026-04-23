@@ -1,0 +1,51 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |
+  # Cycle 3 Capstone Gap Analysis
+
+  **Verdict: Fail** — 3 significant, 2 minor.
+
+  ## Significant
+
+  ### GA-S1: initServer runs rebuildIndex and opens SQLite even in remote-backend mode
+  - File: mcp/artifact-server/src/server.ts:131-149
+  - When config.backend = "remote", initServer still opens local SQLite, runs rebuildIndex, registers watcher. Watcher fires adapter.indexFiles/removeFiles which are correct no-ops on RemoteAdapter, but SQLite rebuild is wasted work and ctx.db/drizzleDb point to a real handle that no tool queries. Resource leak.
+  - Fix: gate openDatabase/rebuildIndex/watcher block behind backend === "local" check.
+
+  ### GA-S2: getMetricsEvents, indexFiles, removeFiles absent from adapter-contract.md
+  - (Duplicate of SR-S1.) Three new methods undocumented in canonical contract.
+
+  ### GA-M1: No adapter-level tests for getMetricsEvents in __tests__/adapters/local/
+  - Severity: Significant per gap-analyst (test coverage of non-trivial SQL JOIN + JSON parse path)
+  - File: mcp/artifact-server/src/adapters/local/reader.ts:538-660
+  - Only handler-level mock tests exercise getMetricsEvents. SQL JOIN and 3D filter logic untested at adapter layer. Regression in SQL or JSON parse path would not be caught.
+  - Fix: add 4-5 integration tests in adapter test file (cycle filter, agent_type filter, combined, empty result, no filter).
+
+  ## Minor
+
+  ### GA-M2: agent_type filter does full table scan
+  - File: mcp/artifact-server/src/adapters/local/reader.ts:624-660
+  - agent_type lives in payload JSON; no SQL column or json_extract index. Defer until table size grows.
+
+  ### GA-M3: Stale docstring in selectAdapter says remote "not yet implemented"
+  - File: mcp/artifact-server/src/server.ts:57
+  - Remote IS implemented and reachable. One-line fix.
+content_hash: 43a771e658325fd8cd9db62348655d9afef20bceed6c09969ab4a7f9a4013b45
+token_count: 624
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Fail
+phase: PH-045
+scope: cycle 1 capstone
+summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 3
+cycle_modified: 27
+review_mode: differential
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3

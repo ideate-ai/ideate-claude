@@ -14,57 +14,93 @@ criteria:
   - Phase 5 references `archive/cycles/{NNN}/summary.md` and `archive/cycles/{NNN}/` correctly
 module: null
 domain: null
-notes: |
+notes: >
   # WI-097: Fix stale reviews/final/ path references in skills/refine/SKILL.md
+
 
   ## Context
 
-  WI-091 fixed all stale `reviews/` path references in `specs/artifact-conventions.md` but did not cover `skills/refine/SKILL.md`. Two locations in refine's SKILL.md retain the old path pattern from before the domain layer migration.
 
-  Identified as Minor finding M1 in cycle 004 capstone review (code-quality and spec-adherence both flagged the same lines).
+  WI-091 fixed all stale `reviews/` path references in `specs/artifact-conventions.md` but did not cover
+  `skills/refine/SKILL.md`. Two locations in refine's SKILL.md retain the old path pattern from before the domain layer
+  migration.
+
+
+  Identified as Minor finding M1 in cycle 004 capstone review (code-quality and spec-adherence both flagged the same
+  lines).
+
 
   ## Changes to skills/refine/SKILL.md
 
+
   ### Location 1: Phase 3.2 Legacy Fallback (lines 87–92 approximately)
+
 
   Find the Phase 3.2 legacy fallback file list section. It references the old `reviews/final/` path structure like:
 
+
   ```
+
   11. `reviews/final/summary.md`
+
   12. `reviews/final/code-quality.md`
+
   13. `reviews/final/spec-adherence.md`
+
   14. `reviews/final/gap-analysis.md`
+
   15. `reviews/final/decision-log.md`
+
   16. `reviews/incremental/*.md`
+
   ```
+
 
   Replace all six with the archive layout:
 
+
   ```
+
   11. `archive/cycles/{NNN}/summary.md` — where NNN is the current cycle number from `domains/index.md`
+
   12. `archive/cycles/{NNN}/code-quality.md`
+
   13. `archive/cycles/{NNN}/spec-adherence.md`
+
   14. `archive/cycles/{NNN}/gap-analysis.md`
+
   15. `archive/cycles/{NNN}/decision-log.md`
+
   16. `archive/incremental/*.md`
+
   ```
+
 
   ### Location 2: Phase 5 interview track references (lines 108 and 124 approximately)
 
-  Find any references to `reviews/final/summary.md` in Phase 5 (the refinement interview section). These appear in instructions like "present the critical and significant findings from `reviews/final/summary.md`".
+
+  Find any references to `reviews/final/summary.md` in Phase 5 (the refinement interview section). These appear in
+  instructions like "present the critical and significant findings from `reviews/final/summary.md`".
+
 
   Replace `reviews/final/summary.md` with `archive/cycles/{NNN}/summary.md`.
 
+
   ## Verification
 
+
   After editing, confirm:
+
   ```
+
   grep -n 'reviews/final\|reviews/incremental' skills/refine/SKILL.md
+
   ```
+
   Should return no matches.
 cycle_created: 1
 cycle_modified: null
 content_hash: 43f3eb09987a99c6d3540b2c4a8bc0914ac4c7702ba02f3ffba202ffc3b60fef
 token_count: 612
-file_path: .ideate/work-items/WI-097.yaml
+file_path: work-items/WI-097.yaml
 resolution: Implemented during v3 migration

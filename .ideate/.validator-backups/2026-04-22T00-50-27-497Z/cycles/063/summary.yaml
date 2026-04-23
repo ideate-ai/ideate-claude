@@ -1,0 +1,27 @@
+id: summary
+type: cycle_summary
+cycle: 63
+content: |-
+  # Review Summary
+
+  ## Overview
+  Cycle 063 renamed autopilot to autopilot across the codebase and fixed 8 minor findings from cycle 062. The rename was incomplete on first pass — the capstone review caught 5 missed references in MCP source code and documentation. All were fixed during the review. Build clean, 340 tests pass, zero autopilot references remain in TS/MD/JSON files.
+
+  ## Significant Findings
+  - [gap-analyst/self] autopilot-state.ts still referenced autopilot-state.yaml as the on-disk filename — relates to: WI-329. Fixed.
+  - [gap-analyst/self] tools/index.ts journal skill enum still included 'autopilot' — relates to: WI-329. Fixed.
+  - [gap-analyst/self] tools/index.ts tool descriptions still referenced autopilot-state.yaml — relates to: WI-329. Fixed.
+  - [gap-analyst/self] tools.test.ts referenced autopilot-state.yaml in test fixtures — relates to: WI-329. Fixed.
+  - [gap-analyst/self] docs/context-package-spec.md referenced ideate:autopilot — relates to: WI-330. Fixed.
+
+  ## Minor Findings
+  - [gap-analyst/self] Legacy shell scripts (report-executive.sh, report-cycle.sh, report.sh, migrate-to-optimized.sh) still reference autopilot — relates to: cross-cutting. These are older utility scripts not in the critical path. Deferrable.
+
+  ## Findings Requiring User Input
+  None — all findings resolved from existing context.
+
+  ## Proposed Refinement Plan
+  No critical or significant findings require a refinement cycle. The 5 significant findings were fixed during this review. The legacy script references are minor and deferrable. The project is ready for user evaluation.
+content_hash: 56c95e7193f6bcbb9822a24389e5fb2ecbe8e9fcd9f07322e0e5a364c7f8f69e
+token_count: 406
+file_path: .ideate/cycles/063/summary.yaml

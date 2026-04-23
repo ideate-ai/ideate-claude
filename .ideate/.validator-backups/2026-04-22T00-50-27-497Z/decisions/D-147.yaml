@@ -1,0 +1,11 @@
+id: D-147
+type: domain_decision
+domain: artifact-structure
+title: P-44 exclusive transaction requirement applies to all write.ts handlers
+description: Cycle 2 spec-adherence review confirmed that handleWriteWorkItems, handleWriteArtifact, and handleUpdateWorkItems in write.ts call upsertPhase() with default deferred mode, violating P-44. WI-417 fixed handleEmitMetric only. P-44 amended to explicitly enumerate all affected handlers.
+rationale: P-44 already stated 'all MCP write handlers' but the cycle 1 fix (D-145) only addressed handleEmitMetric and handleAppendJournal. Implicit scope of 'all' was insufficient to prevent the same violation in write.ts. Explicit enumeration reduces future ambiguity.
+cycle: 2
+status: settled
+content_hash: 7549f2d2b3a08d64504a120f728108504f20214dc262d116de8ad1af9c98060a
+token_count: 183
+file_path: .ideate/decisions/D-147.yaml

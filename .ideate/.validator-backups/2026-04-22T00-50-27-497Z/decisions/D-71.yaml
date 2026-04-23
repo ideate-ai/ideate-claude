@@ -1,0 +1,13 @@
+id: D-71
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-156 moved six module-level `let` variables in `migrate-to-v3.ts` into a `MigrationContext` interface created inside `runMigration`. The interface is exported for test access. All 38 migration tests pass without behavioral change.
+rationale: Module-level state is unsafe if `runMigration` is ever invoked concurrently. A local context variable eliminates shared state entirely.
+cycle_created: 1
+cycle_modified: null
+content_hash: c33f231961a133f575b5d192e1f2f76e28e883fd15683dc0b1f168e115761030
+token_count: 149
+file_path: .ideate/decisions/D-71.yaml

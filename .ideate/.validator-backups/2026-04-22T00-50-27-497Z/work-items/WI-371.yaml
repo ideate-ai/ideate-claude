@@ -1,0 +1,40 @@
+id: WI-371
+type: work_item
+title: Fix P-33 violations in tool descriptions
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - The `ideate_bootstrap_project` tool description does not contain the string `.ideate/`
+  - The `ideate_update_config` tool description does not contain `.ideate/config.json`
+  - The `ideate_append_journal` tool description does not contain `journal.md`
+  - No tool description in the TOOLS array contains internal file path references (`.ideate/`, `config.json`, `journal.md`)
+  - "TypeScript compilation succeeds with no errors: `npx tsc --noEmit` in mcp/artifact-server/"
+  - All existing tests pass
+domain: artifact-structure
+notes: |-
+  Three description string changes in the TOOLS array in index.ts. Logic, schemas, and tests are unaffected.
+
+  ## Change 1: ideate_bootstrap_project (~line 586)
+  Current: description mentions 'Create .ideate/ directory with config.json and subdirs'
+  New: replace '.ideate/ directory' with 'project artifact directory' and remove 'config.json' path reference. Example: 'Create project artifact directory with config and subdirs. Use for project initialization.'
+
+  ## Change 2: ideate_update_config (~line 662)
+  Current: description mentions '.ideate/config.json'
+  New: replace with 'project config'. Example: 'Update project config settings. Accepts partial patch; deep-merges into current config.'
+
+  ## Change 3: ideate_append_journal (~line 244)
+  Current: description mentions 'journal.md'
+  New: replace with 'project journal'. Example: 'Append entry to the project journal. Use after significant work.'
+
+  P-34 requires descriptions under 50 words. Verify the new descriptions still meet this constraint.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 58c5c8ca4a867a7b4c51b72bffdbc132644cde269fb20819edc6d731e6354d7a
+token_count: 454
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-371.yaml

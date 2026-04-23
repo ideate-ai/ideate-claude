@@ -1,0 +1,14 @@
+id: P-29
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - v3 graph architecture decisions in cycle 016; cardinality analysis showing both relationships are always scalar
+established: cycle 016
+amended: null
+description: The `addressed_by` field on findings and `amended_by` field on domain policies are nullable scalar fields (at most one value, not arrays). When a new work item is created to address a finding, the agent updates the finding's `addressed_by` field. When a new policy amends an old one, the agent updates the old policy's `amended_by` field. The edge type registry derives edges from these fields at index time. This design makes "which findings are still open?" and "is this policy current?" answerable by field read without graph traversal.
+cycle_created: 1
+cycle_modified: null
+content_hash: "7df076451d793754264dd351e4f69fb4efdd022a32f9c6f5d92dd8dfcac1894c"
+token_count: 224
+file_path: .ideate/policies/P-29.yaml

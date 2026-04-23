@@ -1,0 +1,34 @@
+id: WI-396
+type: work_item
+title: Remove backup file from source tree
+status: done
+complexity: low
+scope:
+  - op: delete
+    path: mcp/artifact-server/src/indexer.ts.bak
+depends: []
+blocks: []
+criteria:
+  - The file mcp/artifact-server/src/indexer.ts.bak no longer exists
+  - Git status shows the file was removed
+  - No other .bak files exist in the src/ directory
+domain: artifact-structure
+notes: |-
+  ## Context
+  The full audit code review found a backup file `indexer.ts.bak` committed to the source tree at `mcp/artifact-server/src/indexer.ts.bak`. This 25KB dead code file bloats the repository and may confuse build tools.
+
+  ## Implementation
+  1. Delete the file `mcp/artifact-server/src/indexer.ts.bak`
+  2. Verify no other .bak files exist in src/
+  3. Run `git status` to confirm removal
+
+  ## Verification
+  - File no longer exists at the path
+  - No build errors after removal
+  - Tests pass: `npm test`
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 833af60903e824df0740d43b9818fd2ff8f01e92ee3a7e24fa307de552d16632
+token_count: 243
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-396.yaml

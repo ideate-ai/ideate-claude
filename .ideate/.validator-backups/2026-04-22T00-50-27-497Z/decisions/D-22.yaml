@@ -1,0 +1,13 @@
+id: D-22
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: The `quality_summary` event in `metrics.jsonl` stores per-severity counts nested under `findings.by_severity.{critical,significant,minor,suggestion}` and per-reviewer breakdowns under `findings.by_reviewer.{reviewer}.{severity}`. Severity counts are not present at the top level of the event object.
+rationale: The nested structure was specified in WI-093 and documented in `specs/artifact-conventions.md`. Consumers (e.g., report.sh) must read `findings.by_severity.*` — a top-level severity key will always be absent.
+cycle_created: 1
+cycle_modified: null
+content_hash: "84b70716810c381dd31a460ecf497ad4c376022e911b2d3e5bad45138915be49"
+token_count: 184
+file_path: .ideate/decisions/D-22.yaml

@@ -1,0 +1,37 @@
+id: WI-343
+type: work_item
+title: Consolidate autopilot state tools
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - manage_autopilot_state replaces get_autopilot_state and update_autopilot_state
+  - "Single tool with action parameter: get | update"
+  - All callers in skills/autopilot/ updated
+  - All tests pass
+  - Old tools removed
+domain: artifact-structure
+notes: |-
+  Consolidate get_autopilot_state and update_autopilot_state into manage_autopilot_state. Same outcome, same caller, same time.
+
+  New tool:
+  ```
+  ideate_manage_autopilot_state({
+    action: 'get' | 'update',
+    state?: { cycles_completed?, convergence_achieved?, ... }
+  })
+  ```
+
+  Files to modify:
+  - mcp/artifact-server/src/tools/autopilot-state.ts
+  - mcp/artifact-server/src/server.ts (tool registration)
+  - skills/autopilot/SKILL.md
+  - skills/autopilot/phases/*.md
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: f771ceb732051f1c0a9fa31e53edae983fd2cd556c0311b57747188f62fe7b0c
+token_count: 234
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-343.yaml

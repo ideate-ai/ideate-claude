@@ -1,0 +1,15 @@
+id: P-22
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - D-33 (amended)
+  - user correction after Cycle 008
+established: cycle 007
+amended: cycle 009, cycle 010, cycle 011
+description: When the code-reviewer emits a Critical finding titled "Startup failure after ...", `skills/execute/SKILL.md` Phase 8 and `skills/autopilot/phases/execute.md` finding-handling must immediately diagnose the root cause and apply a surgical fix if the cause is within the current work item's scope. After applying the fix, the smoke test must be re-run to confirm the smoke test passes. If it still fails, the root cause is classified as indeterminate and the Andon cord must be pulled. If the Andon cord is triggered, the executor must record a journal entry before escalating. The Andon cord is triggered only if the root cause cannot be fixed (requires changes outside the current work item, architectural changes, or the cause is indeterminate). Silent correction without diagnosis and user escalation without attempted repair are both incorrect. The appropriate smoke test is determined by the code-reviewer based on the work item's context — what a reasonable person would be expected to do to demo the work just completed (startup command, CLI invocation, library build, e2e test, or config/doc validation, as appropriate).
+cycle_created: 1
+cycle_modified: null
+content_hash: "467c2a0f201238d32ac69ecb4ac2d5f822a6f1e8171ecfc72f31c7593de485d7"
+token_count: 358
+file_path: .ideate/policies/P-22.yaml

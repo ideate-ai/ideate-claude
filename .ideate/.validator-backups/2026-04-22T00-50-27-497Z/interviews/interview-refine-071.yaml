@@ -1,0 +1,22 @@
+id: interview-refine-071
+type: interview
+title: Refinement Interview — Cycle 071
+entries:
+  - question: Review findings exist from the autopilot cycle reviews (cycles 3–7). Are you here to address those findings, to make other changes, or both?
+    answer: Start with the failing issues.
+    domain: null
+  - question: "II1: handleGetConvergenceStatus currently counts critical/significant findings by parsing markdown prose in cycle summary content. The proposed fix is to query the findings SQLite table directly (same approach handleGetProjectStatus uses), while keeping prose parsing only for the spec-adherence verdict. Is this scope acceptable, or do you also want a structured verdict field so the verdict lookup is SQL-based?"
+    answer: This is a good idea. Prose parsing for verdict only is acceptable.
+    domain: artifact-structure
+  - question: "II2: handleEmitMetric appends to metrics.jsonl; handleGetMetrics reads SQLite. These are disconnected — skills emitting metrics are never visible in handleGetMetrics. Option A: handleEmitMetric generates a unique ID and writes a proper metrics_event YAML artifact + SQLite upsert, deprecating JSONL entirely. Option B: dual write (JSONL + YAML). Option A also resolves MI1 (metrics/ not in IDEATE_SUBDIRS). Existing JSONL data: keep or discard?"
+    answer: Option A seems good. We can discard existing metrics.
+    domain: artifact-structure
+  - question: "Minor items from cycle 7: M1 (interviewFiles() dead helper in write-transaction.test.ts), MG1 (finding_severities object-input branch untested). Bundle these into the same cycle?"
+    answer: Yes, include in this cycle.
+    domain: artifact-structure
+  - question: Guiding principles — do any need to change given the planned changes?
+    answer: All principles still hold.
+    domain: null
+content_hash: 7001a28a1a900bc55935b021ff557384cde63d7067e6daa21a26c0662b34a64f
+token_count: 452
+file_path: .ideate/interviews/interview-refine-071.yaml

@@ -1,0 +1,54 @@
+reviewer: spec-reviewer
+cycle: 30
+type: full_audit
+content: |-
+  ## Verdict: Pass (with one minor documentation issue)
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  None.
+
+  ## Minor Findings
+
+  ### M1: Domain-curator still references `.md` extensions in section headers
+  - **File**: `/Users/dan/code/ideate/agents/domain-curator.md`
+  - **Lines**: 96, 104, 134
+  - **Issue**: Section headers for Phase 4 reference `.md` files:
+    - Line 96: `### 4.1 decisions.md`
+    - Line 104: `### 4.2 policies.md`
+    - Line 134: `### 4.3 questions.md`
+  - **Impact**: Low — these are section headers describing what the curator outputs.
+
+  ## Work Item Verification
+
+  ### WI-259: Fix domain-curator agent deprecated patterns — Mostly Pass
+  | Criterion | Status |
+  |-----------|--------|
+  | All {artifact-dir} placeholders changed to {project_root} | Pass |
+  | All references to .md files changed to YAML patterns | Partial — Phase 4 headers still use .md |
+  | domains/ subdirs reference YAML not .md files | Pass |
+
+  ### WI-260: Fix review skill *.md pattern reference — Pass
+  | Criterion | Status |
+  |-----------|--------|
+  | Line 436 references *.yaml not *.md | Pass |
+  | Pattern matches actual file naming convention | Pass |
+
+  ### WI-261: Complete init skill scaffold directories — Pass
+  | Criterion | Status |
+  |-----------|--------|
+  | plan/ directory included in scaffold | Pass |
+  | steering/ directory included in scaffold | Pass |
+  | Both have .gitkeep entries in Step 2 example | Pass |
+
+  ### WI-262: Update legacy documentation path placeholders — Pass
+  | Criterion | Status |
+  |-----------|--------|
+  | All {artifact_dir} changed to {project_root} | Pass |
+  | Consistent placeholder style across docs | Pass |
+
+  ## Suggestions
+  1. Consider follow-up for Phase 4 headers in domain-curator for complete P-25 compliance.
+  2. Document the distinction between placeholders and parameter names.

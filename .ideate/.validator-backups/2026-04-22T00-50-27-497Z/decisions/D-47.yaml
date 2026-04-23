@@ -1,0 +1,13 @@
+id: D-47
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-126 replaced the startup-specific smoke test instruction in `agents/code-reviewer.md:84-92` with a heuristic based on \"what would a reasonable person be expected to do to demo the work they just did?\" Five example types are listed as non-exhaustive: startup command, CLI --help/--version, library build/test suite, e2e test, and config/doc validation."
+rationale: The prior agent instruction assumed every project has a startup command, making the smoke test step structurally inert for library projects, CLI tools, and documentation-only work items. The demo heuristic resolves Q-27 without enumerating an exhaustive type list and aligns with GP-9 (Domain Agnosticism).
+cycle_created: 1
+cycle_modified: null
+content_hash: "03253aa55f9fdfa3858d664cb5b8a26ce8d874ba84e8bd0711ef63be12fe8ca9"
+token_count: 221
+file_path: .ideate/decisions/D-47.yaml

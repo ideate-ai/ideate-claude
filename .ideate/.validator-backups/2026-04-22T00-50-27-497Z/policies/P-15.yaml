@@ -1,0 +1,14 @@
+id: P-15
+type: domain_policy
+domain: project-boundaries
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture)
+established: cycle 001
+amended: cycle 026 — removed outpost-specific references; generalized to "external projects"
+description: Work item spec files and incremental review files for externally-owned components live in the external project's repository, not ideate; historical specs for moved components may be retained in ideate's journal but the authoritative record moves.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5704b3849529a906ec230de195401e756b18b1ab426a9c94dd52ca14bede1f2a"
+token_count: 151
+file_path: .ideate/policies/P-15.yaml

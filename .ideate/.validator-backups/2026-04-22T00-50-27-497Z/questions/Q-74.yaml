@@ -1,0 +1,13 @@
+id: Q-74
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Low — the 4 representative tests cover the structural pattern. A regression in a specific keyword or indicator character is unlikely but would be invisible to the test suite.
+source: archive/cycles/021/decision-log.md Q-74; archive/cycles/021/gap-analysis.md MG3
+resolution: "Confirmed that no `needsQuoting` function or equivalent custom quoting guard exists anywhere in the codebase. The `yaml` library (v2) handles all YAML quoting automatically. The concern about untested array-item guard conditions is moot: those conditions were removed and the library handles quoting natively."
+resolved_in: 38
+description: WI-179 expanded the array-item guard from 5 to 15 conditions. AC-3 required 4 representative tests, all of which are present and passing. The other 11 newly-activated conditions (`"false"`, `"null"`, `"yes"`, `"no"`, `"on"`, `"off"`, `startsWith("'")`, `startsWith(">")`, `startsWith("*")`, `startsWith("&")`, `startsWith("!")`, `startsWith("|")`) have no test. A silent regression in any one would not be caught.
+cycle_created: 1
+content_hash: 2b1aa8b90c77b960a85be3810724f1c2177303d767ab46e49ae647cf4aad592d
+token_count: 282
+file_path: .ideate/domain_question/Q-74.yaml

@@ -1,0 +1,13 @@
+id: D-92
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-175 added `/^\\s/.test(item)` to the array-item quoting condition in `toYaml` at `migrate-to-v3.ts:110`. The change was mirrored identically in `migrate-to-v3.js:146`. Closes Q-66. Array-item guard for reserved YAML scalar values and indicator characters remains absent — see Q-69."
+rationale: Array items with leading whitespace were emitted unquoted, producing syntactically invalid YAML. The scalar path at line 76 already guarded against leading whitespace; the array-item path did not. Full parity with the scalar guard was deferred as out of scope for this work item.
+cycle_created: 1
+cycle_modified: null
+content_hash: f1b31c7094ed16a4e6da8bf919a2e273632729aef64dda1f80588a9914731c5e
+token_count: 198
+file_path: .ideate/decisions/D-92.yaml

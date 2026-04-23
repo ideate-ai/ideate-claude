@@ -1,0 +1,13 @@
+id: F-427-001
+type: finding
+work_item: WI-427
+verdict: Pass (after rework)
+findings:
+  - severity: critical
+    description: "C1: .exclusive() returns callable but was not invoked — transaction never ran. Fixed: use deletePhase.exclusive() pattern matching existing handlers."
+  - severity: minor
+    description: "M1: atomicity test confirms deletions complete but does not verify rollback on mid-loop failure. Accepted without fix — scope expansion."
+summary: resolveContent JSON unwrap implemented correctly. handleArchiveCycle DELETE transaction fixed to call deletePhase.exclusive() per established pattern. 501/501 tests pass.
+content_hash: 842c21e69198cc98ff55faca87327e550925e38c60364aab79f7a99faa8a516a
+token_count: 158
+file_path: .ideate/cycles/006/findings/F-427-001.yaml

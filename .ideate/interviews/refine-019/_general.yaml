@@ -2,17 +2,5 @@ id: interviews/refine-019/_general
 type: interview
 cycle: 19
 source_path: steering/interviews/refine-019/_general.md
-entries:
-  - id: IQ-019-001
-    question: "The 10 unregistered types all share the same shape — content blobs with optional title and cycle fields. Should they each get a separate table, or share a single `document_artifacts` table with the `type` field distinguishing them?"
-    answer: |-
-      A single `document_artifacts` table with a type enum makes sense.
-    domain: null
-    seq: 1
-  - id: IQ-019-002
-    question: "`module_spec` has an existing table but the migration populates it with `title`+`content` instead of the structured fields `name`, `scope`, `provides`, `requires`, `boundary_rules`. Should this cycle fix the migration to output the correct structured fields?"
-    answer: "Yes. We should have a structured schema. Fix this to match the intention of having strict structure for easy parsing."
-    domain: null
-    seq: 2
-content_hash: "7029298d6dae94d9f5666bb0f025ecab249d30b2fc18fc44ebd455f3fe4f199c"
+content_hash: 7029298d6dae94d9f5666bb0f025ecab249d30b2fc18fc44ebd455f3fe4f199c
 token_count: 236

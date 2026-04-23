@@ -1,0 +1,13 @@
+id: D-03
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: The refine skill appends new content or marks deprecated content; guiding principles are never silently removed; existing entries are never deleted without an explicit deprecation record.
+rationale: Durable knowledge capture (GP-8) requires the artifact directory to be the authoritative record; silent deletion breaks traceability across refinement cycles.
+cycle_created: 1
+cycle_modified: null
+content_hash: eabc32f493b31242f4f1c9d5531805f21055302b3eaa6e7de9a7a997b7bb846e
+token_count: 141
+file_path: .ideate/decisions/D-03.yaml

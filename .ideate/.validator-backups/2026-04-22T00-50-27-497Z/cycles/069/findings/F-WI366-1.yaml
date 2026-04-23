@@ -1,0 +1,18 @@
+id: F-WI366-1
+type: finding
+work_item: WI-366
+reviewer: code-reviewer
+verdict: Pass
+rework: false
+findings:
+  critical: []
+  significant: []
+  minor:
+    - id: M1
+      description: Option 2 change record used '—' as the from-value when no override was set, inconsistent with the null-signal semantics. Should display 'default ({default_model})' to match the table display. Fixed during review.
+      file: skills/settings/SKILL.md
+      resolved: true
+summary: Settings SKILL.md updated correctly. Option 3 (Reset to default) now sends null-signal and records change with default model name. Minor inconsistency in Option 2 change record (M1) fixed inline.
+content_hash: 3c85ddede1746ea5fb1a4bd1a9cc5b6a41bb68bcb8ced62ab246514568ae6fd3
+token_count: 164
+file_path: .ideate/cycles/069/findings/F-WI366-1.yaml

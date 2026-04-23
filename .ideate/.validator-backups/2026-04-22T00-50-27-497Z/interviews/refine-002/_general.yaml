@@ -1,0 +1,10 @@
+id: interviews/refine-002/_general
+type: interview
+cycle: 2
+source_path: steering/interviews/refine-002/_general.md
+entries:
+  - {id: IQ-002-001, question: Review findings exist from the previous cycle. Are you here to address those findings, to make other changes, or both?, answer: Address the findings. Specifically S1 (autopilot Phase 6c spawn_session) and S2 (DEFERRED/DEFER label mismatch)., domain: null, seq: 1}
+  - {id: IQ-002-002, question: The current 12 guiding principles — do these still apply, or do any need to change given what you're planning?, answer: All principles still hold. No changes., domain: null, seq: 2}
+  - {id: IQ-002-003, question: Any changes beyond the review findings? New features, scope adjustments, or different approaches?, answer: Not yet, no., domain: null, seq: 3}
+content_hash: "114e4590b8858b5ab3c999a57ed78aeecfa5aabd8b257bf03043a49e49cce5c4"
+token_count: 206

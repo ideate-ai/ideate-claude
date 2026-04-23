@@ -1,0 +1,12 @@
+id: Q-88
+type: domain_question
+addressed_by: null
+description: What test coverage requirements should be enforced for new modules? Should there be a minimum coverage threshold, required test types (unit, integration), or should coverage be determined per-module based on complexity?
+domain: workflow
+impact: New modules (events.ts, metrics.ts) were added without unit tests, creating coverage gaps that could hide regressions. Without defined test requirements, acceptance criteria for test coverage are ambiguous.
+resolution: "P-43: New modules must have unit tests covering public interfaces. No percentage threshold — functional coverage enforced through incremental review. Reviewers flag untested modules during code quality checks."
+resolved_in: 3
+source: full-audit cycle 000, significant finding EC1
+content_hash: f805dcc60435d3db95842fa18c860526a5c1fac632cc68e73ced91a9f9dcc5ee
+token_count: 202
+file_path: .ideate/questions/Q-88.yaml

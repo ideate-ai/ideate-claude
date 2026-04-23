@@ -1,0 +1,168 @@
+id: WI-303
+type: work_item
+title: Phantom work item cleanup and index hygiene
+status: done
+complexity: medium
+scope:
+  - path: .ideate/work-items/WI-003.yaml
+    op: modify
+  - path: .ideate/work-items/WI-004.yaml
+    op: modify
+  - path: .ideate/work-items/WI-012.yaml
+    op: modify
+  - path: .ideate/work-items/WI-015.yaml
+    op: modify
+  - path: .ideate/work-items/WI-016.yaml
+    op: modify
+  - path: .ideate/work-items/WI-020.yaml
+    op: modify
+  - path: .ideate/work-items/WI-021.yaml
+    op: modify
+  - path: .ideate/work-items/WI-023.yaml
+    op: modify
+  - path: .ideate/work-items/WI-024.yaml
+    op: modify
+  - path: .ideate/work-items/WI-063.yaml
+    op: modify
+  - path: .ideate/work-items/WI-064.yaml
+    op: modify
+  - path: .ideate/work-items/WI-065.yaml
+    op: modify
+  - path: .ideate/work-items/WI-071.yaml
+    op: modify
+  - path: .ideate/work-items/WI-076.yaml
+    op: modify
+  - path: .ideate/work-items/WI-077.yaml
+    op: modify
+  - path: .ideate/work-items/WI-078.yaml
+    op: modify
+  - path: .ideate/work-items/WI-079.yaml
+    op: modify
+  - path: .ideate/work-items/WI-080.yaml
+    op: modify
+  - path: .ideate/work-items/WI-081.yaml
+    op: modify
+  - path: .ideate/work-items/WI-082.yaml
+    op: modify
+  - path: .ideate/work-items/WI-086.yaml
+    op: modify
+  - path: .ideate/work-items/WI-087.yaml
+    op: modify
+  - path: .ideate/work-items/WI-091.yaml
+    op: modify
+  - path: .ideate/work-items/WI-092.yaml
+    op: modify
+  - path: .ideate/work-items/WI-094.yaml
+    op: modify
+  - path: .ideate/work-items/WI-095.yaml
+    op: modify
+  - path: .ideate/work-items/WI-096.yaml
+    op: modify
+  - path: .ideate/work-items/WI-099.yaml
+    op: modify
+  - path: .ideate/work-items/WI-259.yaml
+    op: modify
+  - path: .ideate/work-items/WI-260.yaml
+    op: modify
+  - path: .ideate/work-items/WI-261.yaml
+    op: modify
+  - path: .ideate/work-items/WI-262.yaml
+    op: modify
+  - path: .ideate/work-items/WI-263.yaml
+    op: modify
+  - path: .ideate/work-items/WI-264.yaml
+    op: modify
+  - path: .ideate/work-items/WI-265.yaml
+    op: modify
+  - path: .ideate/work-items/WI-266.yaml
+    op: modify
+  - path: .ideate/work-items/WI-267.yaml
+    op: modify
+  - path: .ideate/domain_question/
+    op: modify
+  - path: .ideate/domain_file/
+    op: modify
+  - path: .ideate/cycle_summary/
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "All ~28 backtick-containing YAML files parse successfully with the yaml library (test: node -e with yaml.parse on each file)"
+  - "Each of the ~28 items is set to status: done (if the work was completed) or status: obsolete (if the work has no remaining value)"
+  - "All 9 WI-259 through WI-267 items have type: work_item (not type: refinement) and use scope: [{path, op}] format (not file_scope:)"
+  - "Each of WI-259-267 is set to status: done or status: obsolete based on whether the work was completed"
+  - After changes, deleting index.db and restarting the MCP server results in all modified items appearing in the index with correct status
+  - Domain question files in .ideate/domain_question/ are moved to .ideate/questions/ with correct naming
+  - Domain question files in .ideate/domain_file/domains/*/questions/ are moved to .ideate/questions/ with correct naming (no double .yaml extension)
+  - Directories .ideate/cycle_summary/, .ideate/domain_file/, .ideate/domain_question/ are removed after contents are relocated
+  - No work item files are deleted — items are marked obsolete, not removed
+domain: artifact-structure
+notes: |-
+  # WI-303: Phantom work item cleanup and index hygiene
+
+  ## Overview
+  37 work items exist as YAML files on disk but are invisible to the SQLite index. Two root causes:
+  1. ~28 early items (WI-003 to WI-099 range) contain unquoted backtick characters in acceptance criteria, causing YAML parse failures
+  2. 9 items (WI-259 to WI-267) use `type: refinement` which is not in TYPE_TO_EXTENSION_TABLE
+
+  Additionally, domain question artifacts are scattered across 3 directory patterns instead of the canonical `.ideate/questions/`.
+
+  ## Part 1: Fix backtick YAML parse errors
+
+  For each of the ~28 affected files, the `criteria:` array contains strings with unquoted backtick characters. YAML treats backtick as a reserved character.
+
+  Fix: wrap affected strings in double quotes, escaping any internal double quotes. Example:
+  ```yaml
+  # Before (fails to parse):
+  criteria:
+    - `agents/architect.md` exists with valid frontmatter
+
+  # After (valid YAML):
+  criteria:
+    - "`agents/architect.md` exists with valid frontmatter"
+  ```
+
+  For each item, also determine the correct status:
+  - Read the title and scope
+  - Check if the referenced files exist and the work was completed
+  - If completed: set `status: done`
+  - If the item references work that was superseded, replaced, or is no longer relevant: set `status: obsolete` with a `resolution:` note
+  - Be aggressive about marking obsolete — these items are from cycles 0-10 and most work has been redone multiple times
+
+  Affected files (backtick errors):
+  WI-003, WI-004, WI-012, WI-015, WI-016, WI-020, WI-021, WI-023, WI-024, WI-063, WI-064, WI-065, WI-071, WI-076, WI-077, WI-078, WI-079, WI-080, WI-081, WI-082, WI-086, WI-087, WI-091, WI-092, WI-094, WI-095, WI-096, WI-099
+
+  ## Part 2: Fix type:refinement items
+
+  WI-259 through WI-267 use `type: refinement` and `file_scope:` instead of `type: work_item` and `scope:`.
+
+  Fix: change `type: refinement` to `type: work_item`. Convert `file_scope: {modify: [...]}` to `scope: [{path: ..., op: modify}]` format. Determine status the same way as Part 1.
+
+  ## Part 3: Relocate scattered domain questions
+
+  Domain questions exist in 3 locations:
+  - `.ideate/questions/Q-07.yaml`, `Q-08.yaml` — correct location (keep as-is)
+  - `.ideate/domain_question/Q-*.yaml` — wrong directory (7 files: Q-16, Q-19, Q-72, Q-73, Q-74, Q-80, Q-83)
+  - `.ideate/domain_file/domains/*/questions/Q-*.yaml.yaml` — wrong path + double extension (Q-081, Q-082)
+
+  For each misplaced file:
+  1. Read the file content
+  2. Write it to `.ideate/questions/{id}.yaml` (fix double extension if present)
+  3. Delete the original
+  4. Remove empty directories
+
+  ## Part 4: Remove unexpected directories
+
+  After relocating contents:
+  - Delete `.ideate/cycle_summary/` (contains a single summary.yaml that duplicates cycle archive data)
+  - Delete `.ideate/domain_file/` (empty after question relocation)
+  - Delete `.ideate/domain_question/` (empty after question relocation)
+
+  ## Verification
+  After all changes: delete `.ideate/index.db`, restart the MCP server, and verify all modified items appear in `ideate_artifact_query` with correct status.
+resolution: null
+cycle_created: 40
+cycle_modified: null
+content_hash: b3b79d8c8e147fbd3a4ddf5330ee254f9f1c8a55bcd1955beb8fc704a1a2ae17
+token_count: 1680
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-303.yaml

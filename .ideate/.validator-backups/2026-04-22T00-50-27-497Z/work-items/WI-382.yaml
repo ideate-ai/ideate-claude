@@ -1,0 +1,40 @@
+id: WI-382
+type: work_item
+title: Add explanatory comment for double-cast pattern in tools/config.ts
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/config.ts
+depends: []
+blocks: []
+criteria:
+  - tools/config.ts lines 190-191 have a brief comment explaining the double-cast pattern
+  - TypeScript compilation passes with no errors
+  - All existing tests continue to pass
+domain: agent-system
+notes: |-
+  ## Optional Documentation in tools/config.ts
+
+  Lines 190-191 contain:
+  ```typescript
+  const beforeVal = JSON.stringify((rawStored as unknown as Record<string, unknown>)[key]);
+  const afterVal = JSON.stringify((merged as unknown as Record<string, unknown>)[key]);
+  ```
+
+  The double-cast through `unknown` is correct and idiomatic — `IdeateConfigJson` lacks an index signature, so TypeScript rejects direct cast to `Record<string, unknown>`.
+
+  ## Suggested Comment
+
+  Add a brief comment before line 190:
+  ```typescript
+  // IdeateConfigJson lacks an index signature; cast through unknown for key-based access
+  ```
+
+  This is a documentation improvement with no functional change. Optional — the pattern is well-known in TypeScript.
+resolution: null
+cycle_created: 58
+cycle_modified: 1
+content_hash: 8a8429ad4347cb3c59460109783d662d457f7a0a1f985c494499cebb3deaee55
+token_count: 310
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-382.yaml

@@ -1,0 +1,13 @@
+id: D-07
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: The canonical artifact format reference lives in the plugin's own `specs/` directory, not inside a user project's artifact directory.
+rationale: Format conventions apply globally to all projects using ideate; per-project duplication would diverge; the conventions file is a plugin-level contract.
+cycle_created: 1
+cycle_modified: null
+content_hash: "8b1f4844407bb5457dc52bdc6aef802d8470428a749bedf541d011d160847f1e"
+token_count: 128
+file_path: .ideate/decisions/D-07.yaml

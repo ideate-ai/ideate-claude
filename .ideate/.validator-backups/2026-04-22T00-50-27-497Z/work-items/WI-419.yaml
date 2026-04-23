@@ -1,0 +1,31 @@
+id: WI-419
+type: work_item
+title: Fix createIdeateDir test to assert all IDEATE_SUBDIRS entries dynamically (P-48)
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - The createIdeateDir test iterates IDEATE_SUBDIRS (imported from config.ts) to assert subdirectory creation, not a hardcoded list
+  - "'metrics' is covered by the assertion via the dynamic iteration"
+  - All tests in config.test.ts pass
+  - If IDEATE_SUBDIRS is extended in the future, the test automatically covers the new entry
+domain: artifact-structure
+notes: |-
+  Gap 2 from cycle 1 gap-analysis. The createIdeateDir test has a hardcoded expectedDirs array that omits 'metrics'.
+
+  Fix: import IDEATE_SUBDIRS from '../config.js' in the test, then:
+    for (const sub of IDEATE_SUBDIRS) {
+      expect(fs.existsSync(path.join(tmpDir, sub))).toBe(true);
+    }
+
+  Remove the hardcoded expectedDirs array. This implements P-48.
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: ade8f2aa88ee50bf68dcb7ebed3381e75304c959eea248bc93ad141592b57e0a
+token_count: 261
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-419.yaml

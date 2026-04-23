@@ -1,0 +1,13 @@
+id: D-110
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Drizzle handles CRUD operations; raw `db.prepare()` is used for recursive CTEs and multi-table JOINs in the graph query tool.
+rationale: Drizzle provides injection safety for standard operations. Recursive CTEs and complex graph traversals are not expressible in Drizzle's query builder.
+cycle_created: 1
+cycle_modified: null
+content_hash: "7fc4afa5d4af8e515b949aa3515669e2582067df1bf4ca39f72e4f89517ab297"
+token_count: 126
+file_path: .ideate/decisions/D-110.yaml

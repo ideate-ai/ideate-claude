@@ -1,0 +1,60 @@
+id: WI-406
+type: work_item
+title: "Fix write.ts: resolveArtifactPath research_finding, document_artifacts extension upserts, and journal sequence collision"
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/db-helpers.ts
+    op: modify
+depends: []
+blocks:
+  - WI-407
+  - WI-408
+criteria:
+  - resolveArtifactPath returns {ideateDir}/research/{id}.yaml for type='research_finding' (Gap 1)
+  - "handleWriteArtifact populates a document_artifacts row for types: overview, execution_strategy, architecture, cycle_summary — fixing handleGetConvergenceStatus which JOINs document_artifacts (Gaps 2, 5)"
+  - handleWriteArtifact populates extension rows for research_finding and module_spec types (Gap 2)
+  - Writing a cycle_summary artifact via handleWriteArtifact followed by ideate_get_convergence_status returns a non-unknown principle_verdict
+  - The SELECT COUNT(*) query for journal entry sequence number executes inside the db.transaction() block so two concurrent calls produce distinct IDs (S1)
+  - All 453+ tests pass
+domain: artifact-structure
+notes: |-
+  Consolidates three write.ts fixes from cycle 2 review.
+
+  ## Fix 1: resolveArtifactPath (Gap 1)
+  Add case for 'research_finding' returning path.join(ctx.ideateDir, 'research', `${id}.yaml`).
+  The current default produces research_finding/{id}.yaml which is the wrong directory.
+
+  ## Fix 2: Extension table upserts in handleWriteArtifact (Gaps 2, 5)
+  The transaction block handles domain_policy, domain_decision, domain_question, proxy_human_decision, guiding_principle, constraint — but not document types or module_spec/research_finding.
+
+  Check db-helpers.ts for existing upsert helpers. The ones that may already exist:
+  - upsertDocumentArtifact (check if present)
+  - upsertModuleSpec (check if present)
+  - upsertResearchFinding (check if present)
+
+  If absent, add them following the existing typed-helper pattern in db-helpers.ts.
+
+  Document types to add: 'overview', 'execution_strategy', 'architecture', 'cycle_summary', 'guiding_principles_doc', 'constraints_doc'. All map to document_artifacts table with { id, title, content } fields.
+
+  This is the critical fix: handleGetConvergenceStatus queries `document_artifacts JOIN nodes WHERE type='cycle_summary' AND cycle=N`. Without the document_artifacts row the JOIN returns zero rows and returns principle_verdict='unknown'.
+
+  ## Fix 3: Journal sequence collision (S1)
+  Current code (lines ~84-91 write.ts) computes the sequence number before the transaction:
+    const countRow = ctx.db.prepare('SELECT COUNT(*) as count FROM nodes WHERE type=...')
+    const seqNum = countRow.count;
+    const id = `J-${pad}-${seqNum}`;
+
+  Fix: move the COUNT query and ID construction inside the transaction block. Since better-sqlite3 transactions are synchronous, this guarantees serialization between concurrent calls.
+
+  Note: the YAML filename is derived from id in Phase 1 (before the transaction). Since the ID must be known before Phase 1 writes the file, use an immediate read transaction to reserve the next seq before writing the YAML:
+    const seqNum = ctx.db.transaction(() => { return countRow.count; })();
+  Then write YAML with that id, then execute the main upsert transaction in Phase 2.
+resolution: Fixed resolveArtifactPath for research_finding (maps to research/ dir). Added extension table upserts in handleWriteArtifact for document types (document_artifacts), research_finding (research_findings), module_spec (module_specs), and review_output. Added review_output to TYPE_TO_EXTENSION_TABLE. Fixed journal sequence collision by consolidating COUNT, YAML write, and upsert into a single ctx.db.transaction().exclusive() call. 453 tests pass.
+cycle_created: 2
+cycle_modified: 1
+content_hash: cddf8c071c231397271867856e0c92091ce09cb7dfd5ab9e74527b05ef5bc71f
+token_count: 951
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-406.yaml

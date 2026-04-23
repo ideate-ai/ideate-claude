@@ -1,0 +1,13 @@
+id: D-116
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: The indexer uses `PRAGMA foreign_keys = OFF` during bulk rebuild rather than `defer_foreign_keys`. The FK OFF approach is a direct mechanism; `defer_foreign_keys` is a no-op when FK is already OFF.
+rationale: Simpler and clearer than deferred FK. All three reviewers agreed the mechanism substitution is functionally equivalent to the spec's `defer_foreign_keys` AC text.
+cycle_created: 1
+cycle_modified: null
+content_hash: "9d158ae59b7cf965938e9bc51a4fe68929ef0b2d3bb754486f4d71377e3ce457"
+token_count: 147
+file_path: .ideate/decisions/D-116.yaml

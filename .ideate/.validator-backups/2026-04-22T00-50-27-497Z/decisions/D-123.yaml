@@ -1,0 +1,12 @@
+id: D-123
+type: domain_decision
+domain: workflow
+status: settled
+cycle_created: 0
+description: schema.ts ProxyHumanDecision interface defines the authoritative deferral signal as lowercase 'deferred'. execute.md:213 checks 'DEFER' and proxy-human.md:90 writes 'DEFERRED' — both are incorrect. All three locations must align to the schema.ts lowercase 'deferred' value.
+rationale: Three-way mismatch discovered in full audit. TypeScript interfaces are compiled and type-checked; prose instructions are not. The schema is therefore the authoritative source. This decision motivates P-39.
+source: full-audit-20260328 S2
+supersedes: null
+content_hash: 054054a42d93c9caaf53ae4dfd1082a59852b26ff0aa59c6fb86c3a9fb1bdf80
+token_count: 158
+file_path: .ideate/decisions/D-123.yaml

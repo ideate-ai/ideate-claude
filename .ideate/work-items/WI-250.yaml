@@ -16,13 +16,15 @@ criteria:
   - Zero instances of 'Write your findings to:' or 'Write your output to:' in spawn prompts
   - Zero direct Write tool calls for .ideate/ files
 domain: workflow
-notes: |-
+notes: >-
   # WI-250: Brrr Review Phase MCP Writes
 
-  Same pattern as WI-249 but for skills/autopilot/phases/review.md. The autopilot review phase has identical reviewer spawn prompts that instruct Write to .ideate/cycles/.
+
+  Same pattern as WI-249 but for skills/autopilot/phases/review.md. The autopilot review phase has identical reviewer
+  spawn prompts that instruct Write to .ideate/cycles/.
 resolution: null
 cycle_created: 32
 cycle_modified: null
 content_hash: 71851b5e26a04c41cdcd06ad6238d6f05039470ba22f27b8966a3bd90a0bdff7
 token_count: 237
-file_path: .ideate/work-items/WI-250.yaml
+file_path: work-items/WI-250.yaml

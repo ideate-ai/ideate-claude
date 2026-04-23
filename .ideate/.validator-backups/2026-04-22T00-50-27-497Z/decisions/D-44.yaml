@@ -1,0 +1,13 @@
+id: D-44
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 11
+supersedes: null
+description: "WI-126 replaced the startup-specific smoke test in `agents/code-reviewer.md` with a heuristic: \"what would a reasonable person be expected to do to demo the work they just did?\" Five example types are enumerated (startup command, CLI --help/--version, library build/test suite, e2e test, config/doc validation). P-22 updated to reference \"context-appropriate smoke test\" rather than startup command only."
+rationale: P-22 and the startup-failure exception were inert for library projects, CLI tools, and documentation-only work items that have no meaningful startup step. The demo heuristic generalizes across project types without requiring exhaustive type enumeration.
+cycle_created: 1
+cycle_modified: null
+content_hash: "9a6f62a8e80e3ced66469ed3f85d51286bffc5d9e4cdc6c5557d5024470cbe64"
+token_count: 220
+file_path: .ideate/decisions/D-44.yaml

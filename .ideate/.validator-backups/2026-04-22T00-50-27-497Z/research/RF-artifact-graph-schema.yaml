@@ -1,0 +1,285 @@
+id: RF-artifact-graph-schema
+type: research_finding
+topic: "Research: Relational Schema Design for SDLC Artifact Graphs"
+status: active
+date: null
+content: |
+  # Research: Relational Schema Design for SDLC Artifact Graphs
+  
+  **Date**: 2026-03-23
+  **Scope**: Node types, edge types, metadata fields, query patterns, YAML file structure, and status propagation for ideate's MCP artifact server
+  
+  ---
+  
+  ## Summary
+  
+  A hybrid schema using typed node tables (not a single generic nodes table) with a universal edges table and JSON overflow columns is the optimal structure for this use case. SQLite's JSON virtual generated columns and expression indexes provide near-native query speed for the extracted hot fields without requiring a full schema migration when new field types are introduced. The YAML source layout should use one file per individual node, with edges stored inline as arrays on the source node — this gives clean git diffs, MCP write locality, and fast rebuild from files while accepting a known cross-file join cost on read.
+  
+  ---
+  
+  ## Key Facts
+  
+  ### General schema architecture
+  
+  - The canonical property graph in SQLite uses two tables: `nodes` (id, type, properties JSON) and `edges` (source_id, target_id, type, properties JSON), with indexes on edges.source_id and edges.target_id. This is the minimal viable pattern, used by simple-graph and similar libraries.
+  - For this use case, typed node tables are preferable to a generic `nodes` table because: (1) each artifact type has a fixed, known field set with different required constraints; (2) typed tables allow foreign key integrity between artifact types at the DB layer; (3) query plans for the common "get all work items pending in cycle N" pattern are simpler without a type discriminator filter on a shared table.
+  - The two approaches are not mutually exclusive. A typed table per node type plus a universal `edges` table covers both needs.
+  
+  ### SQLite features applicable here
+  
+  - **JSON virtual generated columns** (available since SQLite 3.31.0, 2020-01-22): a `GENERATED ALWAYS AS (json_extract(props, '$.field')) VIRTUAL` column can be indexed at full B-tree speed. This is the correct way to index into JSON blobs — not expression indexes on raw `json_extract` calls (both work, but generated columns are more debuggable and self-documenting in schema inspection).
+  - **Recursive CTEs**: SQLite supports `WITH RECURSIVE` for graph traversal. The depth-column technique (add a `depth` integer starting at 0, increment each recursive step, order by depth) produces a valid topological-layer ordering. SQLite 3.35.0+ allows multiple recursive SELECT statements in a single recursive CTE.
+  - **FTS5**: available and suitable for file-path prefix lookup (`WHERE file_path LIKE 'auth/%'` can instead use FTS5 prefix indexing if text search across node content is needed). For path-prefix queries specifically, a plain B-tree index on a `file_path` column outperforms FTS5 and has no tokenizer edge cases.
+  - **WAL mode**: recommended for MCP server context. WAL allows concurrent reads while the writer (file-rebuild process) holds the write lock. Change detection in WAL mode cannot use the SQLite change counter reliably; instead, store a content hash per node row and compare against recomputed hashes at startup.
+  
+  ### Artifact type inventory for the schema
+  
+  Based on the domain-knowledge-layer design and existing domain files, the artifact types and their key fields are:
+  
+  | Type | Identifier pattern | Primary queryable fields |
+  |---|---|---|
+  | work_item | WI-NNN | status, complexity, cycle, module_id, depends_on[], file_scope[] |
+  | finding | F-NNN-NNN | severity, work_item_id, file_refs[], verdict, cycle |
+  | domain_policy | P-NN | domain, status (active/deprecated), derived_from_principle |
+  | domain_decision | D-NN | domain, status (settled/provisional/under_review), cycle |
+  | domain_question | Q-NN | domain, status (open/resolved), impact |
+  | guiding_principle | GP-NN | name, status (active/amended/deprecated) |
+  | constraint | C-NN | category |
+  | architecture_component | AC-name | — |
+  | module_spec | M-name | — |
+  | research_finding | RF-slug | topic |
+  | interview_response | IR-NNN | domain_tag, cycle |
+  | journal_entry | JE-NNN | phase_tag, date, work_item_ref |
+  | metrics_event | ME-UUID | agent_type, model, cycle, event_type |
+  
+  ### Edge type inventory
+  
+  Based on the artifact relationships enumerated in the prompt plus findings from domain files:
+  
+  | Edge type | Source type | Target type | Notes |
+  |---|---|---|---|
+  | depends_on | work_item | work_item | DAG; cycles must be detected at write time |
+  | blocks | work_item | work_item | Inverse of depends_on; can be derived or stored explicitly |
+  | belongs_to_module | work_item | module_spec | M:1 |
+  | belongs_to_domain | policy/decision/question | domain (enum or lookup) | Domain may be stored as a field rather than an edge |
+  | derived_from | domain_policy | guiding_principle | One policy can cite multiple GPs |
+  | derived_from | domain_policy | domain_decision | Policy-to-decision lineage |
+  | relates_to | finding | work_item | Many-to-many |
+  | relates_to | finding | file_path (string node or lookup table) | file refs are strings, not full artifact nodes |
+  | supersedes | domain_decision | domain_decision | Linked list of decision revisions |
+  | addresses | work_item | finding | Bidirectional with relates_to; store one direction |
+  | addresses | work_item | domain_question | Work item closes or responds to a question |
+  | references | any | any | Loose coupling; use sparingly; requires source and target type columns |
+  | amends | domain_policy | domain_policy | Policy amendment chain |
+  | produced_in | any | cycle (int) | Represented as a cycle_number field rather than an edge |
+  
+  The `blocks` edge is derivable from `depends_on` (reverse traversal) so storing it separately is optional — useful only if write-time computation is too expensive for the common "what is WI-X blocking" query. For ideate's scale (hundreds of work items, not millions), derived is sufficient.
+  
+  `belongs_to_domain` is better modeled as a `domain` column on the node table rather than an edge. Domain membership is a stable 1:1 or 1:few relationship that changes rarely; edges add join overhead for no benefit at this scale.
+  
+  ### Metadata fields for efficient context assembly
+  
+  Fields that appear on almost every node type (carry as columns, not JSON):
+  
+  | Field | Type | Purpose |
+  |---|---|---|
+  | id | TEXT PRIMARY KEY | Stable artifact identifier (WI-047, P-7, etc.) |
+  | node_type | TEXT NOT NULL | Discriminator for universal edge joins |
+  | cycle_created | INTEGER | Cycle when this artifact was first written |
+  | cycle_modified | INTEGER | Cycle when last updated (NULL = never modified) |
+  | content_hash | TEXT | SHA-256 of source YAML content; used for change detection at rebuild |
+  | token_count | INTEGER | Pre-computed for context budgeting; updated at rebuild |
+  | file_path | TEXT | Source YAML file path; used for MCP tool routing |
+  | status | TEXT | Type-specific status value (pending/active/open/etc.) |
+  
+  Fields that are useful but can live in a JSON `props` column:
+  
+  - `principle_links` (array of GP IDs)
+  - `file_references` (array of project file paths this artifact discusses)
+  - `context_documents` (array of steering/research/architecture paths relevant to this artifact)
+  - `acceptance_criteria` (work items only; structured as an array)
+  - `amendment_history` (policies/decisions; array of {cycle, change_summary})
+  - `rationale` (long text; not indexed)
+  - `resolution` (questions; text)
+  
+  Fields that warrant their own lookup tables rather than JSON arrays (for efficient multi-value joins):
+  
+  - `file_references` — a `node_file_refs(node_id, file_path)` table with an index on `file_path` enables the "what artifacts discuss auth/ files" query without JSON parsing
+  - `principle_links` — a `node_principle_links(node_id, principle_id)` bridge table if "which artifacts link to GP-N" is a common query pattern
+  
+  ### Indexes and materialized views for common query patterns
+  
+  **Query: "Give me everything needed to execute WI-047"**
+  
+  Path: WI-047 → depends_on edges → upstream work items (recursive) → modules → findings relating to those WI IDs → active domain policies for those modules' domains → research/steering docs linked via context_documents.
+  
+  Index requirements:
+  - `CREATE INDEX idx_edges_source ON edges(source_id, edge_type)` — forward edge traversal
+  - `CREATE INDEX idx_edges_target ON edges(target_id, edge_type)` — reverse traversal (what does this item block?)
+  - `CREATE INDEX idx_edges_composite ON edges(source_id, target_id, edge_type)` — existence check for cycle detection
+  - Generated column + index on `work_items.status` — filter to pending/blocked only during traversal
+  
+  Materialized view: a `wi_context_cache` table that pre-joins WI → module → domain → active policies can be maintained as a denormalized snapshot rebuilt at startup or on write. Suitable for a read-heavy MCP server that rebuilds from YAML anyway.
+  
+  **Query: "What findings relate to files in auth/"**
+  
+  Requirements:
+  - A `node_file_refs(node_id, node_type, file_path)` table with `CREATE INDEX idx_file_refs_path ON node_file_refs(file_path)` supports prefix scans
+  - For prefix: `WHERE file_path >= 'auth/' AND file_path < 'auth0'` (standard B-tree range scan; faster than LIKE for this pattern)
+  - Do not use FTS5 for file paths — tokenizer behavior on `/` is implementation-dependent
+  
+  **Query: "What policies are active in the workflow domain"**
+  
+  Requirements:
+  - `domain` column on `domain_policies` table, not as an edge
+  - `status` column on `domain_policies` table
+  - `CREATE INDEX idx_policies_domain_status ON domain_policies(domain, status)`
+  - This is a two-column covering index scan; no JSON required
+  
+  **Query: "Topological order of pending work items"**
+  
+  SQLite recursive CTE approach (depth-column technique):
+  
+  ```sql
+  WITH RECURSIVE topo(id, depth) AS (
+    -- Base case: work items with no unmet dependencies
+    SELECT id, 0 FROM work_items
+    WHERE status IN ('pending', 'in_progress')
+      AND id NOT IN (
+        SELECT target_id FROM edges
+        WHERE edge_type = 'depends_on'
+          AND source_id IN (SELECT id FROM work_items WHERE status IN ('pending','in_progress'))
+      )
+    UNION ALL
+    -- Recursive: items whose dependencies are already in topo
+    SELECT wi.id, t.depth + 1
+    FROM work_items wi
+    JOIN edges e ON e.source_id = wi.id AND e.edge_type = 'depends_on'
+    JOIN topo t ON t.id = e.target_id
+    WHERE wi.status IN ('pending', 'in_progress')
+  )
+  SELECT id, MAX(depth) as topo_depth FROM topo GROUP BY id ORDER BY topo_depth;
+  ```
+  
+  For cycle detection (required before topological sort is valid): detect cycles with a path-accumulation CTE that stops traversal when a node appears in its own path string.
+  
+  Kahn's algorithm in application code (TypeScript with better-sqlite3) is simpler and more reliable for cycle detection than SQL-only. The SQLite recursive CTE handles traversal; cycle detection runs in TypeScript at write time.
+  
+  **Query: "What questions are still open"**
+  
+  Requirements:
+  - `status` column on `domain_questions` table
+  - `CREATE INDEX idx_questions_status ON domain_questions(status)` — single-column scan
+  - Optionally add `domain` to support "open questions per domain": `CREATE INDEX idx_questions_domain_status ON domain_questions(domain, status)`
+  
+  ### Aggregate/completion status propagation
+  
+  Standard patterns from project management tooling and DAG systems:
+  
+  1. **Pull-on-read (lazy)**: When asked for a work item's effective status, walk upstream dependencies, compute "is everything done" at query time. Simple, always correct, O(n) per query. Acceptable at ideate's scale.
+  
+  2. **Push-on-write (eager)**: When a work item transitions to `complete`, trigger an update pass on all downstream dependents — recompute their `blocked_by_count` (count of non-complete upstream dependencies). If `blocked_by_count` drops to 0 and the item was `blocked`, transition it to `pending`. This requires a `blocked_by_count` denormalized counter maintained on each work item.
+  
+  3. **Cached aggregate view**: A `wi_aggregate_status` table or view computed at rebuild-from-YAML time. This is the appropriate choice for a server that rebuilds SQLite from YAML on startup. The YAML files are the source of truth; the aggregate status is a derived view rebuilt each time.
+  
+  For ideate's use case: **option 3 (cached aggregate view at rebuild time)** is most appropriate because:
+  - YAML is the source of truth; SQLite is a read index
+  - The MCP server rebuilds from YAML on startup already
+  - Status transitions are written to YAML, triggering a rebuild (or partial cache invalidation by content hash comparison)
+  - Kahn's algorithm over the dependency edges produces topological order and correctly identifies blocked items (items with unsatisfied depends_on edges pointing to non-complete work items) in a single O(V+E) pass
+  
+  Blocked status propagation rule: a work item is `blocked` if any of its direct `depends_on` targets has status other than `complete`. This is a derived status computed at rebuild; it does not need to be stored in YAML.
+  
+  ---
+  
+  ## Recommendations
+  
+  **Option 1: Typed tables + universal edges table + JSON props overflow**
+  - **Schema**: One table per artifact type (work_items, domain_policies, domain_decisions, domain_questions, guiding_principles, constraints, architecture_components, module_specs, research_findings, interview_responses, journal_entries, metrics_events). One `edges(id, source_id, source_type, target_id, target_type, edge_type, props JSON)` table. Shared metadata columns (id, node_type, cycle_created, cycle_modified, content_hash, token_count, status) on each node table. Type-specific fields as typed columns. Infrequently-queried long-text fields in a `props JSON` column.
+  - **Pros**: Strong typing, no type discriminator join overhead, foreign key enforcement per type, clear separation of hot (indexed columns) vs. cold (JSON) data.
+  - **Cons**: More tables to maintain; adding a new artifact type requires a schema migration rather than just inserting a new type string. In practice, artifact types are stable.
+  - **When to use**: When artifact types are known and stable and query patterns are well-defined. This is the case here.
+  
+  **Option 2: Generic nodes table + edges table (property graph)**
+  - **Schema**: `nodes(id, type, props JSON)`, `edges(source_id, target_id, type, props JSON)`. All fields in JSON, selectively indexed via virtual generated columns.
+  - **Pros**: Schema-free; adding a new artifact type requires no migration; compatible with graph database idioms.
+  - **Cons**: Harder to enforce field-level constraints; JSON parsing overhead even with virtual columns; query plans are less predictable; foreign key constraints between types are not expressible.
+  - **When to use**: When artifact types are highly variable or unknown at schema design time. Not the case here.
+  
+  **Option 3: Typed tables + typed edge tables**
+  - **Schema**: As Option 1, but separate edge tables per edge type (depends_on_edges, relates_to_edges, etc.) instead of a universal edges table.
+  - **Pros**: Each edge table can have appropriately typed source/target foreign keys; marginally faster queries for specific edge types.
+  - **Cons**: Adds complexity; the universal edges table with an edge_type index performs adequately at ideate's scale; cross-type edge queries (e.g., "all references from any type to WI-047") require UNION across multiple tables.
+  - **When to use**: Only when edge-type-specific performance matters at scale. Not warranted here.
+  
+  **Recommendation**: Option 1. Typed node tables are the correct fit for a schema whose artifact types are specified and stable. The universal edges table is sufficient for all cross-type relationship queries at ideate's scale.
+  
+  ---
+  
+  **Option A: One YAML file per node (current Markdown pattern, migrated to YAML)**
+  - **Pros**: Clean git diffs (each commit touches exactly the changed node); MCP write operations are local to a single file; granular audit trail in git history; no merge conflicts between concurrent writers on different nodes; file is the natural unit of MCP read/write.
+  - **Cons**: Rebuild-from-files requires scanning many files (O(n) file reads); a directory with 500 work item files has 500 file open operations at startup.
+  - **When to use**: When individual node writes are frequent (MCP tool creates/updates artifacts), git history per node is valuable, and startup rebuild time is acceptable (sub-second for hundreds of files with modern I/O).
+  
+  **Option B: One YAML file per artifact type (work-items.yaml, policies.yaml, etc.)**
+  - **Pros**: Fewer file reads at startup; atomic writes to an entire type's collection; easier to load into SQLite with a single parse.
+  - **Cons**: Any edit produces a large diff; concurrent writes to the same file require locking; git history for a single artifact requires `git log -S` to trace; MCP tools that create one work item rewrite the entire work-items.yaml.
+  - **When to use**: When startup rebuild speed dominates and individual artifact write frequency is low.
+  
+  **Option C: Individual files with YAML frontmatter + Markdown body (hybrid)**
+  - **Pros**: Structured metadata in frontmatter is machine-parseable; human-readable narrative in the body; compatible with existing Markdown artifact conventions; gray-matter and similar TypeScript libraries parse this cleanly.
+  - **Cons**: Two parsing passes (frontmatter + body); slightly more complex to index body content.
+  - **When to use**: When artifacts need to be both machine-indexed and human-authored/readable. Most applicable to work items, domain policies, and decisions, which have a narrative component alongside structured fields.
+  
+  **Recommendation**: Option C for human-authored artifacts (work_item, domain_policy, domain_decision, domain_question, guiding_principle, research_finding, interview_response, journal_entry). Option A pure YAML (no Markdown body) for machine-generated artifacts (metrics_event, finding). This matches the existing pattern in ideate's specs/ directory where steering and plan files are Markdown with structured content.
+  
+  **Edge storage within Option C**: Store edges inline as YAML arrays on the source node's frontmatter (e.g., `depends_on: [WI-045, WI-032]`). This keeps dependency information co-located with the node, ensures atomic reads (one file = one node + its outgoing edges), and simplifies MCP write (when a dependency is added, only the source file changes). The edges table in SQLite is rebuilt by scanning all source files. Separate edges.yaml is an alternative only if cross-cutting edge updates are common; for ideate they are not.
+  
+  ---
+  
+  ## Risks
+  
+  **Cycle detection is mandatory before topological sort**. The recursive CTE will loop infinitely on a cyclic dependency graph. Cycle detection must run at write time (when a `depends_on` edge is added), not only at query time. better-sqlite3 has no query timeout mechanism, so a cycle will hang the process. This is flagged in the existing execute skill spec (WI-007) as a validation requirement, but the MCP server must enforce it independently.
+  
+  **content_hash collision window at startup**. The startup rebuild pattern (compare content_hash to detect changed files) has a TOCTOU window: a file could be modified between hash computation and rebuild completion. This is acceptable for a local MCP server where writes are mediated through the server itself, but external edits (direct file saves) during a rebuild will be missed until the next rebuild.
+  
+  **SQLite recursive CTE depth limit**. SQLite imposes a default recursion limit of 1000 (`PRAGMA max_recursion_depth`). A dependency chain longer than 1000 levels will error. This is not a realistic risk for work item graphs, but cycle detection bugs could trigger this limit if not caught first.
+  
+  **JSON virtual generated column availability**. Virtual generated columns require SQLite 3.31.0 (2020-01-22). This is present in all macOS versions from Catalina (10.15) onward and in Node.js better-sqlite3 builds that bundle SQLite. Verify the bundled SQLite version; some better-sqlite3 npm releases have bundled older SQLite versions. As of better-sqlite3 9.x, bundled SQLite is 3.44+.
+  
+  **FTS5 tokenizer and file paths**. If FTS5 is used for content search, file paths containing `/`, `-`, and `.` will be tokenized inconsistently depending on the tokenizer (default unicode61 treats `/` as a separator). Use B-tree indexes with range scans for path-prefix queries; reserve FTS5 for full-text content search on narrative fields.
+  
+  **Edges stored inline create fan-out on reads**. The "give me everything needed to execute WI-047" query requires walking `depends_on` edges recursively. With edges stored inline in the source node's YAML, the SQLite edges table is the authoritative join table during query time — the YAML is only the rebuild source. This is correct. But if the MCP server is asked to serve these queries from YAML directly (without SQLite), it requires recursive file reads.
+  
+  **D-5 (artifact files are Markdown) applies to the existing specs/ directory**. The new MCP artifact server is a separate system from the current specs/ directory. D-5 and D-17 govern the existing artifact directory structure. If the MCP server introduces YAML frontmatter files, this is a new structure, not a change to the existing one. The design should be explicit about this boundary to avoid policy conflict.
+  
+  ---
+  
+  ## Sources
+  
+  - `/Users/dan/code/ideate/specs/steering/research/domain-knowledge-layer.md` — domain knowledge layer design, artifact structure spec, domain file formats
+  - `/Users/dan/code/ideate/specs/domains/artifact-structure/decisions.md` — D-5 (Markdown-only), D-17 (manifest.json), D-22 (nested schema), decisions about artifact schema
+  - `/Users/dan/code/ideate/specs/domains/artifact-structure/policies.md` — P-6, P-7, P-8, P-9, P-17
+  - `/Users/dan/code/ideate/specs/domains/workflow/decisions.md` — D-1 through D-48, execution model decisions
+  - `/Users/dan/code/ideate/specs/domains/workflow/policies.md` — P-1 through P-23
+  - `/Users/dan/code/ideate/specs/domains/agent-system/decisions.md` — D-8 through D-50, agent system decisions
+  - `/Users/dan/code/ideate/specs/domains/project-boundaries/policies.md` — P-14, P-15, P-16
+  - `/Users/dan/code/ideate/specs/steering/constraints.md` — technology and design constraints
+  - `/Users/dan/code/ideate/specs/archive/cycles/001/work-items/007-execute-skill.md` — work item structure and dependency DAG validation requirements
+  - [The Convergence of Relational and Graph Models: Extending SQLite for Complex Data Relationships](https://db-news.com/the-convergence-of-relational-and-graph-models-extending-sqlite-for-complex-data-relationships)
+  - [simple-graph: a graph database in SQLite](https://github.com/dpapathanasiou/simple-graph)
+  - [SQLite lang_with — Recursive CTEs](https://sqlite.org/lang_with.html)
+  - [PostgreSQL Recursive CTEs and Topological Sort](https://www.fusionbox.com/blog/detail/graph-algorithms-in-a-database-recursive-ctes-and-topological-sort-with-postgres/620/)
+  - [SQLite JSON Superpower: Virtual Columns + Indexing](https://www.dbpro.app/blog/sqlite-json-virtual-columns-indexing)
+  - [SQLite Generated Columns](https://sqlite.org/gencol.html)
+  - [SQLite FTS5 Extension](https://www.sqlite.org/fts5.html)
+  - [SQLite WAL mode](https://sqlite.org/wal.html)
+  - [TigerGraph: Practical Graph Database Schema Design](https://www.tigergraph.com/blog/practical-graph-database-schema-design-modeling-connections-for-speed-and-clarity/)
+  - [frontmatter-format convention](https://github.com/jlevy/frontmatter-format)
+  - [yaml-graph utility](https://github.com/nextmetaphor/yaml-graph)
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "71e9459d40079f1a40442bb106a8006cea7f666e8ce2b8f34d6a5bd978092c28"
+token_count: 6020
+file_path: .ideate/research/RF-artifact-graph-schema.yaml

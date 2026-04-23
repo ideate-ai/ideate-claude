@@ -1,0 +1,11 @@
+id: D-136
+type: domain_decision
+domain: artifact-structure
+title: Restore original YAML on update failure, not delete
+decision: For existing-file update operations, capture original content before overwrite and use writeFileSync to restore on SQLite failure. New-file operations use unlinkSync to delete.
+rationale: Initial implementation destroyed existing data on DB failure. Incremental review C1 flagged as data-loss defect. Asymmetry (delete new vs restore existing) preserves the pre-operation state.
+source: cycle 1 decision-log D5; WI-398 rework
+status: settled
+content_hash: 1f2b74312b83a14dd5bb1259d67484b467fb33f436f5fd109d4a9a5d6affd41c
+token_count: 142
+file_path: .ideate/decisions/D-136.yaml

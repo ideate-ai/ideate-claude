@@ -1,0 +1,21 @@
+id: WI-274
+type: work_item
+title: Complete WI-172 migration script remaining criteria
+status: done
+complexity: low
+scope:
+  - path: scripts/migrate-to-v3.js
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - scripts/migrate-to-v3.js first line contains AUTO-GENERATED comment with reference to migrate-to-v3.ts as source
+  - "Comment format: // AUTO-GENERATED from migrate-to-v3.ts — do not edit directly"
+domain: artifact-structure
+notes: "WI-172 was partially completed in a prior cycle. The remaining criterion: scripts/migrate-to-v3.js should have an AUTO-GENERATED header comment indicating it is compiled from migrate-to-v3.ts and should not be edited directly. Add as the first line of the file."
+resolution: Added AUTO-GENERATED header comment to migrate-to-v3.js
+cycle_created: 35
+cycle_modified: null
+content_hash: f88a60e7a9e59c187068c512b16cd7de87ebca7feb1844c586548c2f8dbfddce
+token_count: 203
+file_path: .ideate/work-items/WI-274.yaml

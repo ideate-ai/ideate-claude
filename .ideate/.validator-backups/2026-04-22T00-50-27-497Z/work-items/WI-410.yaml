@@ -1,0 +1,31 @@
+id: WI-410
+type: work_item
+title: Fix module_spec conditional guard and add P-46 completeness test in tools.test.ts
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - The module_spec extension row assertion is unconditional — no 'if (tableExists)' guard or similar conditional skip
+  - A P-46 completeness test exists that iterates over every key in TYPE_TO_EXTENSION_TABLE, writes an artifact of that type, and asserts a non-null extension row was created in the corresponding table
+  - All existing tests still pass (npm test)
+domain: artifact-structure
+notes: |-
+  S2 from cycle 3 code-quality review: the module_spec extension row assertion in tools.test.ts was wrapped in an 'if (tableExists)' conditional that allows the assertion to silently pass even if the table does not exist. Remove the guard; assert unconditionally.
+
+  P-46 completeness test: after WI-409 fixes all missing branches, add a parametrized test (or loop) that:
+  1. Imports TYPE_TO_EXTENSION_TABLE from db.ts
+  2. For each type key in the registry, writes a minimal artifact of that type via handleWriteArtifact
+  3. Queries the corresponding extension table by artifact id
+  4. Asserts the row exists (not null/undefined)
+
+  This test ensures P-46 invariant is machine-verifiable: no future type registration goes undetected.
+resolution: Removed module_spec conditional tableExists guard — assertion is now unconditional. Added P-46 completeness describe block with 23 parameterized test cases covering every TYPE_TO_EXTENSION_TABLE entry (excluding work_item and journal_entry which redirect to dedicated handlers).
+cycle_created: 4
+cycle_modified: 3
+content_hash: cb36cbc3c2ae9a0a20af38e8f59a4b5a54b863573c302b3b273f3afd1112fde9
+token_count: 431
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-410.yaml

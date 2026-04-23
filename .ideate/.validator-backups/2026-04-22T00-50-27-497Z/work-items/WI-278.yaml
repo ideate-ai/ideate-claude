@@ -1,0 +1,21 @@
+id: WI-278
+type: work_item
+title: Fix init/SKILL.md P-32 violation
+status: done
+complexity: low
+scope:
+  - path: skills/init/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - No grep match for 'look in your tool list' in skills/init/SKILL.md
+  - ideate_get_project_status called directly with stop-on-error pattern
+domain: workflow
+notes: "Line 67: replace availability check with direct call pattern."
+resolution: Replaced 'look in your tool list' with direct ideate_get_project_status call.
+cycle_created: 36
+cycle_modified: null
+content_hash: 1a5137fc94d47da09b2cd67fc724c00320727560e399267e12911a77861db01e
+token_count: 135
+file_path: .ideate/work-items/WI-278.yaml

@@ -1,0 +1,45 @@
+id: WI-392
+type: work_item
+title: Enhance indexer warning log format with timestamp and context
+status: done
+complexity: small
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/indexer.ts
+depends: []
+blocks: []
+criteria:
+  - Warning messages include timestamp
+  - Warning messages include calling function context
+  - Existing parse error tests pass
+domain: agent-system
+notes: |-
+  # WI-392: Enhance indexer warning log format
+
+  ## Context
+  The `safeParseYaml` function in indexer.ts logs warnings for parse errors but lacks timestamp and caller context.
+
+  ## Scope
+  - `mcp/artifact-server/src/indexer.ts` (modify)
+
+  ## Implementation Notes
+  Enhance warning format to include:
+  1. ISO 8601 timestamp
+  2. Calling function context (from call stack or passed parameter)
+  3. File path (already included)
+
+  Format suggestion:
+  ```
+  [${timestamp}] [indexer] YAML parse error in ${filePath}: ${error.message}
+  ```
+
+  ## Acceptance Criteria
+  - Warning format includes timestamp
+  - Warning format includes context
+  - Existing tests pass
+resolution: null
+cycle_created: 3
+cycle_modified: 1
+content_hash: bb24b37b1cd5d4041d4b61ecbbe0644a8cfa6ff3cfa113fc74c14a65efdf73ad
+token_count: 275
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-392.yaml

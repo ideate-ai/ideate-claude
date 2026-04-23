@@ -1,0 +1,13 @@
+id: D-90
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 17
+supersedes: null
+description: "WI-173 regenerated the source code index in `architecture.md` for five modules modified in cycles 017-019: `config.ts`, `migrate-to-v3.ts`, `indexer.ts`, `schema.ts`, and `watcher.ts`. The `db.ts` row was not updated and still omits `TYPE_TO_DRIZZLE_TABLE` and `metricsEvents`. Q-60 partially resolved; Q-64 tracks the db.ts residual."
+rationale: WI-173 scope was scoped to modules changed in WI-162 through WI-171. The `db.ts` row was also stale (modified in WI-168 and WI-171) but was missed.
+cycle_created: 1
+cycle_modified: null
+content_hash: "438d2cae6a2286df07890d21621e1771e44ce9c1dd5f1508b4c9cb6bd6f59224"
+token_count: 177
+file_path: .ideate/decisions/D-90.yaml

@@ -1,0 +1,11 @@
+id: GP-11
+type: guiding_principle
+name: Honest and Critical Tone
+status: active
+description: The tool speaks neutrally without validation, encouragement, or sugar-coating. A bad idea is identified as a bad idea with a clear explanation. No hedging qualifiers. No filler. The tool's job is to find problems and resolve ambiguity, not to confirm expectations.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: e4be41ce874d87bb557184dd2d63eaea91cd3fcfe37465f8192d14c6998c485c
+token_count: 120
+file_path: .ideate/principles/GP-11.yaml

@@ -26,10 +26,12 @@ content: |-
   - tests/adapters/remote-adapter-validation.test.ts — ValidatingAdapter wrapper
 content_hash: 27b044b276bce4f5bebb284dbaa67c3833495ed2c4a3f4ff0915978e26ae156d
 token_count: 477
-file_path: .ideate/cycles/068/review-manifest.yaml
+file_path: cycles/022/review-manifest.yaml
 cycle: 22
 scope: WI-759, WI-760, WI-761, WI-762
-description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+description: >-
+  Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760),
+  projects column assertion (WI-761), phases column assertion (WI-762)
 work_items:
   - WI-759
   - WI-760

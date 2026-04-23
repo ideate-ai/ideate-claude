@@ -1,0 +1,20 @@
+id: WI-229
+type: work_item
+title: "RAG chunking engine"
+status: obsolete
+complexity: medium
+scope:
+  - {path: mcp/artifact-server/src/chunker.ts, op: create}
+depends: []
+blocks: []
+criteria:
+  - chunker.ts exports chunking function
+module: null
+domain: artifact-structure
+resolution: "Superseded by v3 PPR-based graph queries — structured artifact graph with explicit typed edges makes embedding-based search redundant for <1000 artifact corpus"
+notes: null
+cycle_created: 28
+cycle_modified: null
+content_hash: ""
+token_count: 0
+file_path: .ideate/work-items/WI-229.yaml

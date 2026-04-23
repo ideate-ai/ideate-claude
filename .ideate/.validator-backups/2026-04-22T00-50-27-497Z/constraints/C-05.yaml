@@ -1,0 +1,10 @@
+id: C-05
+type: constraint
+category: technology
+status: active
+description: No sub-subagents or nested teams. Claude Code does not support subagents spawning their own subagents or teams creating sub-teams. Recursive workflows require external tooling (MCP server, SDK orchestrator, or shell scripts using `claude --print`).
+cycle_created: 1
+cycle_modified: null
+content_hash: "22955adfb82d7170a46c78ef2acae7942dac10b7a5b058af954302835f1bda8c"
+token_count: 106
+file_path: .ideate/constraints/C-05.yaml

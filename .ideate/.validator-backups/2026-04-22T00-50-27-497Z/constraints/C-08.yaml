@@ -1,0 +1,10 @@
+id: C-08
+type: constraint
+category: design
+status: active
+description: "Progressive decomposition. Large projects decompose in levels: Intent → Architecture → Modules → Work Items. Not all levels are needed for small projects. The tool should detect project scale and skip intermediate levels when unnecessary."
+cycle_created: 1
+cycle_modified: null
+content_hash: a2bfd6175737f0be86965cd9b1383cdf38024dc5dcda6579aea9ef4a9be8086c
+token_count: 102
+file_path: .ideate/constraints/C-08.yaml

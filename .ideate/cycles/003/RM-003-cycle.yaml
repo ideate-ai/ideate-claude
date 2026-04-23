@@ -17,4 +17,4 @@ cycle_start_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
 cycle_end_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
 content_hash: 6ba8881fe4a0bce96addd72070a099c962ee25ac966594b273b87396bf7dcf6c
 token_count: 123
-file_path: .ideate/cycles/003/RM-003-cycle.yaml
+file_path: cycles/003/RM-003-cycle.yaml

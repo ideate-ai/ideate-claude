@@ -1,0 +1,84 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  # Spec Adherence Review — PH-049 Capstone (cycle 30)
+
+  ## Architecture Deviations
+
+  None.
+
+  ## Unmet Acceptance Criteria
+
+  ### Work Item WI-867
+  - [ ] "Cross-references domain policy P-33 and decision D-210 (tool_usage standalone)." — The spec names D-210 but D-210 is about max_nodes (a PPR computation cap), not tool_usage. Implementation correctly references D-211 (metrics soft-deprecation / tool_usage as replacement). Substitution is the right call. Criterion is technically unmet by letter, but the criterion itself contains a wrong artifact ID. Flagged as spec error, not implementation error. See Critical C1.
+
+  ## Principle Violations
+
+  **Principle Violation Verdict**: Pass
+
+  None.
+
+  ## Principle Adherence Evidence
+
+  - GP-14 (MCP Abstraction Boundary): Fix entirely within mcp/artifact-server/src/adapters/local/reader.ts:930 and mcp/artifact-server/src/adapters/remote/index.ts:1291-1299. No caller bypasses the adapter.
+  - P-33 (no storage detail leakage): docs/platform/architecture-overview.md:697 cites P-33 and states ideate_get_tool_usage surfaces aggregate counts without revealing storage details.
+  - P-43 (test coverage): Two regression tests added at adapter-contract.test.ts:1341 and 1376.
+
+  ## Verdict: Fail (one spec criterion factually wrong; implementation is correct)
+
+  ## Critical Findings
+
+  ### C1: WI-867 acceptance criterion names wrong decision artifact (D-210 vs D-211)
+  - **Spec says** (WI-867.yaml:13): 'Cross-references ... decision D-210 (tool_usage standalone).'
+  - **WI-867 notes also say** (line 18): 'Governed by P-33; implemented by instrumentToolDispatch wrapper per D-211.' — contradiction within the same work item.
+  - **D-210 actual content**: 'max_nodes is a post-sort result-count cap at the adapter traverse layer.'
+  - **D-211 actual content**: 'Metrics emission infrastructure is soft-deprecated: ideate_emit_metric is a no-op; handleGetMetrics remains functional.'
+  - **Implementation** (architecture-overview.md:716): cross-references D-211, which is correct.
+  - **Assessment**: Worker made the right substitution. Spec criterion contains an incorrect artifact ID. The criterion as written is technically unmet but the criterion is wrong.
+
+  ### C2: WI-860 spec describes a root cause (legacy YAML files in cycle slot) that was already fixed by WI-824; the actual fix targets a different mechanism
+  - **Spec describes** (WI-860.yaml:19,31,37-39): Bug is legacy archived artifacts (SA-NNN.yaml, CQ-NNN.yaml, GA-NNN.yaml) being read. Fix option (c) is 'read only canonical named files.'
+  - **WI-824 already implemented** (reader.ts:958): Canonical-only file selection landed in PH-045.
+  - **What WI-860 actually fixes** (reader.ts:930): AND addressed_by IS NULL in the DB findings query. A different scenario: findings in SQLite belonging to the current cycle but marked addressed, not YAML file naming confusion.
+  - **Assessment**: Spec root cause, reproducer, and fix description do not match the implementation. Implementation addresses a legitimate real problem, but not the problem described in the spec. Intent (fix the false-negative) is satisfied via a different mechanism.
+
+  ## Significant Findings
+
+  ### S1: WI-860 acceptance criteria reference condition_b but the fix targets condition_a
+  - **Spec says** (WI-860.yaml:9): 'no longer yields condition_b: false'
+  - **Actual behavior** (analysis.ts:132-133): condition_a is the significant-findings count check; condition_b is the principle-verdict check. The addressed_by fix reduces findings_by_severity, affecting condition_a.
+  - **Assessment**: Spec consistently uses condition_b when it means condition_a. Implementation correctly fixes condition_a. Nomenclature error in the spec, not a code bug.
+
+  ### S2: WI-860 work item notes do not document the P-49 backfill impact
+  - **P-49 requires** (P-49.yaml:4,9): Forward-only fixes must include explicit backfill assessment.
+  - **The fix**: Adding AND addressed_by IS NULL immediately and retroactively makes existing findings with addressed_by set invisible to convergence checks.
+  - **WI-860 notes** (lines 16-43): Contain no mention of P-49, no backfill assessment.
+  - **Assessment**: P-49 non-compliance in the spec artifact. Spec-quality defect rather than implementation defect.
+
+  ### S3: Regression test covers the addressed_by mechanism but not the documented reproducer
+  - **Spec acceptance criterion** (WI-860.yaml:12): 'Regression test: the reproducer scenario is covered.'
+  - **Documented reproducer** (lines 37-39): Seed .ideate/cycles/002/ with legacy SA-002.yaml.
+  - **Actual tests** (adapter-contract.test.ts:1341, 1376): Cover getConvergenceData filtering by addressed_by. Neither test seeds a legacy SA-NNN.yaml.
+  - **Assessment**: Tests do not cover the documented reproducer; they cover the actual fix mechanism. The reproducer was already addressed by WI-824.
+
+  ## Minor Findings
+
+  ### M1: Architecture-overview cites P-33 with slightly expanded scope
+  - **Doc says** (architecture-overview.md:715): 'without revealing file paths, table names, or schema details in its output.'
+  - **P-33 actual scope**: Prohibits file paths or storage implementation details. 'Table names' and 'schema details' are reasonable extensions but not explicitly stated.
+  - **Assessment**: Doc accurately paraphrases the spirit of P-33. Minor precision issue.
+
+  ### M2: Remote adapter comment has a stray / where // is expected
+  - **Evidence**: remote/index.ts:1247, 1250, and reader.ts:927.
+  - **Assessment**: These are syntactically valid only as division operators. Minor formatting defect in comment text.
+
+  ## Principle Violation Verdict: Pass
+
+  None.
+content_hash: a65682bf72c6396e6dfdf74c3389bfe465253cc391edeb2ce11f2605cdf4fa15
+token_count: 1483
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 30
+cycle_modified: 27
+verdict: Fail

@@ -1,0 +1,13 @@
+id: D-80
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-167 added the `addressed_by TEXT` column to the `domainQuestions` Drizzle table and raw-SQL DDL, bumped `CURRENT_SCHEMA_VERSION` to 5, and added extraction tests. Phase 2 tools can now query open questions via `WHERE addressed_by IS NULL` on the typed table.
+rationale: Q-52 identified that `EDGE_TYPE_REGISTRY.addressed_by.source_types` included `domain_question` but the table had no corresponding column. Without the column, denormalized queries for open questions would return all questions regardless of status.
+cycle_created: 1
+cycle_modified: null
+content_hash: "8d8d8f57a9ace4eaa324b9330d611bf142f6641b0eae7215a3a6ae0653b9134f"
+token_count: 184
+file_path: .ideate/decisions/D-80.yaml

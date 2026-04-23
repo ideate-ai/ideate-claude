@@ -1,0 +1,14 @@
+id: Q-05
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Developers opening ideate in Claude Code have no project-level context; the "dogfood" workflow (using ideate to improve itself) is degraded; violates GP-8 (Durable Knowledge Capture) at the project entry point.
+source: archive/cycles/001/gap-analysis.md G2, archive/cycles/001/decision-log.md OQ3
+resolution: CLAUDE.md now exists at the ideate repository root; cycle 003 gap-analysis references it as an existing file requiring updates.
+resolved_in: 3
+description: Outpost received a `CLAUDE.md` as a first-class deliverable (WI-052 AC2). ideate has none. Should one be created covering plugin purpose, skill and agent directory layout, artifact directory convention, and development workflow?
+cycle_created: 1
+cycle_modified: null
+content_hash: "935c1decedae76e84c66b1ed15ecd5bc0adc7a4b3c2922fe6e966cf44d5eadad"
+token_count: 221
+file_path: .ideate/questions/Q-05.yaml

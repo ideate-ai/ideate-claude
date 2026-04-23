@@ -1,0 +1,12 @@
+id: Q-93
+type: domain_question
+addressed_by: null
+description: D-119 (provisional) records that bootstrap.ts and context.ts return file paths violating P-33. The full audit found context.ts:959 still exposes row.file_path in an error fallback. Was the Q-87/D-119 fix incomplete, or was this a regression introduced after cycle 66?
+domain: artifact-structure
+impact: If the prior fix was incomplete, the fix methodology needs review. If it was a regression, P-33 compliance testing is insufficient. Either way, agents currently receive absolute file paths from context.ts error messages.
+resolution: The P-33 violation mentioned in this question was already fixed. Current code review shows context.ts uses file_path only internally for reading content and never exposes it in responses (line 737 comment confirms). Bootstrap.ts similarly does not expose paths. No regression detected — the original fix was complete.
+resolved_in: 3
+source: full-audit-20260328 S1; cross-reference Q-87, D-119
+content_hash: 216033439a09cd348495d72a4a5e6bf6446c58d7b3f6e083bf3687b32f9002e0
+token_count: 248
+file_path: .ideate/questions/Q-93.yaml

@@ -1,0 +1,25 @@
+id: WI-244
+type: work_item
+title: ARCHITECTURE.md tool count 14 to 15
+status: done
+complexity: low
+scope:
+  - path: ARCHITECTURE.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Section 5 header says '15 tools in 8 categories' (adding ideate_write_artifact to Write tools)
+  - ideate_write_artifact listed under Write tools with description
+  - Write tools count updated from (4) to (5)
+domain: artifact-structure
+notes: |-
+  # WI-244: ARCHITECTURE.md Tool Count
+
+  Section 5 says '14 tools in 7 categories'. Add ideate_write_artifact to Write tools. Update to '15 tools' and Write tools (5).
+resolution: null
+cycle_created: 30
+cycle_modified: null
+content_hash: bcd91d120de8977fd34f0763f983238d894fc002c83fc74533c0d0f0d8133871
+token_count: 163
+file_path: .ideate/work-items/WI-244.yaml

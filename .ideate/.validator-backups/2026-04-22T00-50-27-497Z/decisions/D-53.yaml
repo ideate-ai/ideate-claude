@@ -1,0 +1,13 @@
+id: D-53
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "An `EdgeTypeSpec` interface and `EDGE_TYPE_REGISTRY: Record<EdgeType, EdgeTypeSpec>` were added to `schema.ts`. The `extractEdges` function in `indexer.ts` is driven from the registry rather than hardcoded per-type logic. The registry is the authoritative definition of all edge types for Phase 2 tool implementations."
+rationale: Hardcoded edge-type strings in `indexer.ts` were identified during capstone review as a maintainability risk. Adding the registry was an ad-hoc decision not in the original plan. The registry enables Phase 2 MCP write tools to enumerate and validate edge types without reading the indexer source.
+cycle_created: 1
+cycle_modified: null
+content_hash: b207f3f3ec6894f159154d9c15620b6fbb7fa263d22f0e8a0f0450b77f818373
+token_count: 210
+file_path: .ideate/decisions/D-53.yaml

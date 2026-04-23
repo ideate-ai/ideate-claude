@@ -1,0 +1,34 @@
+id: WI-404
+type: work_item
+title: Extend handleWriteArtifact to populate extension tables for all artifact types
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-403
+blocks: []
+criteria:
+  - handleWriteArtifact populates the extension table row for guiding_principle and constraint artifact types in addition to the existing domain_policy, domain_decision, domain_question, proxy_human_decision types
+  - Writing a guiding_principle artifact via handleWriteArtifact and immediately querying it via ideate_artifact_query returns a non-empty result
+  - Writing a constraint artifact via handleWriteArtifact and immediately querying it via ideate_artifact_query returns a non-empty result
+  - All 440+ tests pass
+domain: artifact-structure
+notes: |-
+  The extension table upsert functions upsertGuidingPrinciple and upsertConstraint exist in db-helpers.ts (WI-397). They are currently called only by upsertExtensionRow (used by the indexer). handleWriteArtifact does not call them.
+
+  Fix: extend the transaction block in handleWriteArtifact to include a dispatch case for guiding_principle (calling upsertGuidingPrinciple) and constraint (calling upsertConstraint), matching the pattern already used for domain_policy, domain_decision, domain_question.
+
+  The content mapping for guiding_principles: { name: content.name ?? '', description: content.description ?? '', phase: content.phase, source: content.source }
+  For constraints: { category: content.category ?? '', description: content.description ?? '', rationale: content.rationale }
+
+  Add tests to tools.test.ts verifying that handleWriteArtifact with type guiding_principle and type constraint each result in a queryable artifact (i.e., the extension table row exists after the write).
+resolution: Added guiding_principle and constraint cases to handleWriteArtifact transaction block. Added GuidingPrincipleRow, ConstraintRow, upsertGuidingPrinciple, upsertConstraint imports. Both extension tables now populated on write. Tests verify nodes and extension rows exist. 453 tests pass.
+cycle_created: 1
+cycle_modified: 1
+content_hash: a225c35725a62f207c2830ec0c8d937db36851928fadcba0562719ed1a81ec8d
+token_count: 555
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-404.yaml

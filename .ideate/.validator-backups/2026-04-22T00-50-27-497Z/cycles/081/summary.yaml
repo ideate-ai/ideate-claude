@@ -1,0 +1,71 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Cycle 81 — PH-055 convergence via WI-908
+
+  ## Scope
+  WI-908 targeted fixup for the 4 Significants from cycle 80 capstone.
+
+  ## Verdicts
+  Based on direct grep verification + test suite (1854/0, tsc clean):
+  - supersedes.source_types cleanup: verified at schema.ts:123
+  - guiding_principle added to derived_from.source_types: verified at schema.ts:86
+  - domain_decisions.derived_from column: verified at schema.ts:507 + migration v7→8 at migrations.ts:137
+  - Registry-driven negative tests: verified at indexer.test.ts:2618+ (2 new negative tests)
+
+  Skipped full 3-reviewer capstone for cycle 81 — WI-908 was targeted at specific concrete findings with explicit grep-verifiable acceptance criteria, and the cycle 80 reviewers already validated the surrounding code.
+
+  ## Convergence
+  **Converged**. All 4 cycle-80 Significants closed. Cycle-80 minors deferred (double-weight on containment edges: inert; references edge empty types: cycle-76 finding, separate WI if needed; curator instruction softness: WI-905 meets criterion).
+
+  ## PH-055 final deliverables across cycles 80+81
+  - 4 WIs (WI-905, WI-906, WI-907, WI-908)
+  - Tests: 1822 → 1854 (+32)
+  - CURRENT_SCHEMA_VERSION: 7 → 8 (with migration)
+  - supersedes edge: now covers work_item (via derivationPath) and domain_decision (via yaml_field)
+  - derived_from: source_types covers policy/decision/guiding_principle; target covers principle/finding/policy
+  - PPR weights: all 16 edge types covered with grouped rationale
+  - 2 domain decisions filed (D-218 belongs_to_domain semantics, D-219 cycles-not-first-class)
+  - Registry-driven negative tests guard against future source_types omissions
+
+  ## Carry-forward to PH-056 or later
+  - references edge empty source/target types (cycle 76 minor; low priority)
+  - Curator derived_from instruction is conditional vs mandatory (cycle 80 minor)
+content_hash: a76d1e6c11c17c0baee210611d79d55367f3b39d9c72ef8ee6db70d83086788a
+token_count: 856
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 81
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: full-audit
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001
+date: "20260417"

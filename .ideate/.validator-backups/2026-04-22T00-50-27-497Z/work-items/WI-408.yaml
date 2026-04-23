@@ -1,0 +1,47 @@
+id: WI-408
+type: work_item
+title: "Add test coverage: critical verdict in handleGetReviewManifest and rollback tests for handleWriteArtifact extension branches"
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/execution.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/write-transaction.test.ts
+    op: modify
+depends:
+  - WI-406
+blocks: []
+criteria:
+  - execution.test.ts includes a test inserting a critical-severity finding and asserting handleGetReviewManifest returns verdict 'Fail' (S2)
+  - "write-transaction.test.ts includes a rollback test for handleWriteArtifact with type='domain_policy': simulate INSERT failure on domain_policies, assert YAML file removed and no nodes row exists (Gap 4)"
+  - "write-transaction.test.ts includes a rollback test for type='cycle_summary': simulate INSERT failure on document_artifacts, assert YAML file removed and no nodes row exists (Gap 4)"
+  - All 453+ tests pass
+domain: artifact-structure
+notes: |-
+  Addresses S2 (code-quality-002) and Gap 4 (gap-analysis-002).
+
+  ## S2 — critical verdict test (execution.test.ts)
+  In the existing handleGetReviewManifest describe block, add:
+    insertFinding(db, { cycle: 5, work_item: 'WI-700', severity: 'critical', verdict: 'Fail' });
+    const result = await handleGetReviewManifest(ctx, { cycle_number: 5 });
+    expect(result).toContain('Fail');
+
+  ## Gap 4 — rollback tests (write-transaction.test.ts)
+  Use the Proxy pattern already present in the file to simulate INSERT failure.
+
+  For domain_policy rollback test:
+    const failingDrizzle = new Proxy(drizzleDb, { get(target, prop) { if (prop === 'insert') throw new Error('simulated domain_policies failure'); return target[prop]; } });
+    const failCtx = { ...ctx, drizzleDb: failingDrizzle };
+    await expect(handleWriteArtifact(failCtx, { type: 'domain_policy', content: { ... } })).rejects.toThrow();
+    expect(fs.existsSync(expectedYamlPath)).toBe(false); // YAML cleaned up
+    expect(db.prepare('SELECT COUNT(*) as n FROM nodes WHERE id = ?').get(id).n).toBe(0);
+
+  For cycle_summary rollback test: same pattern but proxy targets document_artifacts insert.
+
+  Depends on WI-406 completing first so the extension table branches exist.
+resolution: Added critical-severity Fail verdict test in execution.test.ts. Added domain_policy and cycle_summary rollback tests in write-transaction.test.ts. 459 tests pass.
+cycle_created: 2
+cycle_modified: 1
+content_hash: 4562115579fb98acf5af60f1184422dadf77572d997bbed61e86e2fdd2c38a21
+token_count: 614
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-408.yaml

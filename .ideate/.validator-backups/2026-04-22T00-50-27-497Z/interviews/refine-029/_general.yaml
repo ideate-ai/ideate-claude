@@ -1,0 +1,13 @@
+id: interviews/refine-029/_general
+type: interview
+cycle: 29
+source_path: steering/interviews/refine-029/_general.md
+entries:
+  - {id: IQ-029-001, question: "What is driving this refinement?", answer: "Post-review correction from cycle 028 plus requirement evolution. Review found ID auto-assignment bug and stale documentation. User wants comprehensive audit of specs/ references, removal of artifact_dir from MCP tool interface, and documentation fixes.", domain: null, seq: 1}
+  - {id: IQ-029-002, question: "Do guiding principles still apply?", answer: "Yes, all 13 unchanged.", domain: null, seq: 2}
+  - {id: IQ-029-003, question: "Review findings triage?", answer: "S1 (ID auto-assignment): address. S2 (stale status): already fixed. M1 (ARCHITECTURE tool count): address. M2 (CLAUDE.md structure): address. M3 (no incremental reviews): process issue, not code fix.", domain: null, seq: 3}
+  - {id: IQ-029-004, question: "Hook errors — beepboop WorktreeCreate failure?", answer: "External to ideate. Beepboop plugin issue. Ideate already handles worktree failures gracefully by falling back to non-worktree execution.", domain: null, seq: 4}
+  - {id: IQ-029-005, question: "artifact_dir parameter removal — optional or full removal?", answer: "Full removal. MCP server determines artifact dir from its own config. No artifact_dir in tool schemas. Skills stop passing it.", domain: null, seq: 5}
+  - {id: IQ-029-006, question: "Comprehensive audit scope?", answer: "All skills and agents audited. Remove specs/ path references. Remove markdown artifact creation. Remove artifact_dir from MCP tool calls. Ensure v3 .ideate/ paths throughout.", domain: null, seq: 6}
+content_hash: ""
+token_count: 0

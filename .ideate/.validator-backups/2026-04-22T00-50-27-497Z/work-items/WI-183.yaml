@@ -1,0 +1,85 @@
+id: WI-183
+type: work_item
+title: Indexer rewrite for class table inheritance
+status: done
+complexity: large
+scope:
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+depends:
+  - "182"
+blocks:
+  - "184"
+criteria:
+  - rebuildIndex inserts into nodes table first, then into the appropriate extension table (two-pass insert per artifact)
+  - db.pragma("defer_foreign_keys = ON") called inside the rebuild transaction before any inserts
+  - Hash check uses single query on nodes table (SELECT id, content_hash FROM nodes WHERE file_path = ?) instead of scanning 12 tables
+  - deleteStaleRows reduced to single DELETE FROM nodes WHERE id NOT IN (...) — CASCADE handles extension tables, edges, and node_file_refs
+  - Edge extraction preserved — extractEdges function works with nodeId from nodes table
+  - File ref extraction preserved — extractFileRefs function works with nodeId from nodes table
+  - detectCycles function preserved — queries edges table for depends_on edges
+  - ALL_TYPED_TABLES constant and hashCheckStmts Map eliminated
+  - TYPE_TO_TABLE mapping replaced with import of TYPE_TO_EXTENSION_TABLE from db.ts
+  - buildRow function simplified — common fields go to nodes row, type-specific fields go to extension row
+module: null
+domain: null
+notes: |
+  # WI-183: Indexer Rewrite for Class Table Inheritance
+
+  ## Key Architectural Changes
+
+  ### Two-Pass Insert
+  Each YAML artifact inserts into TWO tables within the same transaction:
+  1. `nodes` (base table) — common fields: id, type, cycle_created, cycle_modified, content_hash, token_count, file_path, status
+  2. Extension table — type-specific fields only
+
+  Use `INSERT OR REPLACE` (via Drizzle `onConflictDoUpdate`) for both statements.
+
+  ### Deferred FK During Rebuild
+  At the start of the rebuild transaction, before any inserts:
+  ```typescript
+  db.pragma('defer_foreign_keys = ON');
+  ```
+  This allows edges referencing target nodes that haven't been inserted yet. FK validation happens at COMMIT.
+
+  ### Simplified Hash Check
+  Current: loops through 12 tables with 12 prepared statements.
+  New: single prepared statement on `nodes` table:
+  ```sql
+  SELECT id, content_hash FROM nodes WHERE file_path = ?
+  ```
+
+  ### Simplified Stale Row Deletion
+  Current: `deleteStaleRows` iterates all typed tables, manually deletes edges and file_refs per node.
+  New:
+  ```sql
+  DELETE FROM nodes WHERE id NOT IN ({keepIds})
+  ```
+  ON DELETE CASCADE handles extension tables, edges, and node_file_refs automatically.
+
+  ### buildRow Split
+  Current `buildRow` returns one row for the typed table.
+  New: split into two functions:
+  - `buildNodeRow(doc, content, filePath, hash)` → returns the 8-column nodes row
+  - `buildExtensionRow(table, doc)` → returns type-specific columns only
+
+  ### Edge Extraction
+  `extractEdges` function signature changes: remove `_table` parameter (unused). `nodeType` is read from `doc.type` or from `nodes.type` via the already-inserted base row. The edge table no longer stores `source_type`/`target_type`, so `upsertEdge` signature drops those parameters.
+
+  ### File Ref Extraction
+  `extractFileRefs` drops `nodeType` parameter. `upsertFileRef` drops `nodeType`.
+
+  ### Cycle Detection
+  `detectCycles` is unchanged — it queries `edges` table for `depends_on` edges and runs Kahn's algorithm. The edge table structure is the same (just missing source_type/target_type which detectCycles never used).
+
+  ## Removed Code
+  - `ALL_TYPED_TABLES` constant
+  - `hashCheckStmts` Map (12 prepared statements)
+  - `TYPE_TO_TABLE` mapping (replaced by import from db.ts)
+  - Manual cascade logic in `deleteStaleRows` (~20 lines)
+cycle_created: 1
+cycle_modified: null
+content_hash: 68f5835a054e702cd2c292289e96cf15e472ad0798ca734d3059d7408ca8427f
+token_count: 946
+file_path: .ideate/work-items/WI-183.yaml
+resolution: "Verified complete: buildNodeRow/buildExtensionRow, two-pass insert, hash check on nodes table"

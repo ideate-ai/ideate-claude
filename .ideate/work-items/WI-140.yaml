@@ -30,17 +30,21 @@ criteria:
   - All other work items in work-items.yaml are unchanged
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes — WI-140
 
-  Remove work item entries "132" through "139" from specs/plan/work-items.yaml. These reference benchmarks/ files that were moved to the plan-benchmark project.
+
+  Remove work item entries "132" through "139" from specs/plan/work-items.yaml. These reference benchmarks/ files that
+  were moved to the plan-benchmark project.
+
 
   Also delete the corresponding implementation notes: plan/notes/132.md through plan/notes/139.md.
+
 
   The archived versions in archive/cycles/014/work-items/ remain as historical record.
 cycle_created: 1
 cycle_modified: null
 content_hash: 57de3c9a6c48fb0cfb6f66725c6de36817470e261118adec82306943a6ffbf52
 token_count: 327
-file_path: .ideate/work-items/WI-140.yaml
-resolution: "Verified complete: specs/plan/ directory removed entirely"
+file_path: work-items/WI-140.yaml
+resolution: 'Verified complete: specs/plan/ directory removed entirely'

@@ -1,0 +1,41 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |-
+  ## [autopilot] 2026-04-07 — Cycle 1 Review Summary
+
+  ### Completed
+  WI-695 through WI-701 — 7/7 passed incremental review (WI-695 and WI-701 required one rework pass each). Test suite: 1126 passed, 310 skipped, 0 failed.
+
+  ### Decisions Confirmed
+
+  - **P-44 (YAML-before-SQLite write order)**: putNode writes YAML at writer.ts:626 before SQLite at :628; rollback at :665-670 saves/restores original content. deleteNode unlinks YAML at :902 before SQLite DELETE at :914-917. Remaining rollback gap (deleteNode Phase 2 failure) is a new follow-on.
+  - **P-64 (ValidationError code naming pattern)**: All new error codes (INVALID_NODE_ID, INVALID_LIMIT, INVALID_OFFSET, INVALID_ALPHA, INVALID_MAX_ITERATIONS, INVALID_NODE_TYPE, TRANSACTION_FAILED, FILESYSTEM_ERROR) conform to pattern.
+  - **P-58**: WI-699 added dispatchHook allowlist-rejection test at hooks.test.ts:212. Confirmed by both code-reviewer and spec-reviewer.
+  - **D-177**: equivalence-traverse.test.ts:605 and equivalence-journal.test.ts:33 both declare const remoteAvailable = isTestServerAvailable() at module level.
+  - **Boundary validation symmetry**: alpha/max_iterations conditions now identical in context.ts and remote/index.ts; getNode uses same INVALID_NODE_ID guard and message in both adapters.
+
+  ### Open Issues Carried Forward
+
+  1. **deleteNode YAML rollback missing (SG1 — gap-analysis)**: SQLite DELETE failure after YAML unlink leaves filesystem and SQLite in split-brain. No follow-on WI exists. Must be created in refinement. Fix pattern: save content before unlinkSync, restore in SQLite catch block.
+
+  2. **WI-701 AC2 placement discrepancy (S1 — spec-adherence)**: TRANSACTION_FAILED test placed in write-transaction.test.ts rather than equivalence-journal.test.ts as AC specified. Coverage exists but wrong file. Resolve in refinement.
+
+  3. **FILESYSTEM_ERROR undocumented in adapter-contract.md (M1 — code-reviewer)**: deleteNode error code absent from contract. Deferred.
+
+  4. **INVALID_TOKEN_BUDGET/INVALID_MAX_NODES doc describes wrong valid range (M2 — code-reviewer)**: Doc says 'not a positive integer' but code accepts 0. Deferred.
+
+  ### Cross-References
+
+  - **CR1**: Code-reviewer M1 (FILESYSTEM_ERROR undocumented) and gap-analyst SG1 (YAML rollback missing) both point at writer.ts:899-924. Same function, same failure path — undertested, underdocumented, behaviorally incomplete.
+  - **CR2**: Spec-reviewer S1 (wrong file) and spec-reviewer M1 (wrong field names) both indicate WI-701 ACs were written against imprecise understanding. Implementation correct; ACs were not.
+
+  ### Cycle Outcome
+  Not converged. 2 significant findings: 1 spec-adherence (WI-701 AC2 placement) and 1 gap (deleteNode YAML rollback — split-brain risk). Proceeding to refinement.
+content_hash: ffa13b1dc16094b76209821e7e184d28761e9202c08b2e63da75d0380d136e53
+token_count: 762
+file_path: .ideate/cycles/068/decision-log.yaml
+cycle: 1
+cycle_modified: 19
+scope: full-audit
+date: "20260407"

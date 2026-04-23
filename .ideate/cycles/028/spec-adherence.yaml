@@ -1,55 +1,95 @@
 id: spec-adherence
 type: cycle_summary
 reviewer: spec-reviewer
-content: |
+content: >
   ## Verdict: Fail
+
 
   One acceptance criterion unmet; Q-159 not cited inside Phase 6c body section.
 
+
   ## Critical Findings
+
   None.
+
 
   ## Significant Findings
 
+
   ### S1: WI-881 criterion 5 (all parser tests assert principle_verdict_source) not met
+
   - File: mcp/artifact-server/src/__tests__/tools.test.ts (multiple lines)
-  - Issue: principle_verdict_source is emitted unconditionally by production (analysis.ts:259), and new WI-880/881 tests assert it. But many pre-existing parser tests do not assert source — lines 848, 880, 905, 929, 948, 981, 1015, 1139, 1174, 1187, 1214, 1322, 1343, 1363, 1378, 1434, 1455, 1496, 4191, 4214, 4237.
-  - Impact: Test-assertion gap (not production-code gap). Regressions in which step matched may not be caught by these older tests. Criterion explicitly requires 'all parser tests'.
+
+  - Issue: principle_verdict_source is emitted unconditionally by production (analysis.ts:259), and new WI-880/881 tests
+  assert it. But many pre-existing parser tests do not assert source — lines 848, 880, 905, 929, 948, 981, 1015, 1139,
+  1174, 1187, 1214, 1322, 1343, 1363, 1378, 1434, 1455, 1496, 4191, 4214, 4237.
+
+  - Impact: Test-assertion gap (not production-code gap). Regressions in which step matched may not be caught by these
+  older tests. Criterion explicitly requires 'all parser tests'.
+
   - Fix: Sweep existing parser tests, add principle_verdict_source assertion where verdict is asserted.
 
+
   ### S2: Q-159 not referenced inside Phase 6c body section
+
   - File: skills/autopilot/phases/review.md — Branch C lines 303-331
-  - Issue: Q-159 appears only in the self-check checklist (review.md:420). Task reviewer spec required Q-159 reference inside the unknown-handler body section.
-  - Note: Q-159 itself is status: resolved with WI-882 cited; the acceptance criterion is thus satisfied at the artifact level, but not at the documentation-wording level requested in the cycle's review spec.
+
+  - Issue: Q-159 appears only in the self-check checklist (review.md:420). Task reviewer spec required Q-159 reference
+  inside the unknown-handler body section.
+
+  - Note: Q-159 itself is status: resolved with WI-882 cited; the acceptance criterion is thus satisfied at the artifact
+  level, but not at the documentation-wording level requested in the cycle's review spec.
+
   - Fix: Add inline reference to Q-159 in Branch C preamble.
+
 
   ## Minor Findings
 
+
   ### M1: WI-880 criterion 1 has no negative test
+
   - Criterion: '## Principle Adherence Whatever' must not match
+
   - Implementation uses strict equality (analysis.ts:130-135) so is correct
+
   - No test exercises the negative case
+
 
   ## Principle Adherence Verdict: Pass (with one noted gap)
 
+
   - P-90 (Step 2 exact heading equality): HELD
-  - P-91 (parser tests assert principle_verdict_source): PARTIALLY — emitted unconditionally, new tests assert, but older tests (S1) do not
+
+  - P-91 (parser tests assert principle_verdict_source): PARTIALLY — emitted unconditionally, new tests assert, but
+  older tests (S1) do not
+
   - P-92 (P-33 fixtures realistic): HELD — handleWriteArtifact used
+
   - P-93 (JSDoc enumerates 8 variants): HELD
+
   - P-33 (no storage details leaked): HELD
+
   - GP-2 (minimal inference): HELD — unknown routes to Andon
+
   - GP-6 (discrete diagnostic fields): HELD — patterns_tried + content_snippet as discrete lines
+
   - GP-11 (honest tone): HELD
+
   - GP-14 (MCP abstraction): HELD
 content_hash: 9ca5067481bd93142ad107b784721d61c2ac96098681d1b1207de7d20b13ab3f
 token_count: 922
-file_path: .ideate/cycles/068/spec-adherence.yaml
+file_path: cycles/028/spec-adherence.yaml
 cycle: 28
 cycle_modified: 27
 verdict: Fail
 principle_verdict: Pass
 scope: WI-873 adherence to architecture, guiding principles, constraints, and 11 acceptance criteria
-summary: "ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null, non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was corrected via ideate_write_artifact re-writes)."
+summary: >-
+  ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but
+  adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null,
+  non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality
+  correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was
+  corrected via ideate_write_artifact re-writes).
 findings_summary:
   critical: 0
   significant: 1
@@ -57,4 +97,7 @@ findings_summary:
 significant_findings_refs:
   - F-CYCLE-33-S1
 principle_adherence_verdict: Pass
-principle_adherence_notes: "**Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873 scope files."
+principle_adherence_notes: >-
+  **Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure
+  YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873
+  scope files.

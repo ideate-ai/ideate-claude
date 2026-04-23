@@ -17,9 +17,9 @@ notes: |-
   # WI-236: CLAUDE.md Structure Update
 
   Replace old specs/ layout with v3 .ideate/ structure.
-resolution: "Verified complete: CLAUDE.md uses .ideate/ paths throughout, no old specs/ hierarchy"
+resolution: 'Verified complete: CLAUDE.md uses .ideate/ paths throughout, no old specs/ hierarchy'
 cycle_created: 29
 cycle_modified: null
 content_hash: 61060ddb41da1ee70fafebc0081e843a5c97826d4abb4bfbef91e234a8567822
 token_count: 167
-file_path: .ideate/work-items/WI-236.yaml
+file_path: work-items/WI-236.yaml

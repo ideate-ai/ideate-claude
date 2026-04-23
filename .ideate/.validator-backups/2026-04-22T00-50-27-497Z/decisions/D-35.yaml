@@ -1,0 +1,13 @@
+id: D-35
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 8
+supersedes: null
+description: The unconditional-Andon startup-failure rule from D-33/WI-120 was replaced. Startup failures with a diagnosable, in-scope root cause are now fixed autonomously; Andon escalation is reserved for unfixable, out-of-scope, or indeterminate causes.
+rationale: GP-6 ("User intervention is reserved for critical issues that cannot be resolved from existing steering documents") and P-5 both require escalation as last resort. The cycle 008 rule escalated fixable failures to the user unnecessarily.
+cycle_created: 1
+cycle_modified: null
+content_hash: "79be3df13d89756a92082469137511d49433bdfdf65fb7f457b5405f337da23e"
+token_count: 175
+file_path: .ideate/decisions/D-35.yaml

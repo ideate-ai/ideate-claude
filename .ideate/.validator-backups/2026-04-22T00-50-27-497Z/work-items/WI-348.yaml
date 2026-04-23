@@ -1,0 +1,33 @@
+id: WI-348
+type: work_item
+title: Add new policies P-33 and P-34
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - "P-33 created: MCP tool responses must not include file paths or storage implementation details"
+  - "P-34 created: MCP tool descriptions must be surgical"
+  - Both policies have proper format (id, type, domain, policy text, source)
+  - Policies indexed in SQLite
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Add new domain policies to enforce MCP tool design best practices.
+
+  P-33: MCP tool responses must not include file paths or storage implementation details. Tools return artifact designations (WI-120, P-05) not file locations.
+
+  P-34: MCP tool descriptions must be surgical — every word costs tokens on every request. Keep descriptions under 50 words, specify when to use, response size expectations.
+
+  Files to create:
+  - .ideate/policies/P-33.yaml
+  - .ideate/policies/P-34.yaml
+
+  Source: Q-082 resolution and MCP best practices research.
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: b4c228247f0281aadf6ae47feae1d83a6c97f0fbcdcbfe00fc058d116b40c279
+token_count: 267
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-348.yaml

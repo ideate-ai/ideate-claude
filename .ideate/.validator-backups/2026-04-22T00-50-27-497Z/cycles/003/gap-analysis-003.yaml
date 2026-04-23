@@ -1,0 +1,51 @@
+id: gap-analysis-003
+type: cycle_summary
+title: Gap Analysis — Cycle 3
+cycle: 3
+reviewer: gap-analyst
+content: |-
+  ## Significant Gaps
+
+  ### Gap 1: `finding` type skips `findings` extension table in `handleWriteArtifact`
+  - **File**: `mcp/artifact-server/src/tools/write.ts`
+  - **Issue**: `TYPE_TO_EXTENSION_TABLE` maps `finding` → `findings`, and `handleWriteArtifact` accepts the type, but no branch calls `upsertFinding`. Only a `nodes` row is written. `handleGetProjectStatus` counts findings from `SELECT severity, COUNT(*) FROM findings WHERE cycle = ?` — findings written via `handleWriteArtifact` are invisible to it.
+  - **Impact**: Project-status finding counts are permanently zero for findings written through the standard write path. Any query joining `findings` for detail retrieval returns no rows.
+  - **Severity**: Significant
+  - **Suggested fix**: Add `else if (type === "finding")` branch calling `upsertFinding` with fields extracted from `content`. Import `FindingRow` and `upsertFinding`.
+
+  ### Gap 2: `metrics_event` type silently drops `metrics_events` extension row
+  - **File**: `mcp/artifact-server/src/tools/write.ts`
+  - **Issue**: `TYPE_TO_EXTENSION_TABLE` maps `metrics_event` → `metricsEvents`. Type passes P-42 validation, YAML is written, `nodes` row inserted, but no branch calls `upsertMetricsEvent`. `handleGetMetrics` queries `metrics_events JOIN nodes` — returns nothing for artifacts written via `handleWriteArtifact`.
+  - **Impact**: Silent data loss. Valid type, file written, node indexed, but extension table never populated.
+  - **Severity**: Significant
+  - **Suggested fix**: Add `metrics_event` branch calling `upsertMetricsEvent`, or remove from `TYPE_TO_EXTENSION_TABLE` if only written via JSONL path.
+
+  ### Gap 3: `interview_question` type silently drops `interview_questions` extension row
+  - **File**: `mcp/artifact-server/src/tools/write.ts`
+  - **Issue**: Same pattern as Gap 2. `TYPE_TO_EXTENSION_TABLE` maps `interview_question` → `interviewQuestions`. Type passes validation, `nodes` row inserted, but no `upsertInterviewQuestion` call.
+  - **Impact**: Context assembly from interview Q&A returns no rows for artifacts written through `handleWriteArtifact`.
+  - **Severity**: Significant
+  - **Suggested fix**: Add `else if (type === "interview_question")` branch calling `upsertInterviewQuestion`.
+
+  ## Minor Gaps
+
+  ### Gap 4: `document_artifacts.cycle` precedence inversion for `cycle_summary`
+  - **File**: `mcp/artifact-server/src/tools/write.ts` (line 916) and `analysis.ts` (line 129)
+  - **Issue**: `document_artifacts.cycle` set to `content.cycle ?? cycleForNode`. If caller passes `cycle: 5` at tool level but `content: { cycle: 7 }`, the row lands at cycle 7 but `nodes.cycle_created = 5`. `handleGetConvergenceStatus` filters on `documentArtifacts.cycle`, not `nodes.cycle_created`, returning no row for cycle 5.
+  - **Severity**: Minor
+  - **Suggested fix**: Use `cycleForNode` unconditionally for `document_artifacts.cycle` in cycle-scoped type branches.
+
+  ### Gap 5: Rollback tests only simulate failure at first insert (`upsertNode`), not extension-table insert
+  - **File**: `mcp/artifact-server/src/__tests__/write-transaction.test.ts`
+  - **Issue**: `makeFailingDrizzleCtx` throws on any `insert()` call, meaning the first insert (`upsertNode`) always fails. The case where `upsertNode` succeeds but the extension-table insert fails is not tested.
+  - **Severity**: Minor
+  - **Suggested fix**: Add test variant using proxy that counts calls and throws on the second insert specifically.
+
+  ### Gap 6: Redundant `fs.mkdirSync` inside exclusive transaction in `handleAppendJournal`
+  - **File**: `mcp/artifact-server/src/tools/write.ts` (lines 88 and 118)
+  - **Issue**: `ensureDir(journalDir)` called at line 88 before transaction. `fs.mkdirSync` called redundantly inside the exclusive lock at line 118. Unnecessary I/O inside critical section.
+  - **Severity**: Minor
+  - **Suggested fix**: Remove `mkdirSync` at line 118; pre-transaction `ensureDir` at line 88 is sufficient.
+content_hash: f5c88fefe6937cb84365a76ff9b3a0001a77ab8ae57dd8caba4e202e4fc7717e
+token_count: 1016
+file_path: .ideate/cycles/003/gap-analysis-003.yaml

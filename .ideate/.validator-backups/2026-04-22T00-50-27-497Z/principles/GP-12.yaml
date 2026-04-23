@@ -1,0 +1,11 @@
+id: GP-12
+type: guiding_principle
+name: Refinement as Validation
+status: active
+description: "The refine phase serves double duty: fixing what's wrong AND adjusting what was asked for. Users are fallible and sometimes need to see results to understand what they actually need. Post-review is not just acceptance testing — it's validation that the original ask was correct. Requirements can change based on what the user learns from seeing working output."
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "93294c024876835b13af60d6af410fa1eb1f7a9dcdc4db743bcd0f61c7d594a4"
+token_count: 144
+file_path: .ideate/principles/GP-12.yaml

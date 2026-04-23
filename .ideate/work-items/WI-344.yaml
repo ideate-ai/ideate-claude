@@ -8,10 +8,10 @@ depends: []
 blocks: []
 criteria:
   - All tools have annotations object with appropriate hints
-  - "readOnlyHint: true for read-only tools"
-  - "destructiveHint: true for write/delete operations"
-  - "idempotentHint: true where applicable"
-  - "openWorldHint: true for external operations"
+  - 'readOnlyHint: true for read-only tools'
+  - 'destructiveHint: true for write/delete operations'
+  - 'idempotentHint: true where applicable'
+  - 'openWorldHint: true for external operations'
   - All tests pass
 domain: artifact-structure
 notes: |-
@@ -30,4 +30,4 @@ cycle_created: null
 cycle_modified: null
 content_hash: 7485a6a30efabc0b6c3865d9d6435639e4675ea5fe5f45f60a9b799f23537ba3
 token_count: 224
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-344.yaml
+file_path: work-items/WI-344.yaml

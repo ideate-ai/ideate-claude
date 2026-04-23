@@ -1,6 +1,6 @@
 reviewer: spec-reviewer
 cycle: 30
-type: full_audit
+type: cycle_summary
 content: |-
   ## Verdict: Pass (with one minor documentation issue)
 

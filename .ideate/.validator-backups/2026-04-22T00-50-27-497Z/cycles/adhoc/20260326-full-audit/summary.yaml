@@ -1,0 +1,54 @@
+type: full_audit_summary
+id: summary
+cycle: 30
+content: |-
+  # Review Summary — Full Audit 20260326
+
+  ## Overview
+
+  Full audit of Cycle 030 work reveals the core fixes were applied but incomplete. Domain-curator still has `.md` references in section headers and a critical path error (missing `.ideate/`). Review skill and context package spec have additional `.md` references not covered by the original work items. The project requires a follow-up refinement cycle to complete the pattern standardization.
+
+  ## Critical Findings
+
+  - [gap-analyst] Domain-curator points to wrong directory path — line 166 says `{project_root}/domains/` instead of `{project_root}/.ideate/domains/`
+
+  ## Significant Findings
+
+  - [gap-analyst] Review skill line 406 references `domains/*/policies.md` instead of `domains/*/policies/*.yaml` — WI-260 incomplete
+  - [gap-analyst] Context package spec lines 17, 26, 32, 61-63 reference `.md` files instead of `.yaml` — WI-262 incomplete
+  - [code-reviewer] MCP artifact-server README uses `{artifact_dir}` placeholder — documentation inconsistency
+
+  ## Minor Findings
+
+  - [code-reviewer/spec-reviewer/gap-analyst] Domain-curator section headers at lines 96, 104, 134 use `.md` suffix
+
+  ## Suggestions
+
+  - [gap-analyst] Pattern search entire codebase before marking work items complete
+  - [gap-analyst] Update documentation spec to be fully consistent with P-25
+
+  ## Findings Requiring User Input
+
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+
+  A refinement cycle is recommended to address:
+
+  1. **Fix domain-curator path** (Critical) — Add `.ideate/` to line 166 directory path
+  2. **Complete domain-curator .md cleanup** (Minor) — Change section headers at lines 96, 104, 134 to use `.yaml`
+  3. **Complete review skill .md cleanup** (Significant) — Fix line 406 to use `.yaml` pattern
+  4. **Complete context package spec cleanup** (Significant) — Update lines 17, 26, 32, 61-63 to reference `.yaml` files
+  5. **Standardize README placeholders** (Significant) — Use `{project_root}` in artifact-server README examples
+
+  Estimated scope: 5 work items, low complexity each.
+
+  ## Verdict Summary
+
+  | Reviewer | Verdict | Key Findings |
+  |----------|---------|--------------|
+  | code-reviewer | Fail | 2 Significant |
+  | spec-reviewer | Pass | 1 Minor |
+  | gap-analyst | Partial | 1 Critical, 2 Significant, 1 Minor |
+
+  **Audit Status**: Refinement required — incomplete fixes remain.

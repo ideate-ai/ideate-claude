@@ -1,0 +1,11 @@
+id: D-138
+type: domain_decision
+domain: artifact-structure
+title: file_path field removed from YAML content and MCP responses
+decision: Strip file_path from YAML written by handleWriteWorkItems and handleWriteArtifact. MCP responses use artifact IDs only.
+rationale: Prerequisite for cloud-hosted MCP backend where file paths have no meaning to callers. Aligns with GP-14 abstraction boundary.
+source: cycle 1 decision-log D7; WI-395
+status: settled
+content_hash: 89ec0c0258af63daa662bf81854cb38e82b126b27af2f268a6207b014d9870b2
+token_count: 112
+file_path: .ideate/decisions/D-138.yaml

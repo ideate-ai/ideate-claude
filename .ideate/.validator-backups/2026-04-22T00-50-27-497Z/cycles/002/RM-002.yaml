@@ -1,0 +1,15 @@
+id: RM-002
+type: review_manifest
+title: Review Manifest — Cycle 2
+cycle: 2
+content: |-
+  | # | Work Item | Title | Verdict | Findings (C/S/M) |
+  |---|-----------|-------|---------|------------------|
+  | 1 | WI-401 | Fix handleUpdateWorkItems path leakage | Pass (rework) | 0/1/0 |
+  | 2 | WI-402 | Fix handleArchiveCycle filename matching and SQLite cleanup | Pass (rework) | 0/2/2 |
+  | 3 | WI-403 | Add P-44 transaction to handleAppendJournal | Pass (rework) | 0/0/1 |
+  | 4 | WI-404 | Extend handleWriteArtifact for guiding_principle and constraint | Pass | 0/0/1 |
+  | 5 | WI-405 | Fix handleGetReviewManifest and handleGetProjectStatus | Pass (rework) | 0/2/1 |
+content_hash: f6df4dc62cad4026028f38f6186de7ae2512c5155ad5b9f7c1a54f6193fc5f65
+token_count: 167
+file_path: .ideate/cycles/002/RM-002.yaml

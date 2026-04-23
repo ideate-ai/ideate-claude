@@ -4,10 +4,17 @@ domain: workflow
 status: settled
 cycle: 1
 supersedes: null
-description: "WI-128 added a distinct \"Smoke test infrastructure failure\" exception to both `skills/execute/SKILL.md` and `skills/autopilot/phases/execute.md`, and added P-23 to workflow policies. The protocol requires regression determination before Andon: if the failure is determined to be a regression caused by this work item's changes, diagnose and attempt a surgical fix; if not a regression, route to Andon immediately."
-rationale: The startup-failure exception covers application failures but not infrastructure failures (runner not found, environment setup error, pre-execution crash). Treating these as identical failure modes was undefined behavior. Regression determination prevents excessive Andon escalations for pre-existing or environmental failures.
+description: >-
+  WI-128 added a distinct "Smoke test infrastructure failure" exception to both `skills/execute/SKILL.md` and
+  `skills/autopilot/phases/execute.md`, and added P-23 to workflow policies. The protocol requires regression
+  determination before Andon: if the failure is determined to be a regression caused by this work item's changes,
+  diagnose and attempt a surgical fix; if not a regression, route to Andon immediately.
+rationale: >-
+  The startup-failure exception covers application failures but not infrastructure failures (runner not found,
+  environment setup error, pre-execution crash). Treating these as identical failure modes was undefined behavior.
+  Regression determination prevents excessive Andon escalations for pre-existing or environmental failures.
 cycle_created: 1
 cycle_modified: null
-content_hash: "3c3e8cb84b70795c1abfdb56833a8a530268cd2ba152a663cfa3adeaf6c4f61d"
+content_hash: 3c3e8cb84b70795c1abfdb56833a8a530268cd2ba152a663cfa3adeaf6c4f61d
 token_count: 239
-file_path: .ideate/decisions/D-45.yaml
+file_path: decisions/D-45.yaml

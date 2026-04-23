@@ -1,0 +1,13 @@
+id: D-151
+type: domain_decision
+domain: artifact-structure
+title: Forward-only code changes require explicit backfill assessment
+description: "When a code change fixes how data is written going forward but does not remediate existing artifacts, the implementation must explicitly document what existing data is affected and whether backfill is needed. Prompted by Pattern C across cycles 1-4: both WI-406 and WI-423 applied forward-only fixes that left existing artifacts in inconsistent state, with the inconsistency only surfacing later during index rebuilds or convergence checks."
+rationale: Two instances of forward-only fixes (WI-406, WI-423) produced latent data inconsistencies. In both cases the fix was correct going forward but existing artifacts remained broken. The gap-analyst for cycle 4 identified CS-003, CQ-003, and GA-003 as still missing cycle fields despite the WI-423 fix.
+source: cycle 4 decision-log Pattern C; gap-analysis-004 Gap 1
+policy: P-49
+status: settled
+cycle: 4
+content_hash: d30c1e84031fc249bd164bd961c29a869aa25b506df9898b2162454b802c9ba0
+token_count: 249
+file_path: .ideate/decisions/D-151.yaml

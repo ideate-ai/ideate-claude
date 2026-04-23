@@ -1,0 +1,14 @@
+id: Q-57
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Performance degrades quadratically for large dependency graphs. Fix is a single-line change per BFS loop.
+source: archive/cycles/018/code-quality.md S4; archive/cycles/018/decision-log.md OQ7
+resolution: WI-171 replaced `Array.shift()` with a `let head = 0; const node = queue[head++]` index-pointer pattern in both BFS loops. Restores O(n + e) complexity. See D-87.
+resolved_in: 19
+description: Both the Kahn's topological sort and cycle-component BFS in `detectCycles` use `queue.shift()` which is O(n) per call. For a graph near the 10,000-node limit, overall complexity becomes O(n^2) instead of O(n + e). Should the queue be replaced with an index-pointer pattern?
+cycle_created: 1
+cycle_modified: null
+content_hash: "0ffc2d4d4f050fa6083c99d5e2f3b088334678b425c2dbf742353e8d05cc934a"
+token_count: 215
+file_path: .ideate/questions/Q-57.yaml

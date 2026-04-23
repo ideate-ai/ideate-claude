@@ -1,0 +1,11 @@
+id: GP-08
+type: guiding_principle
+name: Durable Knowledge Capture
+status: active
+description: Context windows are limited. All knowledge generated during planning, execution, and review must be captured in durable YAML artifacts on disk. These artifacts serve as the inter-phase contract — no in-memory state carries between skill invocations. The `.ideate/` directory is the single source of truth for artifacts. The MCP artifact server is a required component of ideate v3 — it provides the runtime index and is the mandatory interface between skills and artifacts. Skills read and write artifacts exclusively through MCP tools; they do not access YAML files directly. The SQLite index is a derived cache rebuilt from YAML — deleting `index.db` must never lose data. MCP availability checks in skills apply to external tools and servers that enhance ideate's capabilities, not to the ideate artifact server itself which is always present.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: b2134547a894de18f5639f7bf1ecaae00551d999203ed8ac9932884d58395c0f
+token_count: 266
+file_path: .ideate/principles/GP-08.yaml

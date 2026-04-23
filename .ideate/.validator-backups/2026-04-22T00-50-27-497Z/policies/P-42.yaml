@@ -1,0 +1,12 @@
+id: P-42
+type: domain_policy
+derived_from:
+  - GP-08 (Durable Knowledge Capture)
+  - IR1 (gap-analysis cycle 1)
+description: handleWriteArtifact must validate that the artifact type parameter matches a known type before resolving the file path. Writing artifacts with unknown types to unexpected paths corrupts the artifact directory structure.
+domain: artifact-structure
+established: 1
+status: active
+content_hash: 732697830cc5db65223aa3bf249aebc4b5b8be3ac6a28b24a21efd7db21b8698
+token_count: 100
+file_path: .ideate/policies/P-42.yaml

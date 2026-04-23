@@ -1,0 +1,53 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |
+  Verdict: Fail (scope note: finding is out of PH-053 stated scope; flagged for carry-forward)
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [EC2-b] indexer.ts:750 indexFiles() and :932 rebuildIndex() wrap calls to indexSingleFile() in a SQLite transaction. indexSingleFile at :627 calls fs.readFileSync. Same anti-pattern WI-890/895 fixed in LocalWriterAdapter. For a full rebuildIndex over a large workspace, this holds the write lock for the entire file-read duration — blocks all writers. Filed as WI-896, carry-forward to PH-056 (Scale + observability). Out of PH-053's stated scope (which was "LocalWriterAdapter methods").
+
+  ## Minor Findings
+  - [EC1 new] batchMutate with duplicate IDs silently loses data — second occurrence overwrites first. Not realistic in current usage (MCP layer assigns IDs sequentially). Defer.
+  - [MI1] v5→6/v6→7 stubs still do not DROP metrics_events — cosmetic debt, documented as deferred in cycle 77.
+
+  ## Cycle 77 closure verification
+  | Finding | Status |
+  |---|---|
+  | S1 ppr.ts TS error | CLOSED (WI-894) |
+  | EC1 patchNode fs-in-txn | CLOSED (WI-895) |
+  | EC2 batchMutate fs-in-txn | CLOSED (WI-895) |
+  | II1 LocalWriterAdapter shutdown guard | CLOSED (WI-895) |
+  | IR1 LocalAdapter post-shutdown tests | CLOSED (WI-895) |
+  | M1 writer.ts console.error | CLOSED (WI-895) |
+  | M2 writer.ts dead findingsDir | CLOSED (WI-895) |
+  | M3 writer.test.ts mock cast | CLOSED (WI-894 scope bleed) |
+  | M4 RemoteAdapter 3 no-op methods | CLOSED (WI-894) |
+  | MI1 metrics_events orphan table | STILL DEFERRED (Minor) |
+
+  ## Systemic pattern observation
+  Cycle 78 closed all cycle-77 findings but the indexer has the same anti-pattern. This is the third occurrence of "fs-in-transaction" in this codebase (writer.ts had 3: archiveCycleLocal, patchNode, batchMutate — all now fixed). Future audits should explicitly grep for `fs\.(unlinkSync|writeFileSync|readFileSync|renameSync|mkdirSync|statSync)` inside `.transaction(` across the whole MCP server when fixing any instance, not just the named file.
+content_hash: 5e0803b1df813b61b4587df619bb23fbdccb631c1d64b8ea28d4fb2e5503f8a2
+token_count: 805
+file_path: .ideate/cycles/068/gap-analysis.yaml
+cycle: 78
+cycle_modified: 27
+verdict: Pass
+scope: full-audit
+summary: "10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase (grep-verified)."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 1
+minor_findings_refs:
+  - F-CYCLE-33-MI1
+criteria_status:
+  total: 11
+  pass: 10
+  partial: 1
+  fail: 0
+regression_prevention_check: No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both 2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.
+date: "20260417"

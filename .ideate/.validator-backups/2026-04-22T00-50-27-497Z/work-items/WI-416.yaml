@@ -1,0 +1,19 @@
+id: WI-416
+type: work_item
+title: Delete dead interviewFiles() helper from write-transaction.test.ts
+status: done
+complexity: XS
+scope: mcp/artifact-server/src/__tests__/write-transaction.test.ts (modify)
+depends: []
+blocks: []
+criteria: |-
+  1. The interviewFiles() function and its JSDoc comment (lines ~102-107) are deleted from write-transaction.test.ts.
+  2. All tests pass (npm test).
+domain: null
+notes: "# WI-416: Delete dead interviewFiles() helper from write-transaction.test.ts"
+resolution: null
+cycle_created: null
+cycle_modified: 3
+content_hash: d4c7f77850f26ef427b57eedd440d4d9e86f78e15a4bd244b1d45774581989f6
+token_count: 136
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-416.yaml

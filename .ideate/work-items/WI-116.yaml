@@ -16,46 +16,72 @@ criteria:
   - No other sections in refine/SKILL.md are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-116: Fix stale reviews/final/ and reviews/incremental/ paths in skills/refine/SKILL.md
+
 
   ## Context
 
-  `skills/refine/SKILL.md` contains 6 references to the removed `reviews/final/` and `reviews/incremental/` directory paths (lines 87–92, 108, 124) in its legacy fallback block (Phase 3.2) and Phase 5 interview instructions.
 
-  WI-091 was scoped to `specs/artifact-conventions.md` and did not include the refine skill. This is a cross-cutting consistency gap noted in code-quality M1 and spec-adherence M1 of cycle 004.
+  `skills/refine/SKILL.md` contains 6 references to the removed `reviews/final/` and `reviews/incremental/` directory
+  paths (lines 87–92, 108, 124) in its legacy fallback block (Phase 3.2) and Phase 5 interview instructions.
+
+
+  WI-091 was scoped to `specs/artifact-conventions.md` and did not include the refine skill. This is a cross-cutting
+  consistency gap noted in code-quality M1 and spec-adherence M1 of cycle 004.
+
 
   ## Changes
 
+
   **File**: `skills/refine/SKILL.md`
+
 
   ### Phase 3.2 legacy fallback (lines 87–92)
 
-  The six references to `reviews/final/` should be updated to reference `archive/cycles/{NNN}/` files using the latest cycle number:
+
+  The six references to `reviews/final/` should be updated to reference `archive/cycles/{NNN}/` files using the latest
+  cycle number:
+
 
   - `reviews/final/summary.md` → `archive/cycles/{latest_cycle}/summary.md`
+
   - `reviews/final/code-quality.md` → `archive/cycles/{latest_cycle}/code-quality.md`
+
   - `reviews/final/spec-adherence.md` → `archive/cycles/{latest_cycle}/spec-adherence.md`
+
   - `reviews/final/gap-analysis.md` → `archive/cycles/{latest_cycle}/gap-analysis.md`
+
   - `reviews/final/decision-log.md` → `archive/cycles/{latest_cycle}/decision-log.md`
+
   - `reviews/incremental/*.md` → `archive/incremental/*.md`
 
-  Also update the instruction text to describe how to determine the latest cycle number (glob `archive/cycles/` and pick the highest NNN).
+
+  Also update the instruction text to describe how to determine the latest cycle number (glob `archive/cycles/` and pick
+  the highest NNN).
+
 
   ### Phase 5 references (lines 108, 124)
 
+
   - `reviews/final/summary.md` → `archive/cycles/{latest_cycle}/summary.md`
+
 
   ## Acceptance Criteria
 
+
   1. `skills/refine/SKILL.md` contains no references to `reviews/final/`
+
   2. `skills/refine/SKILL.md` contains no references to `reviews/incremental/`
+
   3. The legacy fallback block references `archive/cycles/{NNN}/` with guidance on finding the latest cycle directory
+
   4. Phase 5 references the correct path for the prior review summary
+
   5. No other sections in refine/SKILL.md are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 58e58682d40087e1be0b6a4a6c8c9d63250951358f85918cb8e1abd28805907d
 token_count: 656
-file_path: .ideate/work-items/WI-116.yaml
+file_path: work-items/WI-116.yaml
 resolution: Implemented during v3 migration

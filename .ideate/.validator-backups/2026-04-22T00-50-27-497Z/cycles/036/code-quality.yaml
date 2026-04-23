@@ -1,0 +1,81 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |
+  # Code Quality Review — PH-050 Cycle 1
+
+  ## Verdict: Fail
+
+  **Summary**: 2 significant findings, 3 minor, 0 critical. Test suite: 1490 pass, 0 fail. Two defects in parsePrincipleVerdict regex/warning output.
+
+  ## Significant Findings
+
+  ### S1 — Step1 regex matches Passed/Failed/Passthrough (no word boundary)
+  - **Location**: tools/analysis.ts:75-82
+  - **Issue**: STEP1_PASS_RES and STEP1_FAIL_RES patterns end with bare `/Pass/i` or `/Fail/i`. No word boundary. `Verdict: Passed` / `Verdict: Failed` / `Verdict: Passthrough` all resolve to pass/fail from step1.
+  - **Impact**: False positive → autopilot declares convergence prematurely. False negative → blocks convergence unnecessarily.
+  - **Fix**: Add `\b` to each keyword:
+    ```ts
+    /\*\*Principle\s+(?:Adherence|Violation)\s+Verdict\*\*:\s*Pass\b/i
+    ```
+    plus equivalents for colon-inside-bold and no-bold variants, fail arm, and add tests for rejected past-tense keywords.
+
+  ### S2 — Step3 warning produces structurally invalid YAML
+  - **Location**: tools/analysis.ts:128-129 (warning construction) + 206 (output wrap)
+  - **Issue**: `warning = \`... ${JSON.stringify(snippet)}\`` produces quoted content. Output line wraps in another pair of double quotes. Result: `principle_verdict_warning: "unexpected format; content snippet: "Verdict: unclear...""` — YAML parser treats first `"` as scalar open, second `"` as close, trailing text is unparseable.
+  - **Verified**: parse() from the `yaml` module throws on this line.
+  - **Impact**: Downstream YAML consumers of tool output will fail.
+  - **Fix**: Remove JSON.stringify; emit warning with single-quote YAML quoting:
+    ```ts
+    warning: `unexpected format; content snippet: ${snippet}`
+    lines.push(`principle_verdict_warning: '${warning.replace(/'/g, "''")}'`)
+    ```
+    (Note: gap-analyst EC1 identifies the same defect from a different angle.)
+
+  ## Minor Findings
+
+  ### M1 — restart.sh pgrep uses unescaped path as regex
+  - **Location**: scripts/restart.sh:36
+  - **Issue**: `pgrep -f "node.*$TARGET"` treats `$TARGET` as ERE. `.` matches any char. Low real risk but not correct by construction.
+  - **Fix**: sed-escape regex metacharacters before interpolation.
+
+  ### M2 — deployment-notes.md inaccurate about start.sh behavior
+  - **Location**: docs/deployment-notes.md:116-122
+  - **Issue**: Documents start.sh as rebuild-check alternative but doesn't mention start.sh only rebuilds on package.json version bump, not source edits.
+  - **Fix**: Clarify the workflow; steer dev toward `npm run build && sh scripts/restart.sh`.
+
+  ### M3 — JSDoc overstates accepted verdict keywords
+  - **Location**: tools/analysis.ts:50-60
+  - **Issue**: JSDoc shows `Pass|Fail|Unknown`. No STEP1_UNKNOWN_RES patterns exist. `Verdict: Unknown` falls through to step3 → "unexpected format" warning (misleading).
+  - **Fix**: Either strip `|Unknown` from JSDoc or add STEP1_UNKNOWN_RES patterns.
+
+  ## Requires Human Review
+
+  ### WI-877 operational end-to-end restart verification
+  - Manual 8-step procedure in deployment-notes.md cannot be machine-verified without a running MCP host. Approval: operator who can run MCP locally and observe build-stamp log before/after rebuild.
+
+  ## Summary by Severity
+
+  - Critical: 0
+  - Significant: 2 (S1, S2)
+  - Minor: 3 (M1, M2, M3)
+content_hash: 31325afc7f43d96baceca82805c19d7e294aeede37914c79b716a6445cf9abc6
+token_count: 1025
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 36
+cycle_modified: 27
+verdict: Pass
+scope: WI-873 deltas — getConvergenceData empty-string parity fix + doc/test/fixture syncs
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345

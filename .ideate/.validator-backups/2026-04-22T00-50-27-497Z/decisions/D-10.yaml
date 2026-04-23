@@ -1,0 +1,13 @@
+id: D-10
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: In the review skill, code-reviewer, spec-reviewer, and gap-analyst run in parallel first; journal-keeper runs after they complete so it can synthesize their findings alongside the journal.
+rationale: "WI-019 was created specifically to fix this: the original parallel execution meant journal-keeper could not read the other reviewers' outputs (journal 2026-03-08 WI-019 entry)."
+cycle_created: 1
+cycle_modified: null
+content_hash: d296da14e90246dcc8f044d29a1fcdd622ba35b1998032458b8a3d15d0ef3660
+token_count: 146
+file_path: .ideate/decisions/D-10.yaml

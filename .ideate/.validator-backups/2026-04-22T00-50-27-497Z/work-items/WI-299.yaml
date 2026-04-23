@@ -1,0 +1,21 @@
+id: WI-299
+type: work_item
+title: Fix plan/SKILL.md stale ideate_artifact_index reference
+status: done
+complexity: low
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - No grep match for ideate_artifact_index in skills/plan/SKILL.md
+  - MCP validation step uses ideate_get_project_status as the example tool
+domain: workflow
+notes: "Line 60: replace ideate_artifact_index with ideate_get_project_status."
+resolution: Replaced ideate_artifact_index with ideate_get_project_status in plan/SKILL.md.
+cycle_created: 39
+cycle_modified: null
+content_hash: 6ffd6de74231016822f43662ab6c26f73a75a332b715954c5c211afd0146361d
+token_count: 144
+file_path: .ideate/work-items/WI-299.yaml

@@ -1,0 +1,36 @@
+id: gap-analysis-004
+type: cycle_summary
+cycle: 4
+reviewer: gap-analyst
+content: |-
+  ## Gap Analysis — Cycle 4
+
+  ### Gap 1: CS-003, CQ-003, GA-003 missing top-level cycle: field — null after rebuild
+  **Severity**: Significant
+  **Description**: The WI-423 fix is forward-only. Existing cycle_summary artifacts CS-003, CQ-003, and GA-003 in .ideate/cycles/003/ have no top-level cycle: field. On any index rebuild, document_artifacts.cycle for these three artifacts will be null. SA-003 has cycle: 3 and will be found by handleGetConvergenceStatus(3), but the other three artifacts are invisible after a rebuild.
+  **Impact**: After a server restart + rebuild, convergence status for cycle 3 loses CS-003, CQ-003, GA-003 from the cycle-filtered view. SA-003 still works, so the immediate impact is limited but the gap is latent.
+  **Recommendation**: Backfill cycle: 3 into YAML files for CS-003, CQ-003, GA-003 (three one-line additions).
+
+  ### Gap 2: End-to-end write→convergence roundtrip test absent
+  **Severity**: Significant
+  **Description**: No test exists that calls handleWriteArtifact with type cycle_summary and cycle: N, then calls handleGetConvergenceStatus(N) and asserts the spec-adherence artifact is found and parsed. The existing tests cover the write path and the query path in isolation but not the full roundtrip.
+  **Impact**: A regression in either handleWriteArtifact's DB upsert logic or handleGetConvergenceStatus's query would go undetected.
+  **Recommendation**: Add one integration test in tools.test.ts: write SA artifact with cycle:3 + Principle Violation Verdict: Pass, call handleGetConvergenceStatus(3), assert converged: true.
+
+  ### Gap 3: No fallback in convergence query for null-cycle artifacts
+  **Severity**: Minor
+  **Description**: handleGetConvergenceStatus filters document_artifacts.cycle = N. If document_artifacts.cycle is null, the artifact is invisible. No secondary lookup by ID prefix or directory path.
+  **Impact**: Any cycle-summary artifact with null cycle is invisible to convergence checks. Returns principle_verdict: unknown silently.
+  **Recommendation**: Defer — Gap 1 is the correct fix. A fallback query would mask the underlying data problem.
+
+  ### Gap 4: ideate_write_artifact type description omits finding and domain types
+  **Severity**: Minor
+  **Description**: The type parameter description lists: overview, execution_strategy, interview, research, architecture, guiding_principles, constraints, etc. The type finding is a primary write-path type used during reviews but is not listed.
+  **Impact**: Agents inferring supported types from the description may not list finding as a known type. No runtime impact.
+  **Recommendation**: Defer — the cycle parameter description already lists finding among cycle-scoped types.
+
+  ## Summary
+  Total gaps: 4 (critical: 0, significant: 2, minor: 2)
+content_hash: 9db77679cce42b8bc53908ebefcd298c31c9a331a20181d3550063196c50abed
+token_count: 717
+file_path: .ideate/cycles/004/gap-analysis-004.yaml

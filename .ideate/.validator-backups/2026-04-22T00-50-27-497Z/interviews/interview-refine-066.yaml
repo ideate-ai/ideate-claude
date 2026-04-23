@@ -1,0 +1,30 @@
+id: interview-refine-066
+type: interview
+entries:
+  - answer: "GP-8 violations identified: MCP responses include file_path which leaks storage details and wastes tokens. Q-082: domain-curator agent violates policies by writing files directly. Q-081: review skill references *.md patterns and violates GP-8. Q-07: proxy-human-log format inconsistent with graph-queryable artifact patterns."
+    domain: null
+    question: What changes are driving this refinement?
+  - answer: "MCP server tool design improvements: remove file_path from responses, optimize descriptions, extend write_artifact for domain types, consolidate autopilot state tools, add tool annotations. Fix review skill file glob references. Add structured proxy-human decision artifact format. NO changes to architecture, no new MCP server infrastructure, no agent definition changes except cross-reference updates."
+    domain: null
+    question: What is the scope boundary for this refinement?
+  - answer: Deferred. Not in scope for this cycle.
+    domain: null
+    question: Should Q-08 (recursive decomposition), Q-09 (outpost URL), Q-36 (domain-curator model selection) be addressed?
+  - answer: Yes. All principles unchanged. This refinement reinforces GP-8 (MCP Abstraction Boundary) and P-06 (MCP mandatory interface).
+    domain: null
+    question: Do the guiding principles still hold?
+  - answer: Outcome-based design, not category-based. Keep tools separate when they serve different outcomes at different workflow points. Consolidate only when tools serve the same outcome (e.g., get_autopilot_state + update_autopilot_state → manage_autopilot_state). Focus on description optimization and GP-8 fixes rather than aggressive consolidation.
+    domain: null
+    question: What is the MCP tool consolidation approach?
+  - answer: Q-081 and Q-082 are stored in .ideate/domain_file/domains/ while other questions are in .ideate/questions/. This inconsistency should be resolved - all domain questions should use the canonical .ideate/questions/ location. Migrate existing files.
+    domain: null
+    question: How should Q-081 and Q-082 storage location inconsistency be addressed?
+  - answer: PH-{cycle}-{seq} designation, stored as YAML in .ideate/cycles/{NNN}/proxy-human/, with triggered_by edges to findings/work items, decision field (approved/deferred/escalated), rationale, timestamp, status. Matches journal entry pattern but with graph edges.
+    domain: null
+    question: What is the proxy-human decision artifact format for Q-07?
+  - answer: "Add new policy P-33: MCP tool responses must not include file paths or storage implementation details. Tools return artifact designations (WI-120, P-05) not file locations. Add P-34: MCP tool descriptions must be surgical — every word costs tokens on every request. Keep descriptions under 50 words, specify when to use, response size expectations."
+    domain: null
+    question: Should any constraints be added or modified?
+content_hash: 0dfcbbd51ae24ec691bf615603f44d20c6301d93e8c3c15469d0404d7569ace0
+token_count: 738
+file_path: .ideate/interviews/interview-refine-066.yaml

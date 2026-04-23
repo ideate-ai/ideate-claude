@@ -11,80 +11,134 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - skills/execute/SKILL.md line 325 inline prompt reads "If the smoke test fails, report a Critical finding titled \"Startup failure after [work item name]\"." (was "If the project cannot build or start")
+  - >-
+    skills/execute/SKILL.md line 325 inline prompt reads "If the smoke test fails, report a Critical finding titled
+    \"Startup failure after [work item name]\"." (was "If the project cannot build or start")
   - skills/autopilot/phases/execute.md line 113 inline prompt has the identical replacement
-  - skills/autopilot/phases/execute.md line 160 reads "**Critical findings fixable within scope (non-startup-failure, non-infrastructure-failure)**:" (qualifier added)
+  - >-
+    skills/autopilot/phases/execute.md line 160 reads "**Critical findings fixable within scope (non-startup-failure,
+    non-infrastructure-failure)**:" (qualifier added)
   - No other lines in either file are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-129: Fix inline prompt smoke test condition and autopilot label consistency
+
 
   ## Context
 
-  Cycle 011 review S1/OQ-8 and M2/OQ-9. WI-126 (Cycle 011) generalized the smoke test concept in `agents/code-reviewer.md` but AC-7 excluded the inline prompt fragments. The domain curator corrected P-23 during Cycle 011. Two locations remain:
 
-  1. The inline prompts passed to the code-reviewer agent at spawn time still say "cannot build or start" instead of "smoke test fails"
+  Cycle 011 review S1/OQ-8 and M2/OQ-9. WI-126 (Cycle 011) generalized the smoke test concept in
+  `agents/code-reviewer.md` but AC-7 excluded the inline prompt fragments. The domain curator corrected P-23 during
+  Cycle 011. Two locations remain:
+
+
+  1. The inline prompts passed to the code-reviewer agent at spawn time still say "cannot build or start" instead of
+  "smoke test fails"
+
   2. The autopilot finding-handling label is missing the "(non-startup-failure, non-infrastructure-failure)" qualifier
+
 
   ## Changes
 
+
   ### File 1: `skills/execute/SKILL.md`
+
 
   **Location**: Line 325, inside the dynamic testing inline prompt block passed to the code-reviewer.
 
+
   Current text:
+
   ```
+
   If the project cannot build or start, report a Critical finding titled "Startup failure after [work item name]".
+
   ```
+
 
   Replace with:
-  ```
-  If the smoke test fails, report a Critical finding titled "Startup failure after [work item name]".
+
   ```
 
+  If the smoke test fails, report a Critical finding titled "Startup failure after [work item name]".
+
+  ```
+
+
   No other changes to this file.
+
 
   ### File 2: `skills/autopilot/phases/execute.md`
 
+
   **Change 1 — Line 113**: Same replacement as execute/SKILL.md above.
 
+
   Current text (at line 113, inside the dynamic testing inline prompt block):
-  ```
-  If the project cannot build or start, report a Critical finding titled "Startup failure after [work item name]".
+
   ```
 
+  If the project cannot build or start, report a Critical finding titled "Startup failure after [work item name]".
+
+  ```
+
+
   Replace with:
+
   ```
+
   If the smoke test fails, report a Critical finding titled "Startup failure after [work item name]".
+
   ```
+
 
   **Change 2 — Line 160**: Add exclusion qualifier to the "Critical findings fixable within scope" label.
 
+
   Current text:
-  ```
-  - **Critical findings fixable within scope**: Fix. Note as significant rework in the journal entry.
+
   ```
 
+  - **Critical findings fixable within scope**: Fix. Note as significant rework in the journal entry.
+
+  ```
+
+
   Replace with:
+
   ```
-  - **Critical findings fixable within scope (non-startup-failure, non-infrastructure-failure)**: Fix. Note as significant rework in the journal entry.
+
+  - **Critical findings fixable within scope (non-startup-failure, non-infrastructure-failure)**: Fix. Note as
+  significant rework in the journal entry.
+
   ```
+
 
   No other changes to this file.
 
+
   ## Acceptance Criteria Verification Guide
 
+
   After making changes, verify:
+
   1. `grep -n "cannot build or start" skills/execute/SKILL.md` — should return no results
+
   2. `grep -n "cannot build or start" skills/autopilot/phases/execute.md` — should return no results
+
   3. `grep -n "smoke test fails" skills/execute/SKILL.md` — should match line 325
+
   4. `grep -n "smoke test fails" skills/autopilot/phases/execute.md` — should match line 113
-  5. `grep -n "non-startup-failure, non-infrastructure-failure" skills/autopilot/phases/execute.md` — should match both line 160 (the label) and the newly confirmed correct existing line from WI-128 (line ~the startup-failure exception should already have this in execute/SKILL.md)
+
+  5. `grep -n "non-startup-failure, non-infrastructure-failure" skills/autopilot/phases/execute.md` — should match both
+  line 160 (the label) and the newly confirmed correct existing line from WI-128 (line ~the startup-failure exception
+  should already have this in execute/SKILL.md)
+
   6. `git diff --stat` should show only these two files modified
 cycle_created: 1
 cycle_modified: null
 content_hash: affd34de9b1f786a3008e5532e9f0119afa97b39efc89690fd2136fd68dc00e4
 token_count: 908
-file_path: .ideate/work-items/WI-129.yaml
+file_path: work-items/WI-129.yaml
 resolution: Implemented during v3 migration

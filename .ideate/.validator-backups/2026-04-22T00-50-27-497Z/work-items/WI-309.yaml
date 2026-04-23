@@ -1,0 +1,50 @@
+id: WI-309
+type: work_item
+title: Fix 11 question files with backtick parse errors
+status: done
+complexity: low
+scope:
+  - path: .ideate/questions/Q-03.yaml
+    op: modify
+  - path: .ideate/questions/Q-21.yaml
+    op: modify
+  - path: .ideate/questions/Q-39.yaml
+    op: modify
+  - path: .ideate/questions/Q-45.yaml
+    op: modify
+  - path: .ideate/questions/Q-46.yaml
+    op: modify
+  - path: .ideate/questions/Q-49.yaml
+    op: modify
+  - path: .ideate/questions/Q-50.yaml
+    op: modify
+  - path: .ideate/questions/Q-52.yaml
+    op: modify
+  - path: .ideate/questions/Q-61.yaml
+    op: modify
+  - path: .ideate/questions/Q-65.yaml
+    op: modify
+  - path: .ideate/questions/Q-79.yaml
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - All 11 question files parse successfully with the yaml library
+  - No question files are deleted — content is preserved, only quoting is fixed
+  - After changes, deleting index.db and restarting MCP server results in all 11 questions appearing in the index
+domain: artifact-structure
+notes: |-
+  # WI-309: Fix 11 question files with backtick parse errors
+
+  ## Overview
+  Addresses code-reviewer M2 from cycle 058 review. Same root cause as WI-303 (backtick in unquoted YAML strings) but in .ideate/questions/ files instead of work-items.
+
+  Affected files: Q-03, Q-21, Q-39, Q-45, Q-46, Q-49, Q-50, Q-52, Q-61, Q-65, Q-79
+
+  Fix: wrap description strings containing backticks in double quotes, escaping internal double quotes. Same approach as WI-303.
+resolution: null
+cycle_created: 59
+cycle_modified: null
+content_hash: b1bfc119cf4e274e089c654542d563ad596c8b2f4627be6bfff27bf61266c9ae
+token_count: 387
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-309.yaml

@@ -11,54 +11,91 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - skills/execute/SKILL.md Phase 8 unfixable startup-failure path includes an instruction to append diagnostic findings to the journal before routing to Andon
+  - >-
+    skills/execute/SKILL.md Phase 8 unfixable startup-failure path includes an instruction to append diagnostic findings
+    to the journal before routing to Andon
   - skills/autopilot/phases/execute.md unfixable startup-failure path includes an equivalent journal instruction
   - The journal instruction format mirrors the fixable path (which says "note in the journal as significant rework")
   - No other sections in either file are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-124: Add journal instruction to unfixable Andon path
+
 
   ## Context
 
-  Cycle 009 gap analysis MG1: The fixable startup-failure path in both skill files says "note in the journal as significant rework." The unfixable path has no parallel journal instruction — when a startup failure is diagnosed as unfixable and routed to Andon, no instruction exists to record the diagnostic findings in the journal. This asymmetry means the permanent artifact trail omits the diagnostic rationale for Andon escalations.
+
+  Cycle 009 gap analysis MG1: The fixable startup-failure path in both skill files says "note in the journal as
+  significant rework." The unfixable path has no parallel journal instruction — when a startup failure is diagnosed as
+  unfixable and routed to Andon, no instruction exists to record the diagnostic findings in the journal. This asymmetry
+  means the permanent artifact trail omits the diagnostic rationale for Andon escalations.
+
 
   ## Changes
 
+
   ### File 1: `skills/execute/SKILL.md`
+
 
   **Location**: Phase 8, step 3 of the startup-failure exception (line 403). Current text:
 
+
   ```
-  3. If the root cause cannot be fixed (requires changes outside this work item's scope, architectural changes, or is indeterminate): route to the Andon cord (Phase 9).
+
+  3. If the root cause cannot be fixed (requires changes outside this work item's scope, architectural changes, or is
+  indeterminate): route to the Andon cord (Phase 9).
+
   ```
+
 
   Replace with:
 
+
   ```
-  3. If the root cause cannot be fixed (requires changes outside this work item's scope, architectural changes, or is indeterminate): append to the journal — `Diagnosis: {root cause finding}. Routing to Andon — cause not fixable within work item scope.` Then route to the Andon cord (Phase 9).
+
+  3. If the root cause cannot be fixed (requires changes outside this work item's scope, architectural changes, or is
+  indeterminate): append to the journal — `Diagnosis: {root cause finding}. Routing to Andon — cause not fixable within
+  work item scope.` Then route to the Andon cord (Phase 9).
+
   ```
+
 
   ### File 2: `skills/autopilot/phases/execute.md`
 
-  **Location**: Finding-handling block, first Critical bullet (line 158). The unfixable path currently reads: "If not fixable (scope change required, cause indeterminate): route to Andon cord → proxy-human."
+
+  **Location**: Finding-handling block, first Critical bullet (line 158). The unfixable path currently reads: "If not
+  fixable (scope change required, cause indeterminate): route to Andon cord → proxy-human."
+
 
   Replace the full bullet with:
 
+
   ```
-  - **Critical findings — "Startup failure after ..."**: Diagnose root cause immediately. If fixable within scope: apply surgical fix, note as significant rework, re-run smoke test. If smoke test still fails after fix, treat as indeterminate and route to Andon cord → proxy-human. If not fixable (scope change required, cause indeterminate): note in journal — `Diagnosis: {root cause finding}. Routing to Andon — cause not fixable within work item scope.` Route to Andon cord → proxy-human.
+
+  - **Critical findings — "Startup failure after ..."**: Diagnose root cause immediately. If fixable within scope: apply
+  surgical fix, note as significant rework, re-run smoke test. If smoke test still fails after fix, treat as
+  indeterminate and route to Andon cord → proxy-human. If not fixable (scope change required, cause indeterminate): note
+  in journal — `Diagnosis: {root cause finding}. Routing to Andon — cause not fixable within work item scope.` Route to
+  Andon cord → proxy-human.
+
   ```
+
 
   ## Acceptance Criteria
 
-  1. `skills/execute/SKILL.md` Phase 8 unfixable startup-failure path includes an instruction to append diagnostic findings to the journal before routing to Andon
+
+  1. `skills/execute/SKILL.md` Phase 8 unfixable startup-failure path includes an instruction to append diagnostic
+  findings to the journal before routing to Andon
+
   2. `skills/autopilot/phases/execute.md` unfixable startup-failure path includes an equivalent journal instruction
+
   3. The journal instruction format mirrors the fixable path's style
+
   4. No other sections in either file are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 0e9758400013cdb7b03299a0375c5599eb16871b465281b778c6978bc1a4681d
 token_count: 796
-file_path: .ideate/work-items/WI-124.yaml
+file_path: work-items/WI-124.yaml
 resolution: Implemented during v3 migration

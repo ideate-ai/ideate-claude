@@ -17,18 +17,26 @@ criteria:
   - cycle_number parameter validated as number with error on NaN/undefined
   - npm run build succeeds; all existing tests pass
 domain: artifact-structure
-notes: |-
+notes: >-
   # WI-276: Fix handleGetConvergenceStatus (C2, M3)
 
+
   ## Replace filesystem reads (C2)
+
   - Lines 126-137: remove fs.readFileSync calls for archive/cycles/{NNN}/spec-adherence.md and summary.md
-  - Query SQLite: SELECT * FROM nodes n JOIN document_artifacts da ON da.id = n.id WHERE n.type = 'cycle_summary' AND da.cycle = ? AND n.id IN ('spec-adherence', 'summary')
+
+  - Query SQLite: SELECT * FROM nodes n JOIN document_artifacts da ON da.id = n.id WHERE n.type = 'cycle_summary' AND
+  da.cycle = ? AND n.id IN ('spec-adherence', 'summary')
+
 
   ## Type validation (M3)
+
   - Line 122: add const cycleNumber = Number(args.cycle_number); if (isNaN(cycleNumber)) throw new Error(...);
-resolution: Replaced filesystem reads with Drizzle queries against cycle_summary table. Added cycle_number validation. 2 new tests.
+resolution: >-
+  Replaced filesystem reads with Drizzle queries against cycle_summary table. Added cycle_number validation. 2 new
+  tests.
 cycle_created: 36
 cycle_modified: null
 content_hash: 99e938db2aedbee0d6973cbd7657f2efcaf8fa1a89792e599bef1b7e93b264ec
 token_count: 336
-file_path: .ideate/work-items/WI-276.yaml
+file_path: work-items/WI-276.yaml

@@ -1,0 +1,10 @@
+id: C-16
+type: constraint
+category: scope
+status: active
+description: External tooling is in scope. If limitations in Claude Code's capabilities (no recursive subagents, no subprocess spawning) prevent the tool from achieving its goals, building external software (MCP servers, CLI tools, SDK-based orchestrators) to fill the gap is in scope.
+cycle_created: 1
+cycle_modified: null
+content_hash: "3550e4b4d4e2502efff0cf9b728f76f26b4b7becd4e0a01f0becc11e70abec89"
+token_count: 110
+file_path: .ideate/constraints/C-16.yaml

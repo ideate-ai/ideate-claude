@@ -1,0 +1,91 @@
+id: WI-147
+type: work_item
+title: Test suite for YAML schema and rebuild pipeline
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/__tests__/schema.test.ts
+    op: create
+  - path: mcp/artifact-server/src/__tests__/indexer.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/embeddings.test.ts
+    op: delete
+  - path: mcp/artifact-server/src/__tests__/chunker.test.ts
+    op: delete
+  - path: mcp/artifact-server/src/__tests__/retrieval.test.ts
+    op: delete
+depends:
+  - "144"
+  - "145"
+blocks: []
+criteria:
+  - schema.test.ts tests createSchema() creates all expected tables and indexes in an in-memory SQLite database
+  - indexer.test.ts tests rebuildIndex() correctly parses a work item YAML file and populates the work_items table
+  - indexer.test.ts tests rebuildIndex() extracts depends_on edges and populates the edges table
+  - indexer.test.ts tests incremental rebuild skips files with unchanged content_hash
+  - indexer.test.ts tests Kahn's algorithm detects a cycle in depends_on edges
+  - indexer.test.ts tests node_file_refs are populated from work item scope fields
+  - config.test.ts tests resolveArtifactDir() finds .ideate/ directory by walking up from CWD
+  - Old test files for deleted modules (embeddings.test.ts, chunker.test.ts, retrieval.test.ts) are deleted
+  - All tests pass with vitest
+module: null
+domain: null
+notes: |
+  # WI-147: Test suite for YAML schema and rebuild pipeline
+
+  ## Test files
+
+  ### schema.test.ts (new)
+  - Test createSchema() creates all expected tables in an in-memory SQLite DB
+  - Verify table column names and types match TypeScript interfaces
+  - Test edge table indexes exist
+  - Test node_file_refs table and indexes exist
+  - Test UNIQUE constraint on edges(source_id, target_id, edge_type)
+
+  ### indexer.test.ts (rewrite)
+  Current tests cover the old tool implementations. Replace with:
+
+  - Test rebuildIndex() with a fixture .ideate/ directory containing:
+    - A work item YAML file → verify work_items table populated correctly
+    - A policy YAML file → verify domain_policies table populated
+    - A work item with depends: [WI-001] → verify edges table has depends_on edge
+  - Test incremental rebuild: modify a file's content, rebuild again, verify only that file's row updated (content_hash comparison)
+  - Test file deletion: remove a YAML file, rebuild, verify rows removed from all tables
+  - Test DAG cycle detection: create two work items with circular depends, verify detectCycles() returns the cycle
+  - Test node_file_refs populated from work item scope field
+
+  ### config.test.ts (update)
+  - Test resolveArtifactDir() finds .ideate/ directory walking up from CWD
+  - Test resolveArtifactDir() returns null when no .ideate/ exists
+  - Remove tests for .ideate.json discovery
+
+  ### Delete old test files
+  - Delete embeddings.test.ts (or clear its contents)
+  - Delete chunker.test.ts
+  - Delete retrieval.test.ts
+  - Delete or replace indexer.test.ts (existing tests cover old tool implementations)
+
+  ## Fixture directory
+
+  Create `mcp/artifact-server/src/__tests__/fixtures/ideate-test/` with:
+  - config.json
+  - work-items/WI-001.yaml, WI-002.yaml (with dependency between them)
+  - policies/P-01.yaml
+  - principles/GP-01.yaml
+  - A minimal set covering each artifact type
+
+  ## Implementation notes
+
+  - Use vitest (existing test framework)
+  - Use in-memory SQLite (`:memory:`) for schema and indexer tests — no disk I/O
+  - Use tmp directories for fixture .ideate/ directories in config tests
+  - Tests should be independent and not share state
+  - All tests pass with `npx vitest run`
+cycle_created: 1
+cycle_modified: null
+content_hash: d586f71dc70761264ccc780c1780f0b93d55e41b750c32a66b733521db4b2bca
+token_count: 961
+file_path: .ideate/work-items/WI-147.yaml
+resolution: "Verified complete: schema.test.ts, indexer.test.ts, config.test.ts comprehensive; old tests deleted"

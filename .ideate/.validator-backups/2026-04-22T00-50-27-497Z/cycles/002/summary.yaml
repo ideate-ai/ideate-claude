@@ -1,0 +1,91 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary — Full Audit (Cycle 002)
+
+  ## Overview
+  The full audit identified 3 significant findings and 19 minor findings across code quality, spec adherence, and gap analysis. The codebase is functionally sound but has technical debt in type safety, transaction handling, and documentation synchronization. All guiding principles are satisfied; no principle violations were found.
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  - **[code-reviewer] S1: Backup file committed to source tree** — relates to: cross-cutting (code hygiene)
+    - File `mcp/artifact-server/src/indexer.ts.bak` is a 25,906 byte backup file in the source tree. This dead code bloats the repository and may confuse build tools.
+    - Suggested fix: Delete the file.
+
+  - **[code-reviewer] S2: Excessive use of `any` type casts** — relates to: cross-cutting (type safety)
+    - 30+ occurrences of `// eslint-disable-next-line @typescript-eslint/no-explicit-any` bypass TypeScript's type checking for Drizzle ORM operations. Compile-time errors become runtime errors.
+    - Suggested fix: Create properly typed helper functions or use Drizzle's typed API.
+
+  - **[code-reviewer] S3: No transaction boundary handling in write operations** — relates to: cross-cutting (data integrity)
+    - Multiple write operations (YAML file writes and SQLite upserts) without proper transaction boundaries. If SQLite transaction fails after files are written, filesystem is left in inconsistent state.
+    - Suggested fix: Write YAML files first, then wrap all database operations in a single transaction.
+
+  ## Minor Findings
+
+  ### Code Quality (5)
+  - **[code-reviewer] M1**: Console logging uses stderr instead of structured logging
+  - **[code-reviewer] M2**: File path construction inconsistency in handleWriteArtifact
+  - **[code-reviewer] M3**: PPR specificity dampening can produce negative scores for hub nodes
+  - **[code-reviewer] M4**: Inconsistent error handling patterns across tools
+  - **[code-reviewer] M5**: Missing input validation for artifact type in handleWriteArtifact
+
+  ### Spec Adherence (5)
+  - **[spec-reviewer] D1**: Extension table count mismatch (documented: 12, actual: 14)
+  - **[spec-reviewer] D2**: Undocumented source files (server.ts, hooks.ts, ppr.ts)
+  - **[spec-reviewer] U1**: server.ts not documented in architecture
+  - **[spec-reviewer] U2**: ppr.ts not documented in architecture
+  - **[spec-reviewer] U3**: hooks.ts not documented in architecture
+
+  ### Gap Analysis (11)
+  - **[gap-analyst] EC1**: Malformed YAML during indexing recovery not persisted
+  - **[gap-analyst] EC2**: Very large result sets limited to 200 items without pagination total
+  - **[gap-analyst] EC3**: Cycle detection limits not exposed to callers
+  - **[gap-analyst] II1**: Settings skill not documented in architecture
+  - **[gap-analyst] II2**: Metrics instrumentation limited to autopilot
+  - **[gap-analyst] II3**: Hooks configuration file not created by bootstrap
+  - **[gap-analyst] MI1**: Graceful shutdown for file watcher not fully implemented
+  - **[gap-analyst] MI2**: No rate limiting on MCP tool calls
+  - **[gap-analyst] MI3**: ARCHITECTURE.md Section 10 does not document all config exports
+  - **[gap-analyst] IR1**: Settings skill not listed in available skills
+  - **[gap-analyst] IR2**: No interactive configuration discovery mechanism
+
+  ## Suggestions
+  None beyond the minor findings listed above.
+
+  ## Findings Requiring User Input
+
+  - **OQ-1: Backup file removal** — Should `indexer.ts.bak` be deleted? Check git history to determine if intentional.
+  - **OQ-2: Drizzle ORM type safety strategy** — Should typed helper functions be created, or is the current `any` cast approach acceptable?
+  - **OQ-3: Transaction boundary design** — What transaction semantics should YAML writes and SQLite upserts follow?
+  - **OQ-4: Architecture documentation update** — Should ARCHITECTURE.md be updated to reflect 14 tables, additional source files, and settings skill?
+
+  ## Proposed Refinement Plan
+
+  A refinement cycle is recommended to address the 3 significant findings:
+
+  1. **WI-XXX: Remove backup file from source tree** — Delete `indexer.ts.bak` (Complexity: low)
+  2. **WI-XXX: Add typed helper functions for Drizzle ORM** — Reduce `any` casts in database operations (Complexity: medium)
+  3. **WI-XXX: Add transaction boundaries to write operations** — Ensure filesystem/database consistency (Complexity: medium)
+  4. **WI-XXX: Update ARCHITECTURE.md documentation** — Sync table counts, source files, and skill table with implementation (Complexity: low)
+
+  Estimated scope: 4 work items, medium complexity for typed helpers and transaction handling.
+
+  ## Summary Counts
+
+  | Severity | Count |
+  |----------|-------|
+  | Critical | 0 |
+  | Significant | 3 |
+  | Minor | 19 |
+  | Suggestions | 0 |
+
+  **Work items reviewed**: 273 completed + 2 pending = 275 total
+cycle: 2
+date: "20260329"
+scope: full-audit
+content_hash: e4d49f44b0d1f8dd0bf100cb5f816db806ad95d9680f6daef562846209af0d07
+token_count: 1246
+file_path: .ideate/cycles/002/summary.yaml

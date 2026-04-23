@@ -1,0 +1,53 @@
+id: CQ-006
+type: cycle_summary
+title: Code Quality Review — Cycle 6
+reviewer: code-reviewer
+verdict: Fail
+content: |-
+  ## Verdict: Fail
+
+  Two significant findings.
+
+  ## Significant Findings
+
+  ### S1: resolveContent silently ignores empty-string da_content and falls back to disk
+  - **File**: `mcp/artifact-server/src/tools/analysis.ts:132`
+  - **Issue**: The truthy check `if (row.da_content)` treats an empty string as absent. If `document_artifacts.content` is stored as `""`, resolveContent falls back to `readFileSafe(row.file_path)`, silently reading the file instead of using the authoritative DB value. The file may be absent (already archived) or out of date.
+  - **Impact**: Incorrect convergence verdict. If a cycle summary was written to document_artifacts with empty content and the YAML file is missing or stale, handleGetConvergenceStatus returns `verdict: unknown` or a verdict derived from the wrong document.
+  - **Suggested fix**: Change the guard to an explicit null check: `if (row.da_content !== null && row.da_content !== undefined)`
+
+  ### S2: resolveContent does not handle the case where JSON-parsed da_content is a valid object but parsed.content is not a string
+  - **File**: `mcp/artifact-server/src/tools/analysis.ts:134-137`
+  - **Issue**: When `JSON.parse(row.da_content)` succeeds and `parsed` is truthy but `parsed.content` is not a string (e.g., null, undefined, a number, or another object), the function falls through to returning the raw `row.da_content` — the full JSON string. A raw JSON string like `{"title":"...","content":null}` will not match verdict-detection regexes, producing `verdict: unknown`.
+  - **Impact**: If handleWriteArtifact stores a content object where the content field is absent, null, or non-string, the convergence query returns unknown with no actionable warning, causing the autopilot loop to treat a valid cycle as unconverged.
+  - **Suggested fix**: Document and enforce at write time that content must always be a string when type is cycle_summary. Or: when parsed.content is not a string, log a warning and return null rather than the raw JSON string.
+
+  ## Minor Findings
+
+  ### M1: deletePhase.exclusive() two-statement form is inconsistent with rest of codebase
+  - **File**: `mcp/artifact-server/src/tools/write.ts:306-311`
+  - **Issue**: Every other transaction call uses the chained one-liner form. The two-statement form is functionally identical but creates a maintenance hazard — a future reader may mistake `deletePhase.exclusive()` for a no-op.
+  - **Suggested fix**: Replace with `ctx.db.transaction(() => { ... }).exclusive()`
+
+  ### M2: Atomicity test does not actually test atomicity
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:963-1002`
+  - **Issue**: Verifies both nodes absent after archive, but does not verify rollback if one delete fails. Provides false confidence about atomicity property.
+  - **Suggested fix**: Rename to "both finding nodes are deleted after archival" or add a mock-throw rollback assertion.
+
+  ### M3: Cycle 97 test passes because verdict string appears inside YAML block scalar, not due to content extraction
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:562-579`
+  - **Suggested fix**: Add comment explaining that resolveContent returns raw YAML text in file-fallback branch and parsePrincipleVerdict scans the whole string.
+
+  ### M4: set -euo pipefail in deprecated scripts causes exit 1 to terminate calling shell if sourced
+  - **File**: `scripts/report-executive.sh:2`, `scripts/report-cycle.sh:2`, `scripts/report-cost.sh:2`
+  - **Suggested fix**: Remove set -euo pipefail or guard with `[[ "${BASH_SOURCE[0]}" == "${0}" ]] && exit 1 || return 1`
+
+  ## Confirmed Fixed
+
+  - handleArchiveCycle DELETE loop is wrapped in exclusive transaction (WI-427): deletePhase.exclusive() correctly executes body under BEGIN EXCLUSIVE...COMMIT
+  - Three-branch LEFT JOIN WHERE clause correctly covers all three data states without overlap
+  - JSON-encoded da_content: resolveContent correctly JSON.parse-unwraps and extracts .content when it is a string
+  - All three report scripts correctly exit 1 before reaching any functional code
+content_hash: afbc261b63e6941f5729459f88a43987d1f92c1f0b170bfbf24e80e7cb015b28
+token_count: 1045
+file_path: .ideate/cycles/006/CQ-006.yaml

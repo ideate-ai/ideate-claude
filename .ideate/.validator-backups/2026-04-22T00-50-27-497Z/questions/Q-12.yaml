@@ -1,0 +1,14 @@
+id: Q-12
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Stale scripts and documentation persist; user decision required to confirm removal intent and scope.
+source: archive/cycles/003/decision-log.md D6, OQ4; archive/cycles/003/gap-analysis.md MR1
+resolution: Both scripts deleted and artifact-conventions.md stale path references fixed by WI-091 in cycle 006.
+resolved_in: 6
+description: The refine-003 interview stated `scripts/migrate-to-cycles.sh` and `scripts/migrate-to-domains.sh` "will be removed." No work item was created and the scripts remain on disk. The README Migration section still documents `migrate-to-domains.sh`. Should they be removed in the next cycle?
+cycle_created: 1
+cycle_modified: null
+content_hash: "96cc60c14bcc7bf589a5c05990f4941ea585d80320cad3afc018cb6270f14ef4"
+token_count: 203
+file_path: .ideate/questions/Q-12.yaml

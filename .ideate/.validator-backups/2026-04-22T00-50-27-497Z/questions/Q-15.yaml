@@ -1,0 +1,14 @@
+id: Q-15
+type: domain_question
+domain: agent-system
+status: reopened
+impact: Agents following these definitions read from a non-existent directory and silently proceed without incremental review context. spec-reviewer's deduplication instruction and journal-keeper's synthesis both depend on this context. The problem compounds on every review cycle until fixed.
+source: archive/cycles/006/gap-analysis.md SG2; archive/cycles/006/decision-log.md D16, OQ2
+resolution: null
+resolved_in: null
+description: "Should `agents/spec-reviewer.md:26`, `agents/gap-analyst.md:24`, and `agents/journal-keeper.md:20` replace `reviews/incremental/` with `archive/incremental/`?"
+cycle_created: 1
+cycle_modified: null
+content_hash: c9a0d001b99532459be45971b4441c58c12bd4f528c151d5f8e1976082abf6a0
+token_count: 192
+file_path: .ideate/questions/Q-15.yaml

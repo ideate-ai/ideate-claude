@@ -4,11 +4,14 @@ domain: artifact-structure
 status: obsolete
 impact: The manifest's stated purpose (enabling targeted migration) is not achievable until v1 is defined.
 source: archive/cycles/003/decision-log.md OQ5; archive/cycles/003/gap-analysis.md MR2, MI1
-resolution: "manifest.json removed in v3. Schema versioning via SQLite user_version pragma in schema.ts."
+resolution: manifest.json removed in v3. Schema versioning via SQLite user_version pragma in schema.ts.
 resolved_in: 37
-description: "`manifest.json` documents `schema_version: 1` but no artifact enumerates which files, directories, and structural invariants constitute a v1-compliant artifact directory. Without this definition, migration scripts cannot determine what to upgrade."
+description: >-
+  `manifest.json` documents `schema_version: 1` but no artifact enumerates which files, directories, and structural
+  invariants constitute a v1-compliant artifact directory. Without this definition, migration scripts cannot determine
+  what to upgrade.
 cycle_created: 1
 cycle_modified: null
-content_hash: "8cf613a1ae4b12dc5e41f2724c9e1b9beaae348db928de92c79f6c7a2c8dd885"
+content_hash: 8cf613a1ae4b12dc5e41f2724c9e1b9beaae348db928de92c79f6c7a2c8dd885
 token_count: 168
-file_path: .ideate/questions/Q-13.yaml
+file_path: questions/Q-13.yaml

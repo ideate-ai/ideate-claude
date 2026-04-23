@@ -1,0 +1,21 @@
+id: WI-272
+type: work_item
+title: Fix ARCHITECTURE.md Section 9 artifact_dir parameter references
+status: done
+complexity: low
+scope:
+  - path: ARCHITECTURE.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - No grep match for 'artifact_dir' as a function parameter in ARCHITECTURE.md
+  - Section 9 function signatures reference ctx.ideateDir where previously artifact_dir appeared
+domain: artifact-structure
+notes: ARCHITECTURE.md Section 9.2/9.3 still describes tool handler function signatures with an artifact_dir parameter that no longer exists. The actual parameter is ctx.ideateDir (part of the ToolContext interface). Update all function signature descriptions in Section 9 to reflect current code.
+resolution: Updated ARCHITECTURE.md Section 9.2/9.3 to reference ctx.ideateDir instead of artifact_dir
+cycle_created: 35
+cycle_modified: null
+content_hash: 4314ea14ab4c5c0e886ade4f17310ea428736bf7aa902daa5256e6e594a9a428
+token_count: 213
+file_path: .ideate/work-items/WI-272.yaml

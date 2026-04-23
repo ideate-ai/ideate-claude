@@ -1,0 +1,13 @@
+id: D-152
+type: domain_decision
+domain: workflow
+title: Work item acceptance criteria must specify test coverage requirements
+description: "Cycle 4 Pattern D: rework was required when test coverage was not specified in acceptance criteria. WI-423 initially passed incremental review without roundtrip tests; the gap-analyst flagged the missing coverage, requiring a rework pass. Acceptance criteria that explicitly require test assertions for the changed behavior would have caught this during execution rather than review."
+rationale: Rework is more expensive than upfront specification. When acceptance criteria omit test requirements, the executor may implement correctly but skip verification, shifting the catch to review or gap-analysis.
+source: cycle 4 decision-log Pattern D; finding F-423-001 (rework)
+policy: P-50
+status: settled
+cycle: 4
+content_hash: 3d2c8ab7845546da2d78d1333779b7eea9593b4ada02e396901ec5dd3d6d64fd
+token_count: 212
+file_path: .ideate/decisions/D-152.yaml

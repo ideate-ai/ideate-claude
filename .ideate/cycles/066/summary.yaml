@@ -46,7 +46,9 @@ remediation:
   changes:
     - mcp/artifact-server/src/tools/write.ts:123 — removed file path from return
     - mcp/artifact-server/src/tools/index.ts:421 — changed 'Returns path' to 'Returns confirmation'
-    - mcp/artifact-server/src/__tests__/tools.test.ts:566-576 — updated test to expect artifact designation not file path
+    - >-
+      mcp/artifact-server/src/__tests__/tools.test.ts:566-576 — updated test to expect artifact designation not file
+      path
 reviewers:
   code-reviewer:
     findings:
@@ -128,4 +130,4 @@ work_items_verified:
     title: Update documentation
 content_hash: 0de5fb3086b86caf7dd2839ab291e323f47d2dbfa994c2a5d5dbff151816a769
 token_count: 1030
-file_path: .ideate/cycles/066/summary.yaml
+file_path: cycles/066/summary.yaml

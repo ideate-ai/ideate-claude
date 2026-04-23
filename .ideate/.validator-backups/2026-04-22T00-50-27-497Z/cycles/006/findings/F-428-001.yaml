@@ -1,0 +1,11 @@
+id: F-428-001
+type: finding
+work_item: WI-428
+verdict: Pass
+findings:
+  - severity: minor
+    description: "M1: Q-114.yaml had stale reexamination_trigger field after resolution. Fixed silently."
+summary: All three report scripts exit 1 with clear deprecation messages. Q-114 resolved via MCP.
+content_hash: 048dce8a8d610493e4985ac820f9ebd9712f789480562d4b0f49e9b04cc7809b
+token_count: 73
+file_path: .ideate/cycles/006/findings/F-428-001.yaml

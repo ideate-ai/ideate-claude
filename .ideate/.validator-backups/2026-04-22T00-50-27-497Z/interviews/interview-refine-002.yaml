@@ -1,0 +1,25 @@
+id: interview-refine-002
+type: refinement
+cycle: 2
+date: 2026-04-06
+entries:
+  - answer: All 8 gaps from Cycle 1 must be addressed. Breaking into 5 phases for goldilocks-sized work items.
+    domain: workflow
+    question: Which gaps from Cycle 1 should be addressed?
+  - answer: Option A - Critical + Significant + Documentation/Research. All items to achieve adapter equivalence.
+    domain: workflow
+    question: What is the scope for Cycle 2?
+  - answer: WI-646 completion can be standalone (WI-652) as it's critical and foundational. Other validation items grouped logically.
+    domain: artifact-structure
+    question: Should WI-646 be standalone or rolled into broader validation?
+  - answer: Create WI-659 to document adapter interface contract. This is the API between MCP server and backends. Create WI-660 research spike for server-side alignment. The server should be fixed to align; research determines what fixes are needed.
+    domain: artifact-structure
+    question: How to handle PPR divergence documentation and server alignment?
+  - answer: "Goldilocks-sized slices: Phase 1 (2 items), Phase 2 (2 items), Phase 3 (2 items), Phase 4 (1 item), Phase 5 (2 items). Sequential dependency chain for validation work, then parallel documentation."
+    domain: workflow
+    question: What is the work breakdown for goldilocks-sized phases?
+  - answer: Full coverage required. WI-658 creates LocalAdapter validation test suite matching RemoteAdapter coverage. This is prerequisite for confidence in remote backend migration.
+    domain: artifact-structure
+    question: What is the test coverage requirement?
+content_hash: 6563bca0544ca2e4740995952bf8c9f409680f1ad5e1ceecaaf6e54fb23fc430
+token_count: 405

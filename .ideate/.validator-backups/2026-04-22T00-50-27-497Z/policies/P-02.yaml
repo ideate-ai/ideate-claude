@@ -1,0 +1,14 @@
+id: P-02
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - GP-2 (Minimal Inference at Execution)
+established: planning phase
+amended: null
+description: All architectural choices, technology selections, interface contracts, error handling strategies, and behavioral details must be resolved during planning; the executor follows instructions and does not design.
+cycle_created: 1
+cycle_modified: null
+content_hash: "06ca95717be55e6701e836d5da28ed4584e10b4d88269206be7e15ed427a9774"
+token_count: 121
+file_path: .ideate/policies/P-02.yaml

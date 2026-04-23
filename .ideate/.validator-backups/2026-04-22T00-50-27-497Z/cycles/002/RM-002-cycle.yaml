@@ -1,0 +1,36 @@
+id: RM-002-cycle
+type: review_manifest
+title: Review Manifest — Autopilot Cycle 2
+work_items:
+  - WI-417
+  - WI-418
+  - WI-419
+files_changed:
+  - mcp/artifact-server/src/tools/metrics.ts
+  - mcp/artifact-server/src/tools/index.ts
+  - mcp/artifact-server/src/tools/analysis.ts
+  - mcp/artifact-server/src/tools/write.ts
+  - mcp/artifact-server/src/tools/execution.ts
+  - mcp/artifact-server/src/tools/query.ts
+  - mcp/artifact-server/src/tools/context.ts
+  - mcp/artifact-server/src/tools/bootstrap.ts
+  - mcp/artifact-server/src/tools/events.ts
+  - mcp/artifact-server/src/tools/config.ts
+  - mcp/artifact-server/src/tools/autopilot-state.ts
+  - mcp/artifact-server/src/server.ts
+  - mcp/artifact-server/src/__tests__/metrics.test.ts
+  - mcp/artifact-server/src/__tests__/write-transaction.test.ts
+  - mcp/artifact-server/src/__tests__/events.test.ts
+  - mcp/artifact-server/src/__tests__/config.test.ts
+  - mcp/artifact-server/src/__tests__/tools.test.ts
+  - mcp/artifact-server/src/__tests__/execution.test.ts
+policies_under_review:
+  - P-44
+  - P-47
+  - P-48
+test_count: 492
+cycle_start_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
+cycle_end_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
+content_hash: d77327bc35e0ce119166bbaf39a83029332e0120b4b4ba951b52c707b345af5a
+token_count: 299
+file_path: .ideate/cycles/002/RM-002-cycle.yaml

@@ -1,0 +1,45 @@
+id: WI-391
+type: work_item
+title: Add edge case tests for isValidStateKey in autopilot-state.ts
+status: done
+complexity: small
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/__tests__/autopilot-state.test.ts
+depends: []
+blocks: []
+criteria:
+  - Tests cover empty string key
+  - Tests cover numeric keys
+  - Tests cover unicode keys
+  - Tests cover special characters in keys
+  - All edge case tests pass
+domain: agent-system
+notes: |-
+  # WI-391: Add edge case tests for isValidStateKey
+
+  ## Context
+  The `isValidStateKey` function in autopilot-state.ts validates state keys against a whitelist. Current tests cover happy paths but lack edge case coverage.
+
+  ## Scope
+  - `mcp/artifact-server/src/__tests__/autopilot-state.test.ts` (modify)
+
+  ## Implementation Notes
+  Add tests for:
+  1. Empty string `''` — should reject
+  2. Numeric keys `'123'` — should reject
+  3. Unicode keys `'日本語'` — should reject
+  4. Special characters `'key!@#'` — should reject
+  5. Keys with spaces `'key with spaces'` — should reject
+  6. Valid keys with extra whitespace `' cycles_completed '` — should reject
+  7. Boundary cases: exact match vs partial match
+
+  ## Acceptance Criteria
+  - All edge case tests pass
+  - No regressions in existing tests
+resolution: null
+cycle_created: 3
+cycle_modified: 1
+content_hash: 4b9f18d274ca78bbbbfe1c1a5caf7b4062af7ab8f6d7e8a4328f5d30c4cb513e
+token_count: 325
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-391.yaml

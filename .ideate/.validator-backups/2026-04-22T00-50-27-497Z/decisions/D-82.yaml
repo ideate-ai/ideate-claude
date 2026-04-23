@@ -1,0 +1,13 @@
+id: D-82
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 18
+supersedes: null
+description: Phase 2 MCP tool implementation is deferred. The installed plugin version (2.1.0) provides working coverage. No Phase 2 work items will be created until the source-authority question is resolved and a concrete SDLC need is identified. `tools.ts` remains a stub.
+rationale: "YAGNI guiding principle: only build tools needed for SDLC facilitation, stakeholder reporting, and data collection; nothing dormant without a scoped phase. Q-61 remains open."
+cycle_created: 1
+cycle_modified: null
+content_hash: "9c23ab7a5c58c72705c9c177cbedd06bac108a1b589afdd996ce32d04f096da4"
+token_count: 166
+file_path: .ideate/decisions/D-82.yaml

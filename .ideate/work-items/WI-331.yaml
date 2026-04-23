@@ -12,7 +12,9 @@ blocks: []
 criteria:
   - Script exists at scripts/migrate-autopilot-to-autopilot.sh and is executable
   - Script renames autopilot-state.yaml to autopilot-state.yaml if it exists
-  - Script replaces 'autopilot' with 'autopilot' in all YAML files under .ideate/ (policies, decisions, questions, work items)
+  - >-
+    Script replaces 'autopilot' with 'autopilot' in all YAML files under .ideate/ (policies, decisions, questions, work
+    items)
   - Script replaces ideate_get_autopilot_state with ideate_get_autopilot_state in YAML content
   - Script replaces ideate_update_autopilot_state with ideate_update_autopilot_state in YAML content
   - Script is idempotent (safe to run multiple times)
@@ -39,9 +41,11 @@ notes: |-
   ## Pattern: existing migration scripts
   - `scripts/migrate-to-v3.sh` — prior migration script for reference
   - `scripts/migrate-to-optimized.sh` — another migration example
-resolution: Migration script created and tested. 297 YAML files migrated in ideate's own .ideate/. Idempotent, second run reports 0 changes.
+resolution: >-
+  Migration script created and tested. 297 YAML files migrated in ideate's own .ideate/. Idempotent, second run reports
+  0 changes.
 cycle_created: null
 cycle_modified: null
 content_hash: 6cc299a9c2c6a19878eba35ae9318fd11f4678ef9039923adf3d09a0f6404394
 token_count: 529
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-331.yaml
+file_path: work-items/WI-331.yaml

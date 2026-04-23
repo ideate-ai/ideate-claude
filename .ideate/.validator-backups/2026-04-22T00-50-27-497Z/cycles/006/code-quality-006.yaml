@@ -1,0 +1,35 @@
+id: code-quality-006
+type: cycle_summary
+title: Code Quality Review — Cycle 6
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  One significant finding. No criticals. 485 tests pass.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: finding_severities object input silently produces [object Object] in the DB
+  - **File**: `mcp/artifact-server/src/tools/write.ts:974`
+  - **Issue**: The metrics_event dispatch branch casts `content.finding_severities` directly to `string | null` with no serialization. If a caller passes an object (e.g., `{ critical: 0, significant: 1 }`), the value stored will be `[object Object]`. By contrast, `payload` and `context_artifact_ids` are correctly serialized with `JSON.stringify`.
+  - **Impact**: Silent data corruption in `metrics_events.finding_severities`; any metrics consumer parsing that field will receive garbage.
+  - **Suggested fix**: Use `typeof content.finding_severities === 'string' ? content.finding_severities : JSON.stringify(content.finding_severities)` or the same pattern as `payload`.
+
+  ## Minor Findings
+
+  ### M1: P-46 stale-entry check has a dead EXCLUDED_TYPES guard
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:2220`
+  - **Issue**: The reverse-direction check iterates `coveredTypes` and has `if (!EXCLUDED_TYPES.has(t))` guard, but the cases array never contains work_item or journal_entry entries. Guard is dead code.
+  - **Suggested fix**: Remove the guard.
+
+  ### M2: Redundant assertion in interview_question rollback test
+  - **File**: `mcp/artifact-server/src/__tests__/write-transaction.test.ts:472`
+  - **Issue**: Both `fs.existsSync(expectedPath).toBe(false)` and `interviewFiles().not.toContain(...)` assert the same thing. The existsSync check is sufficient.
+  - **Suggested fix**: Remove the not.toContain line.
+content_hash: e9a8a74552da19724c28b874aeba9a64c010c928743c6f90a6b5218a5c0b7d5e
+token_count: 458
+file_path: .ideate/cycles/006/code-quality-006.yaml

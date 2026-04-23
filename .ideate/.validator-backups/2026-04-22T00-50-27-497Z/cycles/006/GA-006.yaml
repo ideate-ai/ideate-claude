@@ -1,0 +1,57 @@
+id: GA-006
+type: cycle_summary
+title: Gap Analysis — Cycle 6
+reviewer: gap-analyst
+verdict: Pass
+content: |-
+  ## Verdict: Pass
+
+  Minor gaps found. No behavioral blockers.
+
+  ## Gaps Found
+
+  ### G1: resolveContent does not handle bare JSON string in da_content
+  - **Area**: analysis.ts resolveContent (lines 130-144)
+  - **Missing**: Handling for da_content stored as a JSON-encoded bare string (e.g., `"\"some markdown text\""`). JSON.parse succeeds, parsed is a string, typeof parsed.content is false, so function falls through and returns the JSON-encoded form. parsePrincipleVerdict then runs against the JSON-wrapped string and yields `verdict: unknown`.
+  - **Impact**: Low likelihood (handleWriteArtifact always stores an object), but untested failure mode.
+
+  ### G2: resolveContent does not handle da_content = "{}" (empty object, no content field)
+  - **Area**: analysis.ts resolveContent (line 135)
+  - **Missing**: Test and validated behavior when da_content is "{}". JSON.parse succeeds, parsed.content is undefined, function falls through and returns "{}" as the content string yielding `verdict: unknown`.
+  - **Impact**: Low likelihood but untested.
+
+  ### G3: No test for handleArchiveCycle SQLite exclusive-transaction rollback
+  - **Area**: write.ts:305-311; write-transaction.test.ts
+  - **Missing**: A test that forces deletePhase.exclusive() to fail and asserts no nodes were deleted. write-transaction.test.ts covers other write handlers but not handleArchiveCycle.
+  - **Impact**: Regression that breaks transaction wrapping would not be caught.
+
+  ### G4: README.md still documents deprecated report scripts as functional
+  - **Area**: /Users/dan/code/ideate/README.md (Reporting Scripts section)
+  - **Missing**: Update noting scripts are deprecated and pointing to ideate_get_metrics MCP tool.
+  - **Impact**: Users receive confusing exit-1 errors with no README guidance.
+
+  ### G5: da.cycle = 0 edge case untested
+  - **Area**: analysis.ts SQL WHERE clause (line 109)
+  - **Missing**: A test for cycleNumber=0. Low likelihood (cycle numbering starts at 1) but branch 1 would match any row with da.cycle=0.
+  - **Impact**: Low — untested edge case only.
+
+  ## Implicit Requirements
+
+  ### IR1: report.sh still has original silently-empty-output problem
+  - **Assumption**: Users expect consistent behavior across all four reporting scripts. Three scripts (report-cycle.sh, report-cost.sh, report-executive.sh) now correctly exit 1 with deprecation messages. report.sh was out of WI-428 scope and still runs Python analytics logic against metrics.jsonl, which is no longer written, producing empty output silently.
+  - **Risk**: Inconsistent behavior across the script family; users have no indication report.sh is also broken.
+
+  ## No Gaps Found In
+
+  - Three-branch WHERE logic (all three branches tested independently)
+  - parsePrincipleVerdict step1/step2/step3 coverage
+  - JSON-wrapped da_content unwrapping (tested)
+  - handleArchiveCycle copy-verify-delete logic (happy path and copy-failure path both tested)
+  - handleArchiveCycle exclusive transaction presence
+  - Report scripts deprecation (report-executive.sh, report-cycle.sh, report-cost.sh all correctly exit 1)
+  - No skill files reference deprecated report scripts
+  - da.id IS NULL branch independently tested
+  - da.id IS NOT NULL AND da.cycle IS NULL branch independently tested
+content_hash: 266dd73f90dcaf15272c890f14f5372fd0197b67bda66eff615ad489ad4e8cf0
+token_count: 845
+file_path: .ideate/cycles/006/GA-006.yaml

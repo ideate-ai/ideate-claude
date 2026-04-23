@@ -1,0 +1,94 @@
+id: WI-336
+type: work_item
+title: Rewrite /ideate:init as unified entry point merging plan and init skills
+status: done
+complexity: large
+scope:
+  - path: skills/init/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - SKILL.md detects if .ideate/ exists and returns error instructing user to remove it manually
+  - SKILL.md detects if source code exists in project directory
+  - "If source code exists: runs init flow (survey existing codebase, lightweight interview 3-5 questions, bootstrap .ideate/ with steering artifacts and domain layer)"
+  - "If no source code: runs plan flow (full multi-track interview, background research, architecture via architect agent, decomposition via decomposer agents, work item creation, domain bootstrap)"
+  - Both flows call ideate_bootstrap_project to create .ideate/
+  - "Both flows produce: guiding principles, constraints, interview transcript, domain layer"
+  - "Plan flow additionally produces: architecture, overview, execution strategy, module specs (if applicable), work items, research findings"
+  - Metrics instrumentation preserved for all agent spawns
+  - Self-check section verifying MCP abstraction boundary (GP-14) preserved
+  - "All agent references use ideate: qualified names"
+domain: workflow
+notes: |-
+  ## Implementation
+
+  Rewrite skills/init/SKILL.md to be the unified entry point for initializing any ideate project.
+
+  ### Phase structure
+
+  **Phase 0**: Read project configuration (ideate_get_config). If unavailable, use defaults.
+
+  **Phase 1**: Check for existing .ideate/
+  - Call ideate_get_project_status()
+  - If status is NOT 'not_initialized': error. Tell user: '.ideate/ already exists. To re-initialize, manually remove .ideate/ and re-run. To plan changes to an existing project, use /ideate:refine.'
+  - If status IS 'not_initialized': proceed.
+
+  **Phase 2**: Detect mode
+  - Use Glob to check for source files in the project directory (e.g., *.ts, *.py, *.js, *.go, src/, lib/, etc.)
+  - If source files found: INIT MODE (existing codebase)
+  - If no source files found: PLAN MODE (new project)
+  - Report detected mode to user. Allow override.
+
+  **Phase 3**: Bootstrap .ideate/
+  - Call ideate_bootstrap_project() to create directory structure
+  - This is needed in both modes
+
+  **Phase 4**: Survey codebase (INIT MODE) or skip (PLAN MODE)
+  - INIT MODE: Spawn ideate:architect in analyze mode with model: opus
+  - PLAN MODE: Skip (no code to survey yet)
+
+  **Phase 5**: Interview
+  - INIT MODE: Lightweight interview (3-5 questions). Purpose, principles, constraints. Use codebase analysis to inform questions. Don't ask about things the code already answers.
+  - PLAN MODE: Full multi-track interview from old plan skill. Intent track, technical track, UX/design track, process track. Spawn ideate:researcher agents for background research during interview.
+
+  **Phase 6**: Research (PLAN MODE only)
+  - Spawn ideate:researcher agents for topics surfaced during interview
+  - Write research findings via ideate_write_artifact
+
+  **Phase 7**: Architecture (PLAN MODE only)
+  - Spawn ideate:architect in design mode with model: opus
+  - Write architecture via ideate_write_artifact
+
+  **Phase 8**: Decomposition + Work Items (PLAN MODE only)
+  - For large projects (5+ modules): spawn ideate:decomposer agents
+  - For small projects: produce work items directly
+  - Write work items via ideate_write_work_items
+  - Write execution strategy via ideate_write_artifact
+  - Write overview via ideate_write_artifact
+
+  **Phase 9**: Steering artifacts (both modes)
+  - Write guiding principles via ideate_write_artifact
+  - Write constraints via ideate_write_artifact
+  - Write interview transcript via ideate_write_artifact
+
+  **Phase 10**: Domain bootstrap (both modes)
+  - Identify domains from interview + architecture (if available)
+  - Write initial domain policies, decisions, questions
+
+  **Phase 11**: Verification + Journal
+  - Verify all artifacts written successfully
+  - Append journal entry via ideate_append_journal
+  - Present summary to user
+
+  ### Key references
+  - Current init skill: skills/init/SKILL.md (lightweight flow)
+  - Current plan skill: skills/plan/SKILL.md (full flow)
+  - Both use the same MCP tools and agent spawning patterns
+  - The merged skill should be comprehensive but well-organized with clear mode branching
+resolution: Unified SKILL.md written (1103 lines). Both init and plan flows preserved with clear mode branching. All acceptance criteria satisfied.
+cycle_created: null
+cycle_modified: null
+content_hash: 3f75b847c55d2683fcd339b07e800cf002095877f6e2865d24c87eee0dcda876
+token_count: 1132
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-336.yaml

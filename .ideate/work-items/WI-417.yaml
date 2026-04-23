@@ -1,6 +1,6 @@
 id: WI-417
 type: work_item
-title: "Fix handleEmitMetric write path: absolute file_path + exclusive transaction"
+title: 'Fix handleEmitMetric write path: absolute file_path + exclusive transaction'
 status: done
 complexity: low
 scope:
@@ -11,9 +11,13 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - handleEmitMetric stores an absolute file_path in the node row (path.join(metricsDir, id + '.yaml') not path.join('metrics', id + '.yaml'))
+  - >-
+    handleEmitMetric stores an absolute file_path in the node row (path.join(metricsDir, id + '.yaml') not
+    path.join('metrics', id + '.yaml'))
   - handleEmitMetric uses ctx.db.transaction(...).exclusive() not the default deferred transaction
-  - The ideate_emit_metric tool description in tools/index.ts no longer references JSONL behavior — updated to describe YAML+SQLite
+  - >-
+    The ideate_emit_metric tool description in tools/index.ts no longer references JSONL behavior — updated to describe
+    YAML+SQLite
   - All 492 tests pass
 domain: artifact-structure
 notes: |-
@@ -38,4 +42,4 @@ cycle_created: null
 cycle_modified: 1
 content_hash: d883104a872be9626ea5bac3b700147c1d421edfd34c8ed059e1af65a50f79b5
 token_count: 428
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-417.yaml
+file_path: work-items/WI-417.yaml

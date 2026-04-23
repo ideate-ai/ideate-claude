@@ -1,0 +1,14 @@
+id: Q-48
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Future spec-adherence reviews will continue flagging this criterion. One-line fix in `work-items.yaml`.
+source: archive/cycles/017/spec-adherence.md (WI-144 residual); archive/cycles/017/decision-log.md D-007, OQ-7
+resolution: WI-166 (spec + doc cleanup) corrected stale edge type names and other spec inconsistencies.
+resolved_in: 18
+description: WI-144 criterion at `plan/work-items.yaml` still lists `addresses` and `amends` as edge type names. WI-153 renamed these to `addressed_by` and `amended_by`. `specs/plan/notes/159.md` explicitly required this update but WI-159 did not apply it. Should the criterion text be corrected?
+cycle_created: 1
+cycle_modified: null
+content_hash: b4b5dcd476a98491a7b26d9755d564beb8a9e8c0d2e02706335ea59fd6ac4a1d
+token_count: 205
+file_path: .ideate/questions/Q-48.yaml

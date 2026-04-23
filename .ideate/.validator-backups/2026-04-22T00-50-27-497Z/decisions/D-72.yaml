@@ -1,0 +1,13 @@
+id: D-72
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-153 renamed `EDGE_TYPES` constants and updated the registry with reversed direction and non-null `yaml_field` values. `extractEdges` required no changes because it is fully registry-driven. Extraction tests for both types added in WI-158.
+rationale: Implements D-059. Reversed-direction naming aligns the edge type name with the yaml_field, enabling auto-extraction without special-case code.
+cycle_created: 1
+cycle_modified: null
+content_hash: "793834ae209195de8784609c4ce2db867722c5f6f329f710857df59ee220d521"
+token_count: 153
+file_path: .ideate/decisions/D-72.yaml

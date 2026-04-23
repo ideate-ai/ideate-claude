@@ -10,7 +10,7 @@ depends: []
 blocks: []
 criteria:
   - handleAppendJournal writes a per-entry YAML file to .ideate/cycles/{NNN}/journal/J-{NNN}-{seq}.yaml
-  - "YAML file contains type: journal_entry, id, phase, date, title, content, cycle_created fields"
+  - 'YAML file contains type: journal_entry, id, phase, date, title, content, cycle_created fields'
   - YAML serialization uses the yaml library (stringifyYaml), not string concatenation
   - Sequence number (seq) derived from existing files in the cycle journal directory
   - Cycle number derived from domains/index.md current_cycle or from the date-based cycle detection
@@ -20,22 +20,33 @@ criteria:
   - All tests pass (npm test exits 0)
 module: null
 domain: null
-notes: |
+notes: >
   # WI-196: handleAppendJournal writes YAML journal entries
+
 
   ## Current behavior
 
+
   `handleAppendJournal` in `tools/write.ts`:
+
   1. Reads `journal.md` from artifact_dir
+
   2. Appends formatted markdown entry (`## [{skill}] {date} — {entry_type}\n{body}`)
+
   3. Writes back to `journal.md`
+
   4. Upserts into SQLite (nodes + journal_entries) with `file_path` pointing to `journal.md`
+
 
   ## New behavior (Q-44 resolution: YAML authoritative)
 
+
   1. Determine cycle number: read `domains/index.md` for `current_cycle`, or default to 0
+
   2. Determine sequence number: count existing `J-{NNN}-*.yaml` files in `.ideate/cycles/{NNN}/journal/`
+
   3. Generate ID: `J-{NNN}-{SEQ}` (zero-padded 3 digits each)
+
   4. Build YAML object:
      ```yaml
      id: J-022-001
@@ -49,32 +60,53 @@ notes: |
        Changed UNION ALL to UNION...
      ```
   5. Serialize with `stringifyYaml` (yaml library)
+
   6. Write to `.ideate/cycles/{NNN}/journal/{id}.yaml`
+
   7. Upsert into SQLite with `file_path` pointing to the YAML file
+
 
   ## Key changes from current implementation
 
-  - **No longer writes to `journal.md`**. Skills that call this tool get YAML journal entries. Skills that don't use the tool still write to `journal.md` directly (their behavior is unchanged — the tool is additive, not a replacement for direct markdown writes).
+
+  - **No longer writes to `journal.md`**. Skills that call this tool get YAML journal entries. Skills that don't use the
+  tool still write to `journal.md` directly (their behavior is unchanged — the tool is additive, not a replacement for
+  direct markdown writes).
+
   - **`file_path` in SQLite** changes from the markdown journal path to the YAML file path.
-  - **Cycle number** must be determined. Read from `domains/index.md` (`current_cycle: N`). If the file doesn't exist or can't be parsed, use 0.
-  - **Sequence number** is 1-based within the cycle's journal directory. Use `fs.readdirSync` to count existing files matching `J-{NNN}-*.yaml`.
+
+  - **Cycle number** must be determined. Read from `domains/index.md` (`current_cycle: N`). If the file doesn't exist or
+  can't be parsed, use 0.
+
+  - **Sequence number** is 1-based within the cycle's journal directory. Use `fs.readdirSync` to count existing files
+  matching `J-{NNN}-*.yaml`.
+
 
   ## .ideate/ directory
 
-  The tool needs to know where `.ideate/` is. It can derive this from `ctx.ideateDir` (which IS the `.ideate/` directory path). So the journal YAML file is written to `path.join(ctx.ideateDir, 'cycles', NNN, 'journal', `${id}.yaml`)`.
 
-  The `artifact_dir` parameter (e.g., `specs/`) is where `domains/index.md` lives (for reading cycle number). The `.ideate/` directory is where YAML files live.
+  The tool needs to know where `.ideate/` is. It can derive this from `ctx.ideateDir` (which IS the `.ideate/` directory
+  path). So the journal YAML file is written to `path.join(ctx.ideateDir, 'cycles', NNN, 'journal', `${id}.yaml`)`.
+
+
+  The `artifact_dir` parameter (e.g., `specs/`) is where `domains/index.md` lives (for reading cycle number). The
+  `.ideate/` directory is where YAML files live.
+
 
   ## Directory creation
 
+
   `ensureDir(path.join(ctx.ideateDir, 'cycles', NNN, 'journal'))` before writing.
+
 
   ## Test updates
 
-  The existing `handleAppendJournal` tests in tools.test.ts check that `journal.md` is appended. These need updating to check that a YAML file is written to the correct path instead.
+
+  The existing `handleAppendJournal` tests in tools.test.ts check that `journal.md` is appended. These need updating to
+  check that a YAML file is written to the correct path instead.
 cycle_created: 1
 cycle_modified: null
 content_hash: 7d74ae87d2df40ff78a140d6749955d4070d48ee3536cb3e3b56ede2ade99294
 token_count: 919
-file_path: .ideate/work-items/WI-196.yaml
-resolution: "Verified complete: handleAppendJournal writes per-entry YAML to cycles/{NNN}/journal/"
+file_path: work-items/WI-196.yaml
+resolution: 'Verified complete: handleAppendJournal writes per-entry YAML to cycles/{NNN}/journal/'

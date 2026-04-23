@@ -1,0 +1,12 @@
+id: D-146
+type: domain_decision
+domain: artifact-structure
+title: Bootstrap test must dynamically assert all IDEATE_SUBDIRS entries
+decision: The createIdeateDir test must assert that every entry in IDEATE_SUBDIRS is created, rather than maintaining a hardcoded expected directories list. When IDEATE_SUBDIRS is extended, a hardcoded test list silently omits the new entry.
+rationale: IDEATE_SUBDIRS was extended with 'metrics' but the test's hardcoded expectedDirs array was not updated. The test passed but did not verify the new subdirectory. Iterating IDEATE_SUBDIRS directly makes the test self-maintaining.
+source: cycle 1 gap-analysis Gap 2; decision-log OQ-3
+cycle: 1
+status: settled
+content_hash: 36a2ed4bf3fa6e947f74def8095610fe3196a1db8b505b1f8c9fb2982ed48e95
+token_count: 173
+file_path: .ideate/decisions/D-146.yaml

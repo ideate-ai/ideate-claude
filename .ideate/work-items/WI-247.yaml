@@ -25,7 +25,9 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - "code-reviewer: 20→40, spec-reviewer: 25→50, gap-analyst: 25→50, journal-keeper: 15→30, domain-curator: 25→50, decomposer: 25→50, architect: 40→80, researcher: 20→40, proxy-human: 40→80"
+  - >-
+    code-reviewer: 20→40, spec-reviewer: 25→50, gap-analyst: 25→50, journal-keeper: 15→30, domain-curator: 25→50,
+    decomposer: 25→50, architect: 40→80, researcher: 20→40, proxy-human: 40→80
 domain: agent-system
 notes: |-
   # WI-247: Double maxTurns
@@ -36,4 +38,4 @@ cycle_created: 31
 cycle_modified: null
 content_hash: d6793d2a5e4e98366ef5d7962dc4bfac12a632369a721bdec0a4e724e8795fa4
 token_count: 245
-file_path: .ideate/work-items/WI-247.yaml
+file_path: work-items/WI-247.yaml

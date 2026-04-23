@@ -1,0 +1,14 @@
+id: Q-67
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: A pre-cycle-016 database with stale tables but `user_version = 0` would pass the version check and silently not be rebuilt. In practice, all active deployments have been rebuilt since cycle 016, so current risk is low. The untested path creates regression risk for future schema version bumps.
+source: archive/cycles/019/code-quality.md M3; archive/cycles/019/gap-analysis.md E1; archive/cycles/019/decision-log.md Q-67
+resolution: "WI-177 added a test for the version-0 path using a `:memory:` database. The version-mismatch and version-current branches remain untested — see Q-70."
+resolved_in: 20
+description: "`schema.ts:601` treats `user_version = 0` as \"fresh DB — compatible\" and returns `true` without deleting the file. This is correct for new SQLite files (SQLite sets `user_version = 0` by default), but a database created before the cycle 016 `user_version` mechanism was introduced would also have version 0 with real stale tables. No test exercises this path. Should a test be added and the known limitation documented?"
+cycle_created: 1
+cycle_modified: null
+content_hash: d1f5979f714dcaaf279fc19e2d9c249bc72e5c5e691a921ae8261730c82c133f
+token_count: 306
+file_path: .ideate/questions/Q-67.yaml

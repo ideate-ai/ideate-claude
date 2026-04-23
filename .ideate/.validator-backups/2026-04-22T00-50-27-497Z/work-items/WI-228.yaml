@@ -1,0 +1,27 @@
+id: WI-228
+type: work_item
+title: "README comprehensive update — worked example, custom models, structural sections"
+status: done
+complexity: high
+scope:
+  - {path: README.md, op: modify}
+depends: []
+blocks: []
+criteria:
+  - Worked example with real YAML snippets
+  - Interview structure section
+  - Context loading table
+  - "Custom Models section with all env vars and Ollama example"
+  - No sections removed/reordered
+  - Factual tone
+module: null
+domain: project-boundaries
+notes: |
+  # WI-228: README Update
+
+  Added: Worked Example (real YAML from .ideate/), Context Loading table, Interview Structure subsection, Custom Models subsection with HAIKU env var and Ollama config.
+cycle_created: 28
+cycle_modified: null
+content_hash: ""
+token_count: 0
+file_path: .ideate/work-items/WI-228.yaml

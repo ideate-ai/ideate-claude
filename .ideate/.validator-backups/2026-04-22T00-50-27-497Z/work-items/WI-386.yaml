@@ -1,0 +1,33 @@
+id: WI-386
+type: work_item
+title: Add logging for YAML parse failures in indexer
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/indexer.ts
+depends: []
+blocks: []
+criteria:
+  - safeParseYaml logs warnings with file path and error details when YAML parsing fails
+  - indexSingleFile includes both file path and specific error location in files_failed array
+  - "D-130 decision is satisfied: parse errors are visible for debugging"
+domain: artifact-structure
+notes: |-
+  ## Finding
+  S1 from cycle 1 code-quality review: Silent Failure in YAML Parsing.
+
+  **File**: `mcp/artifact-server/src/indexer.ts:67-73`
+
+  **Issue**: The `safeParseYaml` function returns null on parse errors without logging the error or file path. Similarly, `indexSingleFile` (line 526) reports `files_failed` but only includes the error message, not the full context needed for debugging.
+
+  **Impact**: Malformed YAML files silently fail to index, potentially leading to missing artifacts without clear visibility into which files have problems and why.
+
+  ## Suggested Fix
+  Include the parse error details in the `parse_errors` array and log warnings to stderr with the file path and specific YAML error location.
+resolution: null
+cycle_created: 1
+cycle_modified: 1
+content_hash: dfbe38f957ea222903e364610ea0b0e18fcf532195fb3ec0dba73ec69d1d1eed
+token_count: 319
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-386.yaml

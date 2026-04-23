@@ -1,0 +1,14 @@
+id: Q-77
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Agents reading the architecture for orientation see deleted `tools.ts` and miss the 5 new tool group files. Context assembly tools that use this table report stale data.
+source: archive/cycles/022/spec-adherence.md M2; archive/cycles/022/gap-analysis.md SG1; archive/cycles/022/decision-log.md Q-77
+resolution: Resolved by WI-221 which updates Section 9 source code index to list all tools/ files.
+resolved_in: 27
+description: "`specs/plan/architecture.md:573-584` still lists `tools.ts` as a single file. The actual implementation has `tools/index.ts` plus 5 group files (context.ts, query.ts, execution.ts, analysis.ts, write.ts). Six new source files are missing from the index. Should the table be updated?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "95603a5c3c40268c5ba81d824e4450b82f33517cf5ddacc8c8620d09a4aadb2e"
+token_count: 225
+file_path: .ideate/questions/Q-77.yaml

@@ -1,0 +1,13 @@
+id: D-113
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: All three write tools (append_journal, archive_cycle, write_work_items) write YAML files first, then synchronously upsert affected rows into SQLite. The sync update eliminates the stale-read window between YAML write and watcher-triggered rebuild.
+rationale: GP-8 mandates YAML as source of truth. Synchronous update after YAML write means MCP tool consumers see consistent data immediately, not after a watcher debounce.
+cycle_created: 1
+cycle_modified: null
+content_hash: "0c4598b7f03085f70bd781476900aa1c44571b7d9218d20a16f5d8ec74d8f8ac"
+token_count: 160
+file_path: .ideate/decisions/D-113.yaml

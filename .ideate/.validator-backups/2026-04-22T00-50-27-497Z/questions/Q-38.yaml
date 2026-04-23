@@ -1,0 +1,14 @@
+id: Q-38
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Without a fix, the incremental rebuild feature is non-functional for the entire server lifetime. Every deployment must be restarted to pick up YAML changes. Three independent reviewers flagged this.
+source: archive/cycles/016/code-quality.md C1; archive/cycles/016/spec-adherence.md S2; archive/cycles/016/gap-analysis.md G2; archive/cycles/016/decision-log.md Q1
+resolution: WI-150 changed the pattern to `/index\.db(-wal|-shm)?$/`, silencing only SQLite database files. Three integration tests added for write/modify/delete events.
+resolved_in: 17
+description: "The chokidar `ignored: /(^|[/\\\\])\\../` pattern in `watcher.ts:24` matches `.ideate/` itself, suppressing all file events. What is the correct scoped pattern? Options: (a) ignore only `index.db*` files (`/index\\.db(-wal|-shm)?$/`); (b) function-form that checks `path.basename` starts with dot and is not the root artifact dir; (c) remove the pattern entirely and watch everything."
+cycle_created: 1
+cycle_modified: null
+content_hash: "7cabfbd36ffafa8eac802b3f53d7c1b5a446c11eb5c7cdd538aa1a8d0532417e"
+token_count: 285
+file_path: .ideate/questions/Q-38.yaml

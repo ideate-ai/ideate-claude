@@ -1,0 +1,60 @@
+id: WI-320
+type: work_item
+title: Fix resolveArtifactPath type routing and add domain_index to type table
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/db.ts
+    op: modify
+  - path: mcp/artifact-server/src/config.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/bootstrap.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-322
+criteria:
+  - resolveArtifactPath has explicit case for guiding_principle routing to principles/ directory
+  - resolveArtifactPath has explicit case for constraint routing to constraints/ directory
+  - resolveArtifactPath has explicit cases for domain_policy -> policies/, domain_decision -> decisions/, domain_question -> questions/, domain_index -> domains/index
+  - GP-14 file moved from guiding_principle/ to principles/
+  - domain_index is in TYPE_TO_EXTENSION_TABLE mapped to documentArtifacts
+  - IDEATE_SUBDIRS exported from config.ts and used by bootstrap.ts return value
+  - At least one test verifying type routing
+  - npm test passes
+domain: artifact-structure
+notes: |-
+  # WI-320: Fix resolveArtifactPath + domain_index + bootstrap export
+
+  ## resolveArtifactPath in write.ts
+  Add explicit cases:
+  ```typescript
+  case 'guiding_principle': return path.join(ideateDir, 'principles', `${id}.yaml`);
+  case 'constraint': return path.join(ideateDir, 'constraints', `${id}.yaml`);
+  case 'domain_policy': return path.join(ideateDir, 'policies', `${id}.yaml`);
+  case 'domain_decision': return path.join(ideateDir, 'decisions', `${id}.yaml`);
+  case 'domain_question': return path.join(ideateDir, 'questions', `${id}.yaml`);
+  case 'domain_index': return path.join(ideateDir, 'domains', 'index.yaml');
+  ```
+
+  ## db.ts
+  Add to TYPE_TO_EXTENSION_TABLE: `domain_index: documentArtifacts`
+
+  ## config.ts
+  Export IDEATE_SUBDIRS
+
+  ## bootstrap.ts
+  Use imported IDEATE_SUBDIRS for return value
+
+  ## Cleanup
+  Move .ideate/guiding_principle/GP-14.yaml to .ideate/principles/GP-14.yaml. Remove empty guiding_principle/ dir.
+resolution: null
+cycle_created: 61
+cycle_modified: null
+content_hash: 6ab2a3213b4b206b77d71eb33f4181c03e9434eb982a4c955449cb1a75dba2c0
+token_count: 545
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-320.yaml

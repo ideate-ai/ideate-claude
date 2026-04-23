@@ -1,0 +1,70 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |
+  # Decision Log and Open Questions — Cycle 28 (PH-050 Capstone)
+
+  ## Decision Log
+
+  ### Planning
+  - **Triage (pre-PH-050)** — 2026-04-14 autopilot condition_b:false incident split into (a) MCP cycle-slot collision (separate bug, out of scope) and (b) parser resilience. PH-050 scoped to (b).
+  - **WI-874 spike** — Concluded PH-050 scope: parser resilience (primary) + deployment hygiene (co-deliverable, surfaced during incident operational response).
+
+  ### Execution (internal autopilot cycles 1-3)
+  - **Cycle 1 (WI-876, WI-877)** — Both passed incremental review. WI-876 committed in advance (commit 1a0d686, labelled PH-046 close). WI-877 landed in working tree.
+  - **Cycle 2 (WI-878)** — Rework for cycle 1 minor findings: regex hardening, YAML warning validity, P-33 coverage, step 2 tests. Pass (1500 tests).
+  - **Cycle 3 (WI-879)** — Rework for cycle 2 minor findings: multiline YAML regression fix, S5 retroactive test, cleanups. Pass (1503 tests).
+  - **Autopilot stall (post-cycle 3)** — Reported condition_b:false despite passing incremental reviews. Root cause: MCP cycle-slot collision (out of scope). Autopilot had no handler for the ambiguous state. User terminated via phase-start command; capstone run manually as cycle 28.
+
+  ### Review (cycle 28 capstone)
+  - **Verdict divergence** — Spec: Pass (2 minor). Code: Fail (2 sig + 5 minor). Gap: Fail (4 sig + 9 minor).
+  - **Capstone surfaced two significant defects that per-item reviews missed**: step 2 prefix-match false-fail (S1/EC1) and all-bold verdict format gap (EC2).
+  - **Cross-reviewer corroboration (S1/EC1)** — Code S1 and Gap EC1 independently identified the same `heading.startsWith("principle adherence")` defect via different paths (code reading vs. real-artifact sampling). High confidence.
+
+  ## Open Questions
+
+  ### OQ-028-01: Step 2 prefix-match fix (S1/EC1) — PH-050 rework or PH-051?
+  - **Source**: Code S1; Gap EC1 (corroborated, high confidence)
+  - **Impact**: Reproduces the PH-050 target failure mode. PH-050 cannot be closed as fully successful without it.
+  - **Decision needed**: scope call.
+  - **Consequence of inaction**: Autopilot false-stall live in production; any spec-adherence with `## Principle Adherence Evidence` + bullets triggers spurious `converged: false`.
+
+  ### OQ-028-02: All-bold verdict format (EC2) — retroactive fixture sweep needed?
+  - **Source**: Gap EC2
+  - **Impact**: Historical artifacts using `**Principle Adherence Verdict: Pass**` (label + colon + verdict all bold) fall through step 1; combined with EC1 they produce false fail.
+  - **Decision needed**: technical investigation — which historical cycles use this format, and is retroactive re-parse required?
+  - **Consequence of inaction**: Any re-processing of historical cycles silently misclassifies.
+
+  ### OQ-028-03: rawSnippet P-33 sanitization (EC5)
+  - **Source**: Gap EC5
+  - **Impact**: Current P-33 test uses synthetic content; real artifacts can contain absolute paths in the first 200 chars which would leak via `principle_verdict_warning`.
+  - **Decision needed**: audit real-world step-3 triggers; decide strip-during-construction vs. test with realistic fixture.
+  - **Consequence of inaction**: silent P-33 violation possible in production output.
+
+  ### OQ-028-04: Autopilot Phase 6c handler for `principle_verdict: unknown` (II1)
+  - **Source**: Gap II1 (systemic residual)
+  - **Impact**: WI-876 hardened the emitter; consumer (autopilot) still treats step-3 parse failure identically to real violation. The 2026-04-14 behavior is partially preserved.
+  - **Decision needed**: design review — update autopilot SKILL.md Phase 6c to distinguish parser diagnostic (Andon) from real violation (refine).
+  - **Consequence of inaction**: future parser fall-through silently triggers refinement instead of surfacing diagnostic.
+
+  ### OQ-028-05: `principle_verdict_source` contract-or-debug-aid? (EC3/EC4, II2, IR2)
+  - **Source**: Gap EC3/EC4, II2, IR2
+  - **Impact**: Emitted field with no test assertions and no consumer. Refactor that silently swaps sources passes tests.
+  - **Decision needed**: is the field a permanent contract (add assertions + consumer) or a temporary debug aid (document as such, do not expand)?
+  - **Consequence of inaction**: schema surface without diagnostic value.
+
+  ## Cross-References
+
+  ### CR1: Step 2 prefix-match false-fail (convergent, high confidence)
+  - Code S1 + Gap EC1 (independently reached same conclusion via different evidence). Spec did not reach this path. Fix (exact-match allowed headings) agreed.
+
+  ### CR2: Autopilot unknown-verdict handling (gap-analyst only)
+  - Gap II1 + IR2. Code and spec did not flag consumer side. Single-reviewer signal — worth independent verification before acting.
+
+  ### CR3: Deployment hygiene findings (multi-reviewer, low severity)
+  - Code M3 (ERE escape), M5 (quote nesting); Spec D1 (placement drift); Gap EC7 (double-start), EC8 (kill-before-build), MI2 (caveat prominence). All minor; collectively suggest deployment tooling remains rough-edged but not blocking.
+content_hash: 80dd24ac8f1f978e87b0bcb5e817cd1fb97869df497d278407c64d75bffc2156
+token_count: 1328
+file_path: .ideate/cycles/068/decision-log.yaml
+cycle: 28
+cycle_modified: 27

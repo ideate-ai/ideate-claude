@@ -1,39 +1,65 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |-
+content: >-
   ## Verdict: Fail
+
 
   2 significant gaps, 3 minor gaps.
 
+
   ## Critical Findings
+
   None.
+
 
   ## Significant Findings
 
+
   ### EC1: NaN passes alpha and convergence_threshold validation
+
   File: validating.ts:297 (alpha), :330 (convergence_threshold)
-  All IEEE-754 comparisons with NaN return false, so NaN passes both ValidatingAdapter and ppr.ts guards. NaN alpha produces all-NaN PPR scores. edge_type_weights uses Number.isFinite() but alpha and convergence_threshold do not — inconsistent.
+
+  All IEEE-754 comparisons with NaN return false, so NaN passes both ValidatingAdapter and ppr.ts guards. NaN alpha
+  produces all-NaN PPR scores. edge_type_weights uses Number.isFinite() but alpha and convergence_threshold do not —
+  inconsistent.
+
 
   ### II1: No integration-level test file for edge_type_weights validation
+
   Interface: ValidatingAdapter.traverse() → LocalAdapter.traverse()
-  WI-778 added 7 unit tests with mock adapter. Prior validation fields (always_include_types, seed_ids) each have dedicated integration test files in tests/adapters/. No equivalent exists for edge_type_weights. No test verifies edge_type_weights validation fires before PPR with a real database.
+
+  WI-778 added 7 unit tests with mock adapter. Prior validation fields (always_include_types, seed_ids) each have
+  dedicated integration test files in tests/adapters/. No equivalent exists for edge_type_weights. No test verifies
+  edge_type_weights validation fires before PPR with a real database.
+
 
   ## Minor Findings
 
+
   ### EC2: queryGraph does not validate type_filter
-  ValidatingAdapter validates origin_id, depth, direction, edge_types in GraphQuery but not type_filter (a NodeType field). Invalid type string passes through to LocalAdapter producing silent empty result.
+
+  ValidatingAdapter validates origin_id, depth, direction, edge_types in GraphQuery but not type_filter (a NodeType
+  field). Invalid type string passes through to LocalAdapter producing silent empty result.
+
 
   ### II2: putEdge missing test for MISSING_EDGE_TYPE error code
-  putEdge validates missing edge_type and throws MISSING_EDGE_TYPE but has no test. batchMutate tests MISSING_EDGE_TYPE for the batch path only.
+
+  putEdge validates missing edge_type and throws MISSING_EDGE_TYPE but has no test. batchMutate tests MISSING_EDGE_TYPE
+  for the batch path only.
+
 
   ### IR1: queryNodes does not validate NodeFilter.type
-  Invalid filter.type produces safe empty results rather than validation error. Defer — broader filter validation is a wider undertaking.
+
+  Invalid filter.type produces safe empty results rather than validation error. Defer — broader filter validation is a
+  wider undertaking.
 content_hash: dc51f093cb66a217782c0ccd71714d80bcb0fa708cdded982bd593e0f2f058d2
 token_count: 1023
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/025/gap-analysis.yaml
 verdict: Pass
-note: Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All identified gaps are carry-forward items outside PH-017 scope.
+note: >-
+  Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All
+  identified gaps are carry-forward items outside PH-017 scope.
 critical_findings: []
 significant_findings: []
 carry_forward_gaps:
@@ -49,7 +75,9 @@ carry_forward_gaps:
       - journal_entries
       - metrics_events
     severity: carry-forward
-    description: These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
+    description: >-
+      These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions
+      (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
   - id: CF2
     title: 4 extension tables have partial column-structure tests
     tables:
@@ -72,10 +100,14 @@ carry_forward_gaps:
       - metrics_events
       - document_artifacts
     severity: carry-forward
-    description: PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10 tables remain without.
+    description: >-
+      PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10
+      tables remain without.
   - id: CF4
     title: ALL_NODE_TYPES.length hardcoded count assertion
-    description: The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check. Adding a new NodeType requires updating this count manually.
+    description: >-
+      The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check.
+      Adding a new NodeType requires updating this count manually.
     severity: carry-forward
 within_scope_gaps: None identified. All 9 PH-017 work items appear to have their acceptance criteria satisfied based on partial analysis.
 cycle: 25

@@ -1,0 +1,75 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |-
+  **Verdict**: Fail
+
+  **Reason**: One genuine significant bug surfaced in the RemoteAdapter.getConvergenceData post-filter (not introduced by cycle 32, but exposed when cycle 32 extended coverage to the countNodes path and revealed the asymmetry). Cycle 32's own deliverables (WI-871 countNodes fix, WI-872 doc unification) are correct.
+
+  ---
+
+  **Critical Findings**: None.
+
+  ---
+
+  **Significant Findings**:
+
+  ### S1: getConvergenceData remote post-filter includes empty-string addressed_by findings — inverted guard
+
+  - **File**: mcp/artifact-server/src/adapters/remote/index.ts:1357
+  - **Issue**: Filter expression `addressedBy !== null && addressedBy !== undefined && addressedBy !== ""` mis-handles empty string. For `addressedBy=""`: true && true && FALSE = false, so `continue` is NOT executed, so the empty-string finding is COUNTED. LocalAdapter SQL `addressed_by IS NULL` evaluates FALSE on empty string so empty-string rows are NOT in the result set — SQL EXCLUDES them. Remote counts them. Adapters diverge for `addressed_by=""`.
+  - **Origin**: Introduced by WI-869 in cycle 31, not WI-871. WI-871 correctly used `!== null && !== undefined` in _countFindingsBySeverity and does not have this bug. The divergence lives in the companion getConvergenceData path that WI-871 did not touch.
+  - **Impact**: condition_a (unresolved-finding severity counts) can be wrongly non-zero on RemoteAdapter when any finding has addressed_by='' — blocking convergence for a resolved finding.
+  - **Fix**: Change line 1357 to `if (addressedBy !== null && addressedBy !== undefined) { continue; }` (matching _countFindingsBySeverity).
+
+  ### S2: No equivalence fixture covers getConvergenceData with empty-string addressed_by — S1 is untestable
+
+  - **File**: mcp/artifact-server/tests/adapters/equivalence-query.test.ts:~390
+  - **Issue**: All three getConvergenceData equivalence tests call getConvergenceData(1). Cycle 1 fixture has only non-empty addressed_by. New fixtures F-WI-001-002/003/004 are cycle 2 and only exercise countNodes path. No equivalence test calls getConvergenceData(2). S1 will pass all equivalence tests even in a Docker environment.
+  - **Fix**: Add a fourth describe block that calls getConvergenceData(2) and asserts local==remote for empty-string addressed_by exclusion.
+
+  ### S3: adapter.ts getConvergenceData JSDoc omits empty-string exclusion — doc/contract drift
+
+  - **File**: mcp/artifact-server/src/adapter.ts:~489
+  - **Issue**: getConvergenceData JSDoc says 'Excludes findings with non-null addressed_by', omitting 'non-empty'. adapter-contract.md says 'non-null, non-empty'. adapter-interface.md says 'non-null, non-empty'. Three authoritative docs now disagree on the rule for the same method.
+  - **Fix**: Update adapter.ts JSDoc at line 489 to say 'non-null, non-empty'.
+
+  ---
+
+  **Minor Findings**:
+
+  ### M1: _countFindingsBySeverity JSDoc understates exclusion rule
+
+  - **File**: remote/index.ts:1143
+  - **Issue**: JSDoc says 'excluding those whose addressed_by field is non-null.' Implementation also excludes `undefined` (defensive) and effectively excludes empty strings (because `"" !== null && "" !== undefined` is true, triggering `continue`).
+  - **Fix**: Update JSDoc to 'non-null, non-empty-string addressed_by'.
+
+  ### M2: adapter-contract.md and adapter-interface.md wording differs
+
+  - **Files**: mcp/artifact-server/docs/adapter-contract.md:398 vs docs/platform/adapter-interface.md:385
+  - **Issue**: adapter-contract.md says 'non-null, non-undefined, and non-empty-string'; adapter-interface.md says 'non-null, non-empty'. Semantically equivalent but unnecessary drift.
+  - **Fix**: Standardize on 'non-null, non-empty' (drop 'non-undefined' from contract).
+
+  ---
+
+  **Confirmation note on _countFindingsBySeverity filter correctness**: The filter at line 1180 — `if (addressedBy !== null && addressedBy !== undefined) { continue; }` — correctly excludes empty string because `"" !== null` and `"" !== undefined` are both true, causing `continue` to execute. This matches LocalAdapter SQL `addressed_by IS NULL` (which also excludes empty-string rows). WI-871's implementation is correct. The bug is confined to getConvergenceData.
+content_hash: 166732f0614786f45d9e8060242e548e5b413062d270896973dea8b03fef53e5
+token_count: 1248
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 33
+cycle_modified: 27
+verdict: Pass
+scope: WI-873 deltas — getConvergenceData empty-string parity fix + doc/test/fixture syncs
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345

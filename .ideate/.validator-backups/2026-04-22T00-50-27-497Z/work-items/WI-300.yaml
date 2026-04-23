@@ -1,0 +1,25 @@
+id: WI-300
+type: work_item
+title: Add handleAssembleContext error-path and edge-case tests
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-298
+blocks: []
+criteria:
+  - "Test: empty seed_ids array throws error"
+  - "Test: seed_ids with non-existent IDs returns always-include items only"
+  - "Test: token_budget of 0 returns always-include items only"
+  - "Test: ideate_get_config dispatch returns JSON with agent_budgets and ppr keys"
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: Add error-path tests for handleAssembleContext and a dispatch test for ideate_get_config. These fill the test gaps identified by both code-reviewer S2 and gap-analyst EC1.
+resolution: "4 new tests: empty seeds, non-existent IDs, zero budget, ideate_get_config dispatch."
+cycle_created: 39
+cycle_modified: null
+content_hash: 0390e730f01c61fe4e6cd48956dd587cd75b88485677dabf4aada60cfebfd76b
+token_count: 225
+file_path: .ideate/work-items/WI-300.yaml

@@ -1,0 +1,34 @@
+reviewer: code-reviewer
+cycle: 30
+type: full_audit
+content: |-
+  ## Verdict: Fail
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  ### S1: Domain-curator agent still references .md file extensions in section headers
+  - **File**: `/Users/dan/code/ideate/agents/domain-curator.md:96,104,134`
+  - **Issue**: The section headers for Phase 4 still use `.md` extensions (`decisions.md`, `policies.md`, `questions.md`) while referencing `.yaml` files in the body text.
+  - **Impact**: Creates confusion about which file format is authoritative and contradicts P-25.
+  - **Suggested fix**: Change section headers to use `.yaml` extensions.
+
+  ### S2: MCP artifact-server README uses deprecated `{artifact_dir}` placeholder
+  - **File**: `/Users/dan/code/ideate/mcp/artifact-server/README.md:18,98,103,107,112,117`
+  - **Issue**: Documentation examples use `{artifact_dir}` instead of standardized `{project_root}`.
+  - **Impact**: Inconsistency in documentation creates confusion about which placeholder is canonical.
+  - **Suggested fix**: Standardize documentation examples to use `{project_root}`.
+
+  ## Minor Findings
+  None.
+
+  ## Suggestions
+  1. Verify line 436 fix in review/SKILL.md — confirmed complete.
+  2. Verify init skill scaffold — confirmed complete.
+  3. Verify context-package-spec.md — confirmed complete for placeholders.
+
+  ## Unmet Acceptance Criteria
+  1. Domain-curator .md references in section headers (lines 96, 104, 134) remain.
+  2. Legacy documentation `{artifact_dir}` in README examples remains.

@@ -1,0 +1,38 @@
+id: WI-368
+type: work_item
+title: Bump plugin version to 3.4.0
+status: done
+complexity: low
+scope:
+  - path: .claude-plugin/plugin.json
+    op: modify
+  - path: .claude-plugin/marketplace.json
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - plugin.json version field reads '3.4.0'
+  - marketplace.json metadata.version and plugins[0].version both read '3.4.0'
+  - No other fields in either file are modified
+domain: project-boundaries
+notes: |-
+  ## Context
+
+  P-16: version must be updated before cycle completion whenever skills, agents, or externally visible interfaces change. Cycle 068 added ideate_update_config (new MCP tool), ideate:settings (new skill), model_overrides to IdeateConfigJson (interface change), and fixed EDGE_TYPE_REGISTRY (behavior change). Version 3.3.0 → 3.4.0.
+
+  ## Changes
+
+  In `.claude-plugin/plugin.json`:
+  - Change `"version": "3.3.0"` to `"version": "3.4.0"`
+
+  In `.claude-plugin/marketplace.json`:
+  - Change `"version": "3.3.0"` to `"version": "3.4.0"` in the `metadata` object
+  - Change `"version": "3.3.0"` to `"version": "3.4.0"` in the `plugins[0]` object
+
+  Both files have version strings at lines visible from the file reads — do a targeted string replacement, do not reformat either file.
+resolution: Version bumped to 3.4.0 in plugin.json and marketplace.json.
+cycle_created: 69
+cycle_modified: 68
+content_hash: c4c783803c280517bbea7117739d0942e58a1d5c7599c220ae2132c8f8f45b20
+token_count: 338
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-368.yaml

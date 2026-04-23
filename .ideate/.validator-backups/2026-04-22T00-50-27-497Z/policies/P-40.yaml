@@ -1,0 +1,11 @@
+id: P-40
+type: domain_policy
+derived_from:
+  - Security best practices
+description: Hook execution in dispatchHook must use spawn with explicit argument arrays for user-provided variables. String interpolation with execSync is prohibited for variables that may contain user-controlled content (work item titles, domain names, descriptions). The substituteVariables function does not escape shell metacharacters.
+domain: artifact-structure
+established: 1
+status: active
+content_hash: 5909849e7a6933c164c205a4b1518df0c7a3d836ca67ed29983d9bc2d38cfaa3
+token_count: 117
+file_path: .ideate/policies/P-40.yaml

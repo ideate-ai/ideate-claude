@@ -1,0 +1,12 @@
+id: D-156
+type: domain_decision
+domain: artifact-structure
+title: Three-branch WHERE clause in handleGetConvergenceStatus
+description: "WI-424 specified a two-branch WHERE clause (da.cycle = N OR file_path LIKE when da.id IS NULL). Implementation added a third branch: da.id IS NOT NULL AND da.cycle IS NULL AND file_path LIKE. This covers artifacts indexed before the cycle-injection fix (WI-423) where document_artifacts rows exist but cycle is null."
+rationale: Additive deviation from written spec. Without the third branch, pre-WI-423 artifacts with null cycle would be invisible to convergence checks even though they have document_artifacts rows. Covered by test at tools.test.ts:581-602.
+source: cycle 5 decision-log D5-E02; spec-adherence D1
+status: settled
+cycle: 5
+content_hash: 9d1aeaca17524e516ea058efc48775ebba8656d85e2497c34fe79b5b381d3230
+token_count: 194
+file_path: .ideate/decisions/D-156.yaml

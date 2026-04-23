@@ -1,0 +1,22 @@
+id: summary
+type: cycle_summary
+cycle: 59
+content: |-
+  # Review Summary — Cycle 059
+
+  ## Overview
+  Cycle 059 addressed all 4 significant findings from cycle 058 plus 11 question file backtick fixes and a README proofread. All 308 tests pass. All 3 reviewers returned Pass verdicts. No critical or significant findings.
+
+  ## Minor Findings
+  - [code-reviewer] Test comment in indexer.test.ts:907-908 incorrectly describes non-YAML filtering as handled by indexSingleFile read error, when it is actually the yamlPaths guard in indexFiles — relates to: WI-308
+  - [gap-analyst] Resolution fields in some question files still have unquoted backticks (Q-21, Q-39, Q-46, Q-50, Q-61, Q-65). These parse successfully so no functional impact — relates to: WI-309
+  - [spec-reviewer] No integration test for the negative path of WI-306 YAML filter through the full watcher chain (P-24 gap). Positive path is tested. Unit test covers the filter in isolation — relates to: WI-306, P-24
+
+  ## Findings Requiring User Input
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+  No critical or significant findings require a refinement cycle. The 3 minor findings are cosmetic (test comment wording, consistent quoting style, negative-path integration test). The project is ready for user evaluation.
+content_hash: 2d14b043d4c303120d483670db9ec8d523970f301cd453845501befbb704272d
+token_count: 332
+file_path: .ideate/cycles/059/summary.yaml

@@ -1,0 +1,26 @@
+id: interview-refine-22
+type: interview
+cycle: 22
+mode: post-review-correction
+trigger: cycle-22-capstone-review
+entries:
+  - question: Review findings exist from cycle 22. Are you here to address those findings, make other changes, or both?
+    answer: Address those.
+    domain: null
+    decision: Address all 4 significant findings from cycle 22. No other changes.
+  - question: "Findings triaged: S1 (WI-754 AC text), EC1 (proxy_human_decisions CASCADE), EC2 (projects.current_phase_id), EC3 (phases.completed_date) — address all four?"
+    answer: Yes — all four.
+    domain: artifact-structure
+    decision: WI-759 through WI-762 created to address all four findings.
+  - question: Do the guiding principles still hold?
+    answer: Assumed yes — no principle changes requested.
+    domain: null
+    decision: Principles unchanged.
+  - question: "Execution strategy: same sequential main-session approach as cycle 23 (last cycle)?"
+    answer: Assumed yes — changes are 1-5 line edits in test files.
+    domain: null
+    decision: Sequential main session. No parallelism needed.
+cycle_modified: 21
+content_hash: b1874423113d059e564e08add0d50a8a687460df50a3d9d1238009d63eec3521
+token_count: 304
+date: 2026-04-12

@@ -12,81 +12,136 @@ depends: []
 blocks: []
 criteria:
   - ARCHITECTURE.md exists at repository root
-  - "ARCHITECTURE.md covers: v1 schema design (class table inheritance, nodes + extensions + edges), indexer pipeline (rebuild, hash skip, CASCADE delete), MCP tool architecture (ToolContext, 11 tools, tool categories), graph model (edge types, traversal patterns), YAML source of truth + SQLite derived cache, file watcher lifecycle"
+  - >-
+    ARCHITECTURE.md covers: v1 schema design (class table inheritance, nodes + extensions + edges), indexer pipeline
+    (rebuild, hash skip, CASCADE delete), MCP tool architecture (ToolContext, 11 tools, tool categories), graph model
+    (edge types, traversal patterns), YAML source of truth + SQLite derived cache, file watcher lifecycle
   - ARCHITECTURE.md includes Mermaid or ASCII diagrams for data flow and component relationships
-  - "README.md focuses on high-level usage: installation, skill overview, quick start, configuration"
+  - 'README.md focuses on high-level usage: installation, skill overview, quick start, configuration'
   - README.md does not duplicate deep technical content from ARCHITECTURE.md — links to it instead
 module: null
 domain: null
-notes: |
+notes: >
   # WI-200: Create ARCHITECTURE.md and Update README
+
 
   ## ARCHITECTURE.md (new file at repo root)
 
+
   Deep technical documentation covering:
 
+
   ### 1. System Overview
+
   - Plugin structure (skills, agents, MCP server)
+
   - Data flow between components
+
   - The SDLC lifecycle (plan → execute → review → refine → autopilot)
 
+
   ### 2. MCP Artifact Server
+
   - Purpose: runtime index over YAML artifacts
+
   - v1 schema: class table inheritance (nodes base + 12 extension tables + edges + node_file_refs)
+
   - FK integrity with ON DELETE CASCADE
+
   - PRAGMA foreign_keys = ON requirement
 
+
   ### 3. Schema Design
+
   - nodes table (8 common columns)
+
   - Extension table pattern (PK as FK to nodes)
+
   - Edge types and EDGE_TYPE_REGISTRY
+
   - Interview questions (entries array → per-question nodes)
+
   - Type-prefixed IDs (P-31)
 
+
   ### 4. Indexer Pipeline
+
   - Startup: resolveArtifactDir → open DB → createSchema → rebuildIndex → start watcher
-  - Rebuild: walk YAML → hash check → two-pass insert (nodes + extension) → edge extraction → file ref extraction → stale deletion (CASCADE)
+
+  - Rebuild: walk YAML → hash check → two-pass insert (nodes + extension) → edge extraction → file ref extraction →
+  stale deletion (CASCADE)
+
   - FK OFF during insert phase, FK ON for cascade delete phase
+
   - Cycle detection (Kahn's algorithm via Drizzle)
 
+
   ### 5. Tool Architecture
+
   - ToolContext: { db, drizzleDb, ideateDir }
+
   - 11 tools in 5 categories (context, query, execution, analysis, write)
+
   - Hybrid query pattern: Drizzle for CRUD, raw SQL for recursive CTEs
+
   - Write tools: YAML first (GP-8), then sync SQLite upsert
 
+
   ### 6. Graph Model
+
   - 10 edge types with source/target type constraints
+
   - Recursive CTE for depth > 1 traversal
+
   - UNION deduplication for cycle protection
+
   - Query modes: filter, traversal, combined
 
+
   ### 7. YAML Source of Truth
+
   - GP-8 architecture
+
   - MCP server as mandatory interface (P-6, P-26, P-32)
+
   - Write path: skill → MCP write tool → YAML file → sync SQLite
+
   - Read path: skill → MCP read tool → SQLite query → response
 
+
   ### 8. File Watcher
+
   - Chokidar with 500ms debounce
+
   - Triggers incremental rebuild on .ideate/ changes
+
   - Hash-based skip for unchanged files
+
 
   Include Mermaid diagrams for data flow and component relationships.
 
+
   ## README.md update
 
+
   Strip deep technical content. Keep:
+
   - What ideate is (1 paragraph)
+
   - Installation instructions
+
   - Quick start (run /ideate:plan)
+
   - Skill overview table (plan, execute, review, refine, autopilot)
+
   - Configuration (env vars, .ideate.json)
+
   - Link to ARCHITECTURE.md for technical details
+
   - Link to specs/ for ideate's own development artifacts
 cycle_created: 1
 cycle_modified: null
 content_hash: f672ca7cd3b503514b0babd1677bdaff5b55abe3529b429cf7c7cea7950d704e
 token_count: 890
-file_path: .ideate/work-items/WI-200.yaml
-resolution: "Verified complete: ARCHITECTURE.md (649 lines) and README.md (410 lines) exist"
+file_path: work-items/WI-200.yaml
+resolution: 'Verified complete: ARCHITECTURE.md (649 lines) and README.md (410 lines) exist'

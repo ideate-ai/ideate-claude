@@ -1,0 +1,11 @@
+id: P-51
+type: domain_policy
+domain: workflow
+title: MCP server build must be verified current before work item execution
+description: Before executing work items that modify .ideate/ artifacts, the executor must verify the MCP artifact server is built from the current TypeScript source. A stale build causes MCP write tools to malfunction, forcing direct file edits that violate P-37. Verification means confirming the compiled dist/ output reflects the current src/ (e.g., checking build timestamps or running npm run build).
+derived_from: D-158
+established: cycle 5
+status: active
+content_hash: ea5a37a2296ff1987f70ff04f5cb189517db6769b027ac57f5602759c092d392
+token_count: 146
+file_path: .ideate/policies/P-51.yaml

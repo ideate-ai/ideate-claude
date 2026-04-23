@@ -1,0 +1,117 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Missing Requirements from Interview
+
+  None. No interview transcript was provided for this cycle; work items were specified directly.
+
+  ## Unhandled Edge Cases
+
+  ### EC1: Symmetric stale-verdict — legacy Pass file alongside canonical Fail
+  - **Severity**: Significant
+  - **Component**: mcp/artifact-server/src/__tests__/tools.test.ts, mcp/artifact-server/src/adapters/local/reader.ts
+  - **Scenario**: Cycle directory contains a legacy SA-NNN.yaml with Verdict:Pass alongside canonical spec-adherence.yaml with Verdict:Fail. Implementation uses 'adherenceRow ?? summaryRow' to prefer canonical (likely correct) but no regression test exercises this direction. All four regression tests (cycles 201-204) protect against 'legacy Fail masks canonical Pass.' None protect against 'legacy Pass masks canonical Fail.'
+  - **Risk**: A future refactor that reverses adherenceRow priority would produce false convergence — the more dangerous failure mode — with no test to catch it.
+  - **Recommendation**: Address now — mirror of WI-831 bug.
+
+  ### EC2: tokenProvider itself throws — unhandled rejection path
+  - **Severity**: Significant
+  - **Component**: mcp/artifact-server/src/adapters/remote/client.ts:278, mcp/artifact-server/src/__tests__/remote-adapter.test.ts
+  - **Scenario**: tokenProvider called at line 278 with 'await this.tokenProvider()'. If the implementation throws (e.g., OAuth refresh endpoint down), exception propagates uncaught. Caller receives an untyped error rather than StorageAdapterError with meaningful code.
+  - **Coverage gap**: Tests B and C cover null/undefined returns. Test D covers 401 on retry. No test covers tokenProvider rejecting with an Error.
+  - **Recommendation**: Address now. A throwing tokenProvider should produce StorageAdapterError (AUTH_FAILURE or TOKEN_PROVIDER_ERROR).
+
+  ## Incomplete Integrations
+
+  ### II1: AUTH_FAILURE error code not documented in adapter-contract.md or adapter-interface.md
+  - **Severity**: Significant
+  - **Interface**: StorageAdapterError error code registry
+  - **Producer**: mcp/artifact-server/src/adapters/remote/client.ts:284-287 (code: 'AUTH_FAILURE')
+  - **Consumer**: mcp/artifact-server/docs/adapter-contract.md (error code table lines 552-590), docs/platform/adapter-interface.md Section 7
+  - **Gap**: adapter-contract.md lists all known StorageAdapterError codes (NOT_FOUND, IMMUTABLE_FIELD, TYPE_MISMATCH, CYCLE_DETECTED, SCOPE_COLLISION, CONNECTION_ERROR, MISSING_CYCLE, VALIDATION_ERROR). AUTH_FAILURE is absent from both the table and the error-class section. Test file comments reference 'adapter-interface.md Section 7 (AdapterConfig.tokenProvider)' but AUTH_FAILURE is absent there too.
+  - **Recommendation**: Address now — WI-833 introduced a new named error code that is part of the adapter's public error surface. Update both adapter-contract.md and adapter-interface.md.
+
+  ### II2: RemoteAdapter.initialize() loses AUTH_FAILURE code when tokenProvider rotation fails at init time
+  - **Severity**: Minor
+  - **Interface**: RemoteAdapter.initialize() in mcp/artifact-server/src/adapters/remote/index.ts:476-497
+  - **Gap**: When initialize() fires Ping and server returns 401 with tokenProvider configured, client.ts throws StorageAdapterError('AUTH_FAILURE'). The catch block in index.ts does not match ConnectionError, falls through to includes('401') check at line 487, re-wraps as ConnectionError. AUTH_FAILURE code is silently lost.
+  - **Recommendation**: Defer — diagnostic regression, not functional. Document in follow-up.
+
+  ## Missing Infrastructure
+
+  ### MI1: P-87 recovery procedure does not cover GP-14 read violations
+  - **Severity**: Minor
+  - **Gap**: P-87 is scoped to 'writes directly under .ideate/ using Write/Edit tools.' GP-14 covers both reads and writes (execute.md line 51: 'Do NOT fall back to reading, grepping, or globbing .ideate/ files directly'). A worker that reads .ideate/ directly bypasses MCP just as a write does, but P-87 gives no recovery procedure.
+  - **Recommendation**: Defer — read-bypass is less harmful than write-bypass. Extend P-87 or add P-88 in a follow-up cycle.
+
+  ### MI2: P-87 re-sync gives no guidance for ID conflicts during parent MCP re-issue
+  - **Severity**: Minor
+  - **Gap**: execute.md GP-14 Violation Re-Sync section says parent must re-issue each .ideate/ write via MCP. Does not address ID collisions (e.g., worker wrote P-87.yaml directly when P-87 already existed via MCP).
+  - **Recommendation**: Defer — edge-within-edge (GP-14 violation + ID collision). Add note routing ID-collision re-sync failures to proxy-human.
+
+  ### MI3: No diagnostic logging in getConvergenceData or handleGetConvergenceStatus
+  - **Severity**: Minor
+  - **Gap**: Neither reader.ts (getConvergenceData) nor tools/analysis.ts (handleGetConvergenceStatus) emit debug/info logs when canonical file is absent, legacy file is ignored, or cycle_summary_content returns null. WI-797 bug would have been diagnosable faster with such logging.
+  - **Recommendation**: Defer — observability improvement for a future cycle.
+
+  ## Summary
+
+  - **Significant findings**: 3 (EC1, EC2, II1)
+  - **Minor findings**: 4 (II2, MI1, MI2, MI3)
+  - **Critical findings**: 0
+
+  All three Significant findings are direct follow-ups to cycle-9 work and should drive the refinement cycle.
+content_hash: 1077cb36eceaeb5dbd0950054417b0ab25db7c04d1d50562e98a85b706a11e74
+token_count: 2340
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Fail
+phase: PH-045
+scope: differential cycle 8 (commits b799ccc..3377298)
+summary: Two significant gaps (worker re-sync policy undocumented; tokenProvider has no regression test) plus one minor (reader.ts:1076 da.cycle filter lacks P-86-compliance explanation). Not a correctness problem for current behavior but open risk for future regressions.
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 9
+cycle_modified: 27
+review_mode: full
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf
+critical_findings: []
+significant_findings:
+  - id: C8-GA-S1
+    title: Worker GP-14 violation recovery pattern is undocumented
+    looked_at:
+      - .ideate/policies/
+      - skills/autopilot/phases/execute.md
+      - skills/autopilot/SKILL.md
+      - .ideate/decisions/
+    expected: Policy or decision artifact codifying worker-writes-directly -> parent-re-syncs-via-MCP recovery pattern. Previously flagged by cycle-7 spec-reviewer as undocumented.
+    found: "Only WI-830.resolution string mentions it: 'P-86 domain_policy written via ideate_write_artifact (after worker GP-14 violation self-corrected by parent MCP re-sync).' GP-14 is boundary declaration, silent on recovery. P-52 says 'fix the tool' but silent on parent reconciliation. execute.md says 'report error and stop' — different path from what actually happened."
+    severity: Significant
+    recommendation: "Create new domain policy codifying: (a) workers must always use MCP tools; (b) if a worker writes .ideate/ directly, parent detects in incremental review finding and re-issues the write via MCP to establish provenance; (c) GP-14 violation still recorded as a finding (minor) even when mitigated."
+  - id: C8-GA-S2
+    title: tokenProvider field documented in AdapterConfig but has no regression test
+    looked_at:
+      - docs/platform/adapter-interface.md:787-790
+      - mcp/artifact-server/src/adapters/remote/client.ts:276-290
+      - mcp/artifact-server/src/__tests__/
+    expected: At minimum one test exercising the 401 -> tokenProvider -> retry path, given cycle 8 added tokenProvider to documented AdapterConfig in adapter-interface.md Section 7.
+    found: Zero test files reference tokenProvider. Implementation exists at client.ts:276-285 (401 handling, token rotation, retry on new token, throw on rotation failure). Neither WI-826/827/828/829/830 scoped a test. remote-adapter.test.ts tests selectAdapter wiring but not 401 rotation path.
+    severity: Significant
+    recommendation: Add test in __tests__/ (or remote-adapter.test.ts) that mocks HTTP layer to return 401, asserts tokenProvider is called, verifies retry uses new token. Also verify tokenProvider returning null throws (per client.ts:285).
+minor_findings:
+  - id: C8-GA-M1
+    title: da.cycle = ? in reader.ts:1076 lacks explanatory comment justifying P-86 compliance
+    looked_at:
+      - mcp/artifact-server/src/adapters/local/reader.ts:1069-1100
+      - .ideate/policies/P-86.yaml
+    expected: Because P-86 declares da.cycle is not a provenance guard and says reviewers should flag any SQL/TS filter using da.cycle as grouping/ownership predicate, the query at :1076 will be flagged by future reviewers.
+    found: Existing comment at :1087-1090 explains canonical filename is real provenance guard but doesn't explain why da.cycle = ? OR clause is safe (pre-filter allowing false positives eliminated by downstream endsWith check at :1093-1097). Mechanical P-86 application will flag this line.
+    severity: Minor
+    recommendation: Defer — add inline comment above :1076 in next maintenance cycle explaining da.cycle = ? is a performance hint (pre-filter), not a provenance predicate, and that the canonical filename check below is the actual provenance guard per P-86.

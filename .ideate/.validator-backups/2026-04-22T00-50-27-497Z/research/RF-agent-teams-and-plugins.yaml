@@ -1,0 +1,104 @@
+id: RF-agent-teams-and-plugins
+type: research_finding
+topic: Agent Teams, Plugin Architecture, and Continuous Review Patterns
+status: active
+date: "2026-03-08"
+content: |
+  # Agent Teams, Plugin Architecture, and Continuous Review Patterns
+  
+  Research compiled: 2026-03-08
+  
+  ## Summary
+  
+  Claude Code provides three parallelism mechanisms: subagents (isolated, report-to-parent), background agents (concurrent, independent), and agent teams (experimental, peer-to-peer with shared task lists). Continuous review is achievable through background review agents, hooks-based quality gates, and team task completion hooks.
+  
+  ## Agent Teams
+  
+  - **Status**: Experimental. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+  - **Architecture**: Multiple independent Claude Code sessions (not subagents). Each teammate has its own context window, tool access, and agentic loop.
+  - **Coordination**: Shared task list with pending → in-progress → completed states. Teammates claim tasks.
+  - **Communication**: Peer-to-peer messaging and broadcast. Team lead coordinates.
+  - **Known limitations**: Task status can lag, shutdown can be slow, no resume/rewind for teammates, no per-teammate permissions, no nested teams, no sub-subagents.
+  
+  ### Teams vs Subagents
+  
+  | Aspect | Subagents | Agent Teams |
+  |--------|-----------|-------------|
+  | Architecture | Single session, isolated context | Separate sessions, independent |
+  | Communication | Report results to parent only | Peer-to-peer + shared task list |
+  | Token cost | Lower (results summarized) | Higher (separate context each) |
+  | Best for | Focused, self-contained tasks | Complex collaborative work |
+  | Stability | Stable | Experimental |
+  
+  ## Worktree Isolation
+  
+  - `isolation: worktree` in agent definition frontmatter
+  - Creates separate git branch per agent
+  - Auto-cleaned if no changes made
+  - Essential for parallel agents to prevent file conflicts
+  - Does not eliminate merge conflicts for overlapping file scope
+  
+  ## Plugin System
+  
+  - **Structure**: `.claude-plugin/plugin.json` + `skills/`, `agents/`, `hooks/`, etc.
+  - **Namespacing**: `/plugin-name:skill-name`
+  - **Installation scopes**: User, Project, Managed (org-wide)
+  - **Testing**: `claude --plugin-dir ./my-plugin`, `/reload-plugins`
+  - **Caching**: Plugins copied to `~/.claude/plugins/cache/`
+  
+  ### Agent Definition Frontmatter
+  
+  Key fields: name, description, tools, disallowedTools, model (sonnet/opus/haiku/inherit), permissionMode, maxTurns, skills, mcpServers, memory, background, isolation, hooks.
+  
+  ### Skill Frontmatter
+  
+  Key fields: name, description, user-invocable, argument-hint, allowed-tools, model, context (fork for subagent), agent, hooks, skills.
+  
+  ## Continuous Review Patterns
+  
+  ### Pattern 1: Incremental (review per item, blocking)
+  - Catches issues early, small review scope
+  - Sequential bottleneck, no cross-item visibility
+  
+  ### Pattern 2: End-of-phase (batch review after all execution)
+  - Full picture, cross-cutting issues visible
+  - Late discovery, large context demand
+  
+  ### Pattern 3: Concurrent Background Review
+  - Background agent reviews completed items without blocking build
+  - No bottleneck, early detection
+  - Background agents can't ask questions, race conditions possible
+  
+  ### Pattern 4: Hook-Based Quality Gates
+  - PostToolUse hooks for linting/formatting on every edit
+  - Stop/TaskCompleted hooks for test gates
+  - Deterministic, fast, but limited to what shell commands can check
+  
+  ### Pattern 5: Hybrid (Recommended)
+  1. PostToolUse hooks → instant linting/formatting
+  2. TaskCompleted/Stop hooks → test suite gates
+  3. Background code-reviewer → concurrent semantic review
+  4. End-of-execution → comprehensive cross-cutting review
+  
+  Four layers: formatting, tests, semantic review, comprehensive review.
+  
+  ## Risks
+  
+  - Agent teams are experimental — design with subagents as primary, teams as optional
+  - Background agents fail silently on ambiguity
+  - Worktree merges can fail on overlapping file scope
+  - Token cost scales linearly with parallelism
+  - No sub-subagents — orchestrator must handle all spawning
+  - Context window limits for whole-project review agents
+  
+  ## Sources
+  
+  - /Users/dan/code/ideate/specs/steering/claude-code-plugin-development.md
+  - /Users/dan/code/ideate/specs/ideate.md
+  - All v1 skill and agent definition files
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "15f2e150138f406e8cf3c9062b98633e0b463d0d2c3789cdf83b1d352eb5ebbf"
+token_count: 1116
+file_path: .ideate/research/RF-agent-teams-and-plugins.yaml

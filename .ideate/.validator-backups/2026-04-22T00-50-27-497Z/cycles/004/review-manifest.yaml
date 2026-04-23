@@ -1,0 +1,92 @@
+id: review-manifest
+type: cycle_summary
+content: |-
+  # PH-045 Cycle 4 Review Manifest (differential)
+
+  **Cycle**: 4 of PH-045 (PR-002)
+  **Mode**: differential — cycle 3 was the most recent full review (full_review_interval=3, next full at cycle 6)
+  **Start commit**: b71455540fcec06e960e3d9631814cccf65704bf (= cycle 3 end)
+  **End commit**: working tree (uncommitted at review time)
+
+  ## Work items in scope
+
+  | WI | Type | Files changed | Incremental verdict | Findings |
+  |----|------|---------------|--------------------|----|
+  | WI-813 | bug (small) | mcp/artifact-server/src/__tests__/validating.test.ts (+50 lines, 4 new tests) | Pass first try | 0 |
+  | WI-814 | chore (small) | mcp/artifact-server/docs/adapter-contract.md (+46), docs/platform/architecture-overview.md (+2) | Pass first try | 0 critical/significant; 2 minors (M1 O(1) wording dropped, M2 indexFiles/removeFiles separated from getMetricsEvents in doc layout) |
+  | WI-815 | bug (medium) | mcp/artifact-server/src/server.ts (+41), mcp/artifact-server/src/types.ts (db/drizzleDb made optional), mcp/artifact-server/src/__tests__/remote-backend-init.test.ts (NEW 8 tests), mcp/artifact-server/src/__tests__/tools.test.ts (cascade `!` only), mcp/artifact-server/src/__tests__/dormant.test.ts (cascade `!` only) | **Rework** then Pass | First pass: 1 significant (S1 — `as unknown as ToolContext` cast), 3 minors (M1 selectAdapter `!`, M2 runPendingMigrations gating, M3 test asserts side-effect). Rework addressed S1 + M1. Re-review: 0 findings. |
+  | WI-816 | bug (medium) | mcp/artifact-server/src/__tests__/adapters/local-getMetricsEvents.test.ts (NEW 5 tests), mcp/artifact-server/src/adapters/local/reader.ts (+27, SQL pushdown for cycle, comment cleanup) | Pass first try | 0 |
+
+  ## Test totals
+  - 1417 passed / 0 failed / 332 skipped
+  - tsc --noEmit clean
+  - 17 net new tests this cycle (4 + 8 + 5)
+
+  ## Cross-cutting concerns to investigate (capstone focus)
+  - WI-815 made `ToolContext.db?`/`drizzleDb?` optional — does this propagate cleanly through the broader type system? Any consumer that should now have a guard but doesn't?
+  - WI-815 cascade touched 2 test files outside declared scope. Verify the `!` assertions are at sites that legitimately have these fields populated under local-backend test setup.
+  - WI-816 SQL pushdown for cycle filter — does the same `n.cycle_created` JOIN pattern apply elsewhere where it isn't pushed down?
+  - WI-814 doc layout (M2 from incremental): are getMetricsEvents/indexFiles/removeFiles documented in coherent positions relative to the interface order in adapter.ts?
+  - Cycle 3 → cycle 4 dedup: did any cycle 3 finding go unaddressed by WI-813–816?
+
+  ## Cycle 3 findings addressed by cycle 4
+  | Cycle 3 finding | Addressed by | Resolution |
+  |---|---|---|
+  | CR-S1 (validating guard tests missing) | WI-813 | Resolved — describe blocks added |
+  | GA-S1 (initServer SQLite always opens) | WI-815 | Resolved — gated on backend===local |
+  | GA-S2 / SR-S1 (adapter-contract.md missing 3 method entries) | WI-814 | Resolved — entries added with remote-behavior notes |
+  | GA-M1 (no adapter-level getMetricsEvents tests) | WI-816 | Resolved — 5 integration tests added |
+  | SR-M2 (architecture overview §3.3 doesn't mention Cycle column) | WI-814 | Resolved — five columns named |
+  | GA-M3 (selectAdapter docstring stale) | WI-815 | Resolved — docstring rewritten |
+  | CR-M1 (cycle filter applied TS-side) | WI-816 | Resolved — pushed to SQL |
+  | CR-M2 (stale 'mirrors' comments) | WI-816 | Resolved — 3 comments reworded |
+
+  All 4 cycle 3 significant findings resolved. All 4 cycle 3 minors resolved (1 — GA-M2 — was not in cycle 4 scope; check if it persists).
+content_hash: d14f6dd4d3dd45658c7aaa700df22b15d46c92a859c3f040ff35cfd4b8cd19bc
+token_count: 1467
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 4
+scope: WI-759, WI-760, WI-761, WI-762
+description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+work_items:
+  - id: WI-803
+    title: Remove ctx.db / LocalAdapter fallbacks from tools/context.ts (Leak 3)
+    complexity: medium
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/context.ts
+      - mcp/artifact-server/src/__tests__/tools.test.ts
+  - id: WI-804
+    title: Remove ctx.db fallback from tools/query.ts handleArtifactQuery (Leaks 8-12 residual)
+    complexity: small
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/query.ts
+      - mcp/artifact-server/src/__tests__/tools.test.ts
+  - id: WI-805
+    title: Remove ctx.db fallback from tools/metrics.ts handleGetMetrics (Leak 7)
+    complexity: medium
+    status: done
+    scope:
+      - mcp/artifact-server/src/tools/metrics.ts
+      - mcp/artifact-server/src/__tests__/metrics.test.ts
+incremental_reviews:
+  WI-759: pass
+  WI-760: pass
+  WI-761: pass
+  WI-762: pass
+cycle_modified: 27
+phase: PH-045
+review_mode: differential
+last_full_review_cycle: 0
+full_review_interval: 3
+cycle_start_commit: 6d42131e649dab6fc69b6efc3e6060030fe9fb3b
+cycle_end_commit: c26d604a54070bd84494d685b87871a0fc7aada6
+changed_files:
+  - mcp/artifact-server/src/__tests__/metrics.test.ts
+  - mcp/artifact-server/src/__tests__/tools.test.ts
+  - mcp/artifact-server/src/tools/context.ts
+  - mcp/artifact-server/src/tools/metrics.ts
+  - mcp/artifact-server/src/tools/query.ts
+prior_cycle_findings_summary: "PH-045 cycle 1 surfaced critical=0, significant=8, minor=16. Cycle 2 work items (WI-803/804/805) target three of those significant findings: Leak 3 (context.ts), Leaks 8-12 residual (query.ts), Leak 7 (metrics.ts)."
+notes: Slim manifest constructed because ideate_get_review_manifest returned >100k chars. Reviewers should query specific work items and findings via MCP tools as needed.

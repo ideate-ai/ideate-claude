@@ -1,0 +1,10 @@
+id: C-14
+type: constraint
+category: scope
+status: active
+description: Spec creation through user-testable output. The tool's scope covers the full path from idea to working, testable result. It does not cover ongoing maintenance, deployment operations, or monitoring — those are the user's responsibility after delivery.
+cycle_created: 1
+cycle_modified: null
+content_hash: "8af1b1d76ca625a6d837f1e449fcec217def4ed6ba56429cabab09f623dc9335"
+token_count: 105
+file_path: .ideate/constraints/C-14.yaml

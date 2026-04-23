@@ -1,0 +1,28 @@
+id: interview-refine-073
+type: interview
+title: Refinement Interview — Five Initiatives
+cycle: 73
+entries:
+  - question: What specific changes do you want to make?
+    answer: "5 areas: (1) GP for frictionless installs with auto-migration, (2) phase chunking heuristic, (3) spawn mode config (subagent vs teammate), (4) MCP response payload trimming, (5) reporting skill with markdown/PDF output."
+    domain: null
+  - question: "Auto-migration: what triggers it?"
+    answer: Whenever plugin updates and underlying data model has changed, automatically migrate and convert to new format.
+    domain: artifact-structure
+  - question: "Phase chunking: specific numbers or heuristic?"
+    answer: Heuristic. Group so nodes are similar and maximize shared context. No specific numbers.
+    domain: workflow
+  - question: "Spawn mode: scope?"
+    answer: All agents spawned. Teammate mode gives better visibility but requires opt-in via env var.
+    domain: workflow
+  - question: "MCP response trimming: examples?"
+    answer: When all closed tickets fetched, hundreds of irrelevant nodes. Likely many other examples.
+    domain: artifact-structure
+  - question: "Reporting: output format?"
+    answer: Prompt for directory, generate markdown with mermaid/plantuml diagrams or PDF with embedded images/graphs.
+    domain: workflow
+  - question: Principles still hold?
+    answer: Yes.
+    domain: null
+content_hash: c507ff685afeff268bed811db18596ba74305581f3e534a45477c3f14ba3f917
+token_count: 349

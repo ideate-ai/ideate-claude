@@ -9,8 +9,10 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - "README.md contains a section documenting all report scripts: report.sh, report-cycle.sh, report-cost.sh, report-executive.sh"
-  - "Each script entry includes: purpose (one line), usage syntax, Python 3 requirement note"
+  - >-
+    README.md contains a section documenting all report scripts: report.sh, report-cycle.sh, report-cost.sh,
+    report-executive.sh
+  - 'Each script entry includes: purpose (one line), usage syntax, Python 3 requirement note'
   - The section is co-located with existing utility script documentation
   - No existing README sections are removed or reordered
 module: null
@@ -27,5 +29,5 @@ cycle_created: 1
 cycle_modified: null
 content_hash: 00dbeae93c18a6b11613e047a13f2ff3d1c4c722eaab492a1ae9cdbb1068465d
 token_count: 221
-file_path: .ideate/work-items/WI-223.yaml
-resolution: "Verified complete: README documents all 4 report scripts with usage"
+file_path: work-items/WI-223.yaml
+resolution: 'Verified complete: README documents all 4 report scripts with usage'

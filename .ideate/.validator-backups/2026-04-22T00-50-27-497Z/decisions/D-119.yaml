@@ -1,0 +1,12 @@
+id: D-119
+type: domain_decision
+cycle_created: 0
+cycle_modified: null
+description: bootstrap.ts and context.ts return file paths in their MCP tool responses, violating P-33. The violations were introduced during v3 migration when MCP tools were added without applying the path abstraction that P-33 requires.
+domain: artifact-structure
+file_path: .ideate/decisions/D-119.yaml
+rationale: P-33 requires MCP tool responses to use artifact designations (WI-120, P-05) rather than file paths. bootstrap.ts returns project_root and context.ts returns paths like {project_root}/src. These should return abstract identifiers that the MCP layer can resolve.
+source: full-audit cycle 000, critical findings C1 and C2
+status: provisional
+content_hash: b69f6be9bf07fab0e733cefe8c04c4766e799898990334a10b8ee636c49c7b3b
+token_count: 171

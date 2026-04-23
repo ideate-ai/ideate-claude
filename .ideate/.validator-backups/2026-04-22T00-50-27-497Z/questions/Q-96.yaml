@@ -1,0 +1,12 @@
+id: Q-96
+type: domain_question
+deferred_rationale: Already documented in MCP tool schema and tested. Low reader impact. Implementation is correct; documentation gap is minor.
+description: "Should ARCHITECTURE.md Section 5 document the null-signal deletion semantics for model_overrides? The implementation ({ model_overrides: { key: null } } deletes the key) is correct and tested, but ARCHITECTURE.md describes only 'deep-merge' without mentioning deletion."
+domain: artifact-structure
+impact: Developers reading ARCHITECTURE.md won't understand the null-signal pattern used for key deletion. However, the semantics are documented in MCP tool schema and tested.
+reexamination_trigger: When ARCHITECTURE.md is next revised or when null-signal semantics are discussed.
+source: cycle 002 gap-analysis MI2, cycle 000 summary D2
+status: deferred
+content_hash: 752667d89c74c214e6eda6170c057fb6ecbcad85c0865a547ae9130ee15bc551
+token_count: 210
+file_path: .ideate/questions/Q-96.yaml

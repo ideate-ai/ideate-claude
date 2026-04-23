@@ -17,20 +17,29 @@ criteria:
   - Metrics writes use ideate_emit_metric
   - Principle amendment described by field names without referencing .yaml files
 domain: workflow
-notes: |-
+notes: >-
   # WI-316: Refine skill MCP abstraction rewrite
 
+
   ## Changes
-  - Remove all path references from MCP query descriptions (e.g. change 'retrieves .ideate/plan/overview.yaml' to 'retrieves the project overview')
+
+  - Remove all path references from MCP query descriptions (e.g. change 'retrieves .ideate/plan/overview.yaml' to
+  'retrieves the project overview')
+
   - Remove .ideate/cycles/{NNN}/summary.yaml path — use ideate_artifact_query
+
   - Remove .ideate/cycles/ existence check — use ideate_get_project_status
+
   - Remove .ideate/research/ path references
+
   - Remove glob for next WI number — use ideate_get_next_id
+
   - Remove metrics.jsonl direct write — use ideate_emit_metric
+
   - Remove .ideate/principles/ and .ideate/constraints/ path references
 resolution: null
 cycle_created: 60
 cycle_modified: null
 content_hash: be17df6b1fc1ab344dfd22d5d7bd533d4f9e097d76a674fa25c7eed3e003e4bd
 token_count: 320
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-316.yaml
+file_path: work-items/WI-316.yaml

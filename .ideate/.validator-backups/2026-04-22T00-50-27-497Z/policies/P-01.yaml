@@ -1,0 +1,14 @@
+id: P-01
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - GP-1 (Spec Sufficiency)
+established: planning phase
+amended: null
+description: No work item may be handed to an executor until any reasonable question about the system can be answered from the specs alone; if two independent LLM runs given the same spec would diverge, the spec is incomplete.
+cycle_created: 1
+cycle_modified: null
+content_hash: "57bd7140085902a6b5ee419cd874b9d334a8fd608f1ea46a1be57692df617ee5"
+token_count: 118
+file_path: .ideate/policies/P-01.yaml

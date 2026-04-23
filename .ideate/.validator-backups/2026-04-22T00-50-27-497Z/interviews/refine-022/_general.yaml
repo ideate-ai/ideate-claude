@@ -1,0 +1,29 @@
+id: interviews/refine-022/_general
+type: interview
+cycle: 22
+source_path: steering/interviews/refine-022/_general.md
+entries:
+  - {id: IQ-022-001, question: What is the scope of this refinement?, answer: Tackle all remaining MCP artifact server phases (2-5) in a single pass. The DAG still applies — work items have dependency ordering — but there is one capstone review at the end instead of multiple small ones. Outpost/session-spawner work is deferred (comes after 3.0)., domain: null, seq: 1}
+  - {id: IQ-022-002, question: Schema refactor — the current 12-table concrete inheritance has no FK integrity on edges. Should we refactor?, answer: "Yes. Refactor to class table inheritance (base `nodes` table + extension tables). Research confirms this is the idiomatic pattern for property graphs in SQL. The user is concerned about RI issues and wants to do it \"the right way.\" Fresh rewrite, not incremental migration — the DB is a derived cache rebuilt from YAML.", domain: null, seq: 2}
+  - {id: IQ-022-003, question: How many extension tables?, answer: One per type (12 extension tables). Each with PK as FK to nodes(id) ON DELETE CASCADE. No FTS5, no semantic search (YAGNI). Drop source_type/target_type from edges, drop node_type from node_file_refs — redundant with base table JOIN., domain: null, seq: 3}
+  - {id: IQ-022-004, question: Keep Drizzle ORM or go raw SQL?, answer: "Keep Drizzle for injection safety. Hybrid approach: Drizzle for CRUD operations, raw db.prepare() for recursive CTEs and multi-table JOINs (graph traversal queries Drizzle doesn't handle naturally).", domain: null, seq: 4}
+  - {id: IQ-022-005, question: Which tools to build for 3.0 MVP?, answer: "All 3 tiers (11 tools total). Ignore the README — follow the SDLC phase tool mapping research for tool roles. User requirements: (1) DAG queries via the graph, (2) find related artifacts across cycles, (3) utilize all captured data. This led to adding ideate_artifact_query as a graph-aware query tool.", domain: null, seq: 5}
+  - {id: IQ-022-006, question: Which tools were excluded from the 18-tool research inventory?, answer: "7 tools cut with rationale:
+- ideate_artifact_index — subsumed by artifact_query
+- ideate_source_index — runtime Glob, not DB-backed
+- ideate_domain_policies — subsumed by get_domain_state
+- ideate_artifact_semantic_search — YAGNI
+- ideate_write_incremental_review (W3) — code-reviewer writes markdown fine
+- ideate_write_domain_update (W4) — breaking change to curator agent
+- ideate_initialize_artifact_dir (W6) — plan handles this with Write tool", domain: null, seq: 6}
+  - {id: IQ-022-007, question: How do write tools interact with the watcher?, answer: "Write tools follow a two-step pattern: (1) write YAML file to disk, (2) synchronously upsert affected SQLite rows. The watcher fires ~500ms later but hash-based skip finds rows already current. Eliminates stale-read window.", domain: null, seq: 7}
+  - {id: IQ-022-008, question: How does handleTool get database access?, answer: "ToolContext interface: { db, drizzleDb, ideateDir }. Created once at startup in index.ts, passed to every handleTool call. Tools are pure functions of (ctx, args) → string.", domain: null, seq: 8}
+  - {id: IQ-022-009, question: What about PRAGMA foreign_keys = ON?, answer: Added to index.ts startup immediately after connection open. Without it, all FK constraints are decorative. Critical requirement., domain: null, seq: 9}
+  - {id: IQ-022-010, question: Should skill files be updated to use the new tools?, answer: Yes — included as a work item. All 9 new tools need MCP availability checks added to the skill files that consume them., domain: null, seq: 10}
+  - {id: IQ-022-011, question: Cross-type ID collision in the nodes base table?, answer: Current YAML IDs are type-prefixed (WI-, F-, P-, D-, Q-, GP-, C-, etc.). Document this convention as required format. The nodes PK rejects collisions as a hard error — strictly better than the current silent overwrite., domain: null, seq: 11}
+  - {id: IQ-022-012, question: ideate_archive_cycle atomicity?, answer: "Three-phase: copy all → verify all → delete originals. If verify fails, no originals deleted. Return error listing failed copies.", domain: null, seq: 12}
+  - {id: IQ-022-013, question: ideate_get_convergence_status parsing rules?, answer: "Implements exact Phase 6c sequence from autopilot/SKILL.md: machine-parseable verdict line → section-content heuristics → unknown fallback.", domain: null, seq: 13}
+  - {id: IQ-022-014, question: Test strategy?, answer: Schema tests (FK/CASCADE), indexer tests (two-pass insert, stale delete), tool tests (11 tools × 2+ tests each). Existing config.test.ts and watcher.test.ts unchanged., domain: null, seq: 14}
+  - {id: IQ-022-015, question: File scope for parallel tool implementation?, answer: "Tools split into a tools/ directory with separate files per group. 5 tool groups: context.ts, query.ts, execution.ts, analysis.ts, write.ts. Each work item has non-overlapping file scope.", domain: null, seq: 15}
+content_hash: b84b70a4bde6c1539bb564438613631dcb4b74ce9134642e148a6a5cd1027c71
+token_count: 1268

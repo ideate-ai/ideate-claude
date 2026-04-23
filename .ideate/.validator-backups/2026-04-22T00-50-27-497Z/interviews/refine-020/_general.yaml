@@ -1,0 +1,13 @@
+id: interviews/refine-020/_general
+type: interview
+cycle: 20
+source_path: steering/interviews/refine-020/_general.md
+entries:
+  - {id: IQ-020-001, question: Do the current guiding principles still hold, including the YAGNI principle for MCP tools added during the cycle 018 review?, answer: Yes, all principles hold., domain: null, seq: 1}
+  - {id: IQ-020-002, question: All 5 significant findings (S1–S5) to address this cycle?, answer: Yes., domain: null, seq: 2}
+  - {id: IQ-020-003, question: MCP tools Phase 2 — should tools be re-implemented against the v3 backend this cycle?, answer: No. Defer. The installed plugin (2.1.0) has working tools. Phase 2 scoping requires a spec that does not exist yet. The YAGNI principle applies., domain: null, seq: 3}
+  - {id: IQ-020-004, question: Should all actionable minor findings from cycle 018 be included in scope?, answer: Yes, get actionable work out of the way., domain: null, seq: 4}
+  - {id: IQ-020-005, question: "Q-41 — migration script: one-time conversion tool or ongoing utility?", answer: One-time conversion tool. Intended to be called once to convert an existing v2 specs/ artifact directory to the v3 .ideate/ format., domain: null, seq: 5}
+  - {id: IQ-020-006, question: Anything else to add to this cycle?, answer: No. Future phases are already planned., domain: null, seq: 6}
+content_hash: "8330c6fa468aed855709fe510bb70262cf3abf434cc795f01c6bd5f2c25793ef"
+token_count: 343

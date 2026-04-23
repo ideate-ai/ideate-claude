@@ -1,0 +1,13 @@
+id: D-64
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-154 converted `upsertRow`, `upsertEdge`, `upsertFileRef`, and `extractFileRefs` to Drizzle but did not convert `deleteStaleRows` (indexer.ts:396-417), which still uses `db.prepare()` with template-literal table name interpolation. The WI-154 notes spec explicitly listed `deleteStaleRows` as step 4 of the conversion. All three capstone reviewers independently flagged this; the WI-154 incremental reviewer issued Pass with 0 findings."
+rationale: Rationale for the omission not recorded. The agent hit its rate limit mid-flight during WI-154; final wiring was completed manually, and `deleteStaleRows` was skipped.
+cycle_created: 1
+cycle_modified: null
+content_hash: "3fce29a6a4eb445d08e4322e377fb0f9e770754c68b44e03669b77e447566eff"
+token_count: 208
+file_path: .ideate/decisions/D-64.yaml

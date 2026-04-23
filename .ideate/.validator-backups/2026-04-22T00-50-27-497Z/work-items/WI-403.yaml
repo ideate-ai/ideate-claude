@@ -1,0 +1,34 @@
+id: WI-403
+type: work_item
+title: Add transaction boundary to handleAppendJournal per P-44
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/write-transaction.test.ts
+    op: modify
+depends:
+  - WI-402
+blocks:
+  - WI-404
+criteria:
+  - handleAppendJournal wraps its SQLite upserts in a single db.transaction() call
+  - If the SQLite transaction fails, the YAML file written in Phase 1 is cleaned up (deleted, since journal entries are new files not updates)
+  - write-transaction.test.ts includes at least one rollback test for handleAppendJournal using the Proxy-based failing drizzle pattern
+  - All 440+ tests pass
+domain: artifact-structure
+notes: |-
+  Per P-44 (two-phase YAML-first write pattern), all MCP write handlers must implement: Phase 1 writes YAML, Phase 2 wraps SQLite upserts in a transaction, cleanup deletes Phase 1 file on failure.
+
+  handleAppendJournal currently writes YAML at line 105 and then does two separate SQLite upserts at lines 130-131 with no transaction wrapper and no cleanup.
+
+  Pattern to follow: handleWriteArtifact in the same file, which implements the exact pattern. Journal entries are always new files (never updates), so cleanup on failure = delete the file (not restore).
+
+  Add a rollback test to write-transaction.test.ts following the same Proxy-based drizzle failure injection pattern used for the existing handleWriteWorkItems and handleWriteArtifact tests.
+resolution: Wrapped handleAppendJournal SQLite upserts in ctx.db.transaction() per P-44. Added cleanup (delete YAML on transaction failure) with console.error logging. Added 2 rollback tests in write-transaction.test.ts. 451 tests pass.
+cycle_created: 1
+cycle_modified: 1
+content_hash: 446ff4470d3c3a906cc1fb2b7149b4ccfd954ca03bb1daa45fdec9ba9e7818d3
+token_count: 443
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-403.yaml

@@ -1,0 +1,22 @@
+id: PH-033
+type: implementation
+name: Validation Correctness
+phase_type: implementation
+status: completed
+started_date: 2026-04-07
+project_id: PR-002
+intent: Fix systemic ValidationError code misuse, add putNode/patchNode validation, fix error type inconsistency in mapGqlNodeToNode, and resolve vi.mock hoisting regression.
+work_items:
+  - WI-667
+  - WI-668
+  - WI-669
+  - WI-670
+success_criteria:
+  - All ~15 ValidationError call sites produce specific codes (INVALID_SEED_IDS, EMPTY_SEED_IDS, etc.) not VALIDATION_ERROR
+  - putNode and patchNode validate inputs before persistence in both adapters
+  - initialize() unreachable-endpoint test passes again
+  - npm test passes with zero failures
+cycle_modified: 19
+content_hash: 8c3556f9f49c6650cc9d5029fa957f4308c38a97cf3426c60b0c67464dab474c
+token_count: 209
+completed_at: 2026-04-07

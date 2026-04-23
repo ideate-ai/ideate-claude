@@ -1,0 +1,13 @@
+id: D-117
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "YAML artifact IDs must use type prefixes: WI- (work items), F- (findings), P- (policies), D- (decisions), Q- (questions), GP- (guiding principles), C- (constraints). The nodes table PK rejects collisions as a hard error. Class table inheritance uses a single PK namespace across all artifact types."
+rationale: Without type prefixes, artifacts of different types could collide in the shared `nodes.id` primary key (e.g., a work item "42" and a finding "42"). The prefix convention makes IDs globally unique by construction.
+cycle_created: 1
+cycle_modified: null
+content_hash: "7990261be0cf65479695b6ccedfbacfdeaf22c56420bcd0220680efa0dfa7da5"
+token_count: 186
+file_path: .ideate/decisions/D-117.yaml

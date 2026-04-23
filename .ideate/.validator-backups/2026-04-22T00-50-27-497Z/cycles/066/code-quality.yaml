@@ -1,0 +1,30 @@
+id: code-quality
+type: cycle_summary
+findings:
+  critical: []
+  minor:
+    - file: /Users/dan/code/ideate/mcp/artifact-server/src/__tests__/tools.test.ts:566-576
+      id: M1
+      issue: The test description says 'writes YAML journal entry and returns file path' and the assertion `expect(result).toContain('J-003-000.yaml')` tests for file path inclusion. This test validates the wrong behavior that violates P-33.
+      suggested_fix: After fixing S1, update the test to expect just the artifact ID (e.g., `expect(result).toContain('J-003-000')`) and update the test description to say 'writes YAML journal entry and returns artifact designation'.
+      title: Test for handleAppendJournal expects file path
+  significant:
+    - file: /Users/dan/code/ideate/mcp/artifact-server/src/tools/write.ts:123
+      id: S1
+      impact: Exposes internal storage details to tool consumers, increasing token cost and coupling consumers to implementation details. This undermines the MCP abstraction boundary.
+      issue: "The handleAppendJournal function returns a message that includes the full file path: `return `Wrote journal entry ${entryId} to ${yamlFilePath}.``. This violates P-33 which states 'MCP tool responses must not include file paths or storage implementation details.'"
+      suggested_fix: Change line 123 from `return `Wrote journal entry ${entryId} to ${yamlFilePath}.`;` to `return `Wrote journal entry ${entryId}.`;`
+      title: handleAppendJournal returns file path in violation of P-33
+    - file: /Users/dan/code/ideate/mcp/artifact-server/src/tools/index.ts:421
+      id: S2
+      impact: Misleading documentation that contradicts P-33 policy and the actual implementation.
+      issue: The tool description for ideate_write_artifact says 'Returns path' but the actual implementation returns `Wrote ${type} artifact ${id}.` which does NOT include a path. This is both a documentation error and a P-33 violation in spirit (the description implies file paths are returned).
+      suggested_fix: Change line 421 from 'Write artifact as YAML file. Use for findings, policies, decisions. Auto-indexes to SQLite. Returns path.' to 'Write artifact as YAML file. Use for findings, policies, decisions. Auto-indexes to SQLite. Returns confirmation.'
+      title: ideate_write_artifact description incorrectly states 'Returns path'
+reviewer: code-reviewer
+unmet_criteria:
+  - "WI-340 criterion: 'No file_path in any tool return type' — The handleAppendJournal function returns a response containing a file path, violating this criterion."
+verdict: Fail
+content_hash: 7b007d1e0f763769280a6f2771b85d1d58604839399999d044c7a4e7c182dd80
+token_count: 640
+file_path: .ideate/cycles/066/code-quality.yaml

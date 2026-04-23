@@ -1,0 +1,39 @@
+id: WI-249
+type: work_item
+title: Review skill — replace all direct .ideate/ writes with ideate_write_artifact
+status: done
+complexity: medium
+scope:
+  - path: skills/review/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "Phase 3.5: review-manifest.md written via ideate_write_artifact instead of Write tool"
+  - "Phase 4a: Reviewer agent prompts changed from 'Write your findings to: {path}' to 'Return your complete findings as the final section of your response'"
+  - "Phase 4a: After each reviewer returns, skill calls ideate_write_artifact to write code-quality.md, spec-adherence.md, gap-analysis.md"
+  - "Phase 4b: Same pattern for journal-keeper — returns output, skill writes decision-log.md via MCP"
+  - "Phase 6: summary.md written via ideate_write_artifact"
+  - "Phase 7.2: Domain curator prompt updated — returns domain updates, skill writes via ideate_write_artifact (or curator instructed to use MCP)"
+  - Zero instances of 'Write your findings to:' or 'Write your output to:' in reviewer/keeper prompts
+  - Zero direct Write tool calls for .ideate/ files in the review skill
+domain: workflow
+notes: |-
+  # WI-249: Review Skill MCP Writes
+
+  Pattern change for reviewer agents:
+  OLD: 'Write your findings to: {output-dir}/code-quality.md'
+  NEW: 'Return your complete findings as the final section of your response. Format as markdown with the standard review output format.'
+
+  After agent returns, skill extracts findings from response and calls:
+  ideate_write_artifact({type: 'finding', id: 'code-quality', content: {cycle: N, content: agent_response}})
+
+  For summary.md and review-manifest.md, use ideate_write_artifact directly.
+
+  For domain curator: same pattern — curator returns updates, skill writes via MCP. OR add ideate_write_artifact to curator's MCP access.
+resolution: null
+cycle_created: 32
+cycle_modified: null
+content_hash: 072b82f5ea6978338b89ffb1144cf4cc552edcc3268b82ef643566c4cf939393
+token_count: 465
+file_path: .ideate/work-items/WI-249.yaml

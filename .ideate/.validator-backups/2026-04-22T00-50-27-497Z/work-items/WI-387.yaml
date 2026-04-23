@@ -1,0 +1,33 @@
+id: WI-387
+type: work_item
+title: Add input validation for autopilot state updates
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/autopilot-state.ts
+depends: []
+blocks: []
+criteria:
+  - handleManageAutopilotState validates that update keys are in a whitelist of known state properties
+  - "The whitelist includes: cycles_completed, convergence_achieved, started_at, last_phase, last_cycle, deferred, deferred_reason, cycle_*_start_commit, cycle_*_end_commit, last_full_review_cycle, last_cycle_findings, total_items_executed, full_review_interval"
+  - "P-41 policy is satisfied: arbitrary key injection is prevented"
+domain: workflow
+notes: |-
+  ## Finding
+  S2 from cycle 1 code-quality review: Missing Input Validation in handleManageAutopilotState.
+
+  **File**: `mcp/artifact-server/src/tools/autopilot-state.ts:79-92`
+
+  **Issue**: The `update` action performs a shallow merge of arbitrary properties into the autopilot state without validating which fields are allowed. This could allow unintended fields to be persisted.
+
+  **Impact**: Typos in field names (e.g., `cycle_completed` instead of `cycles_completed`) would create unexpected state properties that could cause subtle bugs in downstream consumers.
+
+  ## Suggested Fix
+  Validate that update keys are in a whitelist of known state properties before merging.
+resolution: null
+cycle_created: 1
+cycle_modified: 1
+content_hash: ffc866c1e2d00190c03e68c4a0fa3b43c70750c83c24414523ed3cbdde1f2f0a
+token_count: 354
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-387.yaml

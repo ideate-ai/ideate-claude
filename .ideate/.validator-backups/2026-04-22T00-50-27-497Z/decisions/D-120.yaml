@@ -1,0 +1,10 @@
+id: D-120
+type: domain_decision
+domain: artifact-structure
+cycle: 68
+supersedes: null
+description: "Cycle 068 chose key-level merge semantics for model_overrides in handleUpdateConfig: the patch object's keys are spread over the stored object's keys. This preserves keys not present in the patch, which prevents key deletion. The Clear model override feature in the settings skill is non-functional as a result."
+rationale: Key-level merge was chosen to allow partial updates — changing one model override without affecting others. However, this design cannot express remove this key, making the Clear flow a silent no-op. A replacement strategy (replace-all or null-signal) is needed. See Q-91.
+content_hash: 0a7515c4b3fe55df8ef88d29efa394db84ad2b24d09730f8bb80bde01e2c0164
+token_count: 174
+file_path: .ideate/decisions/D-120.yaml

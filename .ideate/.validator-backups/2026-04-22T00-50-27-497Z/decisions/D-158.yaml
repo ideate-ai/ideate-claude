@@ -1,0 +1,13 @@
+id: D-158
+type: domain_decision
+domain: workflow
+title: MCP server build must be verified current before executing work items
+description: Cycle 5 P-37 violation (D-157) was caused by executing work items against a stale MCP server build. The MCP server's compiled JavaScript did not reflect the current TypeScript source. This caused artifact write tools to malfunction, forcing a direct-edit workaround that violated P-37.
+rationale: P-37 requires all .ideate/ modifications use MCP tools. If the MCP server itself is stale, P-37 compliance becomes impossible. A pre-execution build verification step prevents this class of forced violation.
+policy: P-51
+source: cycle 5 spec-adherence P1; decision-log D5-E04
+status: settled
+cycle: 5
+content_hash: ebbd2670b95fd6317c051d158009dcba42875a122f14b9f0bddca73e7956afef
+token_count: 184
+file_path: .ideate/decisions/D-158.yaml

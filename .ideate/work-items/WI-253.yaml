@@ -10,7 +10,9 @@ depends:
   - WI-251
 blocks: []
 criteria:
-  - "All review output file references changed from .md to .yaml: code-quality.yaml, spec-adherence.yaml, gap-analysis.yaml, decision-log.yaml, summary.yaml, review-manifest.yaml"
+  - >-
+    All review output file references changed from .md to .yaml: code-quality.yaml, spec-adherence.yaml,
+    gap-analysis.yaml, decision-log.yaml, summary.yaml, review-manifest.yaml
   - All ideate_write_artifact calls for review outputs include cycle parameter
   - Phase 7.5 archive directory listing updated to .yaml filenames
   - Phase 7.6 count derivation references updated to .yaml
@@ -33,4 +35,4 @@ cycle_created: 33
 cycle_modified: null
 content_hash: 117588625a358282f34618707b57eef9141e64edce13e5325512b8372cd5b0ac
 token_count: 310
-file_path: .ideate/work-items/WI-253.yaml
+file_path: work-items/WI-253.yaml

@@ -2,13 +2,18 @@ id: Q-76
 type: domain_question
 domain: artifact-structure
 status: resolved
-impact: Filtered depth > 1 traversals may produce incorrectly ordered results or an "ambiguous column name" SQLite error depending on query shape.
+impact: >-
+  Filtered depth > 1 traversals may produce incorrectly ordered results or an "ambiguous column name" SQLite error
+  depending on query shape.
 source: archive/cycles/022/code-quality.md S2; archive/cycles/022/decision-log.md Q-76
-resolution: "Fixed by WI-192 — n.id aliased as node_id in CTE output, ORDER BY uses node_id"
+resolution: Fixed by WI-192 — n.id aliased as node_id in CTE output, ORDER BY uses node_id
 resolved_in: 34
-description: "`query.ts:485` uses `ORDER BY depth, id`. When the base traversal SQL is wrapped in `SELECT * FROM (...)` for type/status filtering, the column `id` can be ambiguous if the subquery produces multiple columns named `id` from JOINs. SQLite resolves to the first `id` column, which may not be the intended `n.id`."
+description: >-
+  `query.ts:485` uses `ORDER BY depth, id`. When the base traversal SQL is wrapped in `SELECT * FROM (...)` for
+  type/status filtering, the column `id` can be ambiguous if the subquery produces multiple columns named `id` from
+  JOINs. SQLite resolves to the first `id` column, which may not be the intended `n.id`.
 cycle_created: 1
 cycle_modified: null
-content_hash: "91b22a5c7e2d3355e1ed418a7e677e39e217e85f909e84adf56a273a4f289293"
+content_hash: 91b22a5c7e2d3355e1ed418a7e677e39e217e85f909e84adf56a273a4f289293
 token_count: 193
-file_path: .ideate/questions/Q-76.yaml
+file_path: questions/Q-76.yaml

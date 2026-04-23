@@ -1,0 +1,13 @@
+id: D-78
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: WI-165's incremental review emitted a Critical finding (three archive document types unknown to the indexer). The executor routed it to the Andon cord rather than attempting an in-scope fix, because the fix required changes to schema.ts, db.ts, and indexer.ts (all outside WI-165 scope). User decision created WI-168 to register all 10 unregistered document types via a new `document_artifacts` table.
+rationale: "Correct application of P-22 and P-23 — the finding was out-of-scope for WI-165 and required architectural changes. The Andon-to-WI-168 path demonstrates the designed flow: escalate, bound the follow-up, execute in a new work item."
+cycle_created: 1
+cycle_modified: null
+content_hash: "007ea97864839ab661be856806d0d7d2db7978948bdfcf26adc807b12b336400"
+token_count: 212
+file_path: .ideate/decisions/D-78.yaml

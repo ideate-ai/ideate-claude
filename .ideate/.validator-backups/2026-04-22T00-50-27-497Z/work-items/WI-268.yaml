@@ -1,0 +1,69 @@
+id: WI-268
+type: work_item
+title: Fix researcher agent direct-write bypass — remove Write tool, enforce MCP-only research output
+status: done
+complexity: small
+scope:
+  - path: agents/researcher.md
+    op: modify
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: skills/refine/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - agents/researcher.md tools list does not include Write
+  - agents/researcher.md 'Saving findings' section instructs agent to return findings in its response, not write to disk
+  - skills/plan/SKILL.md line 185 does not contain 'or Write tool' fallback — uses ideate_write_artifact exclusively for research output
+  - skills/refine/SKILL.md Phase 6 researcher spawn prompt does not instruct the researcher to save findings to a file path
+  - skills/refine/SKILL.md Phase 6 includes instruction for the refine skill to write returned research findings via ideate_write_artifact after researcher completes
+  - No grep match for 'Write tool' in skills/plan/SKILL.md section 2.4 or skills/refine/SKILL.md Phase 6
+domain: agent-system
+notes: |-
+  # WI-268: Fix researcher agent direct-write bypass
+
+  ## Root cause
+
+  The researcher agent has `Write` in its tools list and is instructed to save findings directly to disk. When the agent constructs an incorrect path or filename (e.g., `personalized-pagerank-research.md` in project root instead of `.ideate/research/personalized-pagerank.yaml`), the file bypasses MCP path validation and format enforcement. This violates GP-08 (MCP-first access) and P-06 (all artifact writes through MCP).
+
+  Observed in the wild: `/ideate:plan` on ~/code/ideate-demo created `personalized-pagerank-research.md` in the project root.
+
+  ## Changes
+
+  ### agents/researcher.md
+
+  1. Remove `- Write` from the frontmatter tools list (line 13)
+  2. Replace the `## Saving findings` section (lines 57-59) with:
+     ```
+     ## Output
+     
+     Return your complete structured report in your response. Do not write files to disk.
+     The spawning skill will persist your findings via MCP tools.
+     ```
+
+  ### skills/plan/SKILL.md (Section 2.4)
+
+  1. Line 167: Keep the output file path instruction as context for the skill, not the researcher
+  2. Line 185: Remove `(or Write tool if no MCP write exists for research artifacts)` — `ideate_write_artifact` with type `research` handles this
+  3. Line 184-185: Rewrite the "Handling researcher output" section to:
+     - The researcher returns findings in its response (it no longer writes to disk)
+     - The skill writes findings to `.ideate/research/{topic-slug}.yaml` using `ideate_write_artifact` with type `research`
+     - Remove the branching logic for "writes directly" vs "returns in response" — there is now only one path
+
+  ### skills/refine/SKILL.md (Phase 6)
+
+  1. Lines 164-168: Remove the `Save findings to:` line from the researcher spawn prompt
+  2. Add explicit instruction after researcher completes: write returned findings via `ideate_write_artifact` with type `research`, id `research-{topic-slug}`, content as the research body
+
+  ## What NOT to change
+
+  - Do not modify the domain-curator agent (also has Write) — that is a separate concern
+  - Do not modify the researcher's structured output format (## Summary, ## Key Facts, etc.)
+  - Do not modify how skills integrate research findings into the interview
+resolution: Removed Write from researcher tools, replaced Saving findings with Output section, updated plan and refine skills to use ideate_write_artifact for research output
+cycle_created: 34
+cycle_modified: null
+content_hash: b4efb26f5e84fda99b980babf413b228f20ada51a62051f393ec12c7bf07ef46
+token_count: 892
+file_path: .ideate/work-items/WI-268.yaml

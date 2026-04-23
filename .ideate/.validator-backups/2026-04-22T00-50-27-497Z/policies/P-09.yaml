@@ -1,0 +1,14 @@
+id: P-09
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-4 (Parallel-First Design) — execution tooling globs by prefix; duplicates cause ambiguous ordering
+established: planning phase
+amended: null
+description: New work items in a refinement cycle must be numbered starting from the highest existing work item number plus one; no two work items may share the same three-digit prefix.
+cycle_created: 1
+cycle_modified: null
+content_hash: defd14fdafe199d85544a6174dfcd556e2490840a526d3415e2fd389e127a96f
+token_count: 130
+file_path: .ideate/policies/P-09.yaml

@@ -1,0 +1,33 @@
+id: WI-388
+type: work_item
+title: Add type validation for artifact writes
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/write.ts
+depends: []
+blocks: []
+criteria:
+  - handleWriteArtifact validates that the artifact type parameter matches a known type before resolving the file path
+  - Unknown types return an error with the list of valid types
+  - "P-42 policy is satisfied: writing artifacts with unknown types is prevented"
+domain: artifact-structure
+notes: |-
+  ## Finding
+  IR1 from cycle 1 gap-analysis review: Meaningful error messages for invalid artifact types.
+
+  **File**: `mcp/artifact-server/src/tools/write.ts`
+
+  **Issue**: `handleWriteArtifact` does not validate that the type is one of the known types before attempting to resolve the path. It could write to an unexpected directory.
+
+  **Impact**: Unknown types would create artifacts in unexpected directory paths without error, making them unqueryable.
+
+  ## Suggested Fix
+  Add type validation at the start of `handleWriteArtifact` to check against known types and return a descriptive error if the type is unknown.
+resolution: null
+cycle_created: 1
+cycle_modified: 1
+content_hash: c3fb4be4e4896f418367bc9a3acaab14f71d9bacabc165abecc038b50b3cbce2
+token_count: 295
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-388.yaml

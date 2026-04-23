@@ -1,0 +1,13 @@
+id: D-05
+type: domain_decision
+domain: artifact-structure
+status: superseded
+cycle: 3
+supersedes: null
+description: Every artifact (steering docs, plan files, reviews, journal) is a Markdown file; structure is expressed through headings, lists, and fenced code blocks, not JSON or YAML files.
+rationale: Markdown files are human-readable and auditable, which the interview established as a requirement ("artifacts should be readable and auditable"); they are also directly usable as agent input without parsing.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5f606ca016dc3e448760fefeb7c295d08390f3995d9437e1c71673f0921c88c0"
+token_count: 154
+file_path: .ideate/decisions/D-05.yaml

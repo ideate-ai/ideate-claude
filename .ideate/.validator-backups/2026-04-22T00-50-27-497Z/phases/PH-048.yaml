@@ -1,0 +1,25 @@
+id: PH-048
+type: implementation
+name: Tool-usage corrections
+description: "Close out the cycle 28 code-reviewer findings on the tool_usage telemetry surface: wire the context columns, fix the report script backend selection, add contract coverage, document truncation semantics, refresh stale test metadata, and surface --limit 0 intent."
+phase_type: implementation
+project: PR-002
+status: complete
+started_date: 2026-04-16
+work_items:
+  - WI-861
+  - WI-862
+  - WI-863
+  - WI-864
+  - WI-865
+  - WI-866
+success_criteria:
+  - All six cycle-28 code-reviewer Minor findings (M1-M6) closed with changes verified by the incremental reviewer.
+  - Contract test harness exercises getToolUsage across both adapters.
+  - scripts/report-tool-usage.sh honors config.backend and produces deterministic behavior for --limit 0.
+  - No existing test regressions; truncation semantics documented in code and README.
+steering: File-scope overlap between WI-861/WI-864 (tool-usage.ts) and WI-862/WI-866 (report-tool-usage.sh) forces two-wave execution. No worktree merge conflicts expected if dependencies are honored. Reviewer budgets bumped (spec-reviewer 100→180, gap-analyst 200→250) to reduce turn-exhaustion risk observed in cycle 28.
+cycle_modified: 27
+content_hash: 09121095bc09978852acbbda67535bdbd1b7675370670aa04c329b69aca0fb02
+token_count: 341
+completed_date: 2026-04-16

@@ -1,0 +1,12 @@
+id: D-149
+type: domain_decision
+domain: artifact-structure
+title: Forward-only cycle injection for handleWriteArtifact
+description: "WI-423 fixed document_artifacts.cycle being null for cycle_summary artifacts by injecting the cycle parameter into yamlObj at write.ts:777-779 when cycle is provided as a top-level tool parameter but absent from the content body. This ensures YAML files contain top-level cycle: N so index rebuilds correctly populate document_artifacts.cycle. The fix is explicitly forward-only: existing artifacts written before this change retain null cycle fields."
+rationale: Root cause was that handleWriteArtifact wrote cycle to SQLite at write time but not to the YAML file, so rebuilds from YAML lost the cycle value. Injecting into yamlObj before YAML serialization ensures the three-way invariant (live write, YAML file, rebuild) all agree.
+source: cycle 4 decision-log DL-4-02; gap-analysis-004 Gap 1
+status: settled
+cycle: 4
+content_hash: 59336c63b4a40de353e7001cc54c2c3a5a3ad8162ed43a5d6f651e209a606eba
+token_count: 238
+file_path: .ideate/decisions/D-149.yaml

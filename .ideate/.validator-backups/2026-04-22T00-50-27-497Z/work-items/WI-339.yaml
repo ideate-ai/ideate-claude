@@ -1,0 +1,37 @@
+id: WI-339
+type: work_item
+title: Update documentation for plan-to-init consolidation
+status: done
+complexity: small
+scope:
+  - path: CLAUDE.md
+    op: modify
+  - path: README.md
+    op: modify
+  - path: ARCHITECTURE.md
+    op: modify
+depends:
+  - WI-337
+blocks: []
+criteria:
+  - CLAUDE.md skill table lists /ideate:init (not /ideate:plan) as the entry point
+  - CLAUDE.md describes /ideate:init as unified initialization for both new and existing projects
+  - README.md skill listing updated
+  - ARCHITECTURE.md skill definitions updated
+  - grep -r 'ideate:plan' CLAUDE.md README.md ARCHITECTURE.md returns no matches
+domain: project-boundaries
+notes: |-
+  ## Implementation
+
+  Update documentation to reflect the consolidated entry point:
+  - CLAUDE.md: Update skill table. Remove /ideate:plan row. Update /ideate:init description to cover both new and existing projects.
+  - README.md: Update skill listing similarly.
+  - ARCHITECTURE.md: Update Section 3 (Skill Definitions). Remove /ideate:plan section. Expand /ideate:init to describe both modes.
+
+  Also update any prose that says 'run /ideate:plan to start' → 'run /ideate:init to start'.
+resolution: CLAUDE.md, README.md, ARCHITECTURE.md updated. Skill tables consolidated. grep confirms zero ideate:plan in docs.
+cycle_created: null
+cycle_modified: null
+content_hash: 413088a2f52416ddc6bd3ebc79960ac7b5140f7ec93a3ad6cd44ca285a634fc0
+token_count: 328
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-339.yaml

@@ -1,0 +1,52 @@
+id: WI-113
+type: work_item
+title: Fix quality_summary skill field — autopilot must emit "autopilot" not "review"
+status: done
+complexity: low
+scope:
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - skills/autopilot/phases/review.md line containing the quality_summary JSON schema uses "skill":"autopilot" not "skill":"review"
+  - artifact-conventions.md:735 two-value enum <review|autopilot> is satisfied — autopilot emitter uses "autopilot"
+  - No other fields in the quality_summary JSON schema are modified
+module: null
+domain: null
+notes: |
+  # WI-113: Fix quality_summary skill field — autopilot must emit "autopilot" not "review"
+
+  ## Context
+
+  `specs/artifact-conventions.md:735` defines the `quality_summary` event schema with a two-value `skill` field: `"review"` for events emitted by the standalone `/ideate:review` skill, and `"autopilot"` for events emitted by the `/ideate:autopilot` skill.
+
+  WI-112 introduced the quality_summary emission block into `skills/autopilot/phases/review.md`. During rework, the `skill` field was changed from `"autopilot"` to `"review"` "for schema parity" with `skills/review/SKILL.md`. This directly contradicts `artifact-conventions.md:735`.
+
+  The cycle 003 gap-analyst flagged this as significant finding II1. The fix is a single-word change.
+
+  ## Target file
+
+  `skills/autopilot/phases/review.md` — find the JSON schema block at approximately line 235:
+
+  ```json
+  {"timestamp":"<ISO8601>","event_type":"quality_summary","skill":"review","cycle":<N>,...}
+  ```
+
+  Change `"skill":"review"` to `"skill":"autopilot"`.
+
+  ## Acceptance criteria
+
+  1. `skills/autopilot/phases/review.md` — the quality_summary JSON schema line uses `"skill":"autopilot"` not `"skill":"review"`
+  2. `artifact-conventions.md:735` two-value enum `<review|autopilot>` is satisfied — autopilot emitter uses `"autopilot"`
+  3. No other fields in the quality_summary JSON schema are modified
+
+  ## Impact
+
+  `scripts/report.sh` uses the `skill` field to attribute quality_summary events to their source skill. After this fix, autopilot-driven events will be distinguishable from standalone review events in the Quality Trends section of the report.
+cycle_created: 1
+cycle_modified: null
+content_hash: 56ee941f87246b5ec63deb58c84bede5ebf0c896b1e72eb75bd0448117485823
+token_count: 549
+file_path: .ideate/work-items/WI-113.yaml
+resolution: Implemented during v3 migration

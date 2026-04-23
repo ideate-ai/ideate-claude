@@ -1,0 +1,54 @@
+id: WI-306
+type: work_item
+title: Fix watcher YAML filter and indexFiles type guard
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Watcher event handler in index.ts filters event.changed and event.deleted to only .yaml/.yml files before calling indexFiles/removeFiles
+  - indexFiles function in indexer.ts includes an early guard that filters filePaths to .yaml/.yml (matching rebuildIndex behavior at line 692)
+  - Writing to .ideate/config.json or .ideate/metrics.jsonl does NOT trigger indexFiles
+  - npm test passes
+domain: artifact-structure
+notes: |-
+  # WI-306: Fix watcher YAML filter and indexFiles type guard
+
+  ## Overview
+  Addresses code-reviewer S1 and M3 from cycle 058 review. The watcher event handler passes all file paths to indexFiles without filtering to .yaml/.yml. Non-YAML files (config.json, metrics.jsonl) trigger spurious parse failures.
+
+  ## Changes
+
+  ### index.ts watcher handler (line ~111)
+  Filter before calling indexFiles/removeFiles:
+  ```typescript
+  artifactWatcher.on("change", (event: BatchChangeEvent) => {
+    try {
+      const yamlChanged = event.changed.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+      const yamlDeleted = event.deleted.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+      if (yamlChanged.length > 0) indexFiles(db, drizzleDb, yamlChanged);
+      if (yamlDeleted.length > 0) removeFiles(db, drizzleDb, yamlDeleted);
+    } catch (err) {
+      console.error("[watcher] incremental index failed:", err);
+    }
+  });
+  ```
+
+  ### indexer.ts indexFiles function (line ~607)
+  Add defensive guard at the top:
+  ```typescript
+  const yamlPaths = filePaths.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+  if (yamlPaths.length === 0) return result;
+  ```
+  Then use yamlPaths instead of filePaths in the loop.
+resolution: null
+cycle_created: 59
+cycle_modified: null
+content_hash: 0194a0a88b26430a7a2f110c7c22c0bf2d9dfea848fed655dfa6f8943040b227
+token_count: 498
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-306.yaml

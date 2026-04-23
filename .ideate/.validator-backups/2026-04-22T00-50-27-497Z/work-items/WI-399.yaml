@@ -1,0 +1,50 @@
+id: WI-399
+type: work_item
+title: Update ARCHITECTURE.md to match implementation
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: ARCHITECTURE.md
+depends: []
+blocks: []
+criteria:
+  - ARCHITECTURE.md Section 3 documents 14 extension tables (currently shows 12)
+  - ARCHITECTURE.md Section 10 includes server.ts, hooks.ts, and ppr.ts in source files
+  - ARCHITECTURE.md Section 1 skill table includes /ideate:settings
+  - All source file exports listed in Section 10 match actual exports
+domain: project-boundaries
+notes: |-
+  ## Context
+  The architecture document has drifted from implementation:
+  1. Section 3 says "Extension tables (12 tables)" but there are 14
+  2. Section 10 source file list is missing server.ts, hooks.ts, ppr.ts
+  3. Section 1 skill table doesn't include /ideate:settings
+  4. Section 10 config.ts exports list is incomplete (lists 4, actual is 11)
+
+  ## Files to Update
+  - `ARCHITECTURE.md` — multiple sections
+
+  ## Section 3 Update
+  Change "Extension tables (12 tables)" to "Extension tables (14 tables)" and update the table to include:
+  - interview_questions
+  - proxy_human_decisions
+
+  ## Section 10 Update
+  Add to source files table:
+  - `server.ts` — server lifecycle, dormant mode support
+  - `hooks.ts` — hook registry and dispatch
+  - `ppr.ts` — Personalized PageRank for context assembly
+
+  ## Section 1 Update
+  Add /ideate:settings to the skill table with description: "Interactive configuration for agent budgets, model overrides, and PPR weights."
+
+  ## Verification
+  - Read through updated sections for accuracy
+  - Ensure table counts match implementation
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: ea6a65ed7d9fc648ca52bb767cd7ab589283e8e944b12ece92b183315ef4723f
+token_count: 418
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-399.yaml

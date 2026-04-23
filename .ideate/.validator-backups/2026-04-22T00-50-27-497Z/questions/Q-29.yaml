@@ -1,0 +1,14 @@
+id: Q-29
+type: domain_question
+domain: workflow
+status: resolved
+impact: P-22 is less precise than the skill files it governs. Future work items modifying the startup-failure path may not preserve the re-run step if they read only the policy.
+source: archive/cycles/009/code-quality.md M1; archive/cycles/009/spec-adherence.md D1; archive/cycles/009/decision-log.md OQ-2
+resolution: WI-123 appended the smoke-test re-run requirement and indeterminate-classification rule to P-22's body. P-22 now fully describes the five-step protocol.
+resolved_in: 10
+description: "P-22 states Andon fires \"only if the root cause cannot be fixed ... or the cause is indeterminate\" but does not mention the mandatory smoke-test re-run after a surgical fix, nor the rule that a second failure reclassifies the cause as indeterminate. Both skill files encode this path but P-22 omits it. Should P-22 be amended to include: \"When a surgical fix is applied, the smoke test must be re-run; if it still fails, the failure is classified as indeterminate and routes to Andon\"?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "2de3c61d06beeab12b65611662a36551de87f8fdb09020f7800df2e59ec36d3a"
+token_count: 290
+file_path: .ideate/questions/Q-29.yaml

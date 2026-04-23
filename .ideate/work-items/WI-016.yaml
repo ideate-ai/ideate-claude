@@ -4,29 +4,41 @@ title: Artifact Conventions Canonicalization
 status: obsolete
 complexity: medium
 scope:
-  - {path: specs/artifact-conventions.md, op: modify}
+  - path: specs/artifact-conventions.md
+    op: modify
 depends: []
 blocks: []
 criteria:
-  - "Incremental review format in artifact-conventions.md matches the format used by the code-reviewer agent and the execute skill: `## Verdict: {Pass | Fail}` on one line, finding sections with `### C1:` / `### S1:` / `### M1:` numbered subsections, each with `File`, `Issue`, `Impact`, `Suggested fix` sub-fields, and a separate `## Unmet Acceptance Criteria` section"
-  - "Final review formats in artifact-conventions.md match the corresponding agent output formats:"
-  - "- `code-quality.md` matches code-reviewer agent comprehensive review format"
-  - "- `spec-adherence.md` matches spec-reviewer agent format (deviations, unmet criteria, principle violations, undocumented additions)"
-  - "- `gap-analysis.md` matches gap-analyst agent format (categorized gaps with severity and recommendation)"
-  - "- `decision-log.md` matches journal-keeper agent format (decision log + open questions with structured fields)"
-  - "`summary.md` format matches what the review skill actually produces"
+  - >-
+    Incremental review format in artifact-conventions.md matches the format used by the code-reviewer agent and the
+    execute skill: `## Verdict: {Pass | Fail}` on one line, finding sections with `### C1:` / `### S1:` / `### M1:`
+    numbered subsections, each with `File`, `Issue`, `Impact`, `Suggested fix` sub-fields, and a separate `## Unmet
+    Acceptance Criteria` section
+  - 'Final review formats in artifact-conventions.md match the corresponding agent output formats:'
+  - '- `code-quality.md` matches code-reviewer agent comprehensive review format'
+  - >-
+    - `spec-adherence.md` matches spec-reviewer agent format (deviations, unmet criteria, principle violations,
+    undocumented additions)
+  - '- `gap-analysis.md` matches gap-analyst agent format (categorized gaps with severity and recommendation)'
+  - '- `decision-log.md` matches journal-keeper agent format (decision log + open questions with structured fields)'
+  - '`summary.md` format matches what the review skill actually produces'
   - No format in artifact-conventions.md contradicts any agent or skill definition
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 016
-  
-  Read each agent definition (`agents/code-reviewer.md`, `agents/spec-reviewer.md`, `agents/gap-analyst.md`, `agents/journal-keeper.md`) and each skill that produces review output (`skills/execute/SKILL.md`, `skills/review/SKILL.md`). Extract the canonical format from each. Update artifact-conventions.md to match.
-  
-  The code-reviewer agent's format is the most detailed and should be treated as authoritative for incremental reviews. For final reviews, each agent's own output format is authoritative for its corresponding file.
-resolution: "specs/artifact-conventions.md no longer exists. Artifact structure migrated to YAML in .ideate/."
+
+
+  Read each agent definition (`agents/code-reviewer.md`, `agents/spec-reviewer.md`, `agents/gap-analyst.md`,
+  `agents/journal-keeper.md`) and each skill that produces review output (`skills/execute/SKILL.md`,
+  `skills/review/SKILL.md`). Extract the canonical format from each. Update artifact-conventions.md to match.
+
+
+  The code-reviewer agent's format is the most detailed and should be treated as authoritative for incremental reviews.
+  For final reviews, each agent's own output format is authoritative for its corresponding file.
+resolution: specs/artifact-conventions.md no longer exists. Artifact structure migrated to YAML in .ideate/.
 cycle_created: 1
 cycle_modified: null
 content_hash: c609adfea4fe5550af707cab21026a06a1c63224552fb994a8c238e17ec66bfc
 token_count: 489
-file_path: .ideate/work-items/WI-016.yaml
+file_path: work-items/WI-016.yaml

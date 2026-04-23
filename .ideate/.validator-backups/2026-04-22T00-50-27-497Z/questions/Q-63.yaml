@@ -1,0 +1,14 @@
+id: Q-63
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Every contributor who follows the documented recovery path for dual-maintenance hits an immediate failure. Q-58's dual-maintenance risk remains unresolved at the recovery step. Highest-priority item for next refinement cycle.
+source: archive/cycles/019/gap-analysis.md I2; archive/cycles/019/decision-log.md D-88, CR6
+resolution: "WI-174 added `\"build:migration\"` to `package.json` scripts and updated the pretest warning text to reference `npm run build:migration`. See D-91."
+resolved_in: 20
+description: "The `migrate-to-v3.js` header comment (added by WI-172) instructs contributors to run `npm run build:migration` to regenerate the `.js` file from `.ts`. The `pretest` staleness warning also references this command. Neither entry exists in `mcp/artifact-server/package.json`. Running the command produces `npm error Missing script: \"build:migration\"` immediately. Should the script be added?"
+cycle_created: 1
+cycle_modified: null
+content_hash: a66d60ec0ff87da1419558917dd3efc3a0c7f493cc68b53bb0034cd17928be9f
+token_count: 272
+file_path: .ideate/questions/Q-63.yaml

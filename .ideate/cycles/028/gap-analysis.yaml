@@ -1,47 +1,87 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |
+content: >
   ## Verdict: Fail
 
-  Two significant gaps: test coverage (legacy all-bold Violation-label variants untested) and domain-knowledge (Q-161 reexamination not triggered after Q-159 resolved).
+
+  Two significant gaps: test coverage (legacy all-bold Violation-label variants untested) and domain-knowledge (Q-161
+  reexamination not triggered after Q-159 resolved).
+
 
   ## Critical Findings
-  None. Core fixes from cycle 28 findings are present: exact-heading equality (WI-880), Fail-side + all-bold tests (WI-881), three-way Phase 6c branch in review.md + SKILL.md (WI-882). Q-159 resolved.
+
+  None. Core fixes from cycle 28 findings are present: exact-heading equality (WI-880), Fail-side + all-bold tests
+  (WI-881), three-way Phase 6c branch in review.md + SKILL.md (WI-882). Q-159 resolved.
+
 
   ## Significant Findings
 
+
   ### SIG-1: No test for legacy all-bold Violation-label variants
+
   - File: mcp/artifact-server/src/__tests__/tools.test.ts (gap)
-  - Scenario: WI-881 added tests for patterns 4 and 8 using Adherence label. JSDoc (analysis.ts:70-72) documents that pattern 8 all-bold Violation variant is covered by (?:Adherence|Violation) alternation. No test exercises Violation form of either all-bold variant.
-  - Gap: Tests for '**Principle Violation Verdict: Pass**' and '**Principle Violation Verdict: Fail**' (all-bold) absent.
-  - Severity: Significant — alternation makes code correct, but JSDoc makes explicit claim about 8 patterns; unverified claim in parser that caused production incident is unacceptable.
+
+  - Scenario: WI-881 added tests for patterns 4 and 8 using Adherence label. JSDoc (analysis.ts:70-72) documents that
+  pattern 8 all-bold Violation variant is covered by (?:Adherence|Violation) alternation. No test exercises Violation
+  form of either all-bold variant.
+
+  - Gap: Tests for '**Principle Violation Verdict: Pass**' and '**Principle Violation Verdict: Fail**' (all-bold)
+  absent.
+
+  - Severity: Significant — alternation makes code correct, but JSDoc makes explicit claim about 8 patterns; unverified
+  claim in parser that caused production incident is unacceptable.
+
   - Fix: Two additional test cases paralleling cycle 322/323 tests with Violation label.
 
+
   ### SIG-2: Q-161 reexamination not triggered after Q-159 resolution
+
   - File: .ideate/questions/Q-161.yaml
-  - Scenario: Q-161 reexamination_trigger: 'When Q-159 is answered — same design review scope.' Q-159 resolved by WI-882 (resolved_cycle: 29). Q-161 remains status: open, no update.
-  - Gap: Q-161 has not been reexamined. The WI-876/881 tests now DO assert principle_verdict_source for step1/2/3 — partially answering Q-161's concern about whether principle_verdict_source should be a contract field. Question's artifact record not updated.
+
+  - Scenario: Q-161 reexamination_trigger: 'When Q-159 is answered — same design review scope.' Q-159 resolved by WI-882
+  (resolved_cycle: 29). Q-161 remains status: open, no update.
+
+  - Gap: Q-161 has not been reexamined. The WI-876/881 tests now DO assert principle_verdict_source for step1/2/3 —
+  partially answering Q-161's concern about whether principle_verdict_source should be a contract field. Question's
+  artifact record not updated.
+
   - Severity: Significant — trigger condition was explicitly documented and is now satisfied.
-  - Fix: Domain curator updates Q-161 in this cycle: note the source field is now tested, document autopilot-consumer sub-question status, resolve or re-defer with updated trigger.
+
+  - Fix: Domain curator updates Q-161 in this cycle: note the source field is now tested, document autopilot-consumer
+  sub-question status, resolve or re-defer with updated trigger.
+
 
   ## Minor Findings
 
+
   ### MIN-1: parsePrincipleVerdict JSDoc doesn't note P-33 risk for content snippet (defer)
+
   ### MIN-2: adapter-contract.md doesn't document principle_verdict_warning field (defer)
-  ### MIN-3: WI-877 cycle_created: 34 anomaly — work items completed during this autopilot run but cycle_created metadata inconsistent (defer)
+
+  ### MIN-3: WI-877 cycle_created: 34 anomaly — work items completed during this autopilot run but cycle_created
+  metadata inconsistent (defer)
+
 
   ## Principle Adherence Verdict: Fail
 
-  WI-880/881/882 each delivered their core stated capability, but WI-881 JSDoc claim of 8 enumerated patterns (including legacy Violation all-bold) is not verified by any test case. WI-882 resolved Q-159 but did not trigger reexamination of Q-161 as that question's own stated trigger required. Principles P-91 and P-93 each have unverified-claim gaps.
+
+  WI-880/881/882 each delivered their core stated capability, but WI-881 JSDoc claim of 8 enumerated patterns (including
+  legacy Violation all-bold) is not verified by any test case. WI-882 resolved Q-159 but did not trigger reexamination
+  of Q-161 as that question's own stated trigger required. Principles P-91 and P-93 each have unverified-claim gaps.
 content_hash: 7c829638ac283da8569838893daf0ae7bb3d2581d22ba518b4cc42341aade6fa
 token_count: 999
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/028/gap-analysis.yaml
 cycle: 28
 cycle_modified: 27
 verdict: Fail
 scope: WI-873 completeness — missing coverage, infrastructure, edge cases
-summary: "10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase (grep-verified)."
+summary: >-
+  10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete
+  — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while
+  getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills
+  present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase
+  (grep-verified).
 findings_summary:
   critical: 0
   significant: 0
@@ -53,4 +93,6 @@ criteria_status:
   pass: 10
   partial: 1
   fail: 0
-regression_prevention_check: No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both 2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.
+regression_prevention_check: >-
+  No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both
+  2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.

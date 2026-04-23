@@ -1,0 +1,13 @@
+id: D-55
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-144 criterion specified a named `idx_edges_composite(source_id, target_id, edge_type)` index. The implementation omitted it with an inline comment that the UNIQUE constraint on the same columns creates an equivalent implicit index. The criterion is technically unmet; the functional purpose is satisfied.
+rationale: SQLite creates an implicit B-tree index for every UNIQUE constraint. The functional query behavior is identical. Updating the WI-144 criterion text to reflect the implicit index is deferred.
+cycle_created: 1
+cycle_modified: null
+content_hash: e04f375eb901bcf993c28aae5605bc58e61f5590663712b99a844c944f1e226d
+token_count: 181
+file_path: .ideate/decisions/D-55.yaml

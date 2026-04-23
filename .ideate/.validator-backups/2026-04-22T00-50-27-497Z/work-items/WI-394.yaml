@@ -1,0 +1,33 @@
+id: WI-394
+type: work_item
+title: Audit MCP tool responses for .ideate path exposure
+status: done
+complexity: medium
+scope:
+  - op: audit
+    path: mcp/artifact-server/src/tools/*.ts
+depends: []
+blocks:
+  - WI-395
+criteria:
+  - All MCP tool responses reviewed for .ideate/ path leakage
+  - Document which tools expose file_path in responses
+  - Identify tools that must sanitize responses before returning
+domain: agent-system
+notes: |-
+  Cloud-hosted MCP backend requires .ideate/ to be path-invisible to skills.
+
+  Review all MCP tool implementations in artifact-server/src/tools/
+
+  Identify any responses that include:
+  - file_path field
+  - Any absolute path under .ideate/
+  - Relative paths that reference .ideate/
+
+  Document findings and recommend sanitization approach.
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 3da6d6fd154745c3b0df5c2efbebe2343eed94f7294bb3b3d299aeb562173f7b
+token_count: 209
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-394.yaml

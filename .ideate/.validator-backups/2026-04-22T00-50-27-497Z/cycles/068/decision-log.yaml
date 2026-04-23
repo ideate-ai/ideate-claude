@@ -1,0 +1,37 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |-
+  ## Decision Log — Cycle 068
+
+  ### Planning Phase
+  D68-01: Scope five work items: model_overrides field, edge type fixes, update_config tool, skill updates, settings skill.
+  D68-02: Batched parallel execution in three groups: G1 (WI-360+361), G2 (WI-362+363), G3 (WI-364).
+  D68-03: Key-level merge semantics for model_overrides and agent_budgets. [NOTE: This decision is the root cause of S1/EC1 — key-level merge cannot express key deletion.]
+  D68-04: Resolve Q-84 by adding governed_by and informed_by to EDGE_TYPES and EDGE_TYPE_REGISTRY with weights 0.8/0.6.
+  D68-05: Settings skill uses disable-model-invocation: true, conversational menu, edge weights restricted to registry types, defaults inlined.
+
+  ### Execution Phase
+  D68-06 through D68-13: Rework applied for wrong type strings, merge base changed to readRawConfig(), ARCHITECTURE.md corrected, domain-curator override precedence fixed, init wording aligned, architect/decomposer defaults corrected to sonnet.
+
+  ### Review Phase
+  D68-14: handleUpdateConfig cannot delete keys from model_overrides (S1/S2). Clear model override silently fails.
+  D68-15: P-17 violation — ideate_update_config writes config.json but P-17 restricts writes to migration scripts. P-17 amendment required.
+  D68-16: skills/autopilot/SKILL.md Phase 0 missing model_overrides clause. WI-363 scope omitted the coordinator.
+  D68-17: Plugin version not bumped. P-16 violation.
+
+  ### Cross-References
+  CR1: code-quality S1/S2/M1 + gap-analysis EC1 — same root cause: merge strategy cannot delete keys. Root fix in tools/config.ts:55-60.
+  CR2: spec-adherence P-17 conflict — policy predates the feature. Requires amendment, not code change.
+  CR3: gap-analysis II1 — autopilot coordinator not in WI-363 scope; phase files correct, coordinator incomplete.
+
+  ### Open Questions Surfaced
+  OQ68-01: How to express key deletion in handleUpdateConfig? (replace-all vs null-signal)
+  OQ68-02: Should P-17 be amended to permit ideate_update_config as sanctioned writer?
+  OQ68-03: Should autopilot/SKILL.md Phase 0 get model_overrides clause?
+  OQ68-04: Should plugin version be bumped to reflect new skill and tool?
+  OQ68-05: Is name: frontmatter key in settings skill intentional; should other skills adopt it?
+  OQ68-06: Should WI-361 acceptance criteria be corrected to use source_types/target_types?
+content_hash: 6fc000901b55251e024199c0bf1ed5752e28984a6a1352224907fe5f8d4bba32
+token_count: 605
+file_path: .ideate/cycles/068/decision-log.yaml

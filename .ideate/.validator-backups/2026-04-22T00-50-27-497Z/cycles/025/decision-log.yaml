@@ -1,0 +1,127 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |-
+  ## Decision Log — Cycle 25 (PH-041: Input Validation Layer)
+
+  ### D-C25-01: Resolve edge_type_weights open question — choose explicit validation over permanent silent-ignore
+  User selected option (a): add explicit validation via WI-778. Closes cycle 23 deferral IR1.
+
+  ### D-C25-02: Scope WI-778 as sole cycle 25 work item
+  Single work item targeting validating.ts and validating.test.ts only.
+
+  ### D-C25-03: Validation spec uses three-layer guard (object type, key validity, value validity with Number.isFinite)
+  Contrasts with alpha and convergence_threshold which use comparison guards without Number.isFinite(). This inconsistency is what S1/EC1 flagged.
+
+  ### D-C25-04: Accept WI-778 at incremental review — Pass, 0 findings
+  All 5 acceptance criteria met. 7 tests added. 1338 total tests pass.
+
+  ### D-C25-05: Capstone verdict — Fail (code-reviewer), Fail (gap-analyst), Pass (spec-reviewer)
+  NaN bypass in alpha/convergence_threshold identified by two reviewers independently.
+
+  ### D-C25-06: NaN bypass confirmed for alpha and convergence_threshold, plus Infinity bypass for convergence_threshold
+  IEEE-754: NaN comparisons always return false. Infinity satisfies > 0.
+
+  ### D-C25-07: Gap-analyst adds integration test gap (II1) alongside NaN confirmation
+  No integration test file for edge_type_weights parallel to always-include-types-validation.test.ts.
+
+  ### D-C25-08: Spec-reviewer Pass is not contradictory — NaN issue originates in WI-776 (cycle 24), not WI-778
+
+  ## Open Questions
+
+  ### OQ-C25-01: Add Number.isFinite() guards to alpha and convergence_threshold?
+  Straightforward code change. No design decision required.
+
+  ### OQ-C25-02: Add integration test file for edge_type_weights validation?
+  Decision: whether integration tests required for all validation paths or only some.
+
+  ### OQ-C25-03: Add Infinity value test for edge_type_weights?
+  Single test case addition.
+
+  ### OQ-C25-04: Extend adapter-contract.test.ts and remote-adapter-validation.test.ts with edge_type_weights?
+  Test coverage extension.
+
+  ### OQ-C25-05: Is PH-041 complete despite NaN bypass, or does it need one more fix?
+  User decision.
+
+  ## PH-041 Significant Findings Trend
+  | Cycle | Significant Findings | Verdict |
+  |-------|---------------------|--------|
+  | 22 | 5 | Fail |
+  | 23 | 1 | Pass |
+  | 24 | 0 | Pass |
+  | 25 | 1 (retroactive gap from WI-776) | Fail |
+content_hash: c650e011b3f139c57839ad2424e14b31b0e059833d69337d60127ce64c8cba95
+token_count: 1428
+file_path: .ideate/cycles/068/decision-log.yaml
+cycle: 25
+decisions:
+  - id: D-CY23-01
+    topic: Inline vs above-line comment placement for reserved keyword advisories
+    outcome: Inline trailing comments used; spec said 'above'. Minor positioning divergence.
+  - id: D-CY23-02
+    topic: constraints labeled as reserved keyword
+    outcome: Factually inaccurate — CONSTRAINT (singular) is reserved, CONSTRAINTS (plural table name) is not.
+  - id: D-CY23-03
+    topic: trigger quoting requirement documentation
+    outcome: Comment overstates quoting need — SQLite allows trigger unquoted in DML. Production code already uses it unquoted.
+  - id: D-CY23-04
+    topic: cols.length assertion omitted from 8 new describe blocks
+    outcome: Systematic omission flagged by 3 reviewers independently. nodes table establishes the pattern at line 74 but new blocks don't follow it.
+  - id: D-CY23-05
+    topic: NOT NULL tests omitted for projects and phases
+    outcome: Gap identified by code-reviewer (M3) and gap-analyst (MI2). Only extension tables with column tests but no NOT NULL assertions.
+  - id: D-CY23-06
+    topic: Unspecified reserved keyword comment in CASCADE test
+    outcome: Comment added in WI-766 CASCADE test for constraints table, outside WI-766 spec. Consistent with WI-763 intent.
+  - id: D-CY23-07
+    topic: ALL_NODE_TYPES test renamed to 'is readonly array'
+    outcome: Name misleading — test checks Array.isArray and length > 0, not immutability. Naming carry-forward.
+open_questions:
+  - id: OQ-CY23-01
+    question: Are reserved keyword comments factually accurate? Should they be corrected?
+    source: M1, M2
+  - id: OQ-CY23-02
+    question: Should cols.length assertions be added to all 10 extension table describe blocks?
+    source: N1, M3, MI2
+  - id: OQ-CY23-03
+    question: Should NOT NULL tests be added for projects and phases?
+    source: M3, MI2
+  - id: OQ-CY23-04
+    question: Should 'is readonly array' test be renamed to match assertions?
+    source: M4
+  - id: OQ-CY23-05
+    question: Should idx_nodes_type_file_path index be added to index tests?
+    source: MI1
+  - id: OQ-CY23-06
+    question: Should NOT NULL constraints be fully tested for interview_questions?
+    source: MI3
+  - id: OQ-CY23-07
+    question: Should work_item_type DEFAULT value be asserted?
+    source: IR1
+  - id: OQ-CY23-08
+    question: Should timestamp column get a reserved keyword advisory like trigger?
+    source: IR2
+cross_references:
+  - id: CR1
+    topic: projects/phases NOT NULL gap
+    reviewers:
+      - code-reviewer M3
+      - gap-analyst MI2
+  - id: CR2
+    topic: cols.length assertion omission
+    reviewers:
+      - spec-reviewer N1
+      - gap-analyst MI2
+  - id: CR3
+    topic: reserved keyword comment accuracy
+    reviewers:
+      - code-reviewer M1/M2
+      - spec-reviewer AC1/U1
+      - gap-analyst IR2
+  - id: CR4
+    topic: WI-767 test name vs content
+    reviewers:
+      - code-reviewer M4
+convergence: Zero critical, zero significant. Cleanest cycle since cycle 20. Residual gaps are column-count assertions and NOT NULL coverage for projects, phases, interview_questions.
+cycle_modified: 23

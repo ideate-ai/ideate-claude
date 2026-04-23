@@ -1,0 +1,13 @@
+id: D-67
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "`migrateJournal` writes per-entry YAML files to `cycles/{NNN}/journal/J-{NNN}-{seq}.yaml`, following WI-157 notes spec. This contradicts `notes/143.md` (shows `journal.yaml` as a flat array at `.ideate/` root) and `notes/144.md` (JournalEntry schema shows `entries:` array). Three specs contradict each other on the intended layout. The executor followed the immediate work item spec without checking earlier architectural specs."
+rationale: Rationale for the per-entry layout not recorded beyond "followed notes/157.md." The contradiction was not caught during incremental review.
+cycle_created: 1
+cycle_modified: null
+content_hash: ba7249f63a43a0be13daf2342438e105991f5a5caed6d7b6c29ee2cf8fed0a3a
+token_count: 199
+file_path: .ideate/decisions/D-67.yaml

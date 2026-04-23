@@ -1,0 +1,13 @@
+id: D-70
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-155 replaced `path.join("archive", "cycles")` with `"cycles"` in `config.ts IDEATE_SUBDIRS`. The architecture document was not updated and still references the old nested layout. The architecture update was not in WI-155 acceptance criteria.
+rationale: Implements D-060. The documentation-implementation divergence is a known gap deferred to a future work item.
+cycle_created: 1
+cycle_modified: null
+content_hash: "88372befa667f5b87b576a28c06348040d642d353f0b52f1011ac7832e35829a"
+token_count: 146
+file_path: .ideate/decisions/D-70.yaml

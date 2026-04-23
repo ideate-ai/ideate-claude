@@ -1,0 +1,19 @@
+id: decision-log
+type: decision-log
+decisions:
+  - alternatives:
+      - "Fix tests inline during review - rejected: would bypass workflow"
+    decision: Defer test consolidation to refinement cycle
+    rationale: Critical test failures block convergence; will create targeted work items in refinement to fix imports and assertions
+  - alternatives:
+      - "Keep open - rejected: questions already resolved"
+    decision: Close Q-08 and Q-09 as obsolete
+    rationale: Both questions have resolutions recorded and are marked obsolete; formal closure confirmed
+  - alternatives:
+      - "Fix immediately - rejected: cosmetic issue, not blocking"
+    decision: Policy P-41 minor documentation mismatch not blocking
+    rationale: Implementation is correct; documentation can be updated in refinement without affecting correctness
+open_questions: []
+content_hash: d09ef6f929495b9859c4290dac774df8cf2ed5930439f82965bda539f14bfe1c
+token_count: 212
+file_path: .ideate/decision-log/decision-log.yaml

@@ -1,0 +1,20 @@
+id: RM-003-cycle
+type: review_manifest
+title: Review Manifest — Autopilot Cycle 3
+work_items:
+  - WI-420
+  - WI-421
+files_changed:
+  - mcp/artifact-server/src/tools/write.ts
+  - mcp/artifact-server/src/tools/index.ts
+  - mcp/artifact-server/src/tools/metrics.ts
+  - mcp/artifact-server/src/__tests__/metrics.test.ts
+policies_under_review:
+  - P-44
+  - P-33
+test_count: 494
+cycle_start_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
+cycle_end_commit: a0e97e772552219d50dc6bb6f7cb8ec9d1d4dbf2
+content_hash: 6ba8881fe4a0bce96addd72070a099c962ee25ac966594b273b87396bf7dcf6c
+token_count: 123
+file_path: .ideate/cycles/003/RM-003-cycle.yaml

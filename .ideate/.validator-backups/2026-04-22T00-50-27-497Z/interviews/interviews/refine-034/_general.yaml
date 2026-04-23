@@ -1,0 +1,34 @@
+id: interviews/refine-034/_general
+type: interview
+cycle: 34
+entries:
+  - question: What changes are you looking to make?
+    answer: Address any and all open work items which are still relevant in v3. With the shift to PPR as a north star, a lot of the work items are obsolete and should be marked as such.
+    domain: null
+  - question: Review findings exist from a previous cycle. Are you here to address those findings, to make other changes, or both?
+    answer: No active findings. This is a cleanup cycle — triage all 72 pending items against current code, close what's done, mark what's obsolete.
+    domain: null
+  - question: Do GP-01 through GP-13 still hold?
+    answer: Confirmed — all principles still hold.
+    domain: null
+  - question: PPR as north star — is PPR-based context assembly the next major feature?
+    answer: This is part of v3. Want to clean up outstanding work before moving forward.
+    domain: null
+  - question: Should each pending item be verified against current code?
+    answer: Yes, verify each and close them out if done. There was a bug where some items weren't updated.
+    domain: artifact-structure
+  - question: WI-172 (migration script fixes) — worth fixing given it's a one-time tool?
+    answer: Worth fixing. A number of apps are on v2.
+    domain: artifact-structure
+  - question: WI-171 (MCP server performance) — re-scope or mark obsolete with fresh items?
+    answer: Mark obsolete and create fresh items.
+    domain: artifact-structure
+  - question: Execution approach — parallel with incremental review?
+    answer: Just do the capstone.
+    domain: workflow
+  - question: Anything else to add to this cycle?
+    answer: "Bug: created a new project ~/code/ideate-demo for a slide deck. It created a stray markdown doc personalized-pagerank-research.md in the project root. The researcher agent has Write tool access and wrote directly to disk bypassing MCP."
+    domain: agent-system
+content_hash: 0d8f729f41fc99af3cdf0a48fda013ec4dec9c1b509557cd1d3e3eb9d3c124cd
+token_count: 485
+file_path: .ideate/interviews/interviews/refine-034/_general.yaml

@@ -1,0 +1,13 @@
+id: D-154
+type: domain_decision
+domain: artifact-structure
+title: handleArchiveCycle DELETE loop must be wrapped in exclusive transaction
+description: handleArchiveCycle runs individual DELETE FROM nodes WHERE file_path = ? statements in a loop with no enclosing transaction. If interrupted mid-loop, the SQLite index retains stale node entries referencing deleted file paths. WI-424's LEFT JOIN fallback made this consequence observable — handleGetConvergenceStatus file-path fallback reads stale entries and returns null content, reporting 'unknown' convergence.
+rationale: "P-44 already requires exclusive transactions for write handlers but archive delete operations were not explicitly scoped. Same atomicity argument applies: partial completion of a multi-row delete leaves the index inconsistent. Fix: wrap the delete loop in ctx.db.transaction(...).exclusive()."
+policy: P-44
+source: cycle 5 code-quality S2; decision-log OQ-5-02
+status: settled
+cycle: 5
+content_hash: fe31b45237a972270dc7271c7603468dbc4a80f0401081762fb184e2bc75139b
+token_count: 240
+file_path: .ideate/decisions/D-154.yaml

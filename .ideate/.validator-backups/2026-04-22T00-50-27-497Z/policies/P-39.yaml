@@ -1,0 +1,14 @@
+id: P-39
+type: domain_policy
+domain: workflow
+status: active
+established: 0
+amended: null
+derived_from:
+  - GP-1 (Spec Sufficiency)
+  - D-123
+description: Canonical signal values (deferral tokens, status enums, trigger names) used across skill instructions, agent templates, and TypeScript schemas must originate from a single authoritative source — the TypeScript interface definition in schema.ts. Skill markdown and agent templates must reference the schema-defined casing and spelling exactly. When a mismatch is found, the schema.ts definition governs and the prose documents must be corrected.
+body: "Prose skill documents and agent templates are not type-checked. The TypeScript schema.ts enums are compiled and validated. Any time a signal value appears in both schema.ts and a skill/agent markdown file, schema.ts is authoritative. Review checks should verify these values match. Mismatch root cause: full-audit found execute.md checks DEFER, proxy-human.md writes DEFERRED, schema.ts defines lowercase 'deferred' — three divergent values for the same signal."
+content_hash: 7c034e621d338f9b06caf3c47435237d588cf0bc9ac8e8b8ac747eea18f173e1
+token_count: 267
+file_path: .ideate/policies/P-39.yaml

@@ -1,0 +1,13 @@
+id: D-103
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-179 expanded the array-item quoting condition from 5 to 15 conditions, matching all scalar guard conditions. The expansion covers starts-with YAML indicator characters (`>`, `'`, `{`, `[`, `*`, `&`, `!`, `|`), contains tab, starts with digit, equals YAML keywords (`true`, `false`, `null`, `yes`, `no`, `on`, `off`), and starts with double-quote. The user chose full parity over partial parity when presented the choice. Resolves Q-69.
+rationale: Inconsistent quoting between scalars and array items creates latent YAML correctness holes wherever migration encounters YAML keyword strings or indicator characters in array positions. Full parity eliminates the class of bug permanently rather than addressing only the specific cases present in current artifact content.
+cycle_created: 1
+cycle_modified: null
+content_hash: "6d78557f9130231a3846fc500e4f96129181bdd5b72b47a461a70f98d9f27384"
+token_count: 247
+file_path: .ideate/decisions/D-103.yaml

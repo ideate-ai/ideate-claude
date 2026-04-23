@@ -1,0 +1,14 @@
+id: P-27
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-4 (Parallel-First Design); multi-developer workflow analysis in cycle 016
+established: cycle 016
+amended: null
+description: Each work item, finding, policy, decision, question, journal entry, principle, and constraint is a separate YAML file with a unique ID. No consolidated files for artifact types that multiple agents or developers might create concurrently. This prevents merge conflicts in multi-developer workflows and ensures the indexer can process individual artifacts independently.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5b1935541a3e4e949f67e4b9c3293335a6f63e59fcbab75ccb98aa30d8c5d309"
+token_count: 172
+file_path: .ideate/policies/P-27.yaml

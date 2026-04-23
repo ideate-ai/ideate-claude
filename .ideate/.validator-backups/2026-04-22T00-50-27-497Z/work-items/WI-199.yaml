@@ -1,0 +1,134 @@
+id: WI-199
+type: work_item
+title: Interview YAML restructure — per-question addressability
+status: done
+complexity: large
+scope:
+  - path: mcp/artifact-server/src/schema.ts
+    op: modify
+  - path: mcp/artifact-server/src/db.ts
+    op: modify
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+  - path: scripts/migrate-to-v3.ts
+    op: modify
+  - path: scripts/migrate-to-v3.js
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/schema.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/indexer.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "New interview_questions extension table in schema.ts with columns: id, interview_id, question, answer, domain, seq"
+  - interview_questions table has FK to nodes(id) ON DELETE CASCADE
+  - Drizzle interviewQuestions table definition in db.ts with FK reference
+  - TYPE_TO_EXTENSION_TABLE includes interview_question mapping
+  - Indexer extracts entries array from interview YAML files and creates one interview_question node per entry
+  - Indexer creates belongs_to edge from each interview_question to its parent interview node
+  - migrate-to-v3.ts migrateInterviews parses Q/A blocks from markdown and produces entries array in YAML output
+  - migrate-to-v3.js updated to match (dual maintenance)
+  - Schema tests verify interview_questions table exists with FK CASCADE
+  - Indexer tests verify entry extraction creates interview_question nodes
+  - CURRENT_SCHEMA_VERSION remains 1 (additive table, no migration needed — rebuild handles it)
+  - All tests pass
+module: null
+domain: null
+notes: |
+  # WI-199: Interview YAML Restructure
+
+  ## New interview YAML format
+
+  ```yaml
+  id: interview-refine-022
+  type: interview
+  cycle_created: 22
+  phase: refine
+  date: "2026-03-25"
+  context: "Consolidate MCP artifact server Phases 2-5"
+  entries:
+    - id: IQ-022-001
+      question: "What is the scope of this refinement?"
+      answer: "Tackle all remaining phases in a single pass..."
+      domain: null
+      seq: 1
+    - id: IQ-022-002
+      question: "Schema refactor — should we use class table inheritance?"
+      answer: "Yes. Concerned about RI issues..."
+      domain: artifact-structure
+      seq: 2
+  ```
+
+  ## Schema changes (schema.ts)
+
+  Add new extension table:
+  ```sql
+  CREATE TABLE interview_questions (
+      id           TEXT PRIMARY KEY REFERENCES nodes(id) ON DELETE CASCADE,
+      interview_id TEXT NOT NULL,
+      question     TEXT NOT NULL,
+      answer       TEXT NOT NULL,
+      domain       TEXT,
+      seq          INTEGER NOT NULL
+  );
+  CREATE INDEX idx_interview_questions_interview ON interview_questions(interview_id);
+  ```
+
+  Add `"interview_question"` to the DocumentArtifact type union or create a dedicated InterviewQuestion interface.
+
+  CURRENT_SCHEMA_VERSION stays at 1 — this is an additive table. The rebuild handles it (existing DBs get deleted on version mismatch; new DBs get all tables).
+
+  Actually — adding a table without bumping the version means existing index.db files won't have the table. The rebuild won't create it unless createSchema runs. checkSchemaVersion only deletes on mismatch. If version is already 1 and we add a table, the existing DB has version 1 but no interview_questions table.
+
+  **Resolution**: Either bump to version 2, or have createSchema use `CREATE TABLE IF NOT EXISTS` (which it already does). Since createSchema runs on every startup and uses IF NOT EXISTS, the new table is added automatically. No version bump needed.
+
+  ## Indexer changes (indexer.ts)
+
+  In `buildExtensionRow`, add a case for `"interview_question"`:
+  ```typescript
+  case "interview_questions":
+    return {
+      interview_id: toStrOrNull(doc.interview_id) ?? "",
+      question: toStrOrNull(doc.question) ?? "",
+      answer: toStrOrNull(doc.answer) ?? "",
+      domain: toStrOrNull(doc.domain),
+      seq: toNumOrNull(doc.seq) ?? 0,
+    };
+  ```
+
+  In the main rebuild loop, after upserting an interview document node, check if the parsed YAML has an `entries` array. If so, for each entry:
+  1. Create a node (type: "interview_question", id: entry.id)
+  2. Create an extension row in interview_questions
+  3. Create a `belongs_to` edge from the question node to the interview node
+
+  This means the indexer needs special handling for interview files — it's not just "one YAML file = one node" anymore. It's "one YAML file = one interview node + N question nodes."
+
+  ## Migration script changes (migrate-to-v3.ts)
+
+  `migrateInterviews` currently reads markdown files and writes monolithic YAML with full content as a text blob. Rewrite to:
+
+  1. Parse Q/A blocks using regex: `**Q: (.*?)**\nA: (.*?)(?=\n\n\*\*Q:|\n\n---|\Z)`
+  2. Build entries array with sequential IDs (IQ-{cycle}-{seq})
+  3. Write structured YAML with entries array
+
+  For the legacy `steering/interview.md`, parse all Q/A blocks into one interview with entries.
+
+  For per-cycle `steering/interviews/refine-{N}/_general.md`, parse Q/A blocks per file.
+
+  Skip `_full.md` files (compiled transcripts, not structured Q/A).
+
+  ## Drizzle changes (db.ts)
+
+  Add `interviewQuestions` table definition. Add to TYPE_TO_EXTENSION_TABLE as `interview_question: interviewQuestions`.
+
+  ## Test changes
+
+  - schema.test.ts: verify interview_questions table exists with FK CASCADE
+  - indexer.test.ts: create a test YAML interview file with entries array, run rebuildIndex, verify interview_question nodes created with belongs_to edges
+cycle_created: 1
+cycle_modified: null
+content_hash: e371c4cff6a9109386dd397130eb1629ef6f19179a56e05cf2f749a4c1b099a5
+token_count: 1399
+file_path: .ideate/work-items/WI-199.yaml
+resolution: "Verified complete: interview_questions table, Drizzle def, indexer extraction, migration support"

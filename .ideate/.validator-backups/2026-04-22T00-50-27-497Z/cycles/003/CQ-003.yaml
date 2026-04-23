@@ -1,0 +1,33 @@
+id: CQ-003
+type: cycle_summary
+cycle: 3
+title: Code Quality Review — Cycle 3
+reviewer: code-reviewer
+verdict: Fail
+content: |-
+  ## Verdict: Fail
+
+  One significant finding.
+
+  ## Significant Findings
+
+  ### S1: agent_type filter description contradicts implementation
+  - **File**: `mcp/artifact-server/src/tools/index.ts:469`
+  - **Issue**: The schema description reads 'Include only events with this event_name (agent type).' — it tells callers the filter matches on event_name. The implementation at metrics.ts:233 uses json_extract(me.payload, '$.agent_type') = ?, which matches against payload.agent_type, not event_name. An agent following the description will pass a value expecting event_name matching but the SQL looks in payload.agent_type instead.
+  - **Impact**: Agents constructing filtered metric queries get incorrect/empty results without error.
+  - **Suggested fix**: Change description to 'Include only events whose payload.agent_type field equals this value.'
+
+  ## Minor Findings
+
+  ### M1: handleArchiveCycle SQLite deletes not wrapped in transaction
+  - **File**: `write.ts:304–311` — individual DELETE statements in a loop, not in an exclusive transaction. Interrupted mid-loop leaves index inconsistent.
+  - **Suggested fix**: Wrap in ctx.db.transaction(...).exclusive().
+
+  ## Confirmed Fixed
+
+  - Cycle 1 S1: finding_severities [object Object] — resolved
+  - Cycle 2 S1/S2: LIKE false positives — replaced with json_extract, zero LIKE patterns remain
+  - All 3 upsertPhase() calls in write.ts now use .exclusive()
+content_hash: ccc05a3a026b96ee39cb387d2aa3c205d30389c77d28e893580b06f0d7320fcc
+token_count: 383
+file_path: .ideate/cycles/003/CQ-003.yaml

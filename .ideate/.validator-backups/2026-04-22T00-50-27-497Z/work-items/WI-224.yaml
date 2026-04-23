@@ -1,0 +1,30 @@
+id: WI-224
+type: work_item
+title: "Obsolete status + resolution field in MCP tools"
+status: done
+complexity: low
+scope:
+  - {path: mcp/artifact-server/src/tools/execution.ts, op: modify}
+  - {path: mcp/artifact-server/src/tools/analysis.ts, op: modify}
+  - {path: mcp/artifact-server/src/__tests__/execution.test.ts, op: create}
+depends: []
+blocks: [WI-226]
+criteria:
+  - execution.ts treats obsolete as terminal state
+  - "analysis.ts reports Obsolete: N as named line"
+  - obsolete excluded from catch-all
+  - 2 tests in execution.test.ts
+  - No schema DDL changes
+module: null
+domain: artifact-structure
+notes: |
+  # WI-224: Obsolete Status
+
+  execution.ts: Added obsoleteSet alongside completedSet. Obsolete items excluded from pending/ready/blocked, satisfy dependencies.
+  analysis.ts: Added wiObsolete bucket, named line after Blocked, added to exclusion list.
+  execution.test.ts: 2 tests. All 251 tests pass.
+cycle_created: 28
+cycle_modified: null
+content_hash: ""
+token_count: 0
+file_path: .ideate/work-items/WI-224.yaml

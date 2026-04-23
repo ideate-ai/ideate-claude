@@ -1,0 +1,31 @@
+id: WI-401
+type: work_item
+title: Fix handleUpdateWorkItems path leakage and add systematic P-33 compliance test
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-402
+criteria:
+  - handleUpdateWorkItems catch block uses err.code + artifact ID instead of raw err.message in the failures array
+  - No .ideate/ path appears in any field of the handleUpdateWorkItems YAML response when a filesystem error occurs
+  - A test in tools.test.ts verifies that handleUpdateWorkItems failures[].reason does not contain ctx.ideateDir or os.tmpdir() when a filesystem error is triggered
+  - All 440+ tests pass
+domain: artifact-structure
+notes: |-
+  Fix: in handleUpdateWorkItems catch block at write.ts:990, replace `(err as Error).message` with `(err as NodeJS.ErrnoException).code ? \`${(err as NodeJS.ErrnoException).code} on work item ${id}\` : 'internal error updating work item'`.
+
+  For the P-33 test: add an error path test similar to the existing handleArchiveCycle P-33 test in tools.test.ts. Trigger a filesystem error (e.g., remove the work-items directory after seeding the DB entry), call handleUpdateWorkItems, and assert that the returned YAML does not contain artifactDir or os.tmpdir() in any response field.
+
+  This is the same pattern applied to handleArchiveCycle by WI-395. The code-reviewer S1 finding and gap-analyst Gap 5 both identify this as the remaining P-33 violation after WI-395.
+resolution: Fixed handleUpdateWorkItems catch block to use err.code instead of err.message (write.ts:990). Added P-33 compliance test using fs.chmodSync to trigger EACCES and verify no absolute paths in failures[].reason. 447 tests pass.
+cycle_created: 1
+cycle_modified: 1
+content_hash: 7fc87dcc8ba2d185114cd884da700db4151920cf3582f54a3d7fcac3c9ec6f15
+token_count: 456
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-401.yaml

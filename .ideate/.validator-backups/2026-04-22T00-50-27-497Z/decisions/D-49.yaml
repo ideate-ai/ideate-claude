@@ -1,0 +1,13 @@
+id: D-49
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: Ideate will not build a model configuration layer (e.g., tier mapping in `.ideate.json`). Claude Code's existing `ANTHROPIC_DEFAULT_*_MODEL` env vars and `ANTHROPIC_BASE_URL` provide custom model routing without ideate-specific code. Per-agent model routing to different endpoints is not possible without a proxy due to session-global endpoint lock-in.
+rationale: The feature would depend on undocumented model string passthrough behavior, require touching every skill file, and duplicate functionality already provided by the host environment. The implementation cost is high relative to value.
+cycle_created: 1
+cycle_modified: null
+content_hash: "56508e7e023ade14ed7864c169fe3c7f1db5f035ecb0a029334e17f1b2c21f6f"
+token_count: 203
+file_path: .ideate/decisions/D-49.yaml

@@ -1,0 +1,13 @@
+id: D-88
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-172 added a `pretest` script to `package.json` that compares the mtime of `migrate-to-v3.js` against `migrate-to-v3.ts` and warns when `.js` is stale. A JSDoc header comment in `migrate-to-v3.js` instructs contributors to regenerate with `npm run build:migration`. That script does not exist in `package.json`. Detection fires correctly; the documented recovery path fails immediately. Q-58 partially resolved; Q-63 tracks the outstanding gap."
+rationale: "Detection was added; recovery was not. The minimum viable fix (build:migration script) was not in WI-172 scope."
+cycle_created: 1
+cycle_modified: null
+content_hash: "9a26f61a9304073523976a180b645c03f3db52262746f1b0536db7cdca9fcc0e"
+token_count: 196
+file_path: .ideate/decisions/D-88.yaml

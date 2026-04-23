@@ -1,32 +1,47 @@
 id: spec-adherence
 type: cycle_summary
 reviewer: spec-reviewer
-content: |-
+content: >-
   ## Verdict: Incomplete
 
-  Spec-reviewer exhausted its turn budget before producing a formatted review. Partial findings reconstructed from investigation notes.
+
+  Spec-reviewer exhausted its turn budget before producing a formatted review. Partial findings reconstructed from
+  investigation notes.
+
 
   ## Critical Findings
+
   None identified.
 
+
   ## Significant Findings
+
   None identified.
+
 
   ## Minor Findings
 
-  ### S1: INVALID_ALWAYS_INCLUDE_TYPE listed in expectedCodes documentation but code uses INVALID_NODE_TYPE
-  File: local-adapter-validation.test.ts:863. The expectedCodes array lists INVALID_ALWAYS_INCLUDE_TYPE as a known error code, but ValidatingAdapter uses INVALID_NODE_TYPE for invalid types in always_include_types. The documentation array is stale — it reflects the old context.ts error code that was removed in WI-773.
 
-  Note: This reviewer ran out of turns. Findings above are partial. The spec-adherence pillar has blind spots in this cycle.
+  ### S1: INVALID_ALWAYS_INCLUDE_TYPE listed in expectedCodes documentation but code uses INVALID_NODE_TYPE
+
+  File: local-adapter-validation.test.ts:863. The expectedCodes array lists INVALID_ALWAYS_INCLUDE_TYPE as a known error
+  code, but ValidatingAdapter uses INVALID_NODE_TYPE for invalid types in always_include_types. The documentation array
+  is stale — it reflects the old context.ts error code that was removed in WI-773.
+
+
+  Note: This reviewer ran out of turns. Findings above are partial. The spec-adherence pillar has blind spots in this
+  cycle.
 content_hash: d7cb212330220cee649072c99ca91b89295f149aba39fdca692ca757543117e1
 token_count: 646
-file_path: .ideate/cycles/068/spec-adherence.yaml
+file_path: cycles/023/spec-adherence.yaml
 verdict: Pass
 architecture_deviations: None. All files touched by PH-017 reside in correct locations per architecture.
 unmet_acceptance_criteria: None. All 9 work items (WI-754 through WI-762) have all acceptance criteria satisfied.
 principle_violations: None.
 principle_adherence_evidence:
-  P-75: Schema test assertions query live DB via columnNames()/tableNames() using PRAGMA table_info and sqlite_master. WI-754 sqlite_* filter at schema.test.ts:110. WI-760 CASCADE test at schema.test.ts:787-801.
+  P-75: >-
+    Schema test assertions query live DB via columnNames()/tableNames() using PRAGMA table_info and sqlite_master.
+    WI-754 sqlite_* filter at schema.test.ts:110. WI-760 CASCADE test at schema.test.ts:787-801.
   P-76: WI-759 created to address prior S1 finding. WI-754.yaml criterion 2 now documents sqlite_* filter.
   P-44: Write-transaction test at write-transaction.test.ts:450-493 verifies two-phase pattern for putNodeForJournal.
   GP-14: All test improvements operate through createSchema() and test helpers, not bypassing schema layer.
@@ -35,7 +50,12 @@ undocumented_additions: None.
 naming_inconsistencies:
   - id: N1
     title: WI-757 describe block name differs from spec shorthand
-    description: WI-757 criterion refers to describe('proxy_human_decisions table') but implementation uses describe('createSchema — proxy_human_decisions table') matching the file-wide established pattern. Documentation imprecision in spec, not a code violation.
-residual_note: WI-754.yaml notes section still shows original 3-table filter code example while criteria field correctly documents 4-category filter. Notes are historical context, not prescriptive.
+    description: >-
+      WI-757 criterion refers to describe('proxy_human_decisions table') but implementation uses describe('createSchema
+      — proxy_human_decisions table') matching the file-wide established pattern. Documentation imprecision in spec, not
+      a code violation.
+residual_note: >-
+  WI-754.yaml notes section still shows original 3-table filter code example while criteria field correctly documents
+  4-category filter. Notes are historical context, not prescriptive.
 cycle: 23
 cycle_modified: 21

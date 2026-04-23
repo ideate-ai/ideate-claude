@@ -1,0 +1,13 @@
+id: D-63
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: Adopt `drizzle-orm` as the query builder for the MCP artifact server. Drizzle has first-class `better-sqlite3` support, does not require replacing the existing schema management in `schema.ts`, and eliminates the latent SQL injection risk from `upsertRow` interpolating column names into SQL strings.
+rationale: "The code-reviewer flagged `upsertRow` (indexer.ts:261) interpolating `Object.keys(row)` into SQL as a latent injection risk. While safe in the current call path (all rows from hardcoded `buildRow`), Phase 2 write tools will introduce external data. Drizzle prevents identifier injection by construction — typed table and column references, never raw strings. Lightweight (single `drizzle-orm` package), no dialect adapter needed."
+cycle_created: 1
+cycle_modified: null
+content_hash: d00a625982cc82f1727d46d4cc3f1322e08cab434234e0815e3ca4e22222cc4c
+token_count: 239
+file_path: .ideate/decisions/D-63.yaml

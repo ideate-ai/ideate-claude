@@ -1,34 +1,53 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |-
+content: >-
   ## Verdict: Conditional Pass
+
 
   Primary cycle 24 goals complete. One pre-existing gap surfaced.
 
+
   ## Critical Findings
+
   None.
+
 
   ## Significant Findings
 
-  ### II1: edge_type_weights unvalidated in ValidatingAdapter.traverse
-  TraversalOptions has 7 optional fields. 6 are now validated. edge_type_weights (Record<string, number>) receives no validation — no type check, no value check, no key validation against EdgeType. A caller passing invalid values would silently corrupt PPR scores.
 
-  Note: This was explicitly deferred in cycle 23 gap analysis (IR1) as 'silent-ignore is defensive and not harmful.' It pre-dates this cycle.
+  ### II1: edge_type_weights unvalidated in ValidatingAdapter.traverse
+
+  TraversalOptions has 7 optional fields. 6 are now validated. edge_type_weights (Record<string, number>) receives no
+  validation — no type check, no value check, no key validation against EdgeType. A caller passing invalid values would
+  silently corrupt PPR scores.
+
+
+  Note: This was explicitly deferred in cycle 23 gap analysis (IR1) as 'silent-ignore is defensive and not harmful.' It
+  pre-dates this cycle.
+
 
   ## Minor Findings
+
   None.
 
+
   ## Carry-Forward Items (Out of PH-041 Scope)
+
   - CF1: 8 extension tables lack column-structure tests
+
   - CF2: 4 extension tables have partial column tests
+
   - CF3: 10 of 16 extension tables lack CASCADE tests
+
   - CF4: ALL_NODE_TYPES.length hardcoded count assertion
 content_hash: 481589b983acaab5cd90df7ec08b87914f95a799bf18d9f953220b78e4c12d24
 token_count: 853
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/024/gap-analysis.yaml
 verdict: Pass
-note: Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All identified gaps are carry-forward items outside PH-017 scope.
+note: >-
+  Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All
+  identified gaps are carry-forward items outside PH-017 scope.
 critical_findings: []
 significant_findings: []
 carry_forward_gaps:
@@ -44,7 +63,9 @@ carry_forward_gaps:
       - journal_entries
       - metrics_events
     severity: carry-forward
-    description: These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
+    description: >-
+      These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions
+      (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
   - id: CF2
     title: 4 extension tables have partial column-structure tests
     tables:
@@ -67,10 +88,14 @@ carry_forward_gaps:
       - metrics_events
       - document_artifacts
     severity: carry-forward
-    description: PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10 tables remain without.
+    description: >-
+      PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10
+      tables remain without.
   - id: CF4
     title: ALL_NODE_TYPES.length hardcoded count assertion
-    description: The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check. Adding a new NodeType requires updating this count manually.
+    description: >-
+      The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check.
+      Adding a new NodeType requires updating this count manually.
     severity: carry-forward
 within_scope_gaps: None identified. All 9 PH-017 work items appear to have their acceptance criteria satisfied based on partial analysis.
 cycle: 24

@@ -14,37 +14,61 @@ criteria:
   - Individual review files are described as being read only for specific cross-reference investigation
 module: null
 domain: null
-notes: |
+notes: >
   # WI-107: journal-keeper.md — align with manifest-first instruction
+
 
   ## Context
 
-  `agents/journal-keeper.md` contains a step (approximately line 65) that says "Read all incremental reviews." The prompt-level instructions in both `skills/review/SKILL.md` and `skills/autopilot/phases/review.md` already instruct the journal-keeper to use the review manifest as an index and read individual incremental reviews only when cross-referencing specific findings. The agent definition contradicts this, creating confusion for any agent that reads it.
 
-  This is the finding from technical analysis #4 (journal-keeper unique value), and was also identified as a quality finding in cycle 001 review.
+  `agents/journal-keeper.md` contains a step (approximately line 65) that says "Read all incremental reviews." The
+  prompt-level instructions in both `skills/review/SKILL.md` and `skills/autopilot/phases/review.md` already instruct
+  the journal-keeper to use the review manifest as an index and read individual incremental reviews only when
+  cross-referencing specific findings. The agent definition contradicts this, creating confusion for any agent that
+  reads it.
+
+
+  This is the finding from technical analysis #4 (journal-keeper unique value), and was also identified as a quality
+  finding in cycle 001 review.
+
 
   ---
+
 
   ## Fix: `agents/journal-keeper.md` — update incremental reviews instruction
 
-  Find the line(s) in the `## How to Synthesize` or similar section that say something like "Read all incremental reviews."
+
+  Find the line(s) in the `## How to Synthesize` or similar section that say something like "Read all incremental
+  reviews."
+
 
   **Replace** with:
 
+
   ```markdown
-  Use the review manifest (`archive/incremental/review-manifest.md`) as your index for incremental reviews. Read individual incremental review files only when cross-referencing a specific finding — do not read all incremental reviews by default. The review manifest provides verdict and finding counts for each work item without requiring you to load each file.
+
+  Use the review manifest (`archive/incremental/review-manifest.md`) as your index for incremental reviews. Read
+  individual incremental review files only when cross-referencing a specific finding — do not read all incremental
+  reviews by default. The review manifest provides verdict and finding counts for each work item without requiring you
+  to load each file.
+
   ```
+
 
   ---
 
+
   ## Acceptance Criteria
 
+
   1. `agents/journal-keeper.md` no longer instructs the agent to read all incremental reviews
+
   2. The updated instruction directs the agent to use the review manifest as the primary index
+
   3. Individual review files are described as being read only for specific cross-reference investigation
 cycle_created: 1
 cycle_modified: null
 content_hash: 4352f8e32a114b938574856bbfb9bd12b57f53f930787238afd67df622abcbb5
 token_count: 562
-file_path: .ideate/work-items/WI-107.yaml
+file_path: work-items/WI-107.yaml
 resolution: Implemented during v3 migration

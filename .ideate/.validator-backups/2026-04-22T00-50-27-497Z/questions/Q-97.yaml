@@ -1,0 +1,12 @@
+id: Q-97
+type: domain_question
+deferred_rationale: Pre-existing omission with low reader impact. Functions are documented where used in ARCHITECTURE.md Sections 5 and 9.
+description: Should ARCHITECTURE.md Section 10 list all config.ts exports? Currently documents 4 exports; config.ts exports 11. The missing exports (writeConfig, readRawConfig, readIdeateConfig, findIdeateConfig, resolveArtifactDir, createIdeateDir, IdeateConfig, IDEATE_SUBDIRS, CONFIG_SCHEMA_VERSION) are documented where used in other sections.
+domain: artifact-structure
+impact: Minor documentation inconsistency. Developers consulting ARCHITECTURE.md Section 10 won't see complete export list, but functions are documented elsewhere and in code.
+reexamination_trigger: When ARCHITECTURE.md is next revised or when config.ts exports change.
+source: cycle 002 gap-analysis MI3, cycle 000 summary D1
+status: deferred
+content_hash: 53b18ac52eb66003bf35fd2c54651e38377f1d6e3b93ab848011f1936fa19bb1
+token_count: 222
+file_path: .ideate/questions/Q-97.yaml

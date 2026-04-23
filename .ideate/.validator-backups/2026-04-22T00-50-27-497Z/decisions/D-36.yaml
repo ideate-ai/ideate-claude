@@ -1,0 +1,13 @@
+id: D-36
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: WI-121 targeted `skills/execute/SKILL.md`, `skills/autopilot/phases/execute.md`, and `specs/domains/workflow/policies.md`. `agents/code-reviewer.md` was explicitly excluded despite containing language inconsistent with the new protocol.
+rationale: The scoping decision (D-36) treated the code-reviewer update as secondary, deferred to a future cycle. This produced SG1 in gap analysis.
+cycle_created: 1
+cycle_modified: null
+content_hash: "797bcf1688f0fcd7d45b39c4bf54d63a2031b939c4eeca46dfa63d383bfaa587"
+token_count: 146
+file_path: .ideate/decisions/D-36.yaml

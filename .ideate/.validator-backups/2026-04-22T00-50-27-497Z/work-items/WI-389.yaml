@@ -1,0 +1,43 @@
+id: WI-389
+type: work_item
+title: Fix test imports and remove duplicates in tools.test.ts
+status: done
+complexity: small
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/__tests__/tools.test.ts
+depends: []
+blocks: []
+criteria:
+  - All tests in tools.test.ts pass
+  - No duplicate test case definitions
+  - Test imports use correct function names (handleManageAutopilotState, handleWriteArtifact)
+  - Test assertions match actual function return formats
+domain: agent-system
+notes: |-
+  # WI-389: Fix test imports and remove duplicates in tools.test.ts
+
+  ## Context
+  Cycle 002 review found 13 failing tests in tools.test.ts due to import/expectation mismatches.
+
+  ## Findings Addressed
+  - Critical: Test file tools.test.ts contains 13 failing tests due to import/expectation mismatches
+  - Significant: Test file has duplicate test case definitions from WI-388 implementation
+
+  ## Implementation Notes
+  1. Fix imports to use `handleManageAutopilotState` instead of non-existent function names
+  2. Fix assertions to match `handleWriteArtifact` return format (it returns a string, not an object)
+  3. Remove duplicate test case definitions created during WI-388
+  4. Run tests to verify all pass
+
+  ## Acceptance Criteria
+  - All tests in tools.test.ts pass
+  - No duplicate test case definitions
+  - Test imports use correct function names
+  - Test assertions match actual function return formats
+resolution: null
+cycle_created: 2
+cycle_modified: 1
+content_hash: 3999af74a719c474090b0468ba8751ec5c78c212af885126996cce404bbadac0
+token_count: 365
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-389.yaml

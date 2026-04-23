@@ -1,0 +1,15 @@
+id: P-13
+type: domain_policy
+domain: agent-system
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture)
+  - constraint C-2 (File-based coordination)
+established: planning phase
+amended: null
+description: An agent's output is written to a specified artifact path; the invoking skill reads that path after the agent completes; no in-memory result objects are passed between skill phases.
+cycle_created: 1
+cycle_modified: null
+content_hash: "448577c494af48b31db380ded0e061221d5d5556d279142d88838b1c2dc15af0"
+token_count: 124
+file_path: .ideate/policies/P-13.yaml

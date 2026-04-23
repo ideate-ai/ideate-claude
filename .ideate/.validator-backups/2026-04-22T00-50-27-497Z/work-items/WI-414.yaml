@@ -1,0 +1,23 @@
+id: WI-414
+type: work_item
+title: Fix handleGetConvergenceStatus — query findings table instead of parsing prose
+status: done
+complexity: S
+scope: mcp/artifact-server/src/tools/analysis.ts (modify), mcp/artifact-server/src/__tests__/tools.test.ts (modify)
+depends: []
+blocks: []
+criteria: |-
+  1. handleGetConvergenceStatus counts critical/significant findings by querying `SELECT COUNT(*) as cnt FROM findings WHERE cycle = ? AND severity IN ('critical', 'significant')` via ctx.db.prepare(), replacing the current markdown bullet-counting loop.
+  2. Spec-adherence verdict detection (Pass/Fail) continues to use the parsePrincipleVerdict prose-parsing path — unchanged.
+  3. tools.test.ts has at least one test that seeds a finding row with severity='critical' into the findings table and verifies handleGetConvergenceStatus returns converged: false for that cycle.
+  4. tools.test.ts has at least one test that verifies converged: true when no critical/significant findings exist for the cycle and spec-adherence verdict is pass.
+  5. All existing tests pass (npm test).
+  6. Build passes (npm run build).
+domain: null
+notes: "# WI-414: Fix handleGetConvergenceStatus — query findings table instead of parsing prose"
+resolution: null
+cycle_created: null
+cycle_modified: 3
+content_hash: 7e40b4d32e0082fdfc58694cb05392753dd707268cf78918e3147cf75543a3cf
+token_count: 318
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-414.yaml

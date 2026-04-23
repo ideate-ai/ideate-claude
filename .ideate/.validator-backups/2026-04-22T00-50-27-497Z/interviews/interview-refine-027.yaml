@@ -1,0 +1,18 @@
+id: interview-refine-027
+type: interview
+entries:
+  - question: What specifically is the PPR divergence you want investigated?
+    answer: The goal is to have the backend adapter implementation be completely invisible to the user experience. Normalization at this juncture is an anti-pattern hiding poor implementation.
+    domain: adapter-equivalence
+  - question: Is this focused specifically on PPR/traverse or all adapter methods?
+    answer: This phase is to create a clean interface pattern between the ideate MCP and the backend implementation details. Important that SQLite and cloud-hosted database implementation are as identical in performance.
+    domain: adapter-equivalence
+  - question: Phase type?
+    answer: This is a spike.
+    domain: null
+  - question: Guiding principles still hold?
+    answer: Yes.
+    domain: null
+cycle_modified: 25
+content_hash: 04e4d9da584795bcd2acd7c71c596314e4eab4a2c39e96c15d57234a9157e040
+token_count: 214

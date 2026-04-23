@@ -1,0 +1,42 @@
+id: interviews/refine-040/_general
+type: interview
+cycle: 40
+entries:
+  - id: refine-040-q01
+    seq: 1
+    question: Are you here to address cycle 034 findings, make other changes, or both?
+    answer: "Both. Two additional concerns: (1) Are there untriaged items remaining in the v3 roadmap? (2) MCP server shows error state during startup before coming online — is this caused by SQLite indexing? Can the server come up and say it's not yet ready?"
+    domain: null
+  - id: refine-040-q02
+    seq: 2
+    question: "For ~30 phantom-pending items: bulk-update YAML to match index? Fix ideate_update_work_items if needed? For WI-172 (migration script fixes): still relevant or obsolete?"
+    answer: Yes, fix. WI-172 still relevant.
+    domain: artifact-structure
+  - id: refine-040-q03
+    seq: 3
+    question: Do guiding principles GP-01 through GP-13 still hold?
+    answer: Yes.
+    domain: null
+  - id: refine-040-q04
+    seq: 4
+    question: The ~37 phantom items (28 parse errors + 9 type mismatch) — one bundled work item or split?
+    answer: Bundle and don't be afraid to be brutal — remove them if they don't have value.
+    domain: artifact-structure
+  - id: refine-040-q05
+    seq: 5
+    question: "Readiness signaling for deferred startup: Option A (return error, caller retries), Option B (block tool call until ready), or Option C (return partial/stale results)?"
+    answer: B makes the most sense. The skills/agents calling should surface the error to say it's indexing.
+    domain: agent-system
+  - id: refine-040-q06
+    seq: 6
+    question: "Watcher rebuild: fix to incremental now, or separate future concern?"
+    answer: Tackle this now, it's a small cycle.
+    domain: artifact-structure
+  - id: refine-040-q07
+    seq: 7
+    question: Items 1-2 sequential (both touch indexer), items 3-5 parallel to each other and to 1-2. Include WI-172?
+    answer: Order sounds good. Include WI-172 too.
+    domain: null
+content_hash: d114bb2dca25a506c42d8006c6fb8c25da57ccc8ccccfecd9e4b55adb6a906f5
+token_count: 483
+file_path: .ideate/interviews/interviews/refine-040/_general.yaml

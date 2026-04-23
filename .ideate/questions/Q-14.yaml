@@ -2,13 +2,19 @@ id: Q-14
 type: domain_question
 domain: workflow
 status: resolved
-impact: The Quality Trends section of `scripts/report.sh` produces no rows for any autopilot-driven project. Because autopilot is the primary path for multi-cycle runs, quality trend analysis is non-functional for the majority of ideate users.
+impact: >-
+  The Quality Trends section of `scripts/report.sh` produces no rows for any autopilot-driven project. Because autopilot
+  is the primary path for multi-cycle runs, quality trend analysis is non-functional for the majority of ideate users.
 source: archive/cycles/006/gap-analysis.md SG1; archive/cycles/006/decision-log.md D3, D4, OQ1
-resolution: WI-112 added the emission block; WI-113 fixed the `skill` field value from `"review"` to `"autopilot"`. Both the structural gap and the field value contradiction are now closed.
+resolution: >-
+  WI-112 added the emission block; WI-113 fixed the `skill` field value from `"review"` to `"autopilot"`. Both the
+  structural gap and the field value contradiction are now closed.
 resolved_in: 4
-description: Should `skills/autopilot/phases/review.md` include a quality_summary emission block equivalent to `skills/review/SKILL.md` Phase 7.6? The `last_cycle_findings` dict is already in scope at the insertion point.
+description: >-
+  Should `skills/autopilot/phases/review.md` include a quality_summary emission block equivalent to
+  `skills/review/SKILL.md` Phase 7.6? The `last_cycle_findings` dict is already in scope at the insertion point.
 cycle_created: 1
 cycle_modified: null
-content_hash: "5a42d725966e4167044d3e2f9019ccc29345de18a0ac69c7236a82b37f7eaebc"
+content_hash: 5a42d725966e4167044d3e2f9019ccc29345de18a0ac69c7236a82b37f7eaebc
 token_count: 230
-file_path: .ideate/questions/Q-14.yaml
+file_path: questions/Q-14.yaml

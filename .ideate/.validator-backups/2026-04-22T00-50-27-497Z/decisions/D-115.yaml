@@ -1,0 +1,13 @@
+id: D-115
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "`PRAGMA foreign_keys = ON` added to `index.ts` immediately after connection open. Without it, all FK constraints in the v7 schema are decorative."
+rationale: SQLite defaults to FK OFF. The v7 schema relies on FK ON DELETE CASCADE for cleanup of extension table rows when nodes are deleted.
+cycle_created: 1
+cycle_modified: null
+content_hash: "71df65f73c55970a42c2c7061f21573df4df699510b0a0a9a14438368849cf39"
+token_count: 126
+file_path: .ideate/decisions/D-115.yaml

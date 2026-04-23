@@ -1,6 +1,6 @@
 id: WI-165
 type: work_item
-title: "Migration: remaining archive file types"
+title: 'Migration: remaining archive file types'
 status: done
 complexity: medium
 scope:
@@ -9,14 +9,23 @@ scope:
   - path: mcp/artifact-server/src/__tests__/migrate.test.ts
     op: modify
 depends:
-  - "162"
-  - "164"
+  - '162'
+  - '164'
 blocks: []
 criteria:
-  - "migrateArchiveCycles also processes decision-log.md from each cycle directory, producing a single content artifact per cycle with type: decision_log"
-  - "migrateArchiveCycles also processes summary.md from each cycle directory, producing a single content artifact per cycle with type: cycle_summary"
-  - "migrateArchiveCycles also processes review-manifest.md from each cycle directory, producing a single content artifact per cycle with type: review_manifest"
-  - migrateArchiveCycles also processes incremental/*.md files from each cycle directory (if an incremental/ subdirectory exists), using the same finding-extraction logic as code-quality.md and applying the work_item extraction from WI-162
+  - >-
+    migrateArchiveCycles also processes decision-log.md from each cycle directory, producing a single content artifact
+    per cycle with type: decision_log
+  - >-
+    migrateArchiveCycles also processes summary.md from each cycle directory, producing a single content artifact per
+    cycle with type: cycle_summary
+  - >-
+    migrateArchiveCycles also processes review-manifest.md from each cycle directory, producing a single content
+    artifact per cycle with type: review_manifest
+  - >-
+    migrateArchiveCycles also processes incremental/*.md files from each cycle directory (if an incremental/
+    subdirectory exists), using the same finding-extraction logic as code-quality.md and applying the work_item
+    extraction from WI-162
   - Dry-run mode does not write any of the new file types
   - Test covers decision-log migration with a minimal fixture
   - Test covers cycle summary migration with a minimal fixture
@@ -24,95 +33,155 @@ criteria:
   - npm run build succeeds; all existing tests pass
 module: null
 domain: null
-notes: |
+notes: >
   # WI-165: Migration — remaining archive file types
+
 
   ## Context
 
-  `migrateArchiveCycles` in `scripts/migrate-to-v3.ts` covers only `code-quality.md`, `spec-adherence.md`, and `gap-analysis.md` from each cycle directory (gap-analyst IG3). The following are currently skipped:
+
+  `migrateArchiveCycles` in `scripts/migrate-to-v3.ts` covers only `code-quality.md`, `spec-adherence.md`, and
+  `gap-analysis.md` from each cycle directory (gap-analyst IG3). The following are currently skipped:
+
 
   - `decision-log.md` — decisions and open questions synthesized by journal-keeper
+
   - `summary.md` — capstone review summary (the authoritative single-document view)
+
   - `review-manifest.md` — work item index with incremental review verdicts
+
   - `incremental/*.md` — per-work-item incremental review files (the full incremental history)
 
-  This depends on WI-162, which adds `work_item` and `verdict` extraction to `migrateArchiveCycles`. The incremental review processing in this work item reuses that logic.
+
+  This depends on WI-162, which adds `work_item` and `verdict` extraction to `migrateArchiveCycles`. The incremental
+  review processing in this work item reuses that logic.
+
 
   ## File types to add
 
+
   ### decision-log.md → type: decision_log (one per cycle)
 
+
   ```yaml
+
   id: DL-{cycleNum}
+
   type: decision_log
+
   cycle: {cycleNum}
+
   content: |
     {raw content of decision-log.md}
   content_hash: {sha256}
+
   token_count: {approx}
+
   ```
 
-  A decision log is a single document per cycle — do not attempt to split it into individual decision records (that is parsing complexity out of scope here).
+
+  A decision log is a single document per cycle — do not attempt to split it into individual decision records (that is
+  parsing complexity out of scope here).
+
 
   ### summary.md → type: cycle_summary (one per cycle)
 
+
   ```yaml
+
   id: CS-{cycleNum}
+
   type: cycle_summary
+
   cycle: {cycleNum}
+
   content: |
     {raw content of summary.md}
   content_hash: {sha256}
+
   token_count: {approx}
+
   ```
+
 
   ### review-manifest.md → type: review_manifest (one per cycle)
 
+
   ```yaml
+
   id: RM-{cycleNum}
+
   type: review_manifest
+
   cycle: {cycleNum}
+
   content: |
     {raw content of review-manifest.md}
   content_hash: {sha256}
+
   token_count: {approx}
+
   ```
+
 
   ### incremental/*.md → type: finding (same extraction logic as code-quality.md)
 
-  Each incremental review file in `archive/cycles/{NNN}/incremental/` is processed using the same finding-extraction logic applied to `code-quality.md` etc. The `work_item` field is derived from the filename prefix (e.g., `154-integrate-drizzle.md` → `WI-154`), same as established in WI-162.
 
-  The `reviewer` field for incremental review findings is `"code-reviewer"` (incremental reviews are always from the code-reviewer).
+  Each incremental review file in `archive/cycles/{NNN}/incremental/` is processed using the same finding-extraction
+  logic applied to `code-quality.md` etc. The `work_item` field is derived from the filename prefix (e.g.,
+  `154-integrate-drizzle.md` → `WI-154`), same as established in WI-162.
 
-  Finding IDs from incremental files should use a different prefix to avoid collision with capstone findings: `FI-{cycleNum}-{seq}` (for incremental, as opposed to `F-{cycleNum}-{seq}` for capstone).
+
+  The `reviewer` field for incremental review findings is `"code-reviewer"` (incremental reviews are always from the
+  code-reviewer).
+
+
+  Finding IDs from incremental files should use a different prefix to avoid collision with capstone findings:
+  `FI-{cycleNum}-{seq}` (for incremental, as opposed to `F-{cycleNum}-{seq}` for capstone).
+
 
   ## Implementation structure
 
+
   Extend `migrateArchiveCycles` with additional processing for each cycle directory:
 
+
   ```typescript
+
   // After existing code-quality/spec-adherence/gap-analysis processing:
 
+
   // decision-log.md
+
   const decisionLogPath = path.join(cycleDir, 'decision-log.md');
+
   if (fs.existsSync(decisionLogPath)) {
     // write DL-{cycleNum}.yaml
   }
 
+
   // summary.md
+
   const summaryPath = path.join(cycleDir, 'summary.md');
+
   if (fs.existsSync(summaryPath)) {
     // write CS-{cycleNum}.yaml
   }
 
+
   // review-manifest.md
+
   const manifestPath = path.join(cycleDir, 'review-manifest.md');
+
   if (fs.existsSync(manifestPath)) {
     // write RM-{cycleNum}.yaml
   }
 
+
   // incremental/*.md
+
   const incrementalDir = path.join(cycleDir, 'incremental');
+
   if (fs.existsSync(incrementalDir)) {
     for (const file of fs.readdirSync(incrementalDir)) {
       if (file.endsWith('.md')) {
@@ -120,16 +189,21 @@ notes: |
       }
     }
   }
+
   ```
+
 
   ## Files to examine
 
+
   - `scripts/migrate-to-v3.ts` — `migrateArchiveCycles` function (after WI-162 modifications)
+
   - `specs/archive/cycles/017/` — actual directory structure to confirm what files exist
+
   - `mcp/artifact-server/src/__tests__/migrate.test.ts` — existing test patterns
 cycle_created: 1
 cycle_modified: null
 content_hash: 71187089b6fd92d36bbf037998126ceeda6af49dc2d6cece8c1f43ec6d286e2f
 token_count: 1296
-file_path: .ideate/work-items/WI-165.yaml
-resolution: "Verified complete: decision-log, summary, review-manifest, and incremental files processed"
+file_path: work-items/WI-165.yaml
+resolution: 'Verified complete: decision-log, summary, review-manifest, and incremental files processed'

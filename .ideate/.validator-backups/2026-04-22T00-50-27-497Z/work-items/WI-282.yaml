@@ -1,0 +1,22 @@
+id: WI-282
+type: work_item
+title: Fix context.ts project root derivation
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - projectRoot derived as path.dirname(ideateDir) not path.dirname(path.dirname(ideateDir))
+  - Source code index walks the correct project root
+  - npm run build succeeds
+domain: artifact-structure
+notes: "context.ts line 673: change double dirname to single dirname."
+resolution: Fixed projectRoot from double dirname to single dirname.
+cycle_created: 36
+cycle_modified: null
+content_hash: e2cec7098b6498639430b7240908551847669a833c28dbae9c0f49aa3d98647e
+token_count: 146
+file_path: .ideate/work-items/WI-282.yaml

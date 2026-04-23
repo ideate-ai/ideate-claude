@@ -1,0 +1,38 @@
+id: review-manifest
+type: cycle_summary
+content: |-
+  ## Review Manifest — Cycle 26
+
+  | WI | Title | Type | Complexity | Phase | Incremental | Verdict |
+  |---|---|---|---|---|---|---|
+  | WI-779 | Add Number.isFinite() guards to alpha and convergence_threshold validation | bug | small | PH-041 | F-WI-779-001 | pass |
+  | WI-780 | Add integration test file for edge_type_weights validation | chore | small | PH-041 | F-WI-780-001 | pass |
+
+  ### Scope Summary
+  - WI-779: validating.ts, ppr.ts, validating.test.ts — NaN/Infinity guards for alpha + convergence_threshold
+  - WI-780: tests/adapters/edge-type-weights-validation.test.ts — integration test file (new)
+
+  ### Phase Context
+  PH-041 (Input Validation Layer) — these are the final 2 work items. Prior cycles (24, 25) addressed WI-745 through WI-778.
+
+  ### Convergence Trend
+  Significant findings: 5 → 1 → 0 → 1 (NaN bypass) → expected 0
+content_hash: a14f0e9575843c32af0cd303f9969fbfd8b3cb6dfc629a01015dba2f80330dcd
+token_count: 372
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 26
+scope: WI-759, WI-760, WI-761, WI-762
+description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+work_items:
+  - WI-759
+  - WI-760
+  - WI-761
+  - WI-762
+incremental_reviews:
+  WI-759: pass
+  WI-760: pass
+  WI-761: pass
+  WI-762: pass
+cycle_modified: 25
+reviewer: manifest
+phase: PH-041

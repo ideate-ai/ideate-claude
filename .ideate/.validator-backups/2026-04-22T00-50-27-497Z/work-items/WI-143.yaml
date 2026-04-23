@@ -1,0 +1,87 @@
+id: WI-143
+type: work_item
+title: .ideate/ directory scaffolding and config schema
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/config.ts
+    op: modify
+  - path: .gitignore
+    op: modify
+depends: []
+blocks:
+  - "145"
+  - "146"
+criteria:
+  - config.ts resolveArtifactDir() walks up from CWD looking for .ideate/ directory containing config.json (not .ideate.json)
+  - "config.ts exports a TypeScript interface for config.json schema with fields: schema_version (number), project_name (string, optional)"
+  - .gitignore contains entries for .ideate/index.db, .ideate/index.db-wal, .ideate/index.db-shm
+  - "config.ts exports a createIdeateDir(path) function that creates the .ideate/ directory structure with subdirectories: work-items/, principles/, constraints/, policies/, decisions/, questions/, modules/, research/, interviews/, archive/cycles/"
+  - config.ts exports a writeConfig(path, config) function that writes config.json
+  - Existing config.ts tests updated to cover new discovery logic
+module: null
+domain: null
+notes: |
+  # WI-143: .ideate/ directory scaffolding and config schema
+
+  ## Existing code to modify
+
+  `mcp/artifact-server/src/config.ts` — currently discovers `.ideate.json` by walking up from CWD (`config.ts:30-41`). Replace with `.ideate/` directory discovery: look for a directory named `.ideate` containing `config.json`.
+
+  ## .ideate/ directory structure
+
+  ```
+  .ideate/
+  ├── config.json
+  ├── index.db                    # SQLite, gitignored
+  ├── index.db-wal                # gitignored
+  ├── index.db-shm                # gitignored
+  ├── work-items/                 # WI-NNN.yaml
+  ├── principles/                 # GP-NN.yaml
+  ├── constraints/                # C-NN.yaml
+  ├── policies/                   # P-NN.yaml
+  ├── decisions/                  # D-NN.yaml
+  ├── questions/                  # Q-NN.yaml
+  ├── modules/                    # M-name.yaml
+  ├── research/                   # RF-slug.yaml
+  ├── interviews/                 # per-cycle subdirectories
+  ├── architecture.yaml           # single file
+  ├── overview.yaml               # single file
+  ├── execution-strategy.yaml     # single file
+  ├── cycles/
+  │   └── {NNN}/                  # cycle-scoped artifacts
+  │       └── journal/
+  │           └── J-{NNN}-{seq}.yaml  # per-entry journal files
+  └── metrics.jsonl               # append-only
+  ```
+
+  ## config.json schema
+
+  ```json
+  {
+    "schema_version": 2,
+    "project_name": "optional project name"
+  }
+  ```
+
+  ## .gitignore entries to add
+
+  ```
+  .ideate/index.db
+  .ideate/index.db-wal
+  .ideate/index.db-shm
+  ```
+
+  ## Implementation notes
+
+  - `createIdeateDir(path)` creates the full directory tree. It does not populate any files except config.json.
+  - The `.ideate.json` file at project root is no longer used. The presence of `.ideate/config.json` replaces it.
+  - Keep the walk-up-from-CWD pattern but look for `.ideate/` directory instead of `.ideate.json` file.
+  - Export a TypeScript interface for the config schema.
+  - Update existing config.ts tests to cover the new discovery logic.
+cycle_created: 1
+cycle_modified: null
+content_hash: c755f63edfe45de58df1f53045c7479b64b7f0f25fe3f26c7b5434cbb9f6cda9
+token_count: 815
+file_path: .ideate/work-items/WI-143.yaml
+resolution: "Verified complete: config.ts exports all required symbols, .gitignore entries present, tests pass"

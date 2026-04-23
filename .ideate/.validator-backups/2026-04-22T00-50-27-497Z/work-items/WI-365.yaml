@@ -1,0 +1,121 @@
+id: WI-365
+type: work_item
+title: Fix handleUpdateConfig null-signal deletion for model_overrides
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/config.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "patch { model_overrides: { 'agent': null } } removes 'agent' key from stored map"
+  - when the last stored model_overrides key is cleared via null-signal, written config.json omits model_overrides entirely (sparse invariant)
+  - null-signal on a non-existent key is a no-op — no error, no change to stored map
+  - patch that mixes set and null in same model_overrides object correctly applies both (sets some, deletes others)
+  - non-null model_overrides values still validated as non-empty strings; null values bypass validation (they are deletion signals, not stored values)
+  - all existing handleUpdateConfig tests continue to pass
+  - new tests added in config.test.ts covering each criterion above
+domain: artifact-structure
+notes: |-
+  ## Context
+
+  Cycle 068 S1+S2: the current key-level merge `{ ...rawStored.model_overrides, ...patch.model_overrides }` cannot express key deletion — stored keys absent from the patch are re-injected. Q-91 resolved: use null-signal semantics.
+
+  ## Implementation
+
+  In `mcp/artifact-server/src/tools/config.ts`, replace the model_overrides merge block (currently lines 54-59):
+
+  ```typescript
+  // model_overrides: key-level merge — only write if stored or patched
+  if (rawStored.model_overrides !== undefined || patch.model_overrides !== undefined) {
+    merged.model_overrides = {
+      ...(rawStored.model_overrides ?? {}),
+      ...(patch.model_overrides ?? {}),
+    };
+  }
+  ```
+
+  with null-signal logic:
+
+  ```typescript
+  // model_overrides: null-signal merge — null value in patch deletes the key from stored
+  const patchOverrides = patch.model_overrides as Record<string, string | null> | undefined;
+  if (rawStored.model_overrides !== undefined || patchOverrides !== undefined) {
+    const mergedOverrides: Record<string, string> = { ...(rawStored.model_overrides ?? {}) };
+    for (const [key, val] of Object.entries(patchOverrides ?? {})) {
+      if (val === null) {
+        delete mergedOverrides[key];
+      } else {
+        mergedOverrides[key] = val;
+      }
+    }
+    // Only write if non-empty (sparse invariant: empty object === absent key)
+    if (Object.keys(mergedOverrides).length > 0) {
+      merged.model_overrides = mergedOverrides;
+    }
+  }
+  ```
+
+  Also update the validation block for model_overrides (currently lines 108-114). The validation iterates `merged.model_overrides` which now only contains non-null values (nulls were stripped above), so no change to the validation logic is needed. Verify that the existing validation still correctly rejects empty strings.
+
+  ## Tests to add in config.test.ts
+
+  Add to the `handleUpdateConfig` describe block:
+
+  ```typescript
+  it("null-signal removes a stored model_overrides key", async () => {
+    // setup: store an override
+    await handleUpdateConfig(ctx, { patch: { model_overrides: { architect: "opus" } } });
+    // act: clear it
+    const result = JSON.parse(
+      await handleUpdateConfig(ctx, { patch: { model_overrides: { architect: null } } })
+    );
+    expect(result.status).toBe("updated");
+    const raw = readRawConfig(tmpDir);
+    expect(raw.model_overrides).not.toHaveProperty("architect");
+  });
+
+  it("null-signal on last key produces absent model_overrides (sparse invariant)", async () => {
+    await handleUpdateConfig(ctx, { patch: { model_overrides: { researcher: "opus" } } });
+    await handleUpdateConfig(ctx, { patch: { model_overrides: { researcher: null } } });
+    const raw = readRawConfig(tmpDir);
+    expect(raw.model_overrides).toBeUndefined();
+  });
+
+  it("null-signal on non-existent key is a no-op", async () => {
+    const result = JSON.parse(
+      await handleUpdateConfig(ctx, { patch: { model_overrides: { nonexistent: null } } })
+    );
+    // No stored model_overrides + null patch key = nothing to write
+    expect(result.status).toBe("updated");
+    const raw = readRawConfig(tmpDir);
+    expect(raw.model_overrides).toBeUndefined();
+  });
+
+  it("mixed patch: sets one key and nulls another in same call", async () => {
+    // setup: two keys stored
+    await handleUpdateConfig(ctx, {
+      patch: { model_overrides: { architect: "opus", researcher: "haiku" } },
+    });
+    // act: set architect to sonnet, clear researcher
+    const result = JSON.parse(
+      await handleUpdateConfig(ctx, {
+        patch: { model_overrides: { architect: "sonnet", researcher: null } },
+      })
+    );
+    expect(result.status).toBe("updated");
+    const raw = readRawConfig(tmpDir);
+    expect(raw.model_overrides).toEqual({ architect: "sonnet" });
+  });
+  ```
+
+  Note: the `ctx` and `tmpDir` setup already exists in the test file. Add these tests in the same describe block as the existing handleUpdateConfig tests.
+resolution: Implemented null-signal deletion in handleUpdateConfig. Null-valued patch keys delete stored model_override entries. Empty result omits field. 4 new tests added, all 420 passing.
+cycle_created: 69
+cycle_modified: 68
+content_hash: c04521e59421e6ad358efd4fed14222887f814151d917b3dbd4ecca1ddb2a1f5
+token_count: 1306
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-365.yaml

@@ -9,23 +9,30 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - "indexer.test.ts contains at least one test for indexFiles: single file add (new file indexed into DB)"
-  - "indexer.test.ts contains at least one test for indexFiles: unchanged file skipped (hash match)"
-  - "indexer.test.ts contains at least one test for indexFiles: parse error returns in errors array"
-  - "indexer.test.ts contains at least one test for removeFiles: node removed from DB with CASCADE"
-  - "indexer.test.ts contains at least one test for indexFiles: non-YAML file filtered out (returns updated: 0)"
+  - 'indexer.test.ts contains at least one test for indexFiles: single file add (new file indexed into DB)'
+  - 'indexer.test.ts contains at least one test for indexFiles: unchanged file skipped (hash match)'
+  - 'indexer.test.ts contains at least one test for indexFiles: parse error returns in errors array'
+  - 'indexer.test.ts contains at least one test for removeFiles: node removed from DB with CASCADE'
+  - 'indexer.test.ts contains at least one test for indexFiles: non-YAML file filtered out (returns updated: 0)'
   - npm test passes
 domain: artifact-structure
-notes: |-
+notes: >-
   # WI-308: Add indexFiles/removeFiles and startup-order tests
 
+
   ## Overview
-  Addresses gap-analyst S3 and S4 from cycle 058 review. indexFiles and removeFiles have no direct unit tests in indexer.test.ts.
+
+  Addresses gap-analyst S3 and S4 from cycle 058 review. indexFiles and removeFiles have no direct unit tests in
+  indexer.test.ts.
+
 
   ## Tests to add to indexer.test.ts
 
+
   ### indexFiles tests
+
   ```typescript
+
   describe('indexFiles', () => {
     it('indexes a new YAML file into the database', () => {
       // Write a valid work_item YAML to tmp dir
@@ -49,10 +56,14 @@ notes: |-
       // Verify updated: 0, no errors
     });
   });
+
   ```
 
+
   ### removeFiles tests
+
   ```typescript
+
   describe('removeFiles', () => {
     it('removes a node and cascaded extension/edges from DB', () => {
       // Index a file first via rebuildIndex or indexFiles
@@ -61,7 +72,9 @@ notes: |-
       // Verify work_items extension row is gone
     });
   });
+
   ```
+
 
   Import indexFiles and removeFiles from '../indexer.js'.
 resolution: null
@@ -69,4 +82,4 @@ cycle_created: 59
 cycle_modified: null
 content_hash: 77252d362fe4a58f5353a5b9981c81ab2d396e7dce57beba8f49cb8723e1939f
 token_count: 566
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-308.yaml
+file_path: work-items/WI-308.yaml

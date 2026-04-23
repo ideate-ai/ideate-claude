@@ -1,0 +1,11 @@
+id: P-50
+type: domain_policy
+domain: workflow
+title: Acceptance criteria must include test coverage requirements for behavioral changes
+description: Work items that change runtime behavior (write paths, query logic, event schemas) must include at least one acceptance criterion specifying what test assertion verifies the change. The criterion should name the test type (unit, integration, roundtrip) and the property under test. This prevents rework cycles where the implementation is correct but unverified.
+derived_from: D-152
+established: cycle 4
+status: active
+content_hash: 604efb0bfb1fde6291cc2c1347dd0b9feac93d7404db800b022354f6f475fb69
+token_count: 141
+file_path: .ideate/policies/P-50.yaml

@@ -1,0 +1,14 @@
+id: Q-26
+type: domain_question
+domain: workflow
+status: resolved
+impact: Undefined behavior when the test runner fails. The executor may classify this as a scope-changing finding (general rule) or may attempt to fix it within scope, depending on interpretation. The ambiguity is low-frequency but high-consequence when it occurs.
+source: archive/cycles/008/gap-analysis.md Deferred EC1; archive/cycles/007/gap-analysis.md
+resolution: WI-128 added a distinct "Smoke test infrastructure failure" exception to both skill files with a regression determination protocol. P-23 captures the rule in the domain layer.
+resolved_in: 11
+description: If the smoke test (dynamic testing step) itself is blocked by the Andon cord — for example, the test infrastructure fails to start rather than the application — what is the expected behavior? The startup-failure exception (P-22) covers application startup failures, but does not address the case where the testing harness itself cannot execute.
+cycle_created: 1
+cycle_modified: null
+content_hash: e5fa30af314f9de1034f805820faaee6c2e8b36dc8a827425688f881f220000b
+token_count: 273
+file_path: .ideate/questions/Q-26.yaml

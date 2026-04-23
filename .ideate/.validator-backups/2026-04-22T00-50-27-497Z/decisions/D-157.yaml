@@ -1,0 +1,13 @@
+id: D-157
+type: domain_decision
+domain: workflow
+title: WI-425 backfill executed via direct edit due to stale MCP server build
+description: WI-425 backfill of cycle:3 into CS-003, CQ-003, and GA-003 was performed via direct Edit tool calls, violating P-37. The MCP server was running a stale build (version 0.1.0 vs package.json 3.3.0), causing write tool calls to fail. The three-branch WHERE clause from WI-424 mitigates the functional impact at query time.
+rationale: The violation was forced by tooling state, not a policy disagreement. The work item's own implementation notes explicitly required MCP writes. Root cause was failure to rebuild the MCP server after source changes.
+policy: P-37
+source: cycle 5 decision-log D5-E04; spec-adherence P1
+status: settled
+cycle: 5
+content_hash: 391d36bd23581c634fc93db6467248f3c055c586ee9cdb9745a134ab64f5bd95
+token_count: 194
+file_path: .ideate/decisions/D-157.yaml

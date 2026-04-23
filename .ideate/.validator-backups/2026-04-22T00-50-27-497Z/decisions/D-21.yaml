@@ -1,0 +1,13 @@
+id: D-21
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 4
+supersedes: null
+description: The `.ideate.json` configuration file uses `artifactDir` (camelCase) as the key for the artifact directory path. Any script, skill, or documentation that reads or documents this key must use camelCase. Snake_case (`artifact_dir`) is incorrect and caused two critical bugs in the cycle 004 capstone review of report.sh.
+rationale: WI-095 was created specifically to fix a snake_case/camelCase mismatch introduced in the WI-094 planning note. All skills consistently use `artifactDir`; the planning note for report.sh auto-discovery used `artifact_dir`, which was not caught during planning.
+cycle_created: 1
+cycle_modified: null
+content_hash: "7088e72aaa25349ff8c0736cc719241d505ceca3a4faa94b14a554ecd0658d12"
+token_count: 201
+file_path: .ideate/decisions/D-21.yaml

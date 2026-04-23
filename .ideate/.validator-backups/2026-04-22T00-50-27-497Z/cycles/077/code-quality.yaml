@@ -1,0 +1,47 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |
+  Verdict: Fail
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [S1] ppr.ts:173 CONTAINMENT_EDGE_TYPES.has(e.edge_type) passes string where EdgeType is required. tsc --noEmit fails TS2345. reader.ts:383 handles the identical situation correctly with `as EdgeType`. Fix: cast at the call site.
+
+  ## Minor Findings
+  - [M1] writer.ts:1355 and :1365 use console.error instead of log.error. Logger module docs: any console.log corrupts MCP protocol stream. Fix: import log from ../../logger.js; use log.error.
+  - [M2] writer.ts:1197 `const findingsDir = path.join(...)` declared but never used. Pre-existing but touched file. Fix: remove.
+  - [M3] writer.test.ts:501 `as typeof db.transaction` causes TS2352 because mock is missing default/deferred/immediate properties. Fix: `as unknown as typeof db.transaction` or add the missing properties.
+  - [M4] RemoteAdapter.indexFiles, .removeFiles, .getToolUsage have no assertNotShutDown() guard — inconsistent with other HTTP-issuing methods. Fix: add the guard.
+
+  ## Dynamic Testing
+  npm test: 1563 pass / 0 fail / 345 skipped. tsc --noEmit: fails (S1).
+
+  ## Focused Answers
+  - Transaction ordering in archiveCycleLocal: correct. Phase 3 pure SQLite; Phase 4 post-commit unlinks. Regression tests validate both paths.
+  - shutdown idempotency: correct via _isShutDown flag. No races. M4 is the only gap.
+  - Migration stubs: sound. Schema bumped 5→7 in one commit (metrics refactor); all additive.
+  - belongs_to_domain exclusion from CONTAINMENT: consistent with prior behavior. PPR phantom-hub behavior (domain names as score-sharing hubs) predates this cycle; flagged for human review, not a defect introduced by WI-893.
+content_hash: 16d6452b143183d3978ae7f076e8eb44f4678c7f0b7ee7d92964deaf32609125
+token_count: 606
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 77
+cycle_modified: 27
+verdict: Pass
+scope: full-audit
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+date: "20260417"

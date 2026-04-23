@@ -1,0 +1,10 @@
+id: C-04
+type: constraint
+category: technology
+status: active
+description: Worktree isolation for parallel execution. When multiple agents work in parallel on the same repository, use git worktree isolation to prevent file conflicts.
+cycle_created: 1
+cycle_modified: null
+content_hash: af988e82297c1f344b14daade2cad0662defa7ec2d2c3a4261f9d7d01aace888
+token_count: 83
+file_path: .ideate/constraints/C-04.yaml

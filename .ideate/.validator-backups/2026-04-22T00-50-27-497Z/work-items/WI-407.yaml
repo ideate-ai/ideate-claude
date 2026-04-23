@@ -1,0 +1,36 @@
+id: WI-407
+type: work_item
+title: "Add tools.test.ts assertions: extension rows for domain and document types"
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-406
+blocks: []
+criteria:
+  - Each of the existing domain_policy, domain_decision, domain_question routing tests asserts the corresponding extension table row exists (domain_policies, domain_decisions, domain_questions) after handleWriteArtifact (Gap 3)
+  - A new test writes a cycle_summary artifact and asserts a document_artifacts row exists in SQLite
+  - A new test writes a research_finding artifact and asserts a research_findings row exists
+  - A new test writes a module_spec artifact and asserts a module_specs row exists (if the table exists; skip gracefully if not)
+  - All 453+ tests pass
+domain: artifact-structure
+notes: |-
+  Gap 3 from cycle 2 review and follow-on from WI-406.
+
+  The existing domain routing tests at tools.test.ts:2023-2065 only verify that files land in the correct directory. They do not query the extension table.
+
+  For each of domain_policy, domain_decision, domain_question — extend the existing test to:
+    const row = ctx.db.prepare('SELECT * FROM domain_policies WHERE id = ?').get(id);
+    expect(row).toBeTruthy();
+
+  Use the same pattern for document_artifacts, research_findings, module_specs per the new types added by WI-406.
+
+  Check schema.ts for the exact table names before writing the queries.
+resolution: Extended domain_policy/decision/question routing tests with extension row assertions. Added cycle_summary→document_artifacts, research_finding→research_findings, module_spec→module_specs tests. Fixed research_finding test to use content field (not summary) with content assertion. 459 tests pass.
+cycle_created: 2
+cycle_modified: 1
+content_hash: 20f605ee5f32cfc9b60dde6e662d8475f9fa5561c3f2b9fe3b547eca036a61f7
+token_count: 457
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-407.yaml

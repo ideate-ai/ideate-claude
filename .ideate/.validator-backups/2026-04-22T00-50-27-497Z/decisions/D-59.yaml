@@ -1,0 +1,13 @@
+id: D-59
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: "The `addresses` and `amends` edge types use reversed-direction yaml_fields on the target artifact rather than fields on the source artifact. `addressed_by: WI-NNN` (nullable string) on findings. `amended_by: P-NNN` (nullable string) on domain policies. Both are scalar — a finding has at most one work item that addresses it; a policy has at most one successor. The edge type registry extracts these as graph edges at index time. This supersedes D-56."
+rationale: "Cardinality analysis: both relationships are many-to-one from the target's perspective (scalar, not array). The important queries are target-centric (\"which findings are open?\" = `WHERE addressed_by IS NULL`; \"is this policy current?\" = `WHERE amended_by IS NULL`). Reversed direction avoids array fields on work items and makes status a field read rather than a graph join."
+cycle_created: 1
+cycle_modified: null
+content_hash: df8e784728a9dd859b91e544dbb7a09387831f64f4d6f638e2330d165315d594
+token_count: 264
+file_path: .ideate/decisions/D-59.yaml

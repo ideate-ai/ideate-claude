@@ -1,0 +1,79 @@
+id: interview-refine-ph048
+type: interview
+cycle: 27
+phase: PH-048
+project: PR-002
+skill: refine
+date: 2026-04-15
+mode: requirement-evolution
+summary: "Refinement interview for PH-048 'Quality metrics rebuild'. Decision: remove the failed metrics emission experiment entirely and replace it with narrow MCP-boundary instrumentation. Agent-side emission is abandoned because agent-returned metrics are unreliable (Agent tool returns no token metadata; Claude Code streaming bug #22686 undercounts tokens; wall-clock from skills is corrupted by computer sleep). Replacement scope intentionally narrow — tokens and byte sizes only, no latency."
+entries:
+  - question: Q1 — What token data source should the rebuild use?
+    domain: workflow
+    proposed_options:
+      - a) Keep agent-side SubagentStop hook extraction
+      - b) Capture only MCP request/response payload sizes
+      - c) Combine both
+    answer: for token use, we should only capture the use coming in and out of the MCP as the agent side metrics are unreliable.
+    resolution: Option (b). Only MCP-boundary token/byte capture. Agent-side measurement abandoned.
+    rationale: Agent tool returns no token metadata; Claude Code has an output_tokens undercount bug (#22686); wall-clock timing from skills is corrupted by sleep/suspend. MCP-server-side measurement is the only high-quality signal available without touching provider APIs.
+  - question: "Q2 — Removal scope: surgical shims or full deletion?"
+    domain: artifact-structure
+    proposed_options:
+      - a) Keep ideate_emit_metric/ideate_get_metrics as stubs for backward compat
+      - b) Delete tools + table + data entirely
+    answer: Remove mcp tools entirely. it was a failed experiment and we should focus on accuracy by capturing data which is high quality.
+    resolution: "Option (b). Full deletion: tools, handlers, metrics_events table, schema plumbing, adapter methods, 249 YAML files, old report scripts, tests, docs. No backward-compatible shims."
+    rationale: D-211 already soft-deprecated emission as a no-op. Remaining surface is dead code. Keeping stubs would encourage resurrection of a failed approach. Historical metrics data is not worth migrating — values from the failed experiment are unreliable by definition.
+  - question: "Q3 — Signal set under 'high quality only' bar: which of {tokens, latency, review-cycle efficiency, rework rate} survive?"
+    domain: workflow
+    proposed_options:
+      - a) All four, with quality-tier tagging
+      - b) Tokens + latency as new instrumentation; review-cycle efficiency and rework rate as derived queries over existing artifacts
+      - c) Tokens only; drop latency; derive everything else
+    answer: sounds good with one change- we can skip latency for now. computers sleeping can alter these results.
+    resolution: Option (c). Only MCP tool_name, request_tokens, response_tokens, request_bytes, response_bytes, session_id, cycle, phase, timestamp are new instrumentation. No duration/latency fields at any granularity. Review-cycle efficiency and rework rate are derivable from existing cycle summaries, findings, and work item status — query on demand via existing tools, no new emission needed.
+    rationale: "Computer sleep/suspend corrupts any wall-clock measurement. MCP-handler internal duration is short enough that sleep risk is low, but YAGNI: add it later if a concrete analysis requires it. Derived signals over existing artifacts are free — the data already exists."
+  - question: Q4 — Ordering and phase sizing; how to resolve the report-script conflict with saved 'keep entry points' feedback?
+    domain: workflow
+    proposed_options:
+      - a) Removal-first-then-build, single phase, keep old scripts as stubs
+      - b) Removal-first-then-build, single phase, delete old scripts outright
+      - c) Split into two phases (removal / build)
+    answer: Proposal sounds good. We can forget my conflict. Lets embrace YAGNI. Codebase is getting big and needs to be lean. Dead code should be removed.
+    resolution: "Option (b). Single phase, sequential buckets: (1) strip emission sites from skills, (2) remove MCP tools and handler, (3) drop schema/storage plumbing, (4) delete YAML data and old report scripts, (5) remove tests, (6) update docs, (7) build replacement: tool_usage table + dispatch wrapper + tiktoken helper + ideate_get_tool_usage tool + new report script + tests. Dead code removed, not stubbed — user explicitly overrode the keep-entry-points default for this case."
+    rationale: Emission is already a no-op (D-211), so removal is no-risk. Build depends on the old table being gone (avoids name collision during migration). Single phase keeps the work cohesive — partial removal leaves the system in a useless state. Report-script stubs would be dead code in a phase explicitly removing dead code.
+conflicts_flagged:
+  - description: Proposed full deletion of report.sh, report-cycle.sh, report-cost.sh, report-executive.sh conflicts with saved feedback 'Keep reporting scripts — don't delete report scripts; future tooling needs reporting. Truncate dead code, keep entry points.'
+    resolution: "Explicitly overridden by user in Q4. Rationale: the saved feedback was written in a different context where reporting was expected to evolve incrementally. Under the YAGNI bar set for PH-048, the old scripts have no reusable surface — they query a schema being deleted. A single new lean script replaces all four."
+principles_reviewed:
+  - principle_id: GP-14
+    status: unchanged
+    note: Removal path honors MCP abstraction boundary — all storage changes go through MCP tool definitions.
+  - principle_id: P-33
+    status: unchanged
+    note: New ideate_get_tool_usage tool description must avoid storage details (table name, file paths).
+  - principle_id: P-37
+    status: unchanged
+    note: All .ideate/metrics/ deletion must go through MCP — in this case deletion is of the data itself, handled as filesystem operations in a work item with explicit rationale.
+  - principle_id: D-211
+    status: superseded
+    note: Soft-deprecation is superseded by full removal in PH-048.
+  - principle_id: D-155
+    status: superseded
+    note: metrics.jsonl deprecation is moot — entire metrics subsystem is removed.
+completion_criteria_for_phase:
+  - All emission call sites removed from skills/*.md and skills/autopilot/phases/*.md
+  - ideate_emit_metric and ideate_get_metrics tools and handlers deleted
+  - metrics_events table and all schema plumbing removed
+  - .ideate/metrics/ directory deleted
+  - Old report scripts deleted
+  - Associated tests removed; remaining test suite passes
+  - Docs updated (ARCHITECTURE.md, README.md, graphql-schema.graphql)
+  - tool_usage table and dispatch wrapper operational with fail-soft behavior
+  - ideate_get_tool_usage query tool registered and tested
+  - Replacement report script produces human-readable summary from new data
+  - Documentation reflects new instrumentation
+cycle_modified: 27
+content_hash: 14353355e36bb51c66af5e1e73b3327307ce0400f53c4848d2746074603fa5d1
+token_count: 1744

@@ -1,0 +1,44 @@
+id: decision-log
+type: cycle_summary
+reviewer: journal-keeper
+content: |-
+  ## Decision Log
+
+  ### Cycle 21 Decisions
+
+  1. New phase PH-040 created for audit corrections rather than extending PH-017. User directed clean separation.
+  2. CONFIG_SCHEMA_VERSION fix scoped to comprehensive coverage (user chose full coverage over minimum one-liner). P-74 invariant now enforced by test.
+  3. putNodeForJournal: fix the code, not the policy (no P-44 exception). P-44 provisional variant removed. Three-phase pattern is now the canonical approach for sequence-number-dependent writes.
+  4. domain_index investigated as spike (WI-749) rather than closed immediately. Confirmed fully implemented. Q-145 closed, D-190 written.
+  5. Stale test strings included in WI-750 (user confirmed). WI-750 also absorbed the .toBe(27)→28 fix that was blocking all three incremental reviews.
+  6. Agent budgets doubled for code-reviewer (80→160) and gap-analyst (100→200), unconditionally.
+  7. migrations.ts idempotency via PRAGMA table_info (per-column existence test) — standard SQLite workaround for no ADD COLUMN IF NOT EXISTS.
+  8. tools.test.ts updated to import CONFIG_SCHEMA_VERSION, not hardcode 4 — second enforcement point for P-74.
+  9. Phase-3 cleanup failure documented as best-effort (acknowledged trade-off). No logging added.
+  10. WI-750 absorbed the .toBe(27)→28 fix (within declared file scope, not in criteria). Spec-reviewer noted but classified as harmless.
+  11. P-44 provisional text removed. Placeholder-insert pattern now the canonical approach for seq# allocation.
+  12. migration filter semantically correct for current linear registry but uses toVersion form; fromVersion form would be more explicit.
+
+  ### Open Questions
+
+  OQ-1: schema.test.ts extension table count asserts .toBe(15) but proxy_human_decisions makes it 16 (gap-analyst S1)
+  OQ-2: Phase 2 failure path in putNodeForJournal has zero test coverage (gap-analyst S2, spec-reviewer M1, incremental M1) — highest priority carry-forward
+  OQ-3: Phase-3 cleanup failure silently swallowed — no logging (code-reviewer M2)
+  OQ-4: migrations.test.ts error path untested (gap-analyst M1)
+  OQ-5: Multi-migration chain v3→v4→v5 untested in migrations.test.ts (gap-analyst M2)
+  OQ-6: No-registry-entry silent version bump untested (gap-analyst M3)
+  OQ-7: Migration filter uses toVersion form, semantically fragile for future registry forks (code-reviewer M1)
+  OQ-8: adapter-contract.md 'active' language ambiguous about decisions status filtering (F-WI-746-001 M1)
+
+  ### Cross-References
+
+  CR1: Phase 2 failure path — three reviewers independently flagged the same untested rollback. Gap-analyst rated Significant; spec-reviewer noted as judgment call; incremental review flagged before capstone. Highest-priority carry-forward item.
+
+  CR2: Stale counts — two independent issues. The .toBe(27)→28 was fixed by WI-750. The .toBe(15) in schema.test.ts remains (OQ-1). Independent issues, not related.
+
+  CR3: migrations.test.ts coverage — code-reviewer called existing tests 'thorough' (happy-path assessment); gap-analyst found three missing scenarios (error path, chain, no-registry-entry). Compatible: happy path solid, edge cases absent.
+content_hash: 7dd2fdf6d018505ea66da3abf0cae12a555314e882f5d2c637f37f3d267980d4
+token_count: 846
+file_path: .ideate/cycles/068/decision-log.yaml
+cycle: 21
+cycle_modified: 20

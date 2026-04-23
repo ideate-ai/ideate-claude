@@ -1,0 +1,59 @@
+id: WI-285
+type: work_item
+title: Extend config.json schema + ideate_get_config MCP tool
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/config.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-286
+  - WI-287
+criteria:
+  - "IdeateConfigJson interface includes optional agent_budgets: Record<string, number>"
+  - "IdeateConfigJson interface includes optional ppr: {alpha, max_iterations, convergence_threshold, edge_type_weights, default_token_budget}"
+  - ideate_get_config tool registered in TOOLS array and dispatched in handleTool
+  - ideate_get_config returns parsed config.json content including defaults for missing fields
+  - Default agent_budgets match doubled values from WI-284 when field is absent
+  - "Default ppr config: alpha=0.15, max_iterations=50, convergence_threshold=1e-6, default_token_budget=50000"
+  - "At least 2 tests: config with all fields, config with only schema_version (defaults applied)"
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: |-
+  # WI-285: Config extension + ideate_get_config
+
+  ## config.ts changes
+  Extend IdeateConfigJson:
+  ```typescript
+  interface IdeateConfigJson {
+    schema_version: number;
+    project_name?: string;
+    agent_budgets?: Record<string, number>;
+    ppr?: {
+      alpha?: number;
+      max_iterations?: number;
+      convergence_threshold?: number;
+      edge_type_weights?: Record<string, number>;
+      default_token_budget?: number;
+    };
+  }
+  ```
+
+  Add a `getConfigWithDefaults()` function that reads config.json and merges with defaults.
+
+  ## Tool handler
+  Add handleGetConfig to return the merged config. Simple: read config.json via existing resolveArtifactDir, parse, merge defaults, return.
+
+  ## tools/index.ts
+  Register ideate_get_config with inputSchema: {} (no parameters).
+resolution: Config extended with agent_budgets and ppr. ideate_get_config tool added. 4 tests.
+cycle_created: 37
+cycle_modified: null
+content_hash: 0994e5f656c6867e6b82f91b053d64df033f3dbe32a915fd9f635de0c8588a85
+token_count: 521
+file_path: .ideate/work-items/WI-285.yaml

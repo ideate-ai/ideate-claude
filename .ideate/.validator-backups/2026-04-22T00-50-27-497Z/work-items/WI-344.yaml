@@ -1,0 +1,33 @@
+id: WI-344
+type: work_item
+title: Add MCP tool annotations
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - All tools have annotations object with appropriate hints
+  - "readOnlyHint: true for read-only tools"
+  - "destructiveHint: true for write/delete operations"
+  - "idempotentHint: true where applicable"
+  - "openWorldHint: true for external operations"
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Add MCP tool annotations (behavioral hints) to all tools per MCP best practices.
+
+  Annotations:
+  - readOnlyHint: true for query/context/status tools
+  - destructiveHint: true for write operations
+  - idempotentHint: true where same input = same output
+  - openWorldHint: false (all tools are internal to ideate)
+
+  Files to modify:
+  - mcp/artifact-server/src/server.ts (tool definitions)
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 7485a6a30efabc0b6c3865d9d6435639e4675ea5fe5f45f60a9b799f23537ba3
+token_count: 224
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-344.yaml

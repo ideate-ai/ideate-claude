@@ -1,0 +1,25 @@
+id: WI-067
+type: work_item
+title: Update plan skill with domain bootstrap phase
+status: done
+complexity: medium
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+depends:
+  - "063"
+blocks:
+  - "071"
+criteria:
+  - "Phase 1.1 directory structure updated: `reviews/incremental/` and `reviews/final/` replaced with `archive/incremental/`, `archive/cycles/`, and `domains/`; `steering/interviews/` added"
+  - Phase 7.1 verification checklist updated to include `domains/index.md` and per-domain file triplets
+  - "Phase 8 added before ADAPTIVE GRANULARITY section covering: domain identification (8.1), interview structure splitting (8.2), per-domain file creation with templates (8.3), domains/index.md creation (8.4), journal update (8.5)"
+module: null
+domain: null
+notes: null
+cycle_created: 1
+cycle_modified: null
+content_hash: d7895daefae2fa7904980d981e84d7ddf9f89280d12b2bcdce5b14ab5cf39453
+token_count: 215
+file_path: .ideate/work-items/WI-067.yaml
+resolution: Implemented during v3 migration

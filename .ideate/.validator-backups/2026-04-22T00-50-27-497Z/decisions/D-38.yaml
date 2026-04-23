@@ -1,0 +1,13 @@
+id: D-38
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: WI-121 replaced the unconditional-Andon startup-failure rule with a diagnose-and-fix protocol in the two skill files and P-22, but `agents/code-reviewer.md` (~line 91) was explicitly excluded from scope. The code-reviewer agent still instructs that startup failure is "scope-changing — this is an Andon-level issue," contradicting the new protocol.
+rationale: The scoping decision (D-36) treated the code-reviewer update as secondary. The gap analyst rated this Significant because the code-reviewer is used in every execution cycle and its incorrect description of expected downstream handling creates a documented inconsistency.
+cycle_created: 1
+cycle_modified: null
+content_hash: "0bbf468baf2b598ea566d710001ae7fecc3c4e58b5ab8f97c26bd291a695be88"
+token_count: 210
+file_path: .ideate/decisions/D-38.yaml

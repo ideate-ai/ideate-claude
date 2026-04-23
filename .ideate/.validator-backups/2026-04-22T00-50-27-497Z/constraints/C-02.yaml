@@ -1,0 +1,10 @@
+id: C-02
+type: constraint
+category: technology
+status: active
+description: File-based coordination. All inter-phase state lives in YAML files in the `.ideate/` directory. No in-memory state between skill invocations. Each skill reads what it needs from artifacts — either directly from YAML files or via MCP tools backed by the SQLite runtime index — and writes its outputs as YAML files. The SQLite index is a derived cache; skills must never write directly to it.
+cycle_created: 1
+cycle_modified: null
+content_hash: "52504f12a02faed5c0efbd50ccf0ba60be3f1e10bf9448f0c4654c7940f0520f"
+token_count: 141
+file_path: .ideate/constraints/C-02.yaml

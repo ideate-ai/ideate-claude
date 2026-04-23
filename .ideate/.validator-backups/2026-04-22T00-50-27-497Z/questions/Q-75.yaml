@@ -1,0 +1,14 @@
+id: Q-75
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: "A `depth: 5` traversal with `direction: \"both\"` on a graph containing a `references` cycle between 3 nodes produces up to 243 rows instead of 3. The LIMIT (200) caps output but the query is O(branching^depth)."
+source: archive/cycles/022/code-quality.md S1; archive/cycles/022/decision-log.md Q-75
+resolution: "Fixed by WI-192 — UNION deduplication applied in query.ts depth=1 both-directions path and recursive CTE"
+resolved_in: 34
+description: "The recursive CTE in `query.ts:427-434` for graph traversal (depth > 1) uses `UNION ALL` without deduplication or visited-node tracking. For `depends_on` edges, cycles are prevented by Kahn's algorithm at index time. For other edge types (`relates_to`, `references`, `amended_by`, etc.), no cycle prevention exists. A bidirectional traversal on cyclic edges produces exponential duplicate rows up to the LIMIT cap."
+cycle_created: 1
+cycle_modified: null
+content_hash: c4e105e57870166045b62cab047d8e501c7652b76c293c8092199e96f27abf0c
+token_count: 236
+file_path: .ideate/questions/Q-75.yaml

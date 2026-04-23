@@ -22,15 +22,20 @@ criteria:
   - grep -r 'modules/execution-strategy' skills/ returns zero results
   - grep -r 'modules/architecture' skills/ returns zero results (except module spec references which are correct)
 domain: workflow
-notes: |-
+notes: >-
   # WI-240: Fix Skill Path References
 
-  The v3.0.2 skill prompts reference .ideate/modules/ for plan artifacts but resolveArtifactPath in write.ts maps overview/execution_strategy/architecture to .ideate/plan/. The tool is correct. Fix the skills.
 
-  Grep for 'modules/overview', 'modules/execution-strategy', 'modules/architecture' in skills/ and replace with plan/ equivalents. Be careful not to change references to actual module specs (.ideate/modules/{name}.yaml) which ARE correct.
+  The v3.0.2 skill prompts reference .ideate/modules/ for plan artifacts but resolveArtifactPath in write.ts maps
+  overview/execution_strategy/architecture to .ideate/plan/. The tool is correct. Fix the skills.
+
+
+  Grep for 'modules/overview', 'modules/execution-strategy', 'modules/architecture' in skills/ and replace with plan/
+  equivalents. Be careful not to change references to actual module specs (.ideate/modules/{name}.yaml) which ARE
+  correct.
 resolution: null
 cycle_created: 30
 cycle_modified: null
 content_hash: 27f76ffc414b5c826d83937c58ef9bb05432d37d0966a22c5ca5371c97d7f23d
 token_count: 374
-file_path: .ideate/work-items/WI-240.yaml
+file_path: work-items/WI-240.yaml

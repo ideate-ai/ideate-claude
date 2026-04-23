@@ -1,0 +1,69 @@
+id: RF-claude-code-custom-models
+type: research_finding
+topic: "Research: Claude Code Custom Model Support"
+status: active
+date: null
+content: |
+  # Research: Claude Code Custom Model Support
+  
+  ## Summary
+  
+  Claude Code supports non-Anthropic models and custom endpoints as of early 2026, primarily via `ANTHROPIC_BASE_URL` redirection combined with Ollama's native Anthropic Messages API compatibility (available since Ollama v0.14.0). The `model` field in subagent frontmatter and the Agent tool accept either named aliases (`sonnet`, `opus`, `haiku`) or full model ID strings, and Claude Code skips client-side validation when a custom endpoint is in use — so arbitrary model strings pass through to whatever endpoint `ANTHROPIC_BASE_URL` points to. There is no native per-project model routing built into Claude Code; routing multiple agents to different backends within one session requires a local proxy. Ideate would need to build its own mechanism to read `.ideate.json` and inject env vars at session startup, not at runtime.
+  
+  ## Key Facts
+  
+  - **Ollama compatibility**: Ollama v0.14.0+ implements the Anthropic Messages API (`/v1/messages`), making it directly compatible with Claude Code. Earlier versions required a translation proxy.
+  - **Environment variables for Ollama**: `ANTHROPIC_BASE_URL=http://localhost:11434`, `ANTHROPIC_AUTH_TOKEN=ollama` (or `ANTHROPIC_API_KEY=ollama`). Set before Claude Code starts or in `settings.json` under the `"env"` key.
+  - **`settings.json` `env` field**: Supports injecting any environment variable project-wide. Shell env vars that are already set take precedence over this block.
+  - **`model` field in subagent frontmatter**: Accepts `sonnet`, `opus`, `haiku`, `inherit`, or a full model ID string. When `ANTHROPIC_BASE_URL` is redirected, an Ollama model name (e.g., `qwen3-coder:30b`) can be passed here — Claude Code passes the string through without client-side validation per community reports, though this is not confirmed in official Anthropic documentation.
+  - **`ANTHROPIC_CUSTOM_MODEL_OPTION`**: Adds a single custom model entry to the `/model` picker. Claude Code explicitly skips validation for this ID. Companion vars: `ANTHROPIC_CUSTOM_MODEL_OPTION_NAME` and `ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION`. This is UI-only, not a routing mechanism.
+  - **`modelOverrides` setting**: Maps Anthropic model IDs to provider-specific IDs. Designed for Bedrock ARNs, Vertex deployment names, and Foundry. Keys must be valid Anthropic model IDs; this cannot be used to introduce Ollama model names as keys.
+  - **`ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`**: Control which full model ID each alias resolves to. Useful for pinning versions, not for routing to different backends.
+  - **`CLAUDE_CODE_SUBAGENT_MODEL`**: Sets model used for all subagents globally within a session.
+  - **Agent tool `model` parameter**: Takes precedence over subagent frontmatter `model`. Accepts the same values as `--model`. No documented allowlist beyond Anthropic model IDs and aliases — behavior with non-Anthropic strings depends on the endpoint.
+  - **Session-level endpoint lock-in**: `ANTHROPIC_BASE_URL` is session-global. A skill cannot switch the endpoint for a specific agent call mid-session without a proxy layer.
+  - **No native model routing**: Claude Code has no built-in mechanism to route different agents to different backends. All requests in a session go to one `ANTHROPIC_BASE_URL`.
+  - **Plugin subagent `model` field**: Supported in plugin agent frontmatter. Plugin subagents do not support `hooks`, `mcpServers`, or `permissionMode` — these are silently ignored.
+  - **Context window requirement**: Ollama docs recommend at least 64k token context window for Claude Code. Models below this threshold produce degraded results.
+  
+  ## Recommendations
+  
+  **Option 1: Environment variable injection via `.claude/settings.json`**
+  - Pros: Uses the supported Claude Code mechanism. Project-scoped `.claude/settings.json` sets `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` for the whole team without external tooling.
+  - Cons: All agents in a session share one endpoint — cannot mix Anthropic and Ollama agents. Requires the settings file to be committed or duplicated per project. Subject to the active env-override bug in recent versions.
+  - When to use: When the entire ideate workflow for a project should run against one custom endpoint (all Ollama, or all Anthropic), with no mixed-provider requirement.
+  
+  **Option 2: Ideate reads `.ideate.json` and generates a startup wrapper script**
+  - Pros: Per-project model configuration. Could inject `ANTHROPIC_BASE_URL` at session launch based on the config file. Skills would document "launch with `./ideate-start.sh`".
+  - Cons: Claude Code skills cannot set process-level env vars mid-session. The wrapper must be the entry point — env injection after startup does not affect in-flight requests. Adds a user-facing ceremony step.
+  - When to use: If a single-endpoint-per-project model is acceptable. Cleaner than committing `ANTHROPIC_BASE_URL` into `.claude/settings.json` for teams that mix local and cloud usage.
+  
+  **Option 3: Local proxy for per-agent routing (e.g., LiteLLM, `claude-code-router`)**
+  - Pros: Full flexibility — route `sonnet` to Anthropic, `qwen3-coder:30b` to Ollama, all via one `ANTHROPIC_BASE_URL`. Claude Code configuration is unchanged. Supports mixed-provider agent teams.
+  - Cons: Requires running a separate process. Adds a failure point. Third-party software not maintained by Anthropic. Proxy must implement the full Anthropic Messages API surface used by Claude Code.
+  - When to use: When ideate needs to mix Anthropic and Ollama agents within a single session, or when model-per-agent routing is a hard requirement.
+  
+  ## Risks
+  
+  - **Model string passthrough is unconfirmed officially**: Community reports confirm Ollama model names pass through when `ANTHROPIC_BASE_URL` is redirected, but official documentation only shows Anthropic model ID examples. This could break on a future Claude Code update that adds client-side validation.
+  - **Session-level endpoint lock-in**: A skill cannot change `ANTHROPIC_BASE_URL` for a specific agent call. If ideate skills spawn both an Anthropic-backed opus agent and an Ollama-backed qwen agent, a proxy is required.
+  - **`settings.json` env override bug**: Two active GitHub issues (as of March 2026) report that `env` block variables in `settings.json` may not override shell env vars reliably in v2.0.1+. Silent failure mode — Ollama routing appears broken, actual requests go to Anthropic.
+  - **Ollama API compatibility surface**: Ollama implements the Anthropic Messages API but coverage of tool-use, streaming edge cases, and extended thinking is not guaranteed to be complete. Agent-intensive workflows may hit undocumented incompatibilities.
+  - **Context window minimums**: Models under 64k context will produce degraded results or errors. Ideate's prompts are verbose; users must verify chosen Ollama models meet this threshold before expecting working behavior.
+  
+  ## Sources
+  
+  - Claude Code settings reference
+  - Create custom subagents documentation
+  - Model configuration documentation
+  - Claude Code - Ollama integration (Ollama docs)
+  - Ollama blog: Claude Code with Anthropic API compatibility
+  - GitHub issue #8500 — env vars not overriding settings.json
+  - GitHub issue #13827 — settings.json ignored on fresh install
+  - ANTHROPIC_CUSTOM_MODEL_OPTION documentation
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "03af8e0fbeccfd09cba1e475ae690ff646f6e2f8c7d31d7ea01de79e0ab019e9"
+token_count: 1913
+file_path: .ideate/research/RF-claude-code-custom-models.yaml

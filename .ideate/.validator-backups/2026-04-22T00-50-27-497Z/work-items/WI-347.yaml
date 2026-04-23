@@ -1,0 +1,37 @@
+id: WI-347
+type: work_item
+title: Migrate domain questions to canonical location
+status: done
+complexity: small
+scope: []
+depends:
+  - WI-342
+blocks: []
+criteria:
+  - Q-081 and Q-082 moved from .ideate/domain_file/domains/ to .ideate/questions/
+  - Files renamed from Q-081.yaml.yaml to Q-081.yaml
+  - domain-curator uses canonical location for new questions
+  - All references updated
+domain: artifact-structure
+notes: |-
+  Migrate Q-081 and Q-082 from incorrect storage location to canonical .ideate/questions/ location.
+
+  Current:
+  - .ideate/domain_file/domains/artifact-structure/questions/Q-081.yaml.yaml
+  - .ideate/domain_file/domains/workflow/questions/Q-082.yaml.yaml
+
+  Target:
+  - .ideate/questions/Q-081.yaml
+  - .ideate/questions/Q-082.yaml
+
+  Also fix the double .yaml extension.
+
+  Files to modify:
+  - Move Q-081.yaml and Q-082.yaml to correct location
+  - Update domain-curator to use canonical location
+resolution: Q-081 and Q-082 migrated to canonical .ideate/questions/ location. Removed duplicate Q-81.yaml file. Fixed review SKILL.md to use correct artifact types (domain_policy, domain_decision, domain_question) instead of invalid domain_file type. Old .ideate/question/ directory removed.
+cycle_created: null
+cycle_modified: null
+content_hash: 44c90fe38a7c7a56a9ad9bc536251ca7b0ba6cbae080e33bf99b07228e8b48b7
+token_count: 314
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-347.yaml

@@ -1,0 +1,73 @@
+id: RF-spec-sufficiency
+type: research_finding
+topic: Spec Sufficiency for LLM Execution
+status: active
+date: "2026-03-08"
+content: |
+  # Spec Sufficiency for LLM Execution
+  
+  Research compiled: 2026-03-08
+  Scope: How to determine when a specification is detailed enough for an LLM to execute without making subjective decisions or inferences.
+  
+  ## Summary
+  
+  There is no established universal standard for "spec sufficiency" in LLM-driven development. Existing tools (Cursor, Aider, Claude Code, Devin, Sweep, etc.) each handle granularity differently, but none have a formal mechanism for detecting whether a spec is complete enough before execution begins. The most promising approaches combine (a) decomposition into single-responsibility atomic tasks, (b) explicit enumeration of decisions (naming, structure, error handling, edge cases), and (c) machine-verifiable acceptance criteria that can be checked without human judgment. The core insight: sufficiency is not binary — it exists on a spectrum, and the right threshold depends on the cost of correction vs. the cost of over-specification.
+  
+  ## Key Findings
+  
+  ### Granularity Sweet Spot
+  - Atomic task = one clear action + one verifiable outcome + no branching decisions
+  - Tasks requiring choices between valid alternatives are NOT atomic — the choice itself must be resolved in the spec
+  - Optimal task size for executor agents: 1 file, 1 function, or 1 logical change — roughly a "single commit" unit
+  - SWE-bench finding: the presence of a failing test that defines "done" is the single strongest predictor of LLM success
+  
+  ### Progressive Decomposition Levels
+  - **Level 0 — Intent:** "Add user authentication" — too vague
+  - **Level 1 — Feature spec:** Technology choices resolved, implementation details open
+  - **Level 2 — Implementation spec:** File paths, function signatures, schema, error codes specified — most decisions resolved
+  - **Level 3 — Atomic task:** Fully specified down to function names, test cases, exact behavior
+  
+  The sufficiency threshold sits between Level 2 and Level 3. Level 3 is fully determined but expensive to write. Level 2 resolves all architectural/design decisions but leaves minor details to the LLM.
+  
+  ### Sufficiency Heuristic
+  A spec is sufficient when two different competent LLMs would produce functionally equivalent output — output that passes the same acceptance tests and integrates the same way. If they would produce meaningfully different designs, the spec is under-determined.
+  
+  ### Ambiguity Markers for LLM Execution
+  - Unspecified choices ("Use an appropriate data structure")
+  - Missing error handling (success path only)
+  - Implicit ordering without explicit sequencing
+  - Missing scope boundaries ("Update the API" — which endpoints?)
+  - Subjective terms ("clean code", "good UX", "performant")
+  - Unresolved references ("Follow the existing pattern" — which one?)
+  - Missing examples ("Format correctly" without a sample)
+  
+  ### Machine-Verifiable vs. Human-Judgment Criteria
+  - **Machine-verifiable (good):** Test pass/fail, type checking, linting, structural assertions, behavioral contracts, diff-based constraints
+  - **Human-judgment (problematic):** "readable", "intuitive", "helpful", "acceptable", "maintainable"
+  - **Key insight:** Criteria requiring human judgment signal unresolved ambiguity — the judgment IS the ambiguity
+  
+  ### Recommended Approaches (Combinable)
+  1. **Ambiguity-scoring heuristic** — LLM analyzes spec for ambiguity markers before execution
+  2. **Structured spec templates** — Required fields for common ambiguity sources (file paths, signatures, error handling, test cases, no-gos)
+  3. **Test-first specification** — Every spec includes executable tests that define "done"
+  4. **Progressive decomposition with sufficiency gates** — Multi-level pipeline with explicit criteria per level
+  
+  ### Risks
+  - Over-specification can be slower than writing code directly
+  - Right granularity varies by task type (CRUD needs less than novel algorithms)
+  - Detailed specs consume context window tokens
+  - Ambiguity detection is itself ambiguous — meta-judgment is not fundamentally easier
+  
+  ## Sources
+  - SWE-bench (Jimenez et al., 2024) — Princeton
+  - SWE-agent (Yang et al., 2024) — Princeton
+  - AutoGen (Wu et al., 2023) — Microsoft Research
+  - IEEE 830-1998 / IEEE 29148-2018
+  - Shape Up — Ryan Singer, Basecamp
+  - ReAct (Yao et al., 2023), Chain-of-Thought (Wei et al., 2022)
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "91bbd15b450cae13764ae67f57bf06a43bc51c8f3b1fb6ba8abd16ae0268c4ac"
+token_count: 1147
+file_path: .ideate/research/RF-spec-sufficiency.yaml

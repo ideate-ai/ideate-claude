@@ -1,0 +1,19 @@
+id: F-WI367-1
+type: finding
+work_item: WI-367
+reviewer: code-reviewer
+verdict: Pass
+rework: true
+rework_count: 1
+findings:
+  critical: []
+  significant:
+    - id: S1
+      description: "Worker introduced out-of-scope renames: replaced all occurrences of ideate_get_autopilot_state() and ideate_update_autopilot_state({state:...}) with ideate_manage_autopilot_state({action:...}) throughout the skill document (Phases 4, 6a, 6c, 6e, Metrics section, What You Do Not Do, Self-Check). These tool names are incorrect — the actual MCP tools are ideate_get_autopilot_state and ideate_update_autopilot_state. The rename would cause all autopilot state operations to fail at runtime."
+      file: skills/autopilot/SKILL.md
+      resolved: true
+  minor: []
+summary: "WI-367 required rework. Worker incorrectly renamed autopilot state tool calls throughout the file. All 9 renamed occurrences reverted to correct tool names (ideate_get_autopilot_state / ideate_update_autopilot_state). The intended change (Phase 0 model_overrides clause) was preserved and is correct. Post-rework: Pass."
+content_hash: db1e06f8918bf21b20d443934a0661cd7854129d114e2aa21393b1875832603e
+token_count: 269
+file_path: .ideate/cycles/069/findings/F-WI367-1.yaml

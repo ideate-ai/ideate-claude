@@ -1,0 +1,13 @@
+id: D-11
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: Researcher writes its structured report to `steering/research/{topic-slug}.md` directly, rather than returning content to the invoking skill to write.
+rationale: "WI-020 was created to fix the original design: without Write access, the researcher had to return content inline, which the plan skill then had to handle conditionally; direct write is simpler and more consistent with artifact-directory coordination (journal 2026-03-08 WI-020 entry)."
+cycle_created: 1
+cycle_modified: null
+content_hash: "11e82496df26e48b261cff9990bfc225ef48fa049a5aa3b41858d20e20870962"
+token_count: 164
+file_path: .ideate/decisions/D-11.yaml

@@ -1,0 +1,12 @@
+id: D-155
+type: domain_decision
+domain: artifact-structure
+title: metrics.jsonl formally deprecated in favor of YAML+SQLite write path
+description: Cycle 5 formally deprecated the metrics.jsonl write path (Option A from interview-refine-071). All new metric events are written as individual YAML files under metrics/ and indexed into SQLite. The existing metrics.jsonl file is no longer written to. Existing data in metrics.jsonl is considered discardable per user direction.
+rationale: YAML+SQLite path aligns with the v3 architecture (YAML as source of truth, SQLite as derived index). Maintaining two write paths adds complexity with no benefit. User confirmed existing JSONL data can be discarded.
+source: cycle 5 decision-log D5-P02; interview-refine-071
+status: settled
+cycle: 5
+content_hash: d0ccf6aa09565cbc2ccd4d673b1dcd44af3721d52fe57dd5a10ef44c573f9aa7
+token_count: 196
+file_path: .ideate/decisions/D-155.yaml

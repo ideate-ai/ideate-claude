@@ -1,0 +1,14 @@
+id: Q-62
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: YAML artifact files are inconsistent with the schema contract. Direct YAML consumers (not going through the indexer) will see null where a path is expected.
+source: archive/cycles/018/code-quality.md M9; archive/cycles/018/decision-log.md OQ8
+resolution: "WI-172 set `file_path: outRelPath` in both capstone and incremental finding builders in both `.ts` and `.js`. See D-89."
+resolved_in: 19
+description: "Both capstone and incremental finding builders in `migrate-to-v3.ts` emit `file_path: null` in YAML output. The `findings` table declares `file_path TEXT NOT NULL`. The indexer works around this via `buildCommonFields` falling back to the disk path. Should `file_path` be set to the relative output path in the migration builder?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "6c65a036faf600a5e5a50600b79c8685f84964d0eb27a8eb5f52b38d838beec4"
+token_count: 231
+file_path: .ideate/questions/Q-62.yaml

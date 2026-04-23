@@ -1,0 +1,14 @@
+id: Q-66
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: String array items with leading whitespace produce invalid YAML silently. The scalar path is covered; the array-item path is not.
+source: archive/cycles/019/code-quality.md M2; archive/cycles/019/decision-log.md Q-66
+resolution: "WI-175 added `/^\\s/.test(item)` to the array-item quoting condition at `migrate-to-v3.ts:110` and mirrored the change in `migrate-to-v3.js:146`. See D-92."
+resolved_in: 20
+description: "The scalar quoting path in `toYaml` (line 76) gained a `/^\\s/.test(value)` guard in WI-172. The parallel array-item string path (line 110) checks only `\\n`, `\"`, `:`, and `#`. A string array item with leading whitespace produces unquoted output and invalid YAML. The same gap exists in `migrate-to-v3.js`. Should the guard be added?"
+cycle_created: 1
+cycle_modified: null
+content_hash: e1e8dee77016a77a24cd9da50a28c40fd3ba3deb1ab7fd1e1184d496e5a19be0
+token_count: 235
+file_path: .ideate/questions/Q-66.yaml

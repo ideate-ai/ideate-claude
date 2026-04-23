@@ -1,0 +1,13 @@
+id: D-20
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 2
+supersedes: null
+description: Three agent definitions (`agents/spec-reviewer.md`, `agents/gap-analyst.md`, `agents/journal-keeper.md`) reference `reviews/incremental/`, the pre-archive-layer path. The correct path is `archive/incremental/`. The stale references were not caught during path-cleanup work items in cycles 002 and 006 (WI-091 fixed artifact-conventions.md; WI-097 fixed skills/refine/SKILL.md; agent definitions were out of scope both times).
+rationale: "Cycle 006 gap-analyst elevated the finding to significant because the degradation compounds: every review cycle run by these three agents silently skips incremental review context, breaking the deduplication instruction in spec-reviewer and the synthesis instruction in journal-keeper."
+cycle_created: 1
+cycle_modified: null
+content_hash: "0a3cb29223f82430842dcea98b6b492102c798729c59e7d00043183f81aed476"
+token_count: 233
+file_path: .ideate/decisions/D-20.yaml

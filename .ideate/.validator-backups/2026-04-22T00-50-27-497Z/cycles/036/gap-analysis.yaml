@@ -1,0 +1,84 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |
+  # Gap Analysis — PH-050 Cycle 1
+
+  ## Verdict: Fail
+
+  **Summary**: 4 significant findings + 4 minor. No critical. Fails because of P-33 violation (EC2), structural quote-escaping bug in warning output (EC1), untested Step 2 fallback (EC3), and unmet AC5 (EC4).
+
+  ## Significant Findings
+
+  ### EC1 — principle_verdict_warning has double-quote collision
+  - **Location**: tools/analysis.ts step 3 in parsePrincipleVerdict
+  - **Issue**: `warning: \`unexpected format; content snippet: ${JSON.stringify(snippet)}\`` produces quoted content. Downstream wrapping at line 206 (`principle_verdict_warning: "${warning}"`) produces structurally malformed output with unescaped inner double quotes.
+  - **Fix**: remove JSON.stringify, rely on outer template-literal quoting, OR change outer wrapper.
+  - **Severity**: Significant — breaks downstream parsers that split on `"`.
+
+  ### EC2 — P-33 violation: absolute .ideate/ paths leaked in missing-cycle warning
+  - **Location**: tools/analysis.ts:164-175
+  - **Issue**: Warning includes `cycleDir` and `checkedPaths` (absolute paths). P-33 requires tool responses not expose storage implementation.
+  - **Fix**: emit relative filenames only; cycle number already in response.
+  - **Severity**: Significant — active policy violation.
+
+  ### EC3 — Step 2 fallback parser entirely untested
+  - **Location**: tools/analysis.ts:92-121 and __tests__/tools.test.ts
+  - **Issue**: Step 2 (section-body heuristic for ## Principle Violation / ## Guiding Principle) has zero test coverage. Every test that contains `## Principle Violation` also triggers Step 1, never Step 2.
+  - **Fix**: add tests for each Step 2 outcome: empty/None body → pass, ### subheadings → fail, other → step3.
+  - **Severity**: Significant — Step 2 is the fallback for legacy artifacts.
+
+  ### EC4 — WI-876 AC5 retroactive verification absent
+  - **Location**: __tests__/tools.test.ts
+  - **Issue**: AC5 requires `ideate_get_convergence_status(31)`, `(32)`, `(33)` produce actionable diagnostics. Worker marked "verified statically". No test asserts behavior for those cycles.
+  - **Fix**: integration tests that call `handleGetConvergenceStatus` with cycle 31/32/33 fixtures, OR explicit formal deferral.
+  - **Severity**: Significant — named AC unmet.
+
+  ### IR1 — P-33 compliance test suite does not include handleGetConvergenceStatus
+  - **Location**: __tests__/tools.test.ts P-33 describe block at line 3909
+  - **Issue**: Block covers other tool handlers but not handleGetConvergenceStatus, which now emits warning with potential path leakage (see EC2).
+  - **Fix**: add handleGetConvergenceStatus to P-33 regression guard.
+  - **Severity**: Significant — enforcement gap.
+
+  ## Minor Findings
+
+  ### EC5 — principle_verdict_source not asserted in any test
+  - Response emits `step1|step2|step3` but no test checks it. Address with EC3.
+
+  ### II1 — adapter-contract.md Version History not updated
+  - Version History ends at 3.3 (WI-873). WI-876 changes diagnostic output format (new `principle_verdict_source` field, expanded `principle_verdict_warning` format) — observable interface change.
+
+  ### II2 — autopilot has no handling for principle_verdict: unknown
+  - Autopilot 6c reads only `converged` flag. No branch for parsing-error unknown vs real failure. Defer — WI-876 scope is parser, not autopilot.
+
+  ### MI1 — restart.sh has no SIGKILL escalation or timeout path
+  - 1-second wait then warn. Wedged process leaves old code running. Defer — acknowledged tradeoff; scenario rare.
+
+  ### MI2 — WI-877 AC4 manual end-to-end test not recorded as performed
+  - No journal entry or `# Verified: [date]` note confirming the manual procedure was run. Defer — documentation only.
+
+  ## Summary by Severity
+
+  - Critical: 0
+  - Significant: 5 (EC1, EC2, EC3, EC4, IR1)
+  - Minor: 5 (EC5, II1, II2, MI1, MI2)
+content_hash: d04e832486237da9178d60dca9aa4218fc5d19fae360ce8ca100b697431b0922
+token_count: 1255
+file_path: .ideate/cycles/068/gap-analysis.yaml
+cycle: 36
+cycle_modified: 27
+verdict: Fail
+scope: WI-873 completeness — missing coverage, infrastructure, edge cases
+summary: "10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase (grep-verified)."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 1
+minor_findings_refs:
+  - F-CYCLE-33-MI1
+criteria_status:
+  total: 11
+  pass: 10
+  partial: 1
+  fail: 0
+regression_prevention_check: No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both 2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.

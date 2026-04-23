@@ -1,0 +1,24 @@
+id: WI-241
+type: work_item
+title: Fix domains/index.md to domains/index.yaml in MCP server
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/analysis.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - analysis.ts reads domains/index.yaml instead of domains/index.md
+  - If neither .yaml nor .md exists, behavior is unchanged (graceful skip)
+domain: artifact-structure
+notes: |-
+  # WI-241: Fix domains/index Path
+
+  In analysis.ts, find where domains/index.md is read (likely in handleGetDomainState or handleGetProjectStatus). Change to domains/index.yaml. Add fallback: try .yaml first, fall back to .md for backward compatibility with unmigrated projects.
+resolution: null
+cycle_created: 30
+cycle_modified: null
+content_hash: 304bd9b052b594ce11716ee0052db07ad268aa7d829fb4816212c9f307acb274
+token_count: 186
+file_path: .ideate/work-items/WI-241.yaml

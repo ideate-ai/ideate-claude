@@ -1,0 +1,10 @@
+id: C-01
+type: constraint
+category: technology
+status: active
+description: Claude Code plugin format. The core product is a Claude Code plugin — markdown skill definitions, agent definitions, plugin manifest. No runtime code is required for the core workflow, but external tooling (MCP servers, SDK orchestrators) may be built to extend capabilities.
+cycle_created: 1
+cycle_modified: null
+content_hash: "4c19008765c9aa78a5d642f5463326e072b76e39bb5bbc37c70768d56ac4750c"
+token_count: 112
+file_path: .ideate/constraints/C-01.yaml

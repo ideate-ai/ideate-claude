@@ -1,0 +1,20 @@
+id: interview-refine-026
+type: interview
+entries:
+  - answer: Address all critical and significant findings from Full Audit (Cycle 5)
+    domain: workflow
+    question: What is the scope of this refinement?
+  - answer: Security vulnerability (hardcoded password), interface contracts (archiveCycle), schema consistency, and adapter equivalence (16 test failures)
+    domain: workflow
+    question: What are the main areas of work?
+  - answer: Completely fix all 16 equivalence test failures so LocalAdapter and RemoteAdapter produce identical results
+    domain: project-boundaries
+    question: What is the target for adapter equivalence?
+  - answer: SMALL/MEDIUM/LARGE — remove LOW/HIGH from GraphQL schema to match code
+    domain: artifact-structure
+    question: Which complexity enum values should be canonical?
+  - answer: "Create two new phases: Phase 1 (Security & Contracts) and Phase 2 (Equivalence & Reliability)"
+    domain: workflow
+    question: How should the work be organized?
+content_hash: 41dc594f7cdd50aa37dad53ac00cef4d969dc278fdc1c8a94b7b597ee5a8d5b8
+token_count: 248

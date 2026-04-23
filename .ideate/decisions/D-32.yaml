@@ -4,10 +4,16 @@ domain: artifact-structure
 status: settled
 cycle: 4
 supersedes: null
-description: "All three reviewers (code-quality, spec-adherence, gap-analyst) returned Pass with zero critical and zero significant findings. The seven cycle 004 findings targeted by WI-095, WI-096, and WI-097 are confirmed fixed: report.sh severity key path (C1/C2), auto-discovery key name (S1/S2), fmt_ms zero handling (OQ5), metrics.jsonl documentation gap (G-S1), and stale refine paths (M1)."
-rationale: Cycle 005 was a targeted correction cycle (autopilot cycle 2) with no new features or design changes. All acceptance criteria met. Three minor documentation gaps remain as carry-forward items (Q-22, Q-23, Q-15 reopened).
+description: >-
+  All three reviewers (code-quality, spec-adherence, gap-analyst) returned Pass with zero critical and zero significant
+  findings. The seven cycle 004 findings targeted by WI-095, WI-096, and WI-097 are confirmed fixed: report.sh severity
+  key path (C1/C2), auto-discovery key name (S1/S2), fmt_ms zero handling (OQ5), metrics.jsonl documentation gap (G-S1),
+  and stale refine paths (M1).
+rationale: >-
+  Cycle 005 was a targeted correction cycle (autopilot cycle 2) with no new features or design changes. All acceptance
+  criteria met. Three minor documentation gaps remain as carry-forward items (Q-22, Q-23, Q-15 reopened).
 cycle_created: 1
 cycle_modified: null
 content_hash: d4ee50ffaf901dc1ad9ac537d74a5a7b9c3ad638d8597d78c1eed49c3a1fe586
 token_count: 206
-file_path: .ideate/decisions/D-32.yaml
+file_path: decisions/D-32.yaml

@@ -1,0 +1,36 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |
+  ## Verdict
+
+  7/8 cycle 36 findings substantially addressed. 2 residual gaps.
+
+  ## Significant Findings
+
+  - S5 retroactive: criterion 'confirm principle_verdict result unchanged' not verified. Test accepts 'unknown' outcomes. Fix: fixture-based test loading cycle 31 content and asserting pass, or formal decision artifact deferring with rationale.
+
+  ## Minor Findings
+
+  - Step 2 'Fail' branch (content with `### subheadings` or `- ` bullets) has no test coverage.
+  - restart.sh header comment stale (3rd reviewer confirms).
+content_hash: 1b13e7a4dd7af97db8210a8aa1470eb27355553c1dba2dcebce7b0c41b058a8c
+token_count: 431
+file_path: .ideate/cycles/068/gap-analysis.yaml
+cycle: 37
+cycle_modified: 27
+verdict: Fail
+scope: WI-873 completeness — missing coverage, infrastructure, edge cases
+summary: "10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase (grep-verified)."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 1
+minor_findings_refs:
+  - F-CYCLE-33-MI1
+criteria_status:
+  total: 11
+  pass: 10
+  partial: 1
+  fail: 0
+regression_prevention_check: No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both 2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.

@@ -1,0 +1,13 @@
+id: D-17
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "Every artifact directory contains a `manifest.json` at its root with `{\"schema_version\": N}`. This is the sole non-Markdown file in the artifact directory, amending D-5. The manifest is informational only — no skill checks or enforces the version at runtime. Migration scripts read it; the workflow does not."
+rationale: Two prior breaking schema changes required ad-hoc migration scripts. A persistent version marker lets future migration scripts detect the schema version and apply targeted upgrades without guessing directory structure.
+cycle_created: 1
+cycle_modified: null
+content_hash: "263ce8bbed83428d7662aa8d464729d62c7ba2d3fe96dc3c14c99fdcc07c30bf"
+token_count: 189
+file_path: .ideate/decisions/D-17.yaml

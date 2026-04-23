@@ -1,0 +1,11 @@
+id: GP-07
+type: guiding_principle
+name: Recursive Decomposition
+status: active
+description: Large projects decompose into modules, each with its own planning scope. The tool must handle arbitrary project scale by breaking work into nested levels — from high-level architecture down to atomic executable tasks. Where Claude Code's native capabilities limit recursion, external tooling (MCP servers, SDK orchestrators, CLI multiplexing) should be built to fill the gap.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: f5b0aaab016333352b0ac1e17742a82883eb85f35a1364de6b2e01e5bd70976e
+token_count: 147
+file_path: .ideate/principles/GP-07.yaml

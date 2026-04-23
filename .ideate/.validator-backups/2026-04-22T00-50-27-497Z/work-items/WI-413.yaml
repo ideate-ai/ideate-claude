@@ -1,0 +1,22 @@
+id: WI-413
+type: work_item
+title: Fix finding_severities serialization in metrics_event dispatch branch
+status: done
+complexity: XS
+scope: mcp/artifact-server/src/tools/write.ts, mcp/artifact-server/src/__tests__/tools.test.ts, mcp/artifact-server/src/__tests__/write-transaction.test.ts
+depends: []
+blocks: []
+criteria: |-
+  1. finding_severities field in metrics_event dispatch branch uses JSON.stringify when value is an object (not a string), so object payloads are stored correctly instead of as '[object Object]'.
+  2. Dead reverse-coverage guard in tools.test.ts P-46 block removed (M1).
+  3. Redundant toHaveLength(0) assertion in write-transaction.test.ts interview_question rollback test removed (M2).
+  4. All existing tests pass (npm test).
+  5. Build succeeds (npm run build).
+domain: null
+notes: "# WI-413: Fix finding_severities serialization in metrics_event dispatch branch"
+resolution: null
+cycle_created: null
+cycle_modified: 3
+content_hash: a5d3b250ecc4e4b0331aa516574588bf65dcd5ea4e0becbc49dd5fe0897bd12e
+token_count: 236
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-413.yaml

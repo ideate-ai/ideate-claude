@@ -1,0 +1,93 @@
+id: WI-366
+type: work_item
+title: "Update settings skill: null-signal for clear, 'default (modelname)' display"
+status: done
+complexity: small
+scope:
+  - path: skills/settings/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "Phase 2a table: absent model override displays as 'default (sonnet)' or 'default (opus)' (matching the agent's hardcoded default), not '—'"
+  - "Agent submenu model line: absent override displays as 'default (sonnet)' or 'default (opus)', not '— (no override)'"
+  - "Option 3 sends null-signal patch { model_overrides: { {agent}: null } } instead of building full remaining object"
+  - Option 3 label updated to 'Reset to default' or equivalent to reflect the null-signal semantics
+  - "Changes list records cleared override as '{agent}.model: {old} → default ({default_model}) (cleared)'"
+  - "When no override is set, Option 3 reports the default model name: 'No model override is set for {agent}. Model is default ({default_model}).'"
+  - Phase 2a example table in the skill document reflects the updated display format (no '—' entries)
+domain: artifact-structure
+notes: |-
+  ## Context
+
+  Q-91 resolution: null-signal semantics adopted. The settings skill previously worked around the broken clear by building the full remaining model_overrides object. Now that WI-365 adds proper null-signal support, the skill should use the cleaner null-signal approach. Additionally, the display should show 'default (sonnet)' or 'default (opus)' instead of '—' to make the default model visible.
+
+  ## Changes to skills/settings/SKILL.md
+
+  ### 1. Phase 2a table column description
+
+  Change:
+  ```
+  - **Model override (current)**: value from `{config}.model_overrides[agent]` if present and non-empty; otherwise show `—`.
+  ```
+  To:
+  ```
+  - **Model override (current)**: value from `{config}.model_overrides[agent]` if present and non-empty; otherwise show `default ({agent_default_model})` where `{agent_default_model}` is the hardcoded default from Phase 0.
+  ```
+
+  ### 2. Phase 2a example table
+
+  Change the `—` values in the Model override column to `default (sonnet)` (or `default (opus)` for domain-curator). For example:
+  ```
+   #  Agent           maxTurns  (default)  Model override        (default)
+   1  architect           160       160    default (sonnet)      sonnet
+   4  domain-curator      100       100    default (opus)        opus
+  ```
+
+  ### 3. Agent submenu model line
+
+  Change:
+  ```
+    model    : {override or "— (no override)"}  (default: {default})
+  ```
+  To:
+  ```
+    model    : {override or "default ({default_model})"}  (default: {default_model})
+  ```
+
+  ### 4. Option 3 — Reset to default
+
+  Change label from "Clear model override" to "Reset to default" in the numbered list:
+  ```
+  3. Reset to default
+  ```
+
+  Change the Option 3 implementation:
+
+  Old:
+  ```
+  **Option 3 — Clear model override**:
+  - If no override is set for this agent: say `No model override is set for {agent}.` Return to submenu.
+  - Otherwise: build the full `model_overrides` object from `{config}.model_overrides` with the current agent's key removed. Call `ideate_update_config({ patch: { model_overrides: {remaining} } })`.
+  - If `status` is `"error"`: show errors. Do not record a change.
+  - If `status` is `"updated"`: record `{agent}.model: {old} → — (cleared)` in `{changes}`. Confirm: `Model override for {agent} cleared.`
+  - Reload config. Return to agent submenu.
+  ```
+
+  New:
+  ```
+  **Option 3 — Reset to default**:
+  - If no override is set for this agent: say `No model override is set for {agent}. Model is default ({default_model}).` Return to submenu.
+  - Otherwise: Call `ideate_update_config({ patch: { model_overrides: { {agent}: null } } })` to send the null-signal deletion.
+  - If `status` is `"error"`: show errors. Do not record a change.
+  - If `status` is `"updated"`: record `{agent}.model: {old} → default ({default_model}) (cleared)` in `{changes}`. Confirm: `Model override for {agent} reset to default ({default_model}).`
+  - Reload config. Return to agent submenu.
+  ```
+
+  Note: `{default_model}` is the agent's hardcoded default model from the Phase 0 reference values (sonnet for all agents except domain-curator which is opus).
+resolution: "settings SKILL.md updated: default display, Option 3 null-signal, Option 2 from-value fix."
+cycle_created: 69
+cycle_modified: 68
+content_hash: a4a5baf9eccd52f3cb0dbeae06a0d3cb63f7f0d1687b1f0df6106f2960887446
+token_count: 1091
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-366.yaml

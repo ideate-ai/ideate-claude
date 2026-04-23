@@ -1,0 +1,13 @@
+id: D-69
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-151 added three separate try/catch blocks in `index.ts` guarding: (1) `resolveArtifactDir`, (2) `new Database` + pragmas + `createSchema`, (3) `rebuildIndex`. Each zone emits a stderr message and calls `process.exit(1)`."
+rationale: A single outer try/catch cannot distinguish config-path failures from DB-open failures from rebuild failures. Separate zones produce actionable diagnostics for the MCP host.
+cycle_created: 1
+cycle_modified: null
+content_hash: "3a06931707fd7bf1b26fc0c70a4d1d1bddf61f7c7a40a58be843e6bc3411de80"
+token_count: 156
+file_path: .ideate/decisions/D-69.yaml

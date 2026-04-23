@@ -2,10 +2,5 @@ id: interviews/refine-010/_general
 type: interview
 cycle: 10
 source_path: steering/interviews/refine-010/_general.md
-entries:
-  - {id: IQ-010-001, question: Address just II1, or bundle EC1/EC2 into the agent definition as a second work item?, answer: II1 only. EC1/EC2 touch a different file and are genuine edge cases already tagged defer. Keeping WI-120 focused is the right call., domain: null, seq: 1}
-  - {id: IQ-010-002, question: All 12 guiding principles still hold?, answer: "Yes.
-
-**Scope**: WI-120 — add explicit \"Startup failure after ...\" exception rule to Phase 8 of `skills/execute/SKILL.md` and finding-handling block of `skills/autopilot/phases/execute.md`.", domain: null, seq: 2}
-content_hash: "5916af9639c9647f80c73d08751b33a1c215d5233bfc0552fe5a82fac1e6fbb2"
+content_hash: 5916af9639c9647f80c73d08751b33a1c215d5233bfc0552fe5a82fac1e6fbb2
 token_count: 179

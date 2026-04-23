@@ -1,0 +1,11 @@
+id: GP-04
+type: guiding_principle
+name: Parallel-First Design
+status: active
+description: Specs should be structured to maximize parallel execution. Work items must have non-overlapping scope and explicit dependency ordering. Foundational/sequential work is acceptable where necessary, but the default assumption is parallel. This applies beyond code — documentation, analysis, and review are also parallelizable.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "3b65905db819a970ab110ae17b1924efec690be70925ac4d8042cd8135494f48"
+token_count: 134
+file_path: .ideate/principles/GP-04.yaml

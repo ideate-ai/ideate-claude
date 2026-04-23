@@ -1,0 +1,14 @@
+id: P-12
+type: domain_policy
+domain: agent-system
+status: active
+derived_from:
+  - GP-4 (Parallel-First Design)
+established: cycle 001 (WI-028)
+amended: null
+description: The background field must be explicit in agent frontmatter so execution tools can determine parallelism without reading the spawning skill.
+cycle_created: 1
+cycle_modified: null
+content_hash: f080600a0740bfc338e873def69869eb4e67894217aa0fd21b6dfb10caa4abc5
+token_count: 103
+file_path: .ideate/policies/P-12.yaml

@@ -1,0 +1,14 @@
+id: Q-33
+type: domain_question
+domain: workflow
+status: resolved
+impact: Code-reviewers spawned via execute or autopilot receive contradictory guidance about when to emit a Critical finding. For library, CLI, e2e, and documentation-only projects, the inline override may suppress correct Critical findings that the generalized smoke test would otherwise produce.
+source: archive/cycles/011/code-quality.md S1; archive/cycles/011/spec-adherence.md U1; archive/cycles/011/gap-analysis.md IG1; archive/cycles/011/decision-log.md OQ-8
+resolution: "WI-129 replaced \"cannot build or start\" with \"smoke test fails\" in both inline prompts at `skills/execute/SKILL.md:325` and `skills/autopilot/phases/execute.md:113`."
+resolved_in: 12
+description: "`skills/execute/SKILL.md:325` and `skills/autopilot/phases/execute.md:113` pass inline prompts to the code-reviewer that read \"If the project cannot build or start, report a Critical finding.\" WI-126 generalized the agent definition to \"If the smoke test fails\" — a broader condition covering library builds, e2e tests, and CLI invocations. The inline override was excluded from WI-126 scope by AC-7. Should both inline prompts be updated to match the agent definition?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "6ceac0530ed995ead10fbb4a3b0797dbd382f2c0e2099f8e00fd403beaecbfce"
+token_count: 327
+file_path: .ideate/questions/Q-33.yaml

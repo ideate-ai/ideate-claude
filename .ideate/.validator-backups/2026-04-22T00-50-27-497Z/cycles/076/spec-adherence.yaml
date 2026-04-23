@@ -1,0 +1,51 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  Verdict: Fail
+
+  **Principle Adherence Verdict**: Pass
+
+  ## Critical Findings
+  - [C1] ppr.ts:69-72 and reader.ts:381-383,572 CONTAINMENT_EDGE_TYPES references 6 edge types NOT in EDGE_TYPES/EDGE_TYPE_REGISTRY (owns_codebase, owns_project, has_phase, has_work_item, owns_knowledge, references_codebase). Hardcoded in 2 files with DIVERGENT membership. Ontology integrity breach. Fix: add containment flag to EdgeTypeSpec or hoist+fix schema.
+  - [C2] migrations.ts:46-94 Registry covers 3→4 and 4→5 only. CONFIG_SCHEMA_VERSION=7. Versions 5→6 and 6→7 have no entries. Fallback silently bumps version. If v6/v7 required data transforms, existing workspaces at v5 are stamped v7 without transforms. Fix: add stubs with explicit no-op comments.
+
+  ## Significant Findings
+  - [S1] LocalAdapter has 5 public context methods not on StorageAdapter interface (queryArchitectureDocument, queryGuidingPrinciples, queryConstraints, queryActiveProject, queryActivePhase). Implicit second interface RemoteAdapter/ValidatingAdapter don't implement. Fix: interface or private.
+  - [S2] autopilot_state in ALL_NODE_TYPES but no TYPE_TO_EXTENSION_TABLE entry. ideate_artifact_query returns Unknown type. Silent ontology asymmetry.
+  - [S3] reader.ts:57-64 TYPE_EXTENSION_INFO comment claims "same as tools/query.ts" but query.ts no longer has it. False confidence about a second copy.
+  - [S4] schema.ts:78-83 relates_to has registered source_types but indexer ALSO mines journal titles via regex — derivation path not in registry. Registry incomplete description of how edges enter graph.
+  - [S5] remote-contract.test.ts:42 RemoteAdapter contract skipped when localhost:4000 absent — CI never runs it. RemoteAdapter.getToolUsage is a stub; divergence accumulates unchecked.
+
+  ## Minor Findings
+  - [M1] schema.ts:90-94 references edge has empty source/target types — only open-typed edge. Traversal returns results without type safety.
+  - [M2] belongs_to_domain stores domain strings as target_id with FK cascade — latent structural violation.
+  - [M3] PPR weights cover 5 of 16 edge types; 11 default to 1.0 without rationale.
+  - [M4] autopilot-state.ts:94-106 has filesystem fallback when ctx.adapter absent; other handlers throw. Inconsistent.
+  - [M5] writer.ts:343-391 upsertExtensionTableRow is a 390-line if/else chain parallel to TYPE_TO_EXTENSION_TABLE. Node-type addition touches 5 places with no compile-time enforcement.
+
+  ## Suggestions
+  - [SG1] Move CONTAINMENT_EDGE_TYPES into schema.ts as typed derived export; remove phantoms.
+  - [SG2] Add `containment: boolean` to EdgeTypeSpec; replace hardcoded sets with registry filter.
+  - [SG3] Register autopilot_state or document exclusion.
+  - [SG4] Add migration stubs for 5→6 and 6→7.
+  - [SG5] Move LocalAdapter-only methods behind StorageAdapter or mark private.
+  - [SG6] Data-driven NODE_TYPE_REGISTRY record — compile-time enforcement for new node types.
+content_hash: 849b1256f07ad1146d1617043e33702671379237563e99345019c7ec6883b3f0
+token_count: 1044
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 76
+cycle_modified: 27
+verdict: Pass
+principle_verdict: Pass
+scope: full-audit
+summary: "ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null, non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was corrected via ideate_write_artifact re-writes)."
+findings_summary:
+  critical: 0
+  significant: 1
+  minor: 0
+significant_findings_refs:
+  - F-CYCLE-33-S1
+principle_adherence_verdict: Pass
+principle_adherence_notes: "**Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873 scope files."
+date: "20260417"

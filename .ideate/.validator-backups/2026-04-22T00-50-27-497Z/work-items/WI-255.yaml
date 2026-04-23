@@ -1,0 +1,24 @@
+id: WI-255
+type: work_item
+title: Fix research file suffix from .md to .yaml in refine skill
+status: done
+complexity: low
+scope:
+  - path: skills/refine/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Research suffix example changed from oauth2-providers-v2.md to oauth2-providers-v2.yaml
+  - Any other .md research file references in refine skill changed to .yaml
+domain: workflow
+notes: |-
+  # WI-255: Research Suffix Fix
+
+  Line 174 of refine/SKILL.md says 'oauth2-providers-v2.md'. Change to .yaml.
+resolution: null
+cycle_created: 33
+cycle_modified: null
+content_hash: df470c862261f4e0cdbd7fcf5f4b5e5febb07d4492b160c48d398f20dd3650a2
+token_count: 143
+file_path: .ideate/work-items/WI-255.yaml

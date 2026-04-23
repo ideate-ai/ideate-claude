@@ -1,0 +1,14 @@
+id: Q-32
+type: domain_question
+domain: workflow
+status: resolved
+impact: P-22 amendment trail is incomplete; stated provenance disagrees with change history.
+source: archive/cycles/010/gap-analysis.md MG1; archive/cycles/010/decision-log.md OQ-7
+resolution: Domain curator updated the `Amended` field in `specs/domains/workflow/policies.md` to `cycle 009, cycle 010` during cycle 010 curator pass.
+resolved_in: 10
+description: WI-123 modified P-22's body in cycle 010 but the `Amended` metadata read only `cycle 009`. Should the field be updated to `cycle 009, cycle 010`?
+cycle_created: 1
+cycle_modified: null
+content_hash: "958881bc5e7f9584f7e3264c287c8a3015a4e48c6b1ef82386075e8f51fed19f"
+token_count: 170
+file_path: .ideate/questions/Q-32.yaml

@@ -1,0 +1,14 @@
+id: P-31
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - D-117; v1 class table inheritance architecture (single PK namespace)
+established: cycle 022
+amended: null
+description: "All artifact IDs in YAML files must use a type prefix that identifies the artifact kind: WI- (work items), F- (findings), P- (policies), D- (decisions), Q- (questions), GP- (guiding principles), C- (constraints). The v1 schema's class table inheritance uses a single `nodes.id` primary key namespace across all artifact types; type prefixes prevent cross-type ID collisions by construction."
+cycle_created: 1
+cycle_modified: null
+content_hash: a07d46afeb2590ab59c2ca09240fa218526c2765ef0e6f775e19740b098949f7
+token_count: 175
+file_path: .ideate/policies/P-31.yaml

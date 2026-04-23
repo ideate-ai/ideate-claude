@@ -1,0 +1,13 @@
+id: Q-90
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Cycle 068 cannot close cleanly without resolving this conflict. The settings skill and ideate_update_config are implemented and passing tests but violate P-17 as written. If P-17 is not amended, the new tools either need removal or the policy is silently violated.
+source: spec-adherence cycle 068 P-17 violation; decision-log D68-15
+resolution: P-17 amended to permit MCP-mediated runtime writes via ideate_update_config. Direct writes to config.json (bypassing MCP) are restricted to bootstrap and migration only. MCP is the preferred path whenever possible.
+resolved_in: cycle 068 (user decision 2026-03-28)
+description: P-17 restricts config.json writes to migration scripts only, but cycle 068 introduced ideate_update_config and /ideate:settings which write config.json at runtime via MCP. Should P-17 be amended to permit ideate_update_config as a sanctioned write path for runtime config mutation?
+addressed_by: P-17 amendment
+content_hash: 43be8edcfaf258e2a8352931eb02e70d2ed2c1c214000ffe929344e441dc087b
+token_count: 254
+file_path: .ideate/questions/Q-90.yaml

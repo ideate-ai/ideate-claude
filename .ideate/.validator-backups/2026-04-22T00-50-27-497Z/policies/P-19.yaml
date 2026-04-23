@@ -1,0 +1,14 @@
+id: P-19
+type: domain_policy
+domain: agent-system
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture) — stale paths cause silent data loss
+established: cycle 006
+amended: cycle 016 — updated from `archive/incremental/` to `.ideate/cycles/{NNN}/findings/` as part of v3 architecture; review output format changed from markdown to YAML finding objects
+description: Agent definition files that instruct the agent to read prior findings, reviews, or other artifacts must use `.ideate/cycles/{NNN}/findings/` as the path for cycle-scoped artifacts and `.ideate/{type}/` for cross-cycle artifacts. When the artifact directory structure changes, all agent definitions that embed artifact paths must be updated in the same work item as the structural change.
+cycle_created: 1
+cycle_modified: null
+content_hash: "31afce6376fb57ce4f6d8b342e57f1a7cd6e123a71294a6474fdf808c9862b4e"
+token_count: 217
+file_path: .ideate/policies/P-19.yaml

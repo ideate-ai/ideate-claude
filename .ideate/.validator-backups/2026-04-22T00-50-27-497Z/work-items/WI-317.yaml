@@ -1,0 +1,35 @@
+id: WI-317
+type: work_item
+title: Rewrite init/SKILL.md — remove all .ideate/ path references and direct I/O
+status: done
+complexity: medium
+scope:
+  - path: skills/init/SKILL.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain
+  - No .yaml filename references
+  - Bootstrap uses ideate_bootstrap_project tool
+  - YAML templates for principles, constraints, interviews, journal, domain files removed — structured data passed to MCP tools
+  - Domain directory creation handled by MCP (ideate_bootstrap_project or ideate_write_artifact)
+  - Metrics writes use ideate_emit_metric
+domain: workflow
+notes: |-
+  # WI-317: Init skill MCP abstraction rewrite
+
+  ## Changes
+  - Replace .ideate/ directory creation with ideate_bootstrap_project
+  - Remove all YAML templates (interview, principles, constraints, journal, domain index, policies, decisions, questions) — pass structured data to MCP write tools
+  - Remove .ideate/config.json direct write
+  - Remove domain directory creation with .gitkeep files
+  - Remove file listing in summary phase — use ideate_get_project_status
+  - Remove metrics.jsonl direct write — use ideate_emit_metric
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: 0c59a95d58490bf231b93cd396389d671e65de88b979dfde7699e623a08bc4d0
+token_count: 309
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-317.yaml

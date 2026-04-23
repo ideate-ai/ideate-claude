@@ -1,0 +1,57 @@
+id: summary
+type: cycle_summary
+content: |
+  # Cycle 38 Summary (autopilot cycle 3 of PH-050)
+
+  **Executed**: WI-879 (multiline YAML fix + 4 cycle-37 findings).
+  **Build/tests**: 1503 passing.
+
+  ## Principle Adherence
+
+  **Principle Adherence Verdict**: Pass
+
+  ## Convergence
+  - condition_a: 0 critical, 0 significant
+  - condition_b: principle adherence Pass
+  - converged: expected true
+
+  ## Findings (minor only)
+  - F-CYCLE-38-M1: cycle 998 sentinel reuse across two tests
+  - F-CYCLE-38-M2: ${GRACE}s literal in restart.sh comment (shell comments do not expand variables)
+content_hash: d21ef94fb7c6c7762b49f5da7186e513bf32916be61e3a486f89fa82687540f9
+token_count: 521
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 38
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: WI-876, WI-877
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001

@@ -1,38 +1,64 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |-
+content: >-
   ## Verdict: Pass
 
-  1 significant gap identified but assessed as carry-forward (ppr.ts defense-in-depth is outside PH-041 single-layer validation scope). 2 minor gaps.
+
+  1 significant gap identified but assessed as carry-forward (ppr.ts defense-in-depth is outside PH-041 single-layer
+  validation scope). 2 minor gaps.
+
 
   ## Critical Findings
+
   None.
+
 
   ## Significant Findings
 
+
   ### EC2: ppr.ts defense-in-depth NaN/Infinity guards lack direct test coverage
-  File: ppr.ts lines 110, 128. ppr.test.ts tests boundary values (-0.5, -0.001, 1.5, 0) but not NaN or Infinity for alpha/convergenceThreshold. These guards are unreachable through ValidatingAdapter (which rejects first). WI-779 changed these guards from bare comparison to Number.isFinite(), but the defense-in-depth layer has no direct NaN/Infinity tests.
+
+  File: ppr.ts lines 110, 128. ppr.test.ts tests boundary values (-0.5, -0.001, 1.5, 0) but not NaN or Infinity for
+  alpha/convergenceThreshold. These guards are unreachable through ValidatingAdapter (which rejects first). WI-779
+  changed these guards from bare comparison to Number.isFinite(), but the defense-in-depth layer has no direct
+  NaN/Infinity tests.
+
 
   ## Minor Findings
 
+
   ### EC1: -Infinity not tested for alpha or convergence_threshold
-  Unit tests cover NaN and +Infinity but not -Infinity. Number.isFinite(-Infinity) returns false so the guard works correctly. Polish item.
+
+  Unit tests cover NaN and +Infinity but not -Infinity. Number.isFinite(-Infinity) returns false so the guard works
+  correctly. Polish item.
+
 
   ### II1: Integration test NaN/Infinity assertions omit error code
-  edge-type-weights-validation.test.ts lines 205-222: NaN and Infinity tests use .rejects.toThrow(ValidationError) without asserting INVALID_EDGE_WEIGHT error code. The comparable negative-value test correctly asserts the code. Inconsistency within the same file.
+
+  edge-type-weights-validation.test.ts lines 205-222: NaN and Infinity tests use .rejects.toThrow(ValidationError)
+  without asserting INVALID_EDGE_WEIGHT error code. The comparable negative-value test correctly asserts the code.
+  Inconsistency within the same file.
+
 
   ## Carry-Forward Gaps
+
   - CF1-CF4 from cycle 23: Schema test coverage, CASCADE tests — out of scope for PH-041
-  - IR1: Integer-field NaN/Infinity inputs (max_iterations, token_budget, max_nodes) have no explicit test coverage. Number.isInteger() handles them correctly. Carry-forward.
+
+  - IR1: Integer-field NaN/Infinity inputs (max_iterations, token_budget, max_nodes) have no explicit test coverage.
+  Number.isInteger() handles them correctly. Carry-forward.
+
 
   ## Within-Scope Gaps
+
   None. All WI-779 and WI-780 acceptance criteria are satisfied.
 content_hash: 11f8609df08524c9b6dd785b35105ba40e1626158d0af753ae79827e469110ce
 token_count: 1021
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/026/gap-analysis.yaml
 verdict: Pass
-note: Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All identified gaps are carry-forward items outside PH-017 scope.
+note: >-
+  Gap-analyst timed out (stream idle timeout after 485s). Findings below are reconstructed from partial analysis. All
+  identified gaps are carry-forward items outside PH-017 scope.
 critical_findings: []
 significant_findings: []
 carry_forward_gaps:
@@ -48,7 +74,9 @@ carry_forward_gaps:
       - journal_entries
       - metrics_events
     severity: carry-forward
-    description: These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
+    description: >-
+      These tables lack describe blocks with column enumeration tests. PH-017 added tests for proxy_human_decisions
+      (WI-757), projects.current_phase_id (WI-761), and phases.completed_date (WI-762) but the broader gap remains.
   - id: CF2
     title: 4 extension tables have partial column-structure tests
     tables:
@@ -71,10 +99,14 @@ carry_forward_gaps:
       - metrics_events
       - document_artifacts
     severity: carry-forward
-    description: PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10 tables remain without.
+    description: >-
+      PH-017 added CASCADE test for proxy_human_decisions (WI-760). Projects and phases already had CASCADE tests. 10
+      tables remain without.
   - id: CF4
     title: ALL_NODE_TYPES.length hardcoded count assertion
-    description: The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check. Adding a new NodeType requires updating this count manually.
+    description: >-
+      The ALL_NODE_TYPES.length === 28 assertion is a hardcoded count against a constant array — not a DB-derived check.
+      Adding a new NodeType requires updating this count manually.
     severity: carry-forward
 within_scope_gaps: None identified. All 9 PH-017 work items appear to have their acceptance criteria satisfied based on partial analysis.
 cycle: 26

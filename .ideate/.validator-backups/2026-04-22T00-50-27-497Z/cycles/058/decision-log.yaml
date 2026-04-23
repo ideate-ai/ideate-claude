@@ -1,0 +1,59 @@
+id: decision-log
+type: cycle_summary
+content: |-
+  # Decision Log — Cycle 58 (Autopilot Cycle 2)
+
+  Generated: 2026-03-28
+
+  ## Decisions Made This Cycle
+
+  ### D1 — WI-377: TypeScript type fixes applied as specified
+  The WI-377 notes provided exact fixes: (1) metrics.test.ts:259 — change firstPassAccepted type to accept null, (2) config.test.ts:584,603,618,635 — cast to Record<string, string | null>, (3) tools/config.ts:190,191 — double-cast through unknown. The worker implemented all three fixes precisely. Result: npx tsc --noEmit passes, 421 tests pass.
+
+  ### D2 — WI-378: Out-of-scope tool description rewrites accepted as net-positive
+  The worker modified all 22 descriptions rather than just the 3 in scope. Accepted because: (a) all descriptions are now P-34 compliant (under 50 words), (b) no new P-33 violations introduced, (c) descriptions are shorter and clearer. Establishes precedent that beneficial scope expansion may be accepted during review.
+
+  ### D3 — WI-378: S2 fix during rework (new P-33 violation)
+  The first-pass rewrite of ideate_write_artifact description said "Write artifact as YAML file. Auto-indexes to SQLite." This violates P-33. Rework changed it to "Write an artifact to the project store."
+
+  ### D4 — WI-378: M1 fix during rework (notes_content field)
+  The notes_content field description said "stored inline in the YAML." This violates P-33. Rework changed it to "Implementation notes content."
+
+  ### D5 — WI-379: Documentation sync for ARCHITECTURE.md Section 9.2
+  Targeted edits to Section 9.2 only: added notes TEXT column to work_items table, removed file path from output fields list. Aligns documentation with inline-notes implementation from WI-370. Section 5 remains stale and requires separate work item.
+
+  ### D6 — J-058-002: Andon resolution — tool name validity (WI-369 pre-execution)
+  PROCEED with WI-369 as written. Investigation confirms only ideate_manage_autopilot_state is registered. The split names appear nowhere in TOOLS array and have no dispatcher cases. Source code is authoritative ground truth.
+
+  ## Cross-References
+
+  ### CR1 — P-33/P-34 compliance achieved for all tool descriptions
+  The WI-378 execution and rework cycles achieved full compliance for all 22 tool descriptions. Residual P-33 violations in context.ts and bootstrap.ts (Q-93, D-119) remain open but are outside the tool description scope.
+
+  ### CR2 — ARCHITECTURE.md Section 5 stale references (all three reviewers)
+  All three capstone reviewers flagged Section 5 tool descriptions with stale storage references. Section 5 was outside WI-379 scope. Requires follow-up work item.
+
+  ### CR3 — Work item status tracking gap (all three reviewers)
+  All three work items show status: pending despite successful completion. Process gap that could cause autopilot re-execution.
+
+  ## Open Questions
+
+  ### OQ1 — Should ARCHITECTURE.md Section 5 tool descriptions be updated to match index.ts?
+  Five tool descriptions in Section 5 (lines 343-365) reference storage implementation details that were removed from actual tool descriptions by WI-378. All three reviewers flagged this independently.
+
+  ### OQ2 — Should completed work items be updated to status: done automatically?
+  Autopilot execute phase does not update status. ideate_get_execution_status reports pending items, causing potential re-execution.
+
+  ### OQ3 — Should ARCHITECTURE.md Section 5.3 code block return value be updated?
+  Line 409 says "return confirmation with file path" but handleWriteWorkItems returns [{id, result}]. Minor documentation inaccuracy.
+
+  ### OQ4 — Should tools/config.ts double-cast include an explanatory comment?
+  Optional — the pattern is well-known and correct. No policy decision needed.
+
+  ### OQ5 — Should work item status be updated to 'done' after successful completion?
+  All three reviewers flagged that WI-377, WI-378, WI-379 still show status: pending. This is a process gap that could cause re-execution.
+cycle: 58
+reviewer: journal-keeper
+content_hash: 27617c3086e77fd68f3ac071cb0cecca8414b5af2b39199858cf72131b8c9276
+token_count: 998
+file_path: .ideate/cycles/058/decision-log.yaml

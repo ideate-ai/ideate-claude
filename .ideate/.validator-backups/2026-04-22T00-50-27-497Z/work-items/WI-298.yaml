@@ -1,0 +1,26 @@
+id: WI-298
+type: work_item
+title: Fix handleUpdateWorkItems — upsert dependency edges in SQLite
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - handleUpdateWorkItems deletes old depends_on and blocks edges for updated items
+  - handleUpdateWorkItems inserts new edges from updated depends and blocks arrays
+  - Edge upsert happens inside the existing FK-off transaction
+  - "At least 1 test: update depends on a work item, verify new edges exist in SQLite"
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: In handleUpdateWorkItems (write.ts ~844-900), after upserting the work_items row, delete all depends_on and blocks edges for the item and re-insert from parsedObj.depends and parsedObj.blocks. Follow the pattern from handleWriteWorkItems lines 551-574.
+resolution: handleUpdateWorkItems now upserts dependency edges. 1 new test.
+cycle_created: 39
+cycle_modified: null
+content_hash: 75acd496905a71b8d64c467f94f6d57d3c373a0503e6d418da519344a6a82f3c
+token_count: 266
+file_path: .ideate/work-items/WI-298.yaml

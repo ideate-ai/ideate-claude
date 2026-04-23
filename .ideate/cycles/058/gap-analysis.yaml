@@ -1,60 +1,92 @@
 id: gap-analysis
 type: cycle_summary
-content: |-
+content: >-
   ## Verdict: Pass (Minor gaps identified)
 
-  The three work items were fully executed — the code changes are correct and complete. However, the scope of WI-379 was too narrow: it targeted only Section 9.2, leaving stale references in ARCHITECTURE.md Section 5 that were made stale by the same upstream fix (WI-370) and by WI-378. Additionally, work item status tracking is incomplete.
+
+  The three work items were fully executed — the code changes are correct and complete. However, the scope of WI-379 was
+  too narrow: it targeted only Section 9.2, leaving stale references in ARCHITECTURE.md Section 5 that were made stale
+  by the same upstream fix (WI-370) and by WI-378. Additionally, work item status tracking is incomplete.
+
 
   ## Critical Findings
 
+
   None.
+
 
   ## Significant Findings
 
+
   None.
+
 
   ## Minor Findings
 
+
   ### M1: ARCHITECTURE.md Section 5 tool listing has stale implementation detail references
+
   - **File**: `ARCHITECTURE.md:343-365`
-  - **Gap**: Five tool descriptions in Section 5 still include storage-level details that were removed from actual tool descriptions by WI-378:
+
+  - **Gap**: Five tool descriptions in Section 5 still include storage-level details that were removed from actual tool
+  descriptions by WI-378:
     - `ideate_append_journal` (line 344): references "YAML journal entry + sync SQLite upsert"
     - `ideate_write_work_items` (line 346): references "write/create work item YAML files + sync SQLite upsert"
     - `ideate_write_artifact` (line 348): references ".ideate/ as YAML"
     - `ideate_get_config` (line 358): references ".ideate/config.json"
     - `ideate_bootstrap_project` (line 362): references ".ideate/ directory structure and config.json"
   - **Impact**: Documentation inconsistency — ARCHITECTURE.md describes different behavior than actual tools.
+
   - **Recommendation**: Update Section 5 to match the updated tool descriptions.
 
+
   ### M2: ARCHITECTURE.md Section 5.3 "Write Tool Pattern" code block has stale return value description
+
   - **File**: `ARCHITECTURE.md:404-410`
-  - **Gap**: Line 409 says "return confirmation with file path" but the actual `handleWriteWorkItems` returns a YAML results list `[{id, result}]`, not a file path.
+
+  - **Gap**: Line 409 says "return confirmation with file path" but the actual `handleWriteWorkItems` returns a YAML
+  results list `[{id, result}]`, not a file path.
+
   - **Impact**: Documentation inaccuracy, no runtime impact.
+
   - **Recommendation**: Update line 409 to "return YAML results list with id and result".
 
+
   ### M3: Work item status not updated to 'done' for completed items
+
   - **File**: `.ideate/work-items/WI-377.yaml`, `WI-378.yaml`, `WI-379.yaml`
+
   - **Gap**: All three work items show `status: pending` despite completed implementation.
+
   - **Impact**: `ideate_get_execution_status` will report these as pending/ready, causing autopilot to re-execute them.
+
   - **Recommendation**: Update all three to `status: done`.
+
 
   ## Missing Requirements from Interview
 
+
   None. This cycle has no interview transcript.
+
 
   ## Unhandled Edge Cases
 
+
   None.
+
 
   ## Incomplete Integrations
 
+
   None.
 
+
   ## Missing Infrastructure
+
 
   None.
 cycle: 58
 reviewer: gap-analyst
 content_hash: 259e61b1dcc7502c26d527b968398234788bbaa3e8f496b5aebf32e7cdd1142d
 token_count: 640
-file_path: .ideate/cycles/058/gap-analysis.yaml
+file_path: cycles/058/gap-analysis.yaml

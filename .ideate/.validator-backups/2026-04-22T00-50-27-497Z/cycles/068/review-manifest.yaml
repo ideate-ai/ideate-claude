@@ -1,0 +1,13 @@
+id: review-manifest
+type: cycle_summary
+content: |-
+  | # | Title | File Scope | Incremental Verdict | Findings (C/S/M) |
+  |---|-------|------------|---------------------|------------------|
+  | WI-360 | Add model_overrides to IdeateConfigJson | mcp/artifact-server/src/config.ts, mcp/artifact-server/src/__tests__/config.test.ts, mcp/artifact-server/src/__tests__/tools.test.ts | Pass | 0/0/1 |
+  | WI-361 | Add governed_by and informed_by to EDGE_TYPE_REGISTRY | mcp/artifact-server/src/schema.ts, mcp/artifact-server/src/__tests__/schema.test.ts | Pass after rework | 0/1/1 |
+  | WI-362 | Add ideate_update_config MCP tool | mcp/artifact-server/src/tools/config.ts, mcp/artifact-server/src/tools/index.ts, mcp/artifact-server/src/__tests__/config.test.ts, ARCHITECTURE.md | Pass after rework | 0/2/2 |
+  | WI-363 | Update skills with model_overrides pattern | skills/execute/SKILL.md, skills/review/SKILL.md, skills/refine/SKILL.md, skills/init/SKILL.md, skills/autopilot/phases/execute.md, skills/autopilot/phases/review.md | Pass after rework | 0/1/1 |
+  | WI-364 | Create /ideate:settings skill | skills/settings/SKILL.md | Pass after rework | 0/2/2 |
+content_hash: 99a9df5f75e33ef6ac5885a187e3ec7c5695491d61b2ab1add001d2d5adbc6fb
+token_count: 289
+file_path: .ideate/cycles/068/review-manifest.yaml

@@ -1,0 +1,11 @@
+id: interviews/refine-007/_general
+type: interview
+cycle: 7
+source_path: steering/interviews/refine-007/_general.md
+entries:
+  - {id: IQ-007-001, question: Do the current guiding principles still apply, or do any need to change?, answer: Yes., domain: null, seq: 1}
+  - {id: IQ-007-002, question: "Three open items from cycle 007 — address now, defer, or dismiss? (OQ1: plan/execute/review SKILL.md schemas missing cycle field; OQ2: report.sh empty-state message; OQ3: quality_summary scoping rationale)", answer: "Address.
+
+**Resolution**: All three bundled into WI-101 (single work item, one-liner fixes, no dependencies).", domain: null, seq: 2}
+content_hash: "46ca802cc5ee095db1ba4827e8b51a7bf1fb490e6b58af56a2dab1890b30a752"
+token_count: 166

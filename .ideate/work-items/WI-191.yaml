@@ -19,11 +19,11 @@ scope:
   - path: skills/autopilot/phases/refine.md
     op: modify
 depends:
-  - "185"
-  - "186"
-  - "187"
-  - "188"
-  - "189"
+  - '185'
+  - '186'
+  - '187'
+  - '188'
+  - '189'
 blocks: []
 criteria:
   - execute/SKILL.md Phase 2 checks for ideate_get_execution_status and uses it for resume detection if available
@@ -35,57 +35,106 @@ criteria:
   - refine/SKILL.md Phase 3 checks for ideate_get_domain_state and uses it for domain context loading if available
   - refine/SKILL.md Phase 7h checks for ideate_write_work_items and uses it for work item creation if available
   - refine/SKILL.md Phase 7i checks for ideate_append_journal and uses it for journal writes if available
-  - autopilot/SKILL.md or autopilot/phases/*.md Phase 6c checks for ideate_get_convergence_status and uses it for convergence check if available
-  - autopilot/phases/refine.md checks for ideate_write_work_items and uses it for targeted work item creation if available
-  - "All MCP availability checks follow the existing pattern: look for tool name suffix in tool list, use if found, fall back to manual file operations if not"
+  - >-
+    autopilot/SKILL.md or autopilot/phases/*.md Phase 6c checks for ideate_get_convergence_status and uses it for
+    convergence check if available
+  - >-
+    autopilot/phases/refine.md checks for ideate_write_work_items and uses it for targeted work item creation if
+    available
+  - >-
+    All MCP availability checks follow the existing pattern: look for tool name suffix in tool list, use if found, fall
+    back to manual file operations if not
   - Each new tool has at least one call site in at least one skill file
 module: null
 domain: null
-notes: |
+notes: >
   # WI-191: Skill File Updates
+
 
   ## Tool-to-Skill Mapping
 
-  Each new tool needs MCP availability checks added to the skill files that consume it. The pattern matches the existing checks for `ideate_get_work_item_context` and `ideate_get_context_package`.
+
+  Each new tool needs MCP availability checks added to the skill files that consume it. The pattern matches the existing
+  checks for `ideate_get_work_item_context` and `ideate_get_context_package`.
+
 
   ### Pattern
+
   ```markdown
+
   **MCP availability check**: Look in your tool list for a tool whose name ends in `ideate_{tool_name}`.
+
   If found:
+
   1. Call it with ({parameters}).
+
   2. Use the result. Skip the manual file reads below.
+
   If not found, [manual fallback]:
+
   [existing file-reading logic preserved as fallback]
+
   ```
+
 
   ## Skill-by-Skill Changes
 
+
   ### skills/execute/SKILL.md
-  - **Phase 2** (Completed Items Scan): Check for `ideate_get_execution_status`. If found, call it — returns completed/pending/blocked sets directly. Skip manual glob + file reads for resume detection.
-  - **Phase 10** (Journal Updates): Check for `ideate_append_journal`. If found, call it with skill="execute", date, entry_type, body. Skip manual file append.
-  - **Phase 11** (Status Reporting): Check for `ideate_get_project_status`. If found, use its response for milestone status reports. Skip manual aggregation.
+
+  - **Phase 2** (Completed Items Scan): Check for `ideate_get_execution_status`. If found, call it — returns
+  completed/pending/blocked sets directly. Skip manual glob + file reads for resume detection.
+
+  - **Phase 10** (Journal Updates): Check for `ideate_append_journal`. If found, call it with skill="execute", date,
+  entry_type, body. Skip manual file append.
+
+  - **Phase 11** (Status Reporting): Check for `ideate_get_project_status`. If found, use its response for milestone
+  status reports. Skip manual aggregation.
+
 
   ### skills/review/SKILL.md
-  - **Phase 3.5** (Generate Review Manifest): Check for `ideate_get_review_manifest`. If found, use its response as the manifest content. Skip manual work item + incremental review file reading and table construction.
-  - **Phase 7.5** (Archive Completed Work Items): Check for `ideate_archive_cycle`. If found, call it with cycle_number. Skip manual file copy/move operations.
+
+  - **Phase 3.5** (Generate Review Manifest): Check for `ideate_get_review_manifest`. If found, use its response as the
+  manifest content. Skip manual work item + incremental review file reading and table construction.
+
+  - **Phase 7.5** (Archive Completed Work Items): Check for `ideate_archive_cycle`. If found, call it with cycle_number.
+  Skip manual file copy/move operations.
+
   - **Phase 8** (Update Journal): Check for `ideate_append_journal`. Same pattern as execute.
 
+
   ### skills/refine/SKILL.md
-  - **Phase 3** (Load Prior Context): Check for `ideate_get_domain_state`. If found, use its response for domain policies + questions + cycle number. Skip manual reads of domains/*/policies.md and questions.md.
-  - **Phase 7h** (Work Items): Check for `ideate_write_work_items`. If found, call with new items array — server handles ID assignment, DAG validation, file writing. Skip manual YAML append + notes file creation.
+
+  - **Phase 3** (Load Prior Context): Check for `ideate_get_domain_state`. If found, use its response for domain
+  policies + questions + cycle number. Skip manual reads of domains/*/policies.md and questions.md.
+
+  - **Phase 7h** (Work Items): Check for `ideate_write_work_items`. If found, call with new items array — server handles
+  ID assignment, DAG validation, file writing. Skip manual YAML append + notes file creation.
+
   - **Phase 7i** (Journal): Check for `ideate_append_journal`. Same pattern.
 
+
   ### skills/autopilot/SKILL.md and skills/autopilot/phases/*.md
+
   - **autopilot/phases/execute.md**: Same as execute skill — execution_status for resume, append_journal for journal.
+
   - **autopilot/phases/review.md**: Same as review skill — review_manifest, archive_cycle, append_journal.
-  - **autopilot/phases/refine.md**: Check for `ideate_write_work_items` for targeted work item creation from finding groups. Check for `ideate_append_journal` for journal.
-  - **autopilot/SKILL.md Phase 6c**: Check for `ideate_get_convergence_status`. If found, call with cycle_number — returns convergence verdict directly. Skip manual spec-adherence.md parsing.
+
+  - **autopilot/phases/refine.md**: Check for `ideate_write_work_items` for targeted work item creation from finding
+  groups. Check for `ideate_append_journal` for journal.
+
+  - **autopilot/SKILL.md Phase 6c**: Check for `ideate_get_convergence_status`. If found, call with cycle_number —
+  returns convergence verdict directly. Skip manual spec-adherence.md parsing.
+
 
   ## Verification
-  After all changes, grep all skill files for each of the 9 new tool names. Each must appear at least once as an MCP availability check. The 2 existing tools (get_work_item_context, get_context_package) are already present and should not be modified.
+
+  After all changes, grep all skill files for each of the 9 new tool names. Each must appear at least once as an MCP
+  availability check. The 2 existing tools (get_work_item_context, get_context_package) are already present and should
+  not be modified.
 cycle_created: 1
 cycle_modified: null
 content_hash: 301e00d9b82eec8a3aa8bc2bf201076e3c4f996e0e5f5dfa6bae68c89eb2895a
 token_count: 1333
-file_path: .ideate/work-items/WI-191.yaml
-resolution: "Verified complete: all 5 skills reference 9 new MCP tools with availability checks or direct calls"
+file_path: work-items/WI-191.yaml
+resolution: 'Verified complete: all 5 skills reference 9 new MCP tools with availability checks or direct calls'

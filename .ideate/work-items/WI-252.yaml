@@ -20,17 +20,23 @@ criteria:
   - proxy-human-log.md references changed to proxy-human-log.yaml
   - proxy-human agent writes via ideate_write_artifact instead of Write tool
   - proxy-human agent tool list updated to remove Write, add ideate_write_artifact MCP tool access
-  - Zero .md artifact creation instructions in autopilot skill and phase files (excluding phase document references like execute.md which are skill files not artifacts)
+  - >-
+    Zero .md artifact creation instructions in autopilot skill and phase files (excluding phase document references like
+    execute.md which are skill files not artifacts)
 domain: workflow
-notes: |-
+notes: >-
   # WI-252: Convert autopilot/proxy-human to YAML
 
-  autopilot-state.md → autopilot-state.yaml: All reads/writes in SKILL.md, phases/execute.md, phases/reporting.md must use ideate_write_artifact.
 
-  proxy-human-log.md → proxy-human-log.yaml: The proxy-human agent currently has Write in its tools. Replace with MCP tool access for ideate_write_artifact. Update the agent prompt to write YAML entries instead of markdown.
+  autopilot-state.md → autopilot-state.yaml: All reads/writes in SKILL.md, phases/execute.md, phases/reporting.md must
+  use ideate_write_artifact.
+
+
+  proxy-human-log.md → proxy-human-log.yaml: The proxy-human agent currently has Write in its tools. Replace with MCP
+  tool access for ideate_write_artifact. Update the agent prompt to write YAML entries instead of markdown.
 resolution: null
 cycle_created: 33
 cycle_modified: null
 content_hash: ad21346535842c3a374f0da22fe2ca24c4231c98324d4dfe6b38d3d3febdf653
 token_count: 359
-file_path: .ideate/work-items/WI-252.yaml
+file_path: work-items/WI-252.yaml

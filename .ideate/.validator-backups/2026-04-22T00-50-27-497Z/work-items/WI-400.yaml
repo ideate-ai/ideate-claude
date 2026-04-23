@@ -1,0 +1,56 @@
+id: WI-400
+type: work_item
+title: Verify MCP abstraction prohibition in all skills and agents
+status: done
+complexity: low
+scope:
+  - op: audit
+    path: skills/
+  - op: audit
+    path: agents/
+depends: []
+blocks: []
+criteria:
+  - The prohibition against .ideate/ direct access is enforced in all skills and agents
+  - Each skill and agent file has a 'What You Do Not Do' section
+  - The language is consistent across all files
+  - No skill or agent file references .ideate/ paths
+domain: workflow
+notes: |-
+  ## Context
+  GP-14 (MCP Abstraction Boundary) and P-37 require that skills and agents never access .ideate/ files directly — only through MCP tools. The full audit found that skill and agent files already have the prohibition added. This work item verifies the enforcement is complete and consistent.
+
+  ## Verification Steps
+  1. Check all files in `skills/*.md` have the prohibition section
+  2. Check all files in `agents/*.md` have the prohibition section
+  3. Verify the language is consistent:
+     - "NEVER read, write, or reference `.ideate/` paths directly"
+     - "NEVER use Read, Write, or Edit tools on `.ideate/` directories or files"
+     - "Access artifacts ONLY through MCP tool calls with artifact IDs and types"
+  4. Grep for any remaining .ideate/ path references in skills or agents
+
+  ## Files Already Updated (from prior work)
+  - skills/autopilot/SKILL.md
+  - skills/execute/SKILL.md
+  - skills/review/SKILL.md
+  - skills/refine/SKILL.md
+  - skills/init/SKILL.md
+  - agents/architect.md
+  - agents/code-reviewer.md
+  - agents/decomposer.md
+  - agents/domain-curator.md
+  - agents/gap-analyst.md
+  - agents/journal-keeper.md
+  - agents/proxy-human.md
+  - agents/researcher.md
+  - agents/spec-reviewer.md
+
+  ## Verification
+  - No grep matches for `.ideate/` in skills/ or agents/ (except in allowed contexts like documentation about what NOT to do)
+  - Each file has the prohibition section
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 501da1a66ca5c2410cc21048e6ce52cff6fafc5137521322aaf58a23710fcbd9
+token_count: 494
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-400.yaml

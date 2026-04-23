@@ -1,0 +1,13 @@
+id: D-68
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: WI-150 changed the chokidar `ignored` option from `/(^|[/\\])\../` (which silenced all `.ideate/` paths) to `/index\.db(-wal|-shm)?$/` (which silences only SQLite database files). Three integration tests added for write/modify/delete YAML events.
+rationale: Resolves cycle 016 critical finding C1. The old pattern matched the `.ideate/` directory itself and every path within it, making the watcher non-functional.
+cycle_created: 1
+cycle_modified: null
+content_hash: "0a4740f8d07463ad2718698ff9d2c4ad3a0972fae7ca3cc4676412146d02a521"
+token_count: 159
+file_path: .ideate/decisions/D-68.yaml

@@ -1,0 +1,39 @@
+id: WI-315
+type: work_item
+title: Rewrite review/SKILL.md — remove all .ideate/ path references and direct I/O
+status: done
+complexity: medium
+scope:
+  - path: skills/review/SKILL.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain
+  - No .yaml filename references
+  - Output directory paths replaced with MCP tool calls
+  - Review manifest accessed via ideate_get_review_manifest not file path
+  - Reviewer output files referenced by type/id not path
+  - Metrics writes use ideate_emit_metric
+  - Quality summary parsing replaced with ideate_get_review_summary or structured MCP response
+  - Domain existence check uses ideate_get_domain_state not filesystem check
+domain: workflow
+notes: |-
+  # WI-315: Review skill MCP abstraction rewrite
+
+  ## Changes
+  - Remove all output directory path references — MCP tools handle path derivation
+  - Remove review-manifest.yaml path references — use ideate_get_review_manifest
+  - Remove code-quality.yaml, spec-adherence.yaml, gap-analysis.yaml path references — use ideate_artifact_query
+  - Remove summary.yaml path references
+  - Remove metrics.jsonl direct writes and schema — use ideate_emit_metric
+  - Remove .ideate/domains/ filesystem check — use ideate_get_domain_state
+  - Remove quality summary manual parsing — use structured MCP response or ideate_get_review_summary
+  - Remove .ideate/cycles/adhoc/ path construction
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: a3b9dbf069dbdb9aa5251a7bd4e521de6f1e1986d652e7bcef0ff3d1442530da
+token_count: 369
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-315.yaml

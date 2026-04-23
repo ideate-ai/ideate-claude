@@ -1,0 +1,48 @@
+id: WI-373
+type: work_item
+title: Fix autopilot domain-curator write protocol to parse-and-write pattern
+status: done
+complexity: medium
+scope:
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - In review.md, the domain-curator spawn prompt instructs the curator to return structured content in its response — not to call `ideate_write_artifact` directly
+  - "The spawn prompt explicitly prohibits the curator from writing artifacts (matching agents/domain-curator.md line 199: 'Do not write any artifacts directly')"
+  - After the domain-curator spawn returns, review.md includes instructions to parse the curator's response for proposed domain artifacts
+  - After parsing, review.md includes instructions to call `ideate_write_artifact` for each proposed artifact (domain_policy, domain_decision, domain_question)
+  - "The orchestration pattern matches skills/review/SKILL.md Phase 7.2: curator returns proposals, spawning skill writes them"
+  - The domain-curator spawn does not prompt the curator to call `ideate_write_artifact` itself
+domain: workflow
+notes: |-
+  Update skills/autopilot/phases/review.md domain-curator section (lines ~239-256) to use the parse-and-write pattern.
+
+  ## Reference: correct pattern in skills/review/SKILL.md Phase 7.2
+  Read skills/review/SKILL.md to understand the exact orchestration pattern for domain-curator. The standalone review skill (Phase 4b or 7) correctly:
+  1. Spawns domain-curator with instructions to RETURN structured content
+  2. After curator returns, parses response for `DOMAIN_CURATOR_OUTPUT_START` / `DOMAIN_CURATOR_OUTPUT_END` block
+  3. Calls `ideate_write_artifact` for each proposed artifact
+
+  ## Changes to review.md
+
+  ### Curator prompt (replaces current ~lines 246-254)
+  Replace the part that says 'Write all domain layer updates using `ideate_write_artifact`' with:
+  'Do NOT write any artifacts directly. Return all proposed domain updates as structured content in the final section of your response between DOMAIN_CURATOR_OUTPUT_START and DOMAIN_CURATOR_OUTPUT_END markers.'
+
+  ### Post-return handling (add after spawn returns)
+  Add instructions for autopilot to:
+  1. Parse the domain-curator response for the output block
+  2. For each proposed artifact in the block, call `ideate_write_artifact` with appropriate type (domain_policy, domain_decision, domain_question)
+  3. Use `ideate_get_next_id` to get sequential IDs if the curator proposes new artifacts without IDs
+
+  Keep existing metrics emission paragraph unchanged — it fires after the curator returns.
+
+  Also read agents/domain-curator.md fully to understand the curator's output format, so the autopilot parse instructions match what the curator actually returns.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 056a4f48d44f97c727e359cdcd0b2f67849cb7fca6fc722a5c12d5986eb9654d
+token_count: 700
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-373.yaml

@@ -1,0 +1,33 @@
+id: WI-424
+type: work_item
+title: "Fix handleGetConvergenceStatus: LEFT JOIN + file_path fallback for missing document_artifacts rows"
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/analysis.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - handleGetConvergenceStatus(N) finds cycle_summary artifacts via file_path LIKE '%/cycles/0N0/%' when document_artifacts row is missing
+  - When document_artifacts row IS present, behavior is unchanged (uses da.content or file fallback)
+  - "handleGetConvergenceStatus(4) returns converged: true after both WI-424 and WI-426 are applied (condition_a already true, condition_b now true via file read)"
+  - No change to existing passing tests for handleGetConvergenceStatus
+  - "Raw SQL query uses LEFT JOIN between nodes and document_artifacts, with WHERE clause: da.cycle = N OR (da.id IS NULL AND n.file_path LIKE '%/cycles/NNN/%')"
+domain: artifact-structure
+notes: |-
+  Root cause: handleGetConvergenceStatus uses INNER JOIN between nodes and document_artifacts filtered by document_artifacts.cycle = N. Artifacts written when the MCP server was running old compiled code (before the document_artifacts write path was added) are in nodes but not in document_artifacts. The INNER JOIN yields empty rows, causing condition_b to return 'unknown'.
+
+  Fix: Replace the Drizzle ORM INNER JOIN query with raw better-sqlite3 SQL using LEFT JOIN. Filter by (da.cycle = N) OR (da.id IS NULL AND n.file_path LIKE '%/cycles/NNN/%'). The existing resolveContent fallback (readFileSafe from file_path) already handles reading when document_artifacts.content is null — just need the query to return the row in the first place.
+
+  Specific changes to analysis.ts around line 102-130:
+  1. Add const paddedCycle = String(cycleNumber).padStart(3, '0'); before the query
+  2. Replace the Drizzle .select().from(nodes).innerJoin(...) query with ctx.db.prepare(raw SQL).all()
+  3. Raw SQL: SELECT n.id, n.file_path, da.content AS da_content FROM nodes n LEFT JOIN document_artifacts da ON n.id = da.id WHERE n.type = 'cycle_summary' AND (da.cycle = ? OR (da.id IS NULL AND n.file_path LIKE ?))
+  4. Update adherenceRow/summaryRow lookups and resolveContent to use the new row shape
+resolution: null
+cycle_created: 5
+cycle_modified: 4
+content_hash: 7a11fc2f9dcc45f4f60a2b67bc37712f815e02b6f8f68b6ca1374580dc93cc7c
+token_count: 573
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-424.yaml

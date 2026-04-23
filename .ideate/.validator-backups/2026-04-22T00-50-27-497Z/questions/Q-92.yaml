@@ -1,0 +1,10 @@
+id: Q-92
+type: domain_question
+domain: agent-system
+status: deferred
+impact: "scripts/migrate-brrr-to-autopilot.sh lines 68-69 reference stale intermediate tool names (ideate_get_autopilot_state / ideate_update_autopilot_state) from the short-lived split naming introduced in cycle 066. These names no longer exist in the codebase. The migration script applies only to projects mid-migration during that brief window; impact is negligible."
+source: "cycle 2 gap-analysis IR1"
+description: "Should scripts/migrate-brrr-to-autopilot.sh be updated to replace the stale split tool names on lines 68-69 with ideate_manage_autopilot_state calls, or is the script sufficiently historical that the update is not warranted?"
+deferred_rationale: "Script is historical and applies only to a narrow migration window. No active projects affected. Gap-analyst assessed impact as negligible."
+reexamination_trigger: "When migrate-brrr-to-autopilot.sh is next modified or when migration scripts are audited."
+file_path: .ideate/questions/Q-92.yaml

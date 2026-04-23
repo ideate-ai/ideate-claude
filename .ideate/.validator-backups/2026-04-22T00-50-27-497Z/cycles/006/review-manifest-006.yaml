@@ -1,0 +1,29 @@
+id: review-manifest-006
+type: cycle_summary
+title: Review Manifest — Cycle 6
+cycle: 6
+diff_mode: full
+note: "Fell back to full review: git diff start..end shows no changes (no commits in this session), but working tree has uncommitted modifications from WI-427 and WI-428."
+content: |-
+  # Review Manifest — Cycle 6
+
+  Full review (differential fallback — uncommitted changes not visible to git diff commit..commit).
+
+  ## Work Items Reviewed
+
+  | ID | Title | Incremental Verdict | Findings |
+  |----|-------|--------------------|---------|
+  | WI-427 | Convergence correctness: parsePrincipleVerdict JSON unwrap + handleArchiveCycle transaction | Pass (after rework) | C1: .exclusive() not invoked (fixed); M1: atomicity test incomplete |
+  | WI-428 | Remediate report scripts broken by metrics.jsonl deprecation | Pass | M1: stale reexamination_trigger (fixed) |
+
+  ## Overall Incremental Verdict
+  Pass — both work items passed after incremental review. Test suite: 501/501 pass.
+
+  ## Key Changes This Cycle
+  - `mcp/artifact-server/src/tools/analysis.ts`: resolveContent unwraps JSON-encoded da_content
+  - `mcp/artifact-server/src/tools/write.ts`: handleArchiveCycle DELETE loop in exclusive transaction
+  - `mcp/artifact-server/src/__tests__/tools.test.ts`: 2 new tests (501 total)
+  - `scripts/report-executive.sh`, `report-cycle.sh`, `report-cost.sh`: deprecation messages, exit 1
+content_hash: 5df39ec34945f9610ae3d95107dd9887f372d401f2627a25868cf0764c9097b2
+token_count: 347
+file_path: .ideate/cycles/006/review-manifest-006.yaml

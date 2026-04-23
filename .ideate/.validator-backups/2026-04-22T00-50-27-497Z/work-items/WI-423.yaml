@@ -1,0 +1,36 @@
+id: WI-423
+type: work_item
+title: Fix document_artifacts.cycle null for cycle_summary artifacts written via MCP
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/schema.test.ts
+    op: modify
+depends:
+  - WI-422
+blocks: []
+criteria:
+  - When ideate_write_artifact is called with type cycle_summary (or SA-*, CQ-*, GA-* subtypes) and a cycle field in the content payload, document_artifacts.cycle is populated with that cycle number in SQLite
+  - "ideate_get_convergence_status({cycle_number: N}) finds and parses the spec-adherence artifact for cycle N when it was written with cycle: N"
+  - Existing tests pass
+  - "A new test verifies that writing a cycle_summary with cycle: 3 results in document_artifacts.cycle = 3 in the index"
+domain: artifact-structure
+notes: |-
+  When cycle_summary artifacts (SA-*, CQ-*, GA-*, CS-*) are written via ideate_write_artifact with cycle: N in the content dict, the document_artifacts.cycle column remains null in SQLite. This causes handleGetConvergenceStatus to fail to find the spec-adherence artifact for the queried cycle, returning principle_verdict: unknown.
+
+  Root cause investigation needed: trace the write path from handleWriteArtifact in write.ts through the indexer to determine where document_artifacts.cycle gets populated. Legacy CS-* artifacts have non-null cycle values — examine their YAML files to understand what field or path convention the indexer uses to extract cycle. Likely fix locations:
+  1. The indexer extracts cycle from a top-level `cycle:` field in the YAML for document_artifacts rows — confirm this.
+  2. If so, ensure handleWriteArtifact writes the `cycle` value as a top-level field in the YAML (not nested inside content dict).
+  3. If the indexer doesn't extract cycle from YAML content, add that extraction.
+
+  The fix must not break backward-compat for existing artifacts. Add a test in schema.test.ts (or a new integration test) verifying cycle propagation.
+resolution: null
+cycle_created: 3
+cycle_modified: 1
+content_hash: 52fd4bb072f9b0151b18e5651b0aac46a5080470377a665a98918872d1578e7f
+token_count: 537
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-423.yaml

@@ -1,0 +1,22 @@
+id: WI-273
+type: work_item
+title: Create domain question tracking domain-curator Write access concern
+status: done
+complexity: low
+scope:
+  - path: .ideate/questions/Q-83.yaml
+    op: create
+depends: []
+blocks: []
+criteria:
+  - "Q-83.yaml exists with status: open"
+  - Question text describes domain-curator Write tool access as a GP-08 concern
+  - References WI-268 as the triggering context
+domain: agent-system
+notes: "Create a new domain question via ideate_write_artifact with type domain_question. Content: domain-curator uses Write directly for domain file updates rather than MCP write tools. Is this intentional (domain files are its primary output) or should it be migrated to use ideate_write_artifact like the researcher was in WI-268? Deferred from cycle 034 per WI-268 notes."
+resolution: Created Q-83 tracking domain-curator Write access concern
+cycle_created: 35
+cycle_modified: null
+content_hash: 410ecc4eb91675e0fbf4f52210997baaba1d35f1d57016a0374369b6af620ac0
+token_count: 225
+file_path: .ideate/work-items/WI-273.yaml

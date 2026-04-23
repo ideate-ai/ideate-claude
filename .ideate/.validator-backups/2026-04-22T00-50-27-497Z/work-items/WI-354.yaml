@@ -1,0 +1,29 @@
+id: WI-354
+type: work_item
+title: Add test coverage for handleEmitMetric and handleGetMetrics
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - Unit tests cover handleEmitMetric and handleGetMetrics in mcp/artifact-server/src/tools/metrics.ts
+  - "Tests cover: metric emission, metric retrieval with filters, aggregation scopes"
+  - All tests pass with npm test
+domain: artifact-structure
+notes: |-
+  Add unit tests for the metrics.ts module. Cover both handleEmitMetric and handleGetMetrics functions.
+
+  Files to modify:
+  - mcp/artifact-server/src/__tests__/metrics.test.ts (create if needed)
+
+  Test scenarios:
+  - Emit metric with valid payload
+  - Get metrics with scope filter
+  - Get metrics with cycle/agent_type/work_item filters
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 6e7fb6b1880a28ba2c646a14f70afc2fa83aaf569656c7203735cff30a398f8e
+token_count: 206
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-354.yaml

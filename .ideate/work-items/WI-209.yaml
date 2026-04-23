@@ -8,36 +8,51 @@ scope:
     op: create
 depends: []
 blocks:
-  - "211"
+  - '211'
 criteria:
-  - "skills/init/SKILL.md exists with YAML frontmatter containing description, user-invocable: true, and argument-hint"
+  - 'skills/init/SKILL.md exists with YAML frontmatter containing description, user-invocable: true, and argument-hint'
   - Phase 1 checks if .ideate/ directory exists in the current working directory
   - If .ideate/ exists, skill warns the user and asks to confirm overwrite or abort — does not silently overwrite
   - If user aborts, skill exits without modifying any files
-  - "Phase 2 scaffolds .ideate/config.json with schema_version: 2 and the directory structure (work-items/, principles/, constraints/, policies/, decisions/, questions/, modules/, research/, interviews/, cycles/)"
-  - "Phase 3 spawns architect agent in analyze mode to survey the existing codebase, with model: opus override"
-  - "Phase 4 conducts a lightweight interview (3-5 questions max): what is this project, what are the guiding principles, what are the hard constraints, what domains exist"
+  - >-
+    Phase 2 scaffolds .ideate/config.json with schema_version: 2 and the directory structure (work-items/, principles/,
+    constraints/, policies/, decisions/, questions/, modules/, research/, interviews/, cycles/)
+  - 'Phase 3 spawns architect agent in analyze mode to survey the existing codebase, with model: opus override'
+  - >-
+    Phase 4 conducts a lightweight interview (3-5 questions max): what is this project, what are the guiding principles,
+    what are the hard constraints, what domains exist
   - Phase 4 does NOT interview for architecture decisions, module decomposition, or work item planning
-  - "Phase 5 writes steering artifacts to .ideate/: principles/*.yaml, constraints/*.yaml from interview answers"
-  - Phase 5 uses MCP write tools if available, falls back to Write tool for initial scaffolding (same bootstrapping pattern as plan Phase 1.1)
-  - "Phase 6 bootstraps domain layer from architect analysis: creates domain directories with initial policies.md, decisions.md, questions.md"
+  - 'Phase 5 writes steering artifacts to .ideate/: principles/*.yaml, constraints/*.yaml from interview answers'
+  - >-
+    Phase 5 uses MCP write tools if available, falls back to Write tool for initial scaffolding (same bootstrapping
+    pattern as plan Phase 1.1)
+  - >-
+    Phase 6 bootstraps domain layer from architect analysis: creates domain directories with initial policies.md,
+    decisions.md, questions.md
   - Skill does NOT produce work items, execution strategy, or architecture doc
   - Skill does NOT produce plan/overview.md or plan/architecture.md
   - Final output message tells user the project is ready for /ideate:refine to plan changes
-  - Metrics instrumentation section follows the same pattern as skills/refine/SKILL.md (agent-spawn JSON to metrics.jsonl)
+  - >-
+    Metrics instrumentation section follows the same pattern as skills/refine/SKILL.md (agent-spawn JSON to
+    metrics.jsonl)
 module: null
 domain: null
-notes: |
+notes: >
   # WI-209: Init Skill Definition
+
 
   ## Purpose
 
-  The init skill handles the case where a user has an existing codebase but no `.ideate/` directory. It is lighter than `/ideate:plan` — it does not produce work items, architecture docs, or execution strategies. It produces just enough structure to enable `/ideate:refine`.
+
+  The init skill handles the case where a user has an existing codebase but no `.ideate/` directory. It is lighter than
+  `/ideate:plan` — it does not produce work items, architecture docs, or execution strategies. It produces just enough
+  structure to enable `/ideate:refine`.
+
 
   ## Flow
 cycle_created: 1
 cycle_modified: null
 content_hash: 2e47268e581c87c7e64bdbfe0d7e670bc33b5cb388583154a680da08c8526da7
 token_count: 601
-file_path: .ideate/work-items/WI-209.yaml
-resolution: "Verified complete: skills/init/SKILL.md exists with all 6 phases"
+file_path: work-items/WI-209.yaml
+resolution: 'Verified complete: skills/init/SKILL.md exists with all 6 phases'

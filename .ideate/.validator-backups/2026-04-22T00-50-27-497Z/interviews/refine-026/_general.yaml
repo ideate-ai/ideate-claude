@@ -1,0 +1,13 @@
+id: interviews/refine-026/_general
+type: interview
+cycle: 26
+source_path: steering/interviews/refine-026/_general.md
+entries:
+  - {id: IQ-026-001, question: Should the ideate MCP artifact server be optional or required?, answer: Required. It's an intrinsic part of v3. Ideate cannot function without it due to PPR-based retrieval. MCP availability checks should still apply to *other* MCP servers and tools (external skills, commands, agents). The intention is that ideate identifies tools which can enhance its ability to produce work — the artifact server is not one of those optional enhancements, it's core infrastructure., domain: null, seq: 1}
+  - {id: IQ-026-002, question: Should all acceptance criteria be machine-verifiable?, answer: "No. Some topics are fundamentally subjective — aesthetics are personal opinion. In those cases, use human-in-the-loop verification. Identify the best way to validate and go with it. Subjective details can be agreed upon during planning, then validated objectively against the spec that documents the agreement. Example: get approval for an aesthetic choice, then validate against the spec which defines it.", domain: null, seq: 2}
+  - {id: IQ-026-003, question: Should we update documentation?, answer: Yes. Create ARCHITECTURE.md for deep technical content. README stays high-level usage. Documentation should be current and detailed., domain: null, seq: 3}
+  - {id: IQ-026-004, question: Should we audit skills and agents for principle adherence?, answer: Yes. The recent policy and principal changes warrant a change in how skills decide things. The audit should produce findings that drive subsequent work items via mid-cycle decomposition., domain: null, seq: 4}
+  - {id: IQ-026-005, question: One cycle with mid-cycle decomposition, or two cycles?, answer: One cycle. WI-201 (audit) produces findings, which become WI-202+ work items in the same cycle., domain: null, seq: 5}
+  - {id: IQ-026-006, question: Remove outpost references?, answer: "Yes. Remove references to outpost. P-14 (\"no MCP servers in ideate\") is already violated and should be rewritten.", domain: null, seq: 6}
+content_hash: "4d79892f162a4bbac56c0b7aca17793da496568434a9e20335e5dade2ef3feed"
+token_count: 540

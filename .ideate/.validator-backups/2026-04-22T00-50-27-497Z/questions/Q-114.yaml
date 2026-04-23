@@ -1,0 +1,12 @@
+id: Q-114
+type: domain_question
+domain: workflow
+title: Report scripts reference deprecated metrics.jsonl — deprecate or rewrite?
+description: report-executive.sh, report-cycle.sh, and report-cost.sh read metrics.jsonl, which is no longer written after the YAML+SQLite migration (D-144). D-155 (cycle 5) formally deprecated metrics.jsonl. The scripts silently produce empty or stale reports.
+impact: Users have no functional reporting path for metrics data outside the MCP layer.
+source: cycle 1 gap-analysis Gap 4; cycle 5 gap-analysis MR1/II2; D-155
+status: resolved
+resolution: WI-428 added explicit deprecation messages to all three scripts (exit 1 with message naming D-155 and pointing to .ideate/metrics/ and ideate_get_metrics MCP tool). Scripts no longer silently produce empty output.
+content_hash: 0a1c680963ecd39e4464e2b62918e95e1e68b9d9cd666370d76e96c73fe61dd5
+token_count: 198
+file_path: .ideate/questions/Q-114.yaml

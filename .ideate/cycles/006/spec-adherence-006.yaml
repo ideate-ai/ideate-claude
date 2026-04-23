@@ -25,4 +25,4 @@ content: |-
   - **P-46**: All TYPE_TO_EXTENSION_TABLE types have dispatch branches; bidirectional test enforces invariant. Pass.
 content_hash: a9f3eeb3cd04c02bcc03f2f6d96eb5f666f233c232d4b2d4ccbc8a5e56782fa7
 token_count: 274
-file_path: .ideate/cycles/006/spec-adherence-006.yaml
+file_path: cycles/006/spec-adherence-006.yaml

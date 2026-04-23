@@ -1,0 +1,13 @@
+id: D-89
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-172 set `file_path: outRelPath` in both the capstone and incremental finding builders in both `migrate-to-v3.ts` and `migrate-to-v3.js`. Resolves Q-62."
+rationale: "The `findings` table declares `file_path TEXT NOT NULL`. Emitting `file_path: null` in the YAML output violated the schema contract for direct YAML consumers not going through the indexer's fallback path."
+cycle_created: 1
+cycle_modified: null
+content_hash: "8e926004405615e6f9a30d55d6a9cffd0cb537d31399dcd891e8da55de9e67bf"
+token_count: 146
+file_path: .ideate/decisions/D-89.yaml

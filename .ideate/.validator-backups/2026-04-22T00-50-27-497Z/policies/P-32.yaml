@@ -1,0 +1,14 @@
+id: P-32
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture); user decision in cycle 026 refinement interview
+established: cycle 026
+amended: null
+description: Skills use MCP availability checks (tool list inspection by name suffix) only for external/third-party MCP servers that enhance ideate's capabilities (e.g., session orchestration, remote workers). The ideate MCP artifact server is a required component of v3 and is always available — skills call its tools directly without availability checks. This enables ideate to discover and leverage external tools while maintaining a stable core interface.
+cycle_created: 1
+cycle_modified: null
+content_hash: "3b01947a4f73572d2e896166e80b7169fc6e2bbe57395c583471e9b36331b056"
+token_count: 192
+file_path: .ideate/policies/P-32.yaml

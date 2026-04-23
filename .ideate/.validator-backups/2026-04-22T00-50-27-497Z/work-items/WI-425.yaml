@@ -1,0 +1,37 @@
+id: WI-425
+type: work_item
+title: "Backfill cycle: 3 into CS-003, CQ-003, GA-003 YAML files"
+status: done
+complexity: low
+scope:
+  - path: .ideate/cycles/003/CS-003.yaml
+    op: modify
+  - path: .ideate/cycles/003/CQ-003.yaml
+    op: modify
+  - path: .ideate/cycles/003/GA-003.yaml
+    op: modify
+depends:
+  - WI-424
+blocks: []
+criteria:
+  - "CS-003.yaml has top-level 'cycle: 3' field after id and type fields"
+  - "CQ-003.yaml has top-level 'cycle: 3' field after id and type fields"
+  - "GA-003.yaml has top-level 'cycle: 3' field after id and type fields"
+  - No other content in any of the three files is changed
+  - After a server restart + rebuild, document_artifacts.cycle for CS-003, CQ-003, GA-003 is 3
+domain: artifact-structure
+notes: |-
+  These three files were written before the WI-423 cycle injection fix and have no top-level cycle: field. SA-003 already has cycle: 3. The missing field means on any index rebuild, these three remain invisible to handleGetConvergenceStatus cycle filtering.
+
+  Simple fix: add 'cycle: 3' as the third line (after id and type) in each file. Use MCP ideate_write_artifact to rewrite each file properly — do NOT write directly to the YAML. Write them with their existing content plus cycle: 3 added.
+
+  Files:
+  - .ideate/cycles/003/CS-003.yaml
+  - .ideate/cycles/003/CQ-003.yaml  
+  - .ideate/cycles/003/GA-003.yaml
+resolution: null
+cycle_created: 5
+cycle_modified: 4
+content_hash: 773b0d9a6210c9c830943f35e71faadc3dea1d9d8977da66bc8413cf5f1ec9fb
+token_count: 354
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-425.yaml

@@ -1,0 +1,24 @@
+id: interview-refine-046
+type: interview
+cycle: 27
+phase: PH-046
+date: 2026-04-15
+mode: post-review correction
+entries:
+  - question: PH-045 is complete, horizon.next is empty, horizon.later has PH-046-candidate (equivalence tests) and PH-047-candidate (metrics rebuild). Promote one, or create a small follow-up phase for cycle-9 findings first?
+    answer: Option 3 — create a new short PH-045 follow-up phase strictly for cycle-9 findings. Defer horizon candidates to the next cycle.
+    domain: null
+    decision_rationale: Cycle-9 had four Significant findings (S1, EC1, EC2, II1) plus four Minors. Bundling them into a targeted cleanup phase keeps scope narrow and allows horizon candidates to be chosen fresh after the residue clears.
+  - question: WI-834 was filed via /ideate:triage as a new convergence-checker bug, but WI-797 already describes the same bug (same 2026-04-14 SA-002.yaml collision, same root cause, same fix options) and is marked done in PH-045. Close WI-834 as duplicate, or keep it narrowed to the symmetric-case regression gap?
+    answer: Close WI-834 as duplicate. The residual scope (symmetric-case regression test, cycle-9 EC1) is folded into WI-836 inside PH-046.
+    domain: agent-system
+    decision_rationale: WI-797's fix (canonical-only filename selection via WI-824/WI-831) is already landed and verified by the asymmetric regression test. The symmetric-case gap is a test gap, not a code gap — properly scoped as a regression-coverage WI, not a bug WI.
+  - question: Do existing guiding principles still apply to this refinement?
+    answer: Yes. No principles change. GP-14 (MCP abstraction boundary), P-85 (documentation surface enumeration), P-86 (canonical path provenance), P-87 (worker GP-14 re-sync policy) all apply directly to the four work items.
+    domain: null
+  - question: Execution strategy for PH-046?
+    answer: Sequential, single worker per item. No parallelism — scope is small (4 WIs, each low-complexity) and the items touch different files with no shared state. Worktree isolation not required. Per-item incremental review only; capstone review at phase end.
+    domain: null
+cycle_modified: 27
+content_hash: f2e7bb6762a9bfc5e71bff69bc126dae0b94b8db91130dcbe656dc05a163221a
+token_count: 540

@@ -1,0 +1,48 @@
+id: spec-adherence-003
+type: cycle_summary
+title: Spec Adherence Review — Cycle 3
+cycle: 3
+reviewer: spec-reviewer
+content: |-
+  ## Principle Violation Verdict: Pass
+
+  All three work items satisfy their acceptance criteria. All guiding principles and policies are adhered to.
+
+  ## Principle Violations
+
+  None.
+
+  ## Principle Adherence Evidence
+
+  - **GP-08**: YAML is written before SQLite in all handlers. `handleWriteArtifact`: `fs.writeFileSync` (line 801) precedes `ctx.db.transaction()` block (line 810). `handleAppendJournal`: YAML write (line 119) inside exclusive transaction also containing upserts (lines 142–143) — serialized correctly. `handleWriteWorkItems`: YAML loop (line 562) precedes transaction (line 573). SQLite never written before YAML.
+  - **GP-14 / P-33**: Tool responses never contain `.ideate/` paths or absolute filesystem paths. Return values use artifact designations. Error paths use `path.basename()` and POSIX error codes.
+  - **P-44**: All handlers follow two-phase pattern. `handleWriteArtifact`: Phase 1 (line 801), Phase 2 (lines 810–941), cleanup (lines 942–951). `handleAppendJournal`: both phases inside one `exclusive()` transaction per WI-406 spec, cleanup on failure (lines 150–156).
+  - **P-45**: All extension table upserts in `handleWriteArtifact` call named helper functions from `db-helpers.ts`: `upsertDomainPolicy`, `upsertDomainDecision`, `upsertDomainQuestion`, `upsertDocumentArtifact`, `upsertResearchFinding`, `upsertModuleSpec`, `upsertGuidingPrinciple`, `upsertConstraint`, `upsertProxyHumanDecision`. No raw SQL for extension writes.
+  - **P-42**: Type validated against `Object.keys(TYPE_TO_EXTENSION_TABLE)` at lines 750–753 before path resolution. Unknown types rejected with error.
+
+  ## Work Item Criteria Verification
+
+  **WI-406 — All criteria met.**
+  - `resolveArtifactPath` returns `research/{id}.yaml` for `research_finding` (write.ts:713–714)
+  - `document_artifacts` row populated for overview/execution_strategy/architecture/cycle_summary (write.ts:899–919)
+  - Extension rows for research_finding and module_spec (write.ts:920–938)
+  - Journal COUNT and upsert atomic in exclusive transaction (write.ts:95–146)
+  - 459 tests pass
+
+  **WI-407 — All criteria met.**
+  - domain_policy/decision/question routing tests assert extension rows (tools.test.ts:2036, 2053, 2070)
+  - cycle_summary→document_artifacts, research_finding→research_findings (with content field), module_spec→module_specs tests added
+  - 459 tests pass
+
+  **WI-408 — All criteria met.**
+  - Critical-severity finding → handleGetReviewManifest returns Fail (execution.test.ts:241–250)
+  - domain_policy and cycle_summary rollback tests (write-transaction.test.ts:216–265)
+  - 459 tests pass
+
+  ## Deviations
+
+  ### D1: `handleAppendJournal` YAML write inside exclusive transaction deviates from strict P-44 two-phase ordering
+  - P-44 specifies Phase 1 = YAML write, Phase 2 = SQLite transaction (separate). WI-406 placed both inside one exclusive transaction for atomicity. This deviation from the strict two-phase ordering is intentional and documented in WI-406 notes. The spirit of P-44 (cleanup on failure) is preserved via the `writtenYamlPath` variable and cleanup handler.
+content_hash: 352688dc1209ad8107d03560e62b22dc019842523dd9856c7754f410f601846c
+token_count: 806
+file_path: .ideate/cycles/003/spec-adherence-003.yaml

@@ -1,0 +1,39 @@
+id: interview-refine-21
+type: interview
+cycle: 21
+title: "Refinement Interview — Cycle 21 (Polish: WI-745/746)"
+entries:
+  - domain: null
+    question: Review findings exist from the full audit. Are you here to address those findings, to make other changes, or both?
+    answer: Address findings from the audit.
+    decision: Post-review correction mode. All new work items target findings from the full audit.
+  - domain: null
+    question: PH-017 (Documentation & Cleanup) has no pending work items. Should the corrections go into a new phase, or extend PH-017?
+    answer: New phase.
+    decision: "New phase PH-040 created: Audit Corrections — Schema & Write Integrity."
+  - domain: artifact-structure
+    question: The CONFIG_SCHEMA_VERSION fix is a one-liner, but could also include a cross-constant equality test and full runPendingMigrations coverage. Minimum fix or comprehensive?
+    answer: Comprehensive — full coverage.
+    decision: "WI-747 includes: constant bump, equality assertion test, new migrations.test.ts covering runPendingMigrations including idempotency on already-migrated DBs."
+  - domain: artifact-structure
+    question: "Q-144: putNodeForJournal writes YAML inside the SQLite transaction to prevent sequence-number races. Fix the code (two-round-trip exclusive lock pattern) or amend P-44 to document a justified exception?"
+    answer: Fix the code. No exception.
+    decision: "WI-748 restructures putNodeForJournal: exclusive tx 1 to allocate + reserve seq (placeholder insert), YAML write outside transaction, exclusive tx 2 to finalize. P-44 remains as written."
+  - domain: artifact-structure
+    question: "Q-145: The code-reviewer noted domain_index ID validation. The architect found domain_index is not in ALL_NODE_TYPES. Investigate or close as non-issue?"
+    answer: Investigate — possible planned but unimplemented feature.
+    decision: WI-749 is a spike to locate all domain_index references, determine intent, and produce a decision.
+  - domain: null
+    question: "Minor items: stale test description strings in schema.test.ts:606,608 and missing appendJournalEntry in writer.ts module header. Include in new phase?"
+    answer: Yes, include.
+    decision: WI-750 covers both cleanups.
+  - domain: agent-system
+    question: code-reviewer (80 turns) and gap-analyst (100 turns) both exhausted budgets during the full audit. Increase budgets?
+    answer: Double both budgets, regardless of --full flag.
+    decision: code-reviewer → 160, gap-analyst → 200. Applied immediately via ideate_update_config.
+content_hash: 995d00c3645677431c698226735da004b279e9be8de520218930d3c92cb2316f
+token_count: 708
+date: 2026-04-10
+mode: post-review-correction
+trigger: Full audit (--full) surfaced one critical, two significant, and three minor findings in the MCP artifact server
+cycle_modified: 20

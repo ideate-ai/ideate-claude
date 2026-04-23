@@ -1,0 +1,81 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  2 significant findings, 3 minor findings.
+
+  ### Critical Findings
+
+  None.
+
+  ### Significant Findings
+
+  #### S1: alpha=0 boundary mismatch between ValidatingAdapter and LocalAdapter
+
+  - **Component**: `src/validating.ts` vs `src/adapters/local/context.ts`
+  - **Issue**: `ValidatingAdapter.traverse` allows `alpha=0` (validates `alpha < 0 || alpha > 1`, so range is `[0, 1]`). `LocalAdapter.context.ts` rejects `alpha=0` (validates `alpha <= 0 || alpha > 1`, so range is `(0, 1]`). A caller passing `alpha=0` through ValidatingAdapter will get it accepted at the decorator layer but rejected inside LocalAdapter with `INVALID_ALPHA`.
+  - **Evidence**: `validating.ts:297` (`alpha < 0`), `context.ts` (`alpha <= 0`). Test at `validating.test.ts:794` ("accepts alpha=0 boundary") uses mock, so it passes but doesn't catch the real adapter rejection.
+  - **Impact**: ValidatingAdapter does not deliver its guarantee of "inputs reaching the inner adapter are always valid" for this case.
+  - **Recommendation**: Reconcile the boundary. Either update context.ts to accept alpha=0, or update ValidatingAdapter to reject it.
+
+  #### S2: context.ts traverse validation not removed — duplication with ValidatingAdapter
+
+  - **Component**: `src/adapters/local/context.ts`
+  - **Issue**: WI-771 removed inline validation from `writer.ts` but `context.ts` was not in scope. Full traverse input validation remains in `context.ts`: seed_ids (INVALID_SEED_IDS, EMPTY_SEED_IDS, INVALID_SEED_ID), always_include_types (INVALID_ALWAYS_INCLUDE_TYPE), alpha (INVALID_ALPHA), token_budget (INVALID_TOKEN_BUDGET), max_iterations (INVALID_MAX_ITERATIONS). This is now duplicated with ValidatingAdapter.
+  - **Evidence**: No changes to `context.ts` in the working tree. `context.ts` lines ~177-218 contain full seed/alpha/type validation. `validating.ts` lines ~267-340 duplicate all of these.
+  - **Impact**: The phase goal of centralizing validation is incomplete for the traverse method. The error code `INVALID_ALWAYS_INCLUDE_TYPE` in context.ts differs from `INVALID_NODE_TYPE` used by ValidatingAdapter for the same check.
+  - **Recommendation**: Remove traverse input validation from context.ts in a follow-up work item. Update seed-ids-validation.test.ts and always-include-types-validation.test.ts to wrap in ValidatingAdapter.
+
+  ### Minor Findings
+
+  #### M1: convergence_threshold and max_nodes not validated by ValidatingAdapter
+
+  - **Component**: `src/validating.ts` traverse method
+  - **Issue**: `TraversalOptions` has `convergence_threshold` and `max_nodes` fields. `LocalAdapter.context.ts` validates both (INVALID_CONVERGENCE_THRESHOLD, INVALID_MAX_NODES). ValidatingAdapter validates neither. RemoteAdapter gets no validation for these fields.
+  - **Recommendation**: Defer — outside WI-768 spec scope. Inner adapter still catches invalid values for local backend.
+
+  #### M2: patchNode immutable field list discrepancy
+
+  - **Component**: `src/validating.ts:152` vs `src/adapters/local/writer.ts`
+  - **Issue**: ValidatingAdapter's patchNode checks immutable fields `["id", "type", "cycle_created"]`. LocalAdapter's patchNode has its own IMMUTABLE_SET that may include additional fields. The decorator catches the basic set; the inner adapter may catch more.
+  - **Recommendation**: Defer — the decorator provides the minimum guarantee. Inner adapters can be stricter.
+
+  #### M3: MISSING_NODE_ID and MISSING_NODE_TYPE in batchMutate untested
+
+  - **Component**: `src/__tests__/validating.test.ts`
+  - **Issue**: `batchMutate` throws `MISSING_NODE_ID` when a batch node lacks an `id` field and `MISSING_NODE_TYPE` when it lacks a `type` field (validating.ts:429-448). No tests cover these paths. Existing tests only cover empty-string id (INVALID_NODE_ID) and invalid type string (INVALID_NODE_TYPE).
+  - **Recommendation**: Add tests for absent-field cases.
+
+  ### Dynamic Testing
+
+  All 1319 tests pass. `npx vitest run` completes with 0 failures. `npx tsc --noEmit` passes with 0 errors.
+content_hash: 3be66dad7c5c8c25c2f75b212f1dc19c64804afe443d8a3f083b2b54d80f16e0
+token_count: 1635
+file_path: .ideate/cycles/068/code-quality.yaml
+verdict: Pass
+critical_findings: []
+significant_findings: []
+minor_findings:
+  - id: M1
+    title: migrations.test.ts is a new untracked file — not staged for commit
+    file: mcp/artifact-server/src/__tests__/migrations.test.ts
+    description: WI-758's target file migrations.test.ts is newly created and shows as ?? in git status. The file is functional and the deferral comment at lines 302-313 references WI-758 correctly — but the file has not been staged or committed.
+    suggested_fix: "Stage and commit the file: git add mcp/artifact-server/src/__tests__/migrations.test.ts"
+  - id: M2
+    title: Large body of uncommitted source-file changes outside WI-754–762 scope
+    file: multiple (writer.ts, adapter.ts, config.ts, hooks.ts, index.ts, indexer.ts, migrations.ts, ppr.ts, server.ts, tools/analysis.ts, adapters/remote/client.ts, adapters/remote/index.ts)
+    description: 12 production source files and 3 additional test files have unstaged working-tree modifications not attributable to any Cycle 22 WI. These include substantive changes — e.g. writer.ts has a major refactor of putNodeForJournal, adapter.ts adds autopilot_state NodeType. These changes pass the test suite but are invisible to git history.
+    suggested_fix: Identify which earlier WIs produced these changes, then stage and commit them with appropriate commit messages.
+  - id: M3
+    title: trigger is a SQLite reserved keyword — INSERT uses double-quotes but column-name array does not
+    file: mcp/artifact-server/src/__tests__/schema.test.ts:760
+    description: The column existence check passes 'trigger' as a bare string which works via PRAGMA table_info. The INSERT at line 794 quotes it as "trigger" to escape the reserved word. A future developer writing a raw INSERT without quotes will get a syntax error.
+    suggested_fix: Add a comment in schema.ts near the proxy_human_decisions DDL noting that 'trigger' is a SQLite reserved word.
+unmet_acceptance_criteria: None. All machine-verifiable acceptance criteria for WI-754 through WI-762 are satisfied.
+requires_human_review:
+  - "WI-759: Confirm that the acceptance criteria update in .ideate/work-items/WI-754.yaml accurately describes the sqlite_* filter approach as implemented."
+test_results: All 1,187 tests pass, 0 failures.
+cycle: 22
+cycle_modified: 21

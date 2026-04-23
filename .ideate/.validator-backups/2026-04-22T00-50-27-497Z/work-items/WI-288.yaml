@@ -1,0 +1,29 @@
+id: WI-288
+type: work_item
+title: Wire PPR into execute skill default context assembly
+status: done
+complexity: medium
+scope:
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+depends: []
+blocks:
+  - WI-289
+  - WI-291
+criteria:
+  - Phase 4.5 in execute/SKILL.md calls ideate_assemble_context with current work item ID as seed
+  - Token budget read from {config}.ppr.default_token_budget
+  - include_types includes architecture, guiding_principle, constraint by default
+  - Fallback to existing get_work_item_context + get_context_package if ideate_assemble_context unavailable
+  - autopilot/phases/execute.md updated with matching PPR context assembly
+  - Worker prompts receive PPR-assembled context instead of manual context digest
+domain: workflow
+notes: Replace manual context digest in Phase 4.5 with ideate_assemble_context call. Keep get_work_item_context for work item spec/module/policies. PPR replaces only the broader context digest.
+resolution: PPR wired into execute/SKILL.md Phase 4.5 and autopilot/phases/execute.md with fallback.
+cycle_created: 38
+cycle_modified: null
+content_hash: 3c8f2f9dff2c906dec925e20afa76c3f64b36f9e093565bf83257e7129d52694
+token_count: 282
+file_path: .ideate/work-items/WI-288.yaml

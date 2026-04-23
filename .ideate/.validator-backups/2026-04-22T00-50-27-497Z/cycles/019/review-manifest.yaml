@@ -1,0 +1,20 @@
+id: review-manifest
+type: cycle_summary
+content: |-
+  # Review Manifest — Cycle 19
+
+  | # | WI | Title | File Scope | Incremental Verdict | Findings (C/S/M) |
+  |---|---|-------|------------|---------------------|------------------|
+  | 1 | WI-653 | Add seed_ids Validation to traverse() | mcp/artifact-server/src/adapter.ts | None | — |
+  | 2 | WI-654 | Add limit/offset Validation to Query Methods | mcp/artifact-server/src/adapters/local/reader.ts, mcp/artifact-server/src/adapters/remote/index.ts | None | — |
+  | 3 | WI-655 | Add batchMutate Input Validation | mcp/artifact-server/src/adapters/local/writer.ts, mcp/artifact-server/src/adapters/remote/index.ts | None | — |
+  | 4 | WI-656 | Align fetchCurrentCycle Error Recovery | mcp/artifact-server/src/adapters/remote/index.ts | None | — |
+  | 5 | WI-657 | Fix mapGqlNodeToNode Error Handling | mcp/artifact-server/src/adapters/remote/index.ts | None | — |
+  | 6 | WI-658 | Create LocalAdapter Validation Tests | mcp/artifact-server/tests/adapters/local-adapter-validation.test.ts | None | — |
+  | 7 | WI-659 | Document Adapter Interface Contract | mcp/artifact-server/docs/adapter-contract.md | None | — |
+  | 8 | WI-660 | Research Spike - Server-Side PPR Alignment | mcp/artifact-server/research/ppr-alignment.md | None | — |
+content_hash: 769228797019a95df328700223180f6fd2942c6b3fc3342d56cf9893abfc72f6
+token_count: 365
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 19
+cycle_modified: 18

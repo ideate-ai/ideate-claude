@@ -1,6 +1,6 @@
 id: WI-258
 type: work_item
-title: ""
+title: ''
 status: done
 complexity: null
 scope: []
@@ -8,7 +8,7 @@ depends: []
 blocks: []
 criteria: []
 domain: workflow
-notes: "# WI-258: "
+notes: '# WI-258: '
 resolution:
   findings_count: 0
   verdict: pass
@@ -16,4 +16,4 @@ cycle_created: 28
 cycle_modified: null
 content_hash: 890dfe61573a63f28a9a2b197acd7e273454f100a0bd0671b4e42b819ec4757e
 token_count: 59
-file_path: .ideate/work-items/WI-258.yaml
+file_path: work-items/WI-258.yaml

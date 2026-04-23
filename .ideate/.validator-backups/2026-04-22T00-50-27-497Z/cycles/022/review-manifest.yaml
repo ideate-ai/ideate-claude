@@ -1,0 +1,43 @@
+id: review-manifest
+type: cycle_summary
+content: |-
+  ## Review Manifest — Cycle 22 (PH-041: Input Validation Layer)
+
+  | WI | Title | Complexity | Status | Incremental Review | Rework |
+  |---|---|---|---|---|---|
+  | WI-768 | ValidatingAdapter decorator class | large | done | Fail → Pass after 7 fixes (S1-S2, M1-M5) | Yes |
+  | WI-769 | ValidatingAdapter test suite | large | done | Fail → Pass after 5 missing tests (S1-S3) | Yes |
+  | WI-770 | Wire ValidatingAdapter into server.ts | small | done | Pass | No |
+  | WI-771 | Remove LocalAdapter inline validation | medium | done | Pass | No |
+  | WI-772 | Remove RemoteAdapter inline validation | medium | done | Pass | No |
+
+  ### Files Created
+  - src/validating.ts — ValidatingAdapter decorator (575 lines)
+  - src/__tests__/validating.test.ts — 102 tests
+
+  ### Files Modified
+  - src/server.ts — import + wrapper
+  - src/adapters/local/writer.ts — removed inline validation
+  - src/adapters/remote/index.ts — removed inline validation
+  - src/__tests__/dormant.test.ts — instanceof check
+  - src/__tests__/adapter-contract.test.ts — ValidatingAdapter wrapper
+  - tests/adapters/adapter-equivalence.test.ts — ValidatingAdapter wrapper
+  - tests/adapters/local-adapter-validation.test.ts — ValidatingAdapter wrapper
+  - tests/adapters/remote-adapter-validation.test.ts — ValidatingAdapter wrapper
+content_hash: 27b044b276bce4f5bebb284dbaa67c3833495ed2c4a3f4ff0915978e26ae156d
+token_count: 477
+file_path: .ideate/cycles/068/review-manifest.yaml
+cycle: 22
+scope: WI-759, WI-760, WI-761, WI-762
+description: "Cycle 073 — Capstone review for PH-017 cycle-22 fix-up work items: AC text correction (WI-759), CASCADE test (WI-760), projects column assertion (WI-761), phases column assertion (WI-762)"
+work_items:
+  - WI-759
+  - WI-760
+  - WI-761
+  - WI-762
+incremental_reviews:
+  WI-759: pass
+  WI-760: pass
+  WI-761: pass
+  WI-762: pass
+cycle_modified: 21

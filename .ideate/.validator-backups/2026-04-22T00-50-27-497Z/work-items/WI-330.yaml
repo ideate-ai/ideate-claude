@@ -1,0 +1,47 @@
+id: WI-330
+type: work_item
+title: Update documentation for autopilot → autopilot rename
+status: done
+complexity: medium
+scope:
+  - path: CLAUDE.md
+    op: modify
+  - path: README.md
+    op: modify
+  - path: ARCHITECTURE.md
+    op: modify
+  - path: .claude-plugin/plugin.json
+    op: modify
+  - path: .claude-plugin/marketplace.json
+    op: modify
+depends:
+  - WI-328
+blocks: []
+criteria:
+  - CLAUDE.md references /ideate:autopilot not /ideate:autopilot
+  - CLAUDE.md DEFER signal description references autopilot not autopilot
+  - README.md skill table lists autopilot not autopilot
+  - ARCHITECTURE.md references autopilot throughout
+  - plugin.json description mentions autopilot not autopilot
+  - marketplace.json description mentions autopilot not autopilot
+  - grep -r 'autopilot' CLAUDE.md README.md ARCHITECTURE.md .claude-plugin/ returns no matches
+domain: project-boundaries
+notes: |-
+  ## Implementation
+
+  Search-and-replace in each file:
+  - `/ideate:autopilot` → `/ideate:autopilot`
+  - `autopilot` → `autopilot` in prose (case-sensitive, context-aware)
+  - Preserve any historical references that are clearly about the old name (e.g., changelog entries)
+
+  ## Key references
+  - CLAUDE.md skill table row for autopilot
+  - CLAUDE.md line about DEFER signal: 'DEFER (not DEFERRED) is the proxy-human deferral signal that autopilot checks for'
+  - README.md skill listing
+  - ARCHITECTURE.md sections 3, 7 mentioning autopilot
+resolution: All 5 documentation files updated. grep confirms zero autopilot references across CLAUDE.md, README.md, ARCHITECTURE.md, .claude-plugin/.
+cycle_created: null
+cycle_modified: null
+content_hash: 54680125f93bd12c4ac98f3f65da0d2c6967d1cb96e9e0ea6145dbd5ea945d55
+token_count: 406
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-330.yaml

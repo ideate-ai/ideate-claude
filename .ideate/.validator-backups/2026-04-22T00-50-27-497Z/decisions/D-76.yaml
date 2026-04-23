@@ -1,0 +1,13 @@
+id: D-76
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 18
+supersedes: null
+description: Cycle 018 (covering execution cycles 018 and 019) produced Pass verdicts from all three capstone reviewers (code-quality Pass with caveats, spec-adherence Pass, gap-analysis Pass). All 10 work items (WI-160 through WI-169) met acceptance criteria. 137 tests pass. Five significant findings are performance/maintenance concerns, not correctness bugs.
+rationale: This reverses the cycle 017 triple-Fail outcome (D-74). The residual gaps from cycle 017 (deleteStaleRows Drizzle conversion, migration field extraction, plan/steering/interview migration, spec cleanup, domainQuestions column, document_artifacts table) are all resolved.
+cycle_created: 1
+cycle_modified: null
+content_hash: "2b735cd169a6389742c880ac9c0ed8fe3f07713e506ed052ee06250cfe2b4918"
+token_count: 209
+file_path: .ideate/decisions/D-76.yaml

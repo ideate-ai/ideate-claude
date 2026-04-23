@@ -1,0 +1,14 @@
+id: Q-64
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Agents planning Phase 2 work against `db.ts` will not see two key exports and may re-implement equivalent logic.
+source: archive/cycles/019/spec-adherence.md D1; archive/cycles/019/decision-log.md D-90, CR8
+resolution: WI-176 updated the architecture.md source code index row for `db.ts` to include `metricsEvents` and `TYPE_TO_DRIZZLE_TABLE`. See D-100.
+resolved_in: 20
+description: "The architecture.md source code index row for `mcp/artifact-server/src/db.ts` omits `TYPE_TO_DRIZZLE_TABLE` (exported at `db.ts:235`) and `metricsEvents` (exported at `db.ts:171`). WI-173 updated five other module rows but did not address `db.ts`, which was also modified in WI-168 and WI-171. Should the `db.ts` row be updated?"
+cycle_created: 1
+cycle_modified: null
+content_hash: aab04a219370ab8b199b2e3dfaa7db48fd158c398cc5c23df835bfbc0c3425c0
+token_count: 226
+file_path: .ideate/questions/Q-64.yaml

@@ -1,0 +1,37 @@
+id: decision-log-003
+type: cycle_summary
+title: Decision Log — Cycle 3
+cycle: 3
+reviewer: journal-keeper
+content: |-
+  ## Decision Log and Open Questions — Autopilot Cycle 3
+
+  ### Key Decisions
+
+  **D-P04: P-42 validation gate uses TYPE_TO_EXTENSION_TABLE keys (Cycle 1)** — `handleWriteArtifact` validates `type` against `Object.keys(TYPE_TO_EXTENSION_TABLE)`. Any type registered there but lacking a dispatch branch passes validation, writes YAML, creates a node row, and silently drops extension data. This is the structural precondition for C1.
+
+  **D-P05: Exclusive transaction for `handleAppendJournal` (Cycle 3 WI-406)** — YAML write + COUNT + upserts consolidated into single `ctx.db.transaction().exclusive()` call, deviating from strict P-44 two-phase ordering. Rationale: concurrent calls before either commits read the same COUNT and produce identical IDs. P-44 not yet formally amended.
+
+  **D-E02: WI-406 added document type and research_finding extension branches but omitted `finding` (Cycle 3)** — Gap-analysis-002 Gap 2 listed document types and research_finding as the critical-path fixes blocking `handleGetConvergenceStatus`. The `finding` type was in cycle 1’s original inventory (gap-analysis-001 Gap 2) but was not in WI-406’s acceptance criteria. `finding` gap carried forward as C1 in cycle 3.
+
+  **D-R01: `finding` type gap classified as Critical C1 (Cycle 3 Review)** — `handleGetProjectStatus` queries `SELECT severity, COUNT(*) FROM findings WHERE cycle = ?`. Any finding written via `handleWriteArtifact` is invisible to it. Autopilot convergence check is unreliable.
+
+  **D-R02: `metrics_event` and `interview_question` drop extension rows (Cycle 3 Review)** — Both types are Significant. May be written via non-MCP paths (JSONL import); fix could be dispatch branches or removing from TYPE_TO_EXTENSION_TABLE. Design decision required.
+
+  ## Cross-Cutting Pattern: Three Cycles of Incomplete Extension Table Coverage
+
+  Each cycle adds some extension table branches but leaves others. Root cause: `TYPE_TO_EXTENSION_TABLE` serves as the canonical type registry for P-42 validation but there is no static assertion ensuring every registered type has a dispatch branch in `handleWriteArtifact`. Without such a check, any new type added to the registry creates a silent gap only catchable by a reviewer who queries the extension table directly.
+
+  ## Open Questions
+
+  **OQ-1**: Was the `finding` type gap intentionally deferred in WI-406, or an oversight?
+  **OQ-2**: Do `metrics_event`/`interview_question` need dispatch branches or should they be removed from TYPE_TO_EXTENSION_TABLE?
+  **OQ-3**: Should P-44 be formally amended to accommodate the exclusive-transaction pattern in `handleAppendJournal`?
+  **OQ-4**: Should `module_spec` conditional assertion be made unconditional in tools.test.ts?
+  **OQ-5**: Should `document_artifacts.cycle` use `cycleForNode` unconditionally instead of `content.cycle ?? cycleForNode`?
+  **OQ-6**: Is `PRAGMA foreign_keys = OFF` held across `handleWriteWorkItems` upsert phase intentional?
+  **OQ-7**: How should rollback tests target extension-table insert failure specifically (second insert)?
+  **OQ-8**: Should `handleGetProjectStatus` query SQLite `findings` table instead of pre-v3 archive paths? (Carried from Q-104)
+content_hash: b16cc8f7e80b06ce37eff55493b26fc2f6f90fca692265f1c432d94ac135eeac
+token_count: 824
+file_path: .ideate/cycles/003/decision-log-003.yaml

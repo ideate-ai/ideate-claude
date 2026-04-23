@@ -1,0 +1,13 @@
+id: D-139
+type: domain_decision
+title: Exclusive transaction for handleAppendJournal deviates from strict P-44 two-phase ordering
+decision: WI-406 placed the YAML write and SQLite upserts for handleAppendJournal inside a single exclusive transaction, deviating from P-44's strict two-phase separation (Phase 1 YAML, Phase 2 SQLite in separate scopes).
+rationale: Concurrent journal-append calls reading the same COUNT before either commits would produce duplicate sequence numbers. The exclusive lock serializes the read-write-upsert chain. Cleanup on failure is preserved via a writtenYamlPath variable and cleanup handler, maintaining the spirit of P-44.
+assumes: The exclusive-transaction pattern is limited to handlers with read-then-write sequences requiring serialization. Most handlers continue using strict two-phase ordering.
+source: cycle 3 spec-adherence D1; decision-log D-P05
+domain: artifact-structure
+status: settled
+cycle: 3
+content_hash: 1507306224f7d2991cabb13013b7a124713754ea2734c8dfdea9075731834f0c
+token_count: 235
+file_path: .ideate/decisions/D-139.yaml

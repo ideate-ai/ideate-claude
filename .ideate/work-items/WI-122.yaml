@@ -10,43 +10,69 @@ depends: []
 blocks: []
 criteria:
   - agents/code-reviewer.md line 91 no longer says "treat it as scope-changing — this is an Andon-level issue"
-  - "The replacement text correctly describes the diagnose-and-fix protocol: the executor diagnoses the root cause and attempts a surgical fix before routing to Andon if unfixable"
+  - >-
+    The replacement text correctly describes the diagnose-and-fix protocol: the executor diagnoses the root cause and
+    attempts a surgical fix before routing to Andon if unfixable
   - The finding title convention ("Startup failure after [work item name]") is preserved unchanged
   - No other lines in agents/code-reviewer.md are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-122: Fix code-reviewer agent startup-failure description
+
 
   ## Context
 
-  Cycle 009 gap analysis SG1: `agents/code-reviewer.md` line 91 still instructs the code-reviewer that startup failure is "scope-changing — this is an Andon-level issue." This was correct under the pre-WI-121 unconditional-Andon rule. WI-121 changed the protocol: startup failure now triggers a diagnose-and-fix process (Andon only if unfixable). The code-reviewer's description of expected downstream handling is now incorrect and contradicts P-22.
+
+  Cycle 009 gap analysis SG1: `agents/code-reviewer.md` line 91 still instructs the code-reviewer that startup failure
+  is "scope-changing — this is an Andon-level issue." This was correct under the pre-WI-121 unconditional-Andon rule.
+  WI-121 changed the protocol: startup failure now triggers a diagnose-and-fix process (Andon only if unfixable). The
+  code-reviewer's description of expected downstream handling is now incorrect and contradicts P-22.
+
 
   ## Change
 
+
   **File**: `agents/code-reviewer.md`
+
 
   **Location**: Dynamic Testing section, Step 2, item 3 (line 91). Current text:
 
+
   ```
-  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title "Startup failure after [work item name]" and treat it as scope-changing — this is an Andon-level issue.
+
+  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title
+  "Startup failure after [work item name]" and treat it as scope-changing — this is an Andon-level issue.
+
   ```
+
 
   Replace with:
 
+
   ```
-  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title "Startup failure after [work item name]". The executor will diagnose the root cause and attempt a surgical fix before routing to Andon if the cause is unfixable.
+
+  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title
+  "Startup failure after [work item name]". The executor will diagnose the root cause and attempt a surgical fix before
+  routing to Andon if the cause is unfixable.
+
   ```
+
 
   ## Acceptance Criteria
 
+
   1. `agents/code-reviewer.md` line 91 no longer says "treat it as scope-changing — this is an Andon-level issue"
-  2. The replacement text correctly describes the diagnose-and-fix protocol: the executor diagnoses and attempts a surgical fix before routing to Andon if unfixable
+
+  2. The replacement text correctly describes the diagnose-and-fix protocol: the executor diagnoses and attempts a
+  surgical fix before routing to Andon if unfixable
+
   3. The finding title convention ("Startup failure after [work item name]") is preserved unchanged
+
   4. No other lines in `agents/code-reviewer.md` are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 58eddeb0d9db1c4d51d5e0a10b46f9284ac0a195018266fe59dc0afe3f817c8b
 token_count: 610
-file_path: .ideate/work-items/WI-122.yaml
+file_path: work-items/WI-122.yaml
 resolution: Implemented during v3 migration

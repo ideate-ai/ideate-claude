@@ -1,0 +1,11 @@
+id: interviews/refine-013/_general
+type: interview
+cycle: 13
+source_path: steering/interviews/refine-013/_general.md
+entries:
+  - {id: IQ-013-001, question: Global model mapping vs per-agent granularity?, answer: Global mapping per-project in .ideate.json., domain: null, seq: 1}
+  - {id: IQ-013-002, question: Tier-based mapping using haiku/sonnet/opus vocabulary?, answer: Yes, three tiers using existing frontmatter vocabulary., domain: null, seq: 2}
+  - {id: IQ-013-003, question: After research and critical analysis — is the `.ideate.json` model config feature worth building given Claude Code's existing env var support and undocumented passthrough behavior?, answer: No. Documentation + hardcoded model string cleanup instead., domain: null, seq: 3}
+  - {id: IQ-013-004, question: Principles still hold?, answer: Yes, all unchanged., domain: null, seq: 4}
+content_hash: "14460488e212e76754a29d6e88cb0521cb4520a81d75b40286197154b19ca4f8"
+token_count: 222

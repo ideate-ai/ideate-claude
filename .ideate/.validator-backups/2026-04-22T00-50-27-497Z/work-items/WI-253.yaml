@@ -1,0 +1,36 @@
+id: WI-253
+type: work_item
+title: Fix review output file references from .md to .yaml with cycle routing
+status: done
+complexity: medium
+scope:
+  - path: skills/review/SKILL.md
+    op: modify
+depends:
+  - WI-251
+blocks: []
+criteria:
+  - "All review output file references changed from .md to .yaml: code-quality.yaml, spec-adherence.yaml, gap-analysis.yaml, decision-log.yaml, summary.yaml, review-manifest.yaml"
+  - All ideate_write_artifact calls for review outputs include cycle parameter
+  - Phase 7.5 archive directory listing updated to .yaml filenames
+  - Phase 7.6 count derivation references updated to .yaml
+  - Zero .md output file references in operational instructions (documentation references to the format are OK)
+domain: workflow
+notes: |-
+  # WI-253: Review Skill .md → .yaml
+
+  All 6 review output files change from .md to .yaml:
+  - code-quality.md → code-quality.yaml
+  - spec-adherence.md → spec-adherence.yaml
+  - gap-analysis.md → gap-analysis.yaml
+  - decision-log.md → decision-log.yaml
+  - summary.md → summary.yaml
+  - review-manifest.md → review-manifest.yaml
+
+  All ideate_write_artifact calls must include cycle parameter so files route to cycles/{NNN}/.
+resolution: null
+cycle_created: 33
+cycle_modified: null
+content_hash: 117588625a358282f34618707b57eef9141e64edce13e5325512b8372cd5b0ac
+token_count: 310
+file_path: .ideate/work-items/WI-253.yaml

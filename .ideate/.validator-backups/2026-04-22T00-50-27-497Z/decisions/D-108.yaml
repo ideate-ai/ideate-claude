@@ -1,0 +1,13 @@
+id: D-108
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 22
+supersedes: null
+description: All remaining MCP artifact server work (schema refactor v6-to-v7, 11 MCP tools, test suite rewrite, skill file updates) delivered in cycle 022 rather than as four separate phases. 11 work items (WI-181 through WI-191), 207 tests pass.
+rationale: Phases were tightly coupled — the schema refactor was a prerequisite for all tool implementation. A single capstone review over the integrated result was more efficient than four phase-level reviews. Supersedes D-82 (Phase 2 deferred).
+cycle_created: 1
+cycle_modified: null
+content_hash: "788dd51a6af64c2675e657e9e33e70c3336645fa3acd97e6167205a8e4ac1b57"
+token_count: 175
+file_path: .ideate/decisions/D-108.yaml

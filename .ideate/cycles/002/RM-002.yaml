@@ -12,4 +12,4 @@ content: |-
   | 5 | WI-405 | Fix handleGetReviewManifest and handleGetProjectStatus | Pass (rework) | 0/2/1 |
 content_hash: f6df4dc62cad4026028f38f6186de7ae2512c5155ad5b9f7c1a54f6193fc5f65
 token_count: 167
-file_path: .ideate/cycles/002/RM-002.yaml
+file_path: cycles/002/RM-002.yaml

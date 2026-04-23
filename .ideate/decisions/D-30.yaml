@@ -4,10 +4,16 @@ domain: artifact-structure
 status: settled
 cycle: 1
 supersedes: null
-description: "`artifact-conventions.md` is the authoritative artifact schema reference but has no entry for `metrics.jsonl` — neither in the directory tree nor in a schema section. WI-092 and WI-093 extended the metrics schema without corresponding documentation in the conventions file. WI-115 will add both the directory tree entry and a full specification section."
-rationale: The gap-analyst rated this significant because `artifact-conventions.md` is the first place a new contributor looks for artifact schemas. A file written by all five skills and consumed by report.sh must appear there.
+description: >-
+  `artifact-conventions.md` is the authoritative artifact schema reference but has no entry for `metrics.jsonl` —
+  neither in the directory tree nor in a schema section. WI-092 and WI-093 extended the metrics schema without
+  corresponding documentation in the conventions file. WI-115 will add both the directory tree entry and a full
+  specification section.
+rationale: >-
+  The gap-analyst rated this significant because `artifact-conventions.md` is the first place a new contributor looks
+  for artifact schemas. A file written by all five skills and consumed by report.sh must appear there.
 cycle_created: 1
 cycle_modified: null
-content_hash: "5fef501cf5e4a56b67d8dcdd1761e8c31299adea49bcea9779db19c6f5f244da"
+content_hash: 5fef501cf5e4a56b67d8dcdd1761e8c31299adea49bcea9779db19c6f5f244da
 token_count: 199
-file_path: .ideate/decisions/D-30.yaml
+file_path: decisions/D-30.yaml

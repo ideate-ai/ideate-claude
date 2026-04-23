@@ -1,0 +1,69 @@
+id: WI-283
+type: work_item
+title: PPR algorithm implementation
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/ppr.ts
+    op: create
+  - path: mcp/artifact-server/src/__tests__/ppr.test.ts
+    op: create
+depends: []
+blocks:
+  - WI-286
+criteria:
+  - "ppr.ts exports a computePPR function accepting: drizzleDb, seedNodeIds, options (alpha, maxIterations, convergenceThreshold, edgeTypeWeights)"
+  - "Function returns Array<{nodeId: string, score: number}> sorted by score descending"
+  - Default alpha=0.15, maxIterations=50, convergenceThreshold=1e-6
+  - "Node specificity (IDF-like): nodes with high in-degree get score dampened by log(totalNodes/inDegree)"
+  - "Edge type weights configurable — defaults: depends_on=1.0, governed_by=0.8, informed_by=0.6, references=0.4, blocks=0.3"
+  - Converges when max score change between iterations < convergenceThreshold
+  - "At least 5 tests: single seed, multiple seeds, convergence, edge type weighting, node specificity dampening"
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: |-
+  # WI-283: PPR Algorithm
+
+  ## Overview
+  Implement Personalized PageRank over the artifact graph stored in SQLite edges table.
+
+  ## Algorithm
+  1. Load all edges from SQLite: `SELECT source_id, target_id, edge_type FROM edges`
+  2. Build adjacency lists (both directions for undirected traversal)
+  3. Initialize: seed nodes get score 1/|seeds|, all others 0
+  4. Iterate until convergence:
+     - For each node: new_score = alpha * seed_score + (1-alpha) * sum(weighted_neighbor_scores / out_degree)
+     - Edge weights from edgeTypeWeights config
+     - Apply node specificity: multiply score by log(totalNodes / max(1, inDegree))
+  5. Check convergence: if max |new_score - old_score| < threshold, stop
+  6. Return sorted results
+
+  ## Interface
+  ```typescript
+  export interface PPROptions {
+    alpha?: number;           // teleportation probability (default 0.15)
+    maxIterations?: number;   // iteration cap (default 50)
+    convergenceThreshold?: number; // default 1e-6
+    edgeTypeWeights?: Record<string, number>;
+  }
+
+  export interface PPRResult {
+    nodeId: string;
+    score: number;
+  }
+
+  export function computePPR(
+    drizzleDb: BetterSQLite3Database<any>,
+    seedNodeIds: string[],
+    options?: PPROptions
+  ): PPRResult[];
+  ```
+
+  ## Dependencies
+  Import edges table from db.ts. Import BetterSQLite3Database type from drizzle-orm.
+resolution: PPR algorithm implemented in ppr.ts with 10 tests.
+cycle_created: 37
+cycle_modified: null
+content_hash: 257dbd5122be81777458b6066fdebdf4c50eae801b91093f5010eb6788d9078f
+token_count: 636
+file_path: .ideate/work-items/WI-283.yaml

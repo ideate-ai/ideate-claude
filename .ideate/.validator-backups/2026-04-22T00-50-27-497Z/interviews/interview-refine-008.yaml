@@ -1,0 +1,15 @@
+id: interview-refine-008
+type: interview
+title: "Refinement Interview — Cycle 008: Context Retrieval Generalization"
+entries:
+  - question: What specific changes do you want to make?
+    answer: ideate_assemble_context failed when called with artifact_id for PH-013. The tool requires seed_ids parameter. More importantly, ideate_get_work_item_context only works for work items, not phases or other artifact types. When the MCP call failed, the system fell back to reading .ideate/ files directly, violating GP-14.
+    domain: artifact-structure
+  - question: For the general-purpose context tool, should it replace ideate_get_work_item_context entirely or be a new tool alongside it?
+    answer: Replace with a generic ideate_get_artifact_context that detects artifact type and assembles appropriate context.
+    domain: artifact-structure
+  - question: For the GP-14 violation — should this refinement include a fix to the skill/agent behavior that triggered the fallback, or scope only to the MCP server changes?
+    answer: MCP server + skill guardrail. Fix tools AND add explicit guidance in skill docs that MCP failures must not trigger direct .ideate/ access.
+    domain: workflow
+content_hash: cdc66ba81ca3a38d2dde5d939cfcfe772d5f1e3a74be4caa211b86d53baf7ee2
+token_count: 297

@@ -1,0 +1,13 @@
+id: Q-91
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: The settings skill's Clear model override feature is silently non-functional. Users who clear an override see no error but the override persists in config.json. The UI promises functionality it cannot deliver.
+source: code-quality cycle 068 S1/S2, gap-analysis EC1, decision-log D68-14/OQ68-01
+resolution: "Null-signal semantics: a key set to null in patch.model_overrides signals deletion of that key from the stored map. handleUpdateConfig must strip null-valued entries after merging. Settings skill displays 'default (modelname)' (e.g. 'default (sonnet)') instead of dash when no override is set. Clear model override sends null signal: { model_overrides: { agent: null } }."
+resolved_in: cycle 068 (user decision 2026-03-28)
+description: "What merge semantics should handleUpdateConfig use for model_overrides? Key-level merge (current) cannot express key deletion, making Clear model override non-functional. Two options: (1) replace-all — when patch.model_overrides is provided, it replaces the entire stored map; (2) null-signal — a key set to null in the patch signals deletion. Each has trade-offs for partial update ergonomics."
+addressed_by: WI next cycle — fix handleUpdateConfig null-signal and update settings skill display
+content_hash: 4ad8bac9085929fa45fc56837814badd828da967da94100c673379a31d05c431
+token_count: 330
+file_path: .ideate/questions/Q-91.yaml

@@ -1,0 +1,9 @@
+id: interviews/refine-016/_general
+type: interview
+cycle: 16
+source_path: steering/interviews/refine-016/_general.md
+entries:
+  - {id: IQ-016-001, question: What to clean up?, answer: Remove benchmarking domain, remove work items 132-139, major version bump to 3.0.0., domain: null, seq: 1}
+  - {id: IQ-016-002, question: Principles?, answer: All unchanged., domain: null, seq: 2}
+content_hash: "311f92945aaa949339e30c863bc7f3925a7d68c7684a8d564ce90b4d4fb0c6b2"
+token_count: 100

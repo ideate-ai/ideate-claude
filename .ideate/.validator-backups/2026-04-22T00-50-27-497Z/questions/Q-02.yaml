@@ -1,0 +1,14 @@
+id: Q-02
+type: domain_question
+domain: workflow
+status: being addressed in cycle 002 (WI-073)
+impact: Proxy-human deferrals are silently dropped from autopilot's deferred items list; Phase 9 activity report always shows zero deferrals regardless of actual proxy-human decisions.
+source: archive/cycles/001/decision-log.md OQ2
+resolution: Resolved in cycle 002 via WI-073 (changed `DEFERRED` to `DEFER` at line 317).
+resolved_in: null
+description: "`skills/autopilot/SKILL.md:317` checks for the string `DEFERRED` but `agents/proxy-human.md:90` specifies `Decision: {PROCEED | DEFER | ESCALATE}`. Will any proxy-human output ever match?"
+cycle_created: 1
+cycle_modified: null
+content_hash: e9937c276356b0715867e602da3e2aa95f1f897e871a8d17868fa6c9984a6c49
+token_count: 183
+file_path: .ideate/questions/Q-02.yaml

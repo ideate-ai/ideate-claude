@@ -1,0 +1,79 @@
+id: WI-319
+type: work_item
+title: Rewrite 7 agent definitions — remove all .ideate/ direct access
+status: done
+complexity: medium
+scope:
+  - path: agents/architect.md
+    op: modify
+  - path: agents/domain-curator.md
+    op: modify
+  - path: agents/gap-analyst.md
+    op: modify
+  - path: agents/journal-keeper.md
+    op: modify
+  - path: agents/proxy-human.md
+    op: modify
+  - path: agents/spec-reviewer.md
+    op: modify
+  - path: agents/decomposer.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain in any agent file
+  - No .yaml filename references
+  - No Glob/Read/Write instructions targeting .ideate/ files
+  - domain-curator uses MCP tools (ideate_get_domain_state, ideate_write_artifact) not Glob/Read
+  - gap-analyst uses ideate_artifact_query and ideate_get_domain_state not Glob
+  - journal-keeper uses ideate_artifact_query not Glob for journal entries
+  - proxy-human uses ideate_get_context_package or ideate_artifact_query not direct Read
+  - architect does not reference .ideate/modules/ paths for writing
+  - decomposer does not reference .ideate/work-items/ for reading existing format
+  - spec-reviewer does not reference .ideate/cycles/ paths
+domain: agent-system
+notes: |-
+  # WI-319: Agent definitions MCP abstraction rewrite
+
+  ## Agents to modify (7 of 9 — researcher and code-reviewer are already clean)
+
+  ### architect.md
+  - Remove: 'write them to .ideate/modules/architecture.yaml and .ideate/modules/{name}.yaml'
+  - Replace: 'Return architecture and module specs in your response. The spawning skill writes them via MCP tools.'
+
+  ### domain-curator.md
+  - Remove: All Glob instructions (domains/*/policies/*.yaml, decisions/*.yaml, questions/*.yaml)
+  - Remove: Read .ideate/domains/index.yaml, Read .ideate/principles/GP-*.yaml
+  - Replace: Use ideate_get_domain_state for current state, ideate_get_context_package for principles
+  - Remove: YAML schema templates for domain files
+  - Replace: Return structured data, spawning skill writes via ideate_write_artifact
+
+  ### gap-analyst.md
+  - Remove: Glob .ideate/domains/*/questions/*.yaml
+  - Remove: .ideate/interviews/ and .ideate/cycles/{NNN}/findings/ path refs
+  - Replace: Use ideate_get_domain_state and ideate_artifact_query
+
+  ### journal-keeper.md
+  - Remove: Glob .ideate/cycles/*/journal/J-*.yaml
+  - Remove: .ideate/cycles/{NNN}/findings/ path refs
+  - Remove: decision-log.md filename ref
+  - Replace: Use ideate_artifact_query({type: 'journal_entry'}) and ideate_artifact_query({type: 'finding'})
+
+  ### proxy-human.md
+  - Remove: Read .ideate/principles/GP-*.yaml, Read .ideate/constraints/C-*.yaml, Read .ideate/modules/architecture.yaml
+  - Replace: Use ideate_get_context_package (already assembled)
+
+  ### spec-reviewer.md
+  - Remove: .ideate/cycles/{NNN}/findings/ path ref
+  - Replace: Use ideate_artifact_query
+
+  ### decomposer.md
+  - Remove: Read one existing file from .ideate/work-items/
+  - Replace: Use ideate_artifact_query({type: 'work_item'}) to see existing format
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: a44549314fcd2631f779354684130af5a53de95db7a510cfa132b70405e1d137
+token_count: 772
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-319.yaml

@@ -1,0 +1,35 @@
+id: WI-379
+type: work_item
+title: Fix stale ARCHITECTURE.md entries in section 9.2 (notes column, file_path field)
+status: done
+complexity: low
+scope:
+  - path: ARCHITECTURE.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Section 9.2 work_items extension table includes a 'notes TEXT' column row
+  - Section 9.2 work item output fields list does not mention 'file path' as a field
+  - No other sections of ARCHITECTURE.md are modified
+  - All changes are consistent with the inline-notes implementation from WI-370 (notes stored as TEXT column, not file path)
+domain: artifact-structure
+notes: |-
+  ## Two Documentation Gaps to Fix in ARCHITECTURE.md Section 9.2
+
+  ### Gap 1 (MN1): notes column missing from work_items extension table
+  The `work_items` extension table in Section 9.2 lists columns but is missing the `notes TEXT` column that was added as part of the inline notes implementation (WI-370). Add a row for `notes` with a description of 'Implementation notes stored inline as plain text (column value, not file path)'.
+
+  Locate the `work_items` table in Section 9.2 that lists columns like `id`, `title`, `complexity`, `status`, `file_path`, `notes_file` etc. and add the `notes TEXT` column. The notes column stores inline implementation notes — not a file path.
+
+  ### Gap 2 (D1): 'file path' listed as work item output field
+  Section 9.2 lists the output fields returned for a work item. One field is listed as 'file path' (or similar) referring to the notes file path. Since EC1 was fixed (WI-370), notes are returned as inline text, not as a file path. Remove or update this field reference to reflect the current implementation where notes content is returned directly.
+
+  ## Verification
+  Read ARCHITECTURE.md section 9.2 after edits. Confirm 'notes TEXT' appears in the work_items table and 'file path' (in the context of notes) does not appear in the output fields list.
+resolution: null
+cycle_created: 58
+cycle_modified: 58
+content_hash: 7bc9a216f70ad26062e780de5b91612d4792f1634aeb6e6e0973ce4b50c6e10f
+token_count: 489
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-379.yaml

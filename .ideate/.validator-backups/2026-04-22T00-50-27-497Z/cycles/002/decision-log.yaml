@@ -1,0 +1,107 @@
+id: decision-log
+type: cycle_summary
+content: |-
+  ## Decision Log — Cycle 002
+
+  ### Planning — Work Item Decomposition
+  **When**: Planning — work item creation for cycle 002
+  **Decision**: Create WI-385, WI-386, WI-387, WI-388 to address findings from cycle 001 review
+  **Rationale**: Cycle 001 code-quality review found C1 (command injection), S1 (silent YAML parse failure), S2 (missing input validation), and gap-analysis found IR1 (meaningful error messages for invalid artifact types). These require dedicated work items.
+  **Implications**: Four parallel work items addressing security, observability, and validation concerns in the MCP artifact server.
+
+  ### Execution — WI-385 Implementation
+  **When**: Execution — work item 385
+  **Decision**: Replace execSync with spawn for hook dispatch
+  **Rationale**: Command injection vulnerability required eliminating string interpolation in shell execution
+  **Implications**: Hooks now use explicit argument arrays, preventing shell metacharacter injection through user-controlled content
+
+  ### Execution — WI-386 Implementation
+  **When**: Execution — work item 386
+  **Decision**: Add structured logging for YAML parse failures
+  **Rationale**: Silent parse failures made debugging impossible; adding file path and error location visibility
+  **Implications**: Parse errors now logged to stderr with file path and YAML error location
+
+  ### Execution — WI-387 Implementation
+  **When**: Execution — work item 387
+  **Decision**: Add whitelist validation for autopilot state update keys
+  **Rationale**: Arbitrary key injection could create subtle bugs in downstream consumers
+  **Implications**: Only known state properties (cycles_completed, convergence_achieved, etc.) accepted
+
+  ### Execution — WI-388 Implementation
+  **When**: Execution — work item 388
+  **Decision**: Add type validation in handleWriteArtifact
+  **Rationale**: Unknown artifact types would create files in unexpected paths without error
+  **Implications**: Write operations now validate type against known types before resolving path
+
+  ### Review — Capstone Review Fail
+  **When**: Review — capstone review for cycle 002
+  **Decision**: Overall verdict FAIL; 3 significant findings require remediation
+  **Rationale**:
+  - S1: Backup file `indexer.ts.bak` committed to source tree (25,906 bytes dead code)
+  - S2: Excessive `any` type casts throughout Drizzle ORM operations (30+ occurrences)
+  - S3: No transaction boundary handling in write operations (filesystem/database consistency risk)
+  **Implications**: Cycle requires rework; work items WI-385-WI-388 implementation accepted but new findings block approval
+
+  ---
+
+  ## Open Questions
+
+  ### OQ-1: Backup File Removal
+  **Question**: Should `indexer.ts.bak` be deleted or is it intentional legacy backup?
+  **Source**: Code-quality review S1 finding — backup file in source tree
+  **Impact**: Repository bloat, confusion for code readers, potential build tool issues
+  **Who answers**: Technical investigation — check git history for intent
+  **Consequence of inaction**: Dead code persists; may cause issues with tools that scan src/ directory
+
+  ### OQ-2: Drizzle ORM Type Safety Strategy
+  **Question**: Should Drizzle ORM operations use properly typed helper functions or continue with `any` casts?
+  **Source**: Code-quality review S2 finding — 30+ eslint-disable-next-line for @typescript-eslint/no-explicit-any
+  **Impact**: Type safety bypassed for all database operations; compile-time errors become runtime errors
+  **Who answers**: Design review — assess cost/benefit of typed helpers vs current approach
+  **Consequence of inaction**: Type errors in database operations will surface at runtime rather than compile time
+
+  ### OQ-3: Transaction Boundary Design for Write Operations
+  **Question**: What transaction semantics should YAML file writes and SQLite upserts follow?
+  **Source**: Code-quality review S3 finding — handleWriteWorkItems lacks transaction boundaries
+  **Impact**: Work item files can be written while database remains unupdated, causing data inconsistency
+  **Who answers**: Design review — determine if files-first then DB-transaction pattern is acceptable
+  **Consequence of inaction**: Crash between file write and DB upsert leaves inconsistent state
+
+  ### OQ-4: Architecture Documentation Update
+  **Question**: Should ARCHITECTURE.md be updated to reflect implementation (14 tables, server.ts, hooks.ts, ppr.ts, settings skill)?
+  **Source**: Spec-adherence review D1, D2; Gap-analysis II1, IR1
+  **Impact**: Documentation diverges from implementation
+  **Who answers**: User decision — whether documentation debt warrants immediate update
+  **Consequence of inaction**: Developers reading architecture will have incorrect understanding of implementation
+
+  ---
+
+  ## Cross-References
+
+  ### CR1: Database Type Safety
+  - **Code review**: S2 — Excessive `any` type casts in Drizzle ORM operations
+  - **Gap analysis**: No related finding
+  - **Connection**: The type safety gap is isolated to the code layer; gap-analysis did not surface a functional impact
+
+  ### CR2: Documentation Consistency
+  - **Code review**: No related finding
+  - **Spec review**: D1 (Extension table count mismatch), D2 (Undocumented source files)
+  - **Gap analysis**: II1 (Settings skill not documented), MI3 (Config exports documentation incomplete)
+  - **Connection**: Multiple reviewers identified documentation drift from implementation. Architecture document needs systematic review.
+
+  ### CR3: Edge Case Handling
+  - **Code review**: M5 (Missing input validation for artifact type)
+  - **Gap analysis**: EC1 (Malformed YAML recovery), EC2 (Large result sets), EC3 (Cycle detection limits)
+  - **Connection**: Both reviews identified edge case gaps. Code review M5 was addressed by WI-388. Gap analysis edge cases (EC1-EC3) were deferred with rationale.
+
+  ### CR4: Transaction Safety
+  - **Code review**: S3 (No transaction boundary handling)
+  - **Gap analysis**: MI1 (Graceful shutdown for file watcher)
+  - **Connection**: Both relate to data consistency during abnormal termination. WAL mode mitigates MI1 risk but S3 requires explicit design decision.
+cycle: 2
+date: "20260329"
+reviewer: journal-keeper
+scope: full-audit
+content_hash: 26bfc8b54b9b1d25efdd9da9bc123ea9fa79cd0dcf8cc8af5aa30ecb93ef582d
+token_count: 1562
+file_path: .ideate/cycles/002/decision-log.yaml

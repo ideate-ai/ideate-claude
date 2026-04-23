@@ -1,0 +1,68 @@
+id: RF-gastown
+type: research_finding
+topic: "Research: Gastown — Distributed AI Coding Orchestration"
+status: active
+date: null
+content: |
+  # Research: Gastown — Distributed AI Coding Orchestration
+  
+  ## Summary
+  
+  **Source note: Web search/fetch unavailable. Findings based on training knowledge (cutoff August 2025). Verify against current source at https://github.com/steveyegge/gastown before treating architecture claims as authoritative.**
+  
+  Gastown is a distributed AI coding agent system by Steve Yegge that treats a software project as a job queue processed by many autonomous Claude instances, potentially across multiple machines. It served as design inspiration for this refinement cycle. The user explicitly stated: "Gastown was a source of inspiration, but not for architecture." The patterns worth borrowing are the task queue state machine, role-as-configuration, and the human-in-the-loop gate. The specific distributed architecture is not being replicated.
+  
+  ---
+  
+  ## Key Facts
+  
+  **Core abstractions (gastown):**
+  - Project = job queue with per-task state machine: pending → claimed → in-progress → completed | failed | awaiting-human
+  - Workers pull tasks by role (pull model). Orchestrator does not push.
+  - Role = named configuration bundle: system prompt template, tool allowlist, model tier, max turns
+  - Dependency gating enforced by infrastructure: tasks not made available until dependencies complete
+  - Human-in-the-loop = a task state, not a callback: entering "awaiting-human" blocks downstream dependents
+  - Queue is persistent (survives restarts); worker state is not
+  
+  **Contrasts with ideate's current model:**
+  | Capability | Gastown | Ideate (current) |
+  |---|---|---|
+  | Dispatch model | Pull (workers claim) | Push (orchestrator spawns) |
+  | Task queue | Persistent, external | In-memory session registry |
+  | Dependency gating | Infrastructure-enforced | LLM context |
+  | Human-in-the-loop | Task state machine | Andon cord accumulation list |
+  | Role system | Named config bundles | `team_name` + `exec_instructions` per-call |
+  | Multi-machine | Yes (core design) | No |
+  
+  **What ideate is borrowing from gastown's inspiration:**
+  - Roles as named, server-side configuration bundles (not per-call ad-hoc params)
+  - A persistent remote daemon with a REST API for job management
+  - The "manager" concept: a coordination agent distinct from execution workers
+  - The autonomous cycle concept (autopilot mode)
+  
+  **What ideate is NOT replicating:**
+  - Pull model (workers claiming tasks) — push is simpler and fits ideate's existing model
+  - Worker-spawned sub-workers calling back to orchestrator (circular dependency problem)
+  - Full distributed queue infrastructure (overkill for single-host + single-remote use case)
+  
+  ---
+  
+  ## Recommendations (applied to this refinement)
+  
+  The decision made in this refinement cycle:
+  - Remote daemon = persistent HTTP service, not a protocol-faithful gastown clone
+  - Local MCP server dispatches to remotes via HTTP, polls for results (push, not pull)
+  - Role system = JSON config file with named bundles, loaded at startup
+  - Brrr = autonomous SDLC loop with proxy-human agent, not a gastown orchestrator
+  
+  ---
+  
+  ## Sources
+  - Training knowledge only. No live web sources consulted.
+  - Direct codebase reads: `mcp/session-spawner/server.py`, `specs/plan/architecture.md`, `specs/steering/research/session-multiplexing.md`
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "0980f11c9cd27c1da0990215c26148353eaa56edaf9795fc5cfcd729b2e74bda"
+token_count: 880
+file_path: .ideate/research/RF-gastown.yaml

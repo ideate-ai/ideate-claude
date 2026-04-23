@@ -2,13 +2,20 @@ id: Q-19
 type: domain_question
 domain: agent-system
 status: resolved
-impact: "`by_reviewer.code-reviewer.suggestion` is structurally impossible to be non-zero. Related to Q-16 (no consumer for `by_reviewer.suggestion`); together these suggest the suggestion sub-field in `by_reviewer` may be vestigial."
+impact: >-
+  `by_reviewer.code-reviewer.suggestion` is structurally impossible to be non-zero. Related to Q-16 (no consumer for
+  `by_reviewer.suggestion`); together these suggest the suggestion sub-field in `by_reviewer` may be vestigial.
 source: archive/cycles/003/code-quality.md M1; archive/cycles/003/decision-log.md OQ2
-resolution: "By design: code-reviewer has no suggestion severity level. by_reviewer.suggestion removed from schema."
+resolution: 'By design: code-reviewer has no suggestion severity level. by_reviewer.suggestion removed from schema.'
 resolved_in: 38
-description: "`skills/autopilot/phases/review.md:212,216` counts `### Suggestion` headings in code-quality.md to derive `findings.by_severity.suggestion` and `by_reviewer.code-reviewer.suggestion`. The code-reviewer agent output format (`agents/code-reviewer.md`) defines only `### C`, `### S`, and `### M` heading sections — there is no mechanism for the code-reviewer to produce suggestion-level findings. Should the suggestion count be hardcoded to 0 for code-reviewer, or should a `## Suggestions` section be added to the code-reviewer output format?"
+description: >-
+  `skills/autopilot/phases/review.md:212,216` counts `### Suggestion` headings in code-quality.md to derive
+  `findings.by_severity.suggestion` and `by_reviewer.code-reviewer.suggestion`. The code-reviewer agent output format
+  (`agents/code-reviewer.md`) defines only `### C`, `### S`, and `### M` heading sections — there is no mechanism for
+  the code-reviewer to produce suggestion-level findings. Should the suggestion count be hardcoded to 0 for
+  code-reviewer, or should a `## Suggestions` section be added to the code-reviewer output format?
 cycle_created: 1
 cycle_modified: 38
 content_hash: 685a2408720fbe09513a894d8186eedc36e2c9e0803dc71c5da8c337b72d8e64
 token_count: 277
-file_path: .ideate/domain_question/Q-19.yaml
+file_path: questions/Q-19.yaml

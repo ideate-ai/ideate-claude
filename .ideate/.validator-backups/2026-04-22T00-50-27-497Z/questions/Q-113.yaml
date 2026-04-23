@@ -1,0 +1,13 @@
+id: Q-113
+type: domain_question
+domain: artifact-structure
+title: Should document_artifacts.cycle use cycleForNode unconditionally for cycle-scoped types?
+description: Currently document_artifacts.cycle was set from content.cycle ?? cycleForNode. If a caller passed cycle at the tool level but content.cycle differed, rows could disagree on cycle number, making cycle summaries invisible to handleGetConvergenceStatus.
+source: cycle 3 gap-analysis Gap 4
+impact: Convergence checks would miss cycle summaries if content.cycle and tool-level cycle disagreed.
+status: resolved
+resolution: WI-423 injects cycle into yamlObj before YAML serialization, ensuring content.cycle and tool-level cycle agree in the written file. Rebuilds now produce correct document_artifacts.cycle.
+resolved_in: 4
+content_hash: 4ad1a2d24b0fbde6d6bd2292d69582604e8a5414d840581f20112e59a2f57a04
+token_count: 197
+file_path: .ideate/questions/Q-113.yaml

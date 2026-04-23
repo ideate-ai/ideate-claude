@@ -1,12 +1,22 @@
 id: Q-09
 type: domain_question
 addressed_by: null
-description: "`README.md:16` links to `https://github.com/dan/outpost`. This URL has not been confirmed as a public, accessible repository. Should it be verified before public release, or replaced with a description of where to obtain outpost if the repository will remain private?"
+description: >-
+  `README.md:16` links to `https://github.com/dan/outpost`. This URL has not been confirmed as a public, accessible
+  repository. Should it be verified before public release, or replaced with a description of where to obtain outpost if
+  the repository will remain private?
 domain: project-boundaries
-impact: Users who want outpost-dependent features (spawn_session, remote dispatch) cannot locate the project; they receive a 404 with no alternative guidance.
-resolution: Out of scope for ideate. The outpost project is not part of this repository and its availability is a separate concern. README documentation about external repositories should be updated independently. No change to ideate planned.
+impact: >-
+  Users who want outpost-dependent features (spawn_session, remote dispatch) cannot locate the project; they receive a
+  404 with no alternative guidance.
+resolution: >-
+  Out of scope for ideate. The outpost project is not part of this repository and its availability is a separate
+  concern. README documentation about external repositories should be updated independently. No change to ideate
+  planned.
 resolved_in: 3
-source: archive/cycles/001/gap-analysis.md IN2, archive/cycles/001/decision-log.md OQ8, archive/cycles/001/summary.md (Findings Requiring User Input)
+source: >-
+  archive/cycles/001/gap-analysis.md IN2, archive/cycles/001/decision-log.md OQ8, archive/cycles/001/summary.md
+  (Findings Requiring User Input)
 content_hash: ee61b6f71098b6fb6ec89c9b22e5910ac1340656b5e52a5f74ce512b9f5c8176
 token_count: 231
-file_path: .ideate/questions/Q-09.yaml
+file_path: questions/Q-09.yaml

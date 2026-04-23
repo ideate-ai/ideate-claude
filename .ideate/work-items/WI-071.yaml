@@ -4,34 +4,40 @@ title: Migrate specs/ to new archive + domain structure
 status: obsolete
 complexity: low
 scope:
-  - {path: specs/archive/incremental/, op: create}
-  - {path: specs/archive/cycles/001/, op: create}
-  - {path: specs/domains/, op: create}
-  - {path: specs/steering/interviews/legacy.md, op: create}
+  - path: specs/archive/incremental/
+    op: create
+  - path: specs/archive/cycles/001/
+    op: create
+  - path: specs/domains/
+    op: create
+  - path: specs/steering/interviews/legacy.md
+    op: create
 depends:
-  - "063"
-  - "064"
-  - "066"
-  - "067"
-  - "068"
-  - "069"
+  - '063'
+  - '064'
+  - '066'
+  - '067'
+  - '068'
+  - '069'
 blocks: []
 criteria:
-  - "`specs/archive/incremental/` exists and contains all files from `specs/reviews/incremental/`"
-  - "`specs/archive/cycles/001/` exists and contains all files from `specs/reviews/final/`"
-  - "`specs/domains/` exists with 2-4 domains, each having policies.md, decisions.md, questions.md"
-  - "`specs/domains/index.md` exists with `current_cycle: 1` and domain registry"
-  - "`specs/steering/interviews/legacy.md` exists (former interview.md)"
-  - "`specs/reviews/` original directory preserved (not deleted)"
+  - '`specs/archive/incremental/` exists and contains all files from `specs/reviews/incremental/`'
+  - '`specs/archive/cycles/001/` exists and contains all files from `specs/reviews/final/`'
+  - '`specs/domains/` exists with 2-4 domains, each having policies.md, decisions.md, questions.md'
+  - '`specs/domains/index.md` exists with `current_cycle: 1` and domain registry'
+  - '`specs/steering/interviews/legacy.md` exists (former interview.md)'
+  - '`specs/reviews/` original directory preserved (not deleted)'
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 071
-  
-  The `claude -p` step in the migration script cannot run inside an active Claude Code session. The domain bootstrap must be done by spawning the domain-curator agent directly from within the session.
-resolution: "specs/ directory structure replaced by .ideate/ YAML structure. Migration completed."
+
+
+  The `claude -p` step in the migration script cannot run inside an active Claude Code session. The domain bootstrap
+  must be done by spawning the domain-curator agent directly from within the session.
+resolution: specs/ directory structure replaced by .ideate/ YAML structure. Migration completed.
 cycle_created: 1
 cycle_modified: null
 content_hash: b4d6f4b79ac398bb60e82be61ebeb86b9e6aaef455049bd9bba2373fc41d1d4f
 token_count: 314
-file_path: .ideate/work-items/WI-071.yaml
+file_path: work-items/WI-071.yaml

@@ -1,0 +1,14 @@
+id: P-04
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - GP-5 (Continuous Review)
+established: planning phase
+amended: null
+description: The code-reviewer is spawned immediately upon each work item's completion while other items continue; the capstone review is additive synthesis, not the first quality check.
+cycle_created: 1
+cycle_modified: null
+content_hash: e9cb0fad4de6962848762b5b2aa968dd29b8f5d53d433f1eb28a382acfe2afcf
+token_count: 108
+file_path: .ideate/policies/P-04.yaml

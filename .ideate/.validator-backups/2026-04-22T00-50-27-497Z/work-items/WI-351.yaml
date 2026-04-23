@@ -1,0 +1,27 @@
+id: WI-351
+type: work_item
+title: Update Q-07 status to resolved
+status: done
+complexity: small
+scope: []
+depends:
+  - WI-346
+blocks: []
+criteria:
+  - Q-07 status changed from 'open' to 'resolved'
+  - resolution field documents fix
+  - resolved_in cycle set to 066
+domain: workflow
+notes: |-
+  Update Q-07 domain question status after proxy-human artifact format is implemented.
+
+  Resolution: Proxy-human decisions now use PH-{cycle}-{seq} format with graph edges to findings/work items. Phase 9 can query proxy-human decisions.
+
+  File to modify:
+  - .ideate/questions/Q-07.yaml
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 81ffdf5aa9394625151b25cf53f826624213ccabd7b7fd5628ea353566501962
+token_count: 159
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-351.yaml

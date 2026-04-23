@@ -1,0 +1,44 @@
+id: gap-analysis
+type: cycle_summary
+findings:
+  critical: []
+  minor:
+    - component: /Users/dan/code/ideate/mcp/artifact-server/src/ppr.ts
+      current_behavior: PPR silently uses weight 1.0 for unlisted edge types (fallback), and weights for non-existent edge types are defined but never used.
+      expected_behavior: PPR default weights should align with valid edge types from the registry, and the config default should only include valid edge types.
+      id: EC1
+      recommendation: Defer — The fallback to 1.0 is reasonable, and the extra entries don't cause errors. Aligning these would improve maintainability.
+      scenario: The DEFAULT_EDGE_TYPE_WEIGHTS in ppr.ts defines weights for governed_by and informed_by, but these edge types do not exist in EDGE_TYPES registry in schema.ts. Conversely, edge types like triggered_by, belongs_to_domain, addressed_by exist in the registry but have no weights defined in PPR defaults.
+      severity: Minor
+      title: Edge type weights in PPR don't match edge type registry
+    - component: /Users/dan/code/ideate/mcp/artifact-server/src/tools/query.ts
+      current_behavior: Returns only the paginated results with no total count.
+      expected_behavior: Should return total_count alongside results so clients can render pagination controls.
+      id: EC2
+      recommendation: Defer — Not blocking for current cycle; the 200-item limit makes pagination uncommon.
+      scenario: handleArtifactQuery supports limit and offset for pagination, but does not return total count of matching results, making it impossible for clients to calculate total pages.
+      severity: Minor
+      title: No total count in paginated query results
+    - consumer: /Users/dan/code/ideate/mcp/artifact-server/src/ppr.ts (computePPR)
+      gap: "The default edge_type_weights define governed_by: 0.8 and informed_by: 0.6, but these are NOT valid edge types in EDGE_TYPES. The valid edge types that would make semantic sense for PPR (like belongs_to_domain, derived_from, triggered_by) have no weight definitions."
+      id: II1
+      interface: PPR configuration / edge type registry
+      producer: /Users/dan/code/ideate/mcp/artifact-server/src/config.ts (DEFAULT_PPR_CONFIG.edge_type_weights)
+      recommendation: Defer — The fallback behavior (weight 1.0 for unknown types) handles this gracefully, and the phantom entries don't cause failures. A cleanup pass would improve conceptual clarity but is not urgent.
+      severity: Minor
+      title: Edge types in PPR config don't match EDGE_TYPE_REGISTRY
+    - current_state: Most tool descriptions now include response size hints (e.g., 'Returns array (up to 200 items).' for artifact_query). However, some tools like ideate_get_domain_state do not indicate expected response size ('Returns JSON with domain data.' is vague).
+      expectation: P-34 states 'MCP tool descriptions must be surgical — every word costs tokens on every request. Keep descriptions under 50 words, specify when to use, response size expectations.'
+      gap: Inconsistent response size expectations across tools. ideate_get_domain_state, ideate_get_convergence_status, ideate_get_project_status, and ideate_get_execution_status descriptions could benefit from size hints.
+      id: IR1
+      recommendation: Defer — Most critical tools have size hints. Polish can be done incrementally.
+      severity: Minor
+      title: Tool descriptions should indicate response size expectations
+  significant: []
+incomplete_integrations: []
+missing_requirements: []
+reviewer: gap-analyst
+verdict: Pass
+content_hash: d652dbe48b14f854df930bf1b682a14d1313d87282dfea84c01539ec38de8dfc
+token_count: 891
+file_path: .ideate/cycles/066/gap-analysis.yaml

@@ -1,0 +1,11 @@
+id: P-38
+type: domain_policy
+domain: agent-system
+status: active
+established: 2
+amended: null
+derived_from:
+  - GP-08
+  - D-122
+description: "When verifying or asserting MCP tool names in skill documentation, agents must check the tool registration in source code (tools/index.ts TOOLS array and dispatcher cases), not derived documentation such as marketplace manifests, deferred-tools lists, or cached tool inventories. Derived sources may reflect stale or intermediate naming from prior versions."
+file_path: .ideate/policies/P-38.yaml

@@ -1,0 +1,24 @@
+id: WI-384
+type: work_item
+title: Close obsolete questions and update domain state
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: .ideate/questions/Q-08.yaml
+  - op: modify
+    path: .ideate/questions/Q-09.yaml
+depends: []
+blocks: []
+criteria:
+  - Q-08 status changed from 'open' to 'obsolete' with resolution explaining it is out of scope for ideate (subagent recursion is a Claude Code limitation, not an ideate issue)
+  - Q-09 status changed from 'open' to 'obsolete' with resolution explaining that outpost is not part of this project and the README should not reference external repositories without verification
+  - "ideate_get_domain_state() returns accurate counts: total questions minus closed items"
+domain: artifact-structure
+notes: "# WI-384: Close obsolete questions and update domain state"
+resolution: null
+cycle_created: null
+cycle_modified: 2
+content_hash: 8e18d530141a09152458ec011dab3e2490aae87f0a4f69603751bfea60d52618
+token_count: 218
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-384.yaml

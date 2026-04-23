@@ -1,0 +1,13 @@
+id: D-83
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-171 removed the `interview_responses` table entirely: DDL, Drizzle table definition, `InterviewResponse` TypeScript interface, union member, and all dispatch entries deleted. `CURRENT_SCHEMA_VERSION` incremented from 5 to 6. WAL and SHM companion files are deleted on mismatch. Any existing `index.db` at version 5 is deleted and rebuilt from YAML on next startup. Resolves Q-59."
+rationale: The table was dead schema — no migration code produced `interview_response` records and the table was permanently empty. `checkSchemaVersion` enforces GP-8 by triggering delete-and-rebuild on version mismatch.
+cycle_created: 1
+cycle_modified: null
+content_hash: cdf648b66befa238b331f5774771c96ed95ad0ea3f94e522e3b0b0d054c0790a
+token_count: 205
+file_path: .ideate/decisions/D-83.yaml

@@ -4,70 +4,113 @@ title: Fix stale archive path in three agent definitions
 status: obsolete
 complexity: low
 scope:
-  - {path: agents/spec-reviewer.md, op: modify}
-  - {path: agents/gap-analyst.md, op: modify}
-  - {path: agents/journal-keeper.md, op: modify}
+  - path: agents/spec-reviewer.md
+    op: modify
+  - path: agents/gap-analyst.md
+    op: modify
+  - path: agents/journal-keeper.md
+    op: modify
 depends: []
 blocks: []
 criteria:
-  - "No occurrences of `reviews/incremental/` remain in agents/spec-reviewer.md, agents/gap-analyst.md, or agents/journal-keeper.md"
-  - "Each file now references `archive/incremental/` where it previously referenced `reviews/incremental/`"
-  - "`grep -r \"reviews/incremental\" agents/` returns zero matches"
+  - >-
+    No occurrences of `reviews/incremental/` remain in agents/spec-reviewer.md, agents/gap-analyst.md, or
+    agents/journal-keeper.md
+  - Each file now references `archive/incremental/` where it previously referenced `reviews/incremental/`
+  - '`grep -r "reviews/incremental" agents/` returns zero matches'
 module: null
 domain: null
-notes: |
+notes: >
   # WI-099: Fix stale archive path in three agent definitions
-  
+
+
   ## Context
-  
-  Three agent definition files still reference `reviews/incremental/` — a path that no longer exists. The current path is `archive/incremental/`. This causes agents to silently find nothing when loading prior incremental review context, degrading deduplication (spec-reviewer), synthesis (journal-keeper), and gap analysis context (gap-analyst) on every review cycle.
-  
+
+
+  Three agent definition files still reference `reviews/incremental/` — a path that no longer exists. The current path
+  is `archive/incremental/`. This causes agents to silently find nothing when loading prior incremental review context,
+  degrading deduplication (spec-reviewer), synthesis (journal-keeper), and gap analysis context (gap-analyst) on every
+  review cycle.
+
+
   ## Changes Required
-  
+
+
   Three one-line fixes:
-  
+
+
   ### agents/spec-reviewer.md — line 26
-  
+
+
   Current:
+
   ```
-  You may also receive incremental review results from `reviews/incremental/`. Read these to avoid duplicating findings already caught.
+
+  You may also receive incremental review results from `reviews/incremental/`. Read these to avoid duplicating findings
+  already caught.
+
   ```
-  
+
+
   Change to:
+
   ```
-  You may also receive incremental review results from `archive/incremental/`. Read these to avoid duplicating findings already caught.
+
+  You may also receive incremental review results from `archive/incremental/`. Read these to avoid duplicating findings
+  already caught.
+
   ```
-  
+
+
   ### agents/gap-analyst.md — line 24
-  
+
+
   Current:
+
   ```
+
   - Any incremental reviews from `reviews/incremental/`
+
   ```
-  
+
+
   Change to:
+
   ```
+
   - Any incremental reviews from `archive/incremental/`
+
   ```
-  
+
+
   ### agents/journal-keeper.md — line 20
-  
+
+
   Current:
+
   ```
+
   - All incremental reviews from `reviews/incremental/`
+
   ```
-  
+
+
   Change to:
+
   ```
+
   - All incremental reviews from `archive/incremental/`
+
   ```
-  
+
+
   ## Verification
-  
+
+
   After changes: `grep -r "reviews/incremental" agents/` should return zero matches.
-resolution: "Agent definitions have been rewritten multiple times. Stale archive paths fixed in later cycles."
+resolution: Agent definitions have been rewritten multiple times. Stale archive paths fixed in later cycles.
 cycle_created: 1
 cycle_modified: null
 content_hash: c2572a3513aa8fe9f6b95158226567c01f7f6ed6d5bc7b51db056ab574894f79
 token_count: 523
-file_path: .ideate/work-items/WI-099.yaml
+file_path: work-items/WI-099.yaml

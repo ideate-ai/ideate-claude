@@ -7,10 +7,10 @@ scope:
   - path: mcp/artifact-server/src/tools/execution.ts
     op: create
 depends:
-  - "184"
+  - '184'
 blocks:
-  - "190"
-  - "191"
+  - '190'
+  - '191'
 criteria:
   - ideate_get_execution_status accepts artifact_dir parameter
   - Returns completed items (cross-references incremental review verdicts + journal entries)
@@ -21,70 +21,106 @@ criteria:
   - ideate_get_review_manifest accepts artifact_dir and optional cycle_number parameter
   - Joins work items with incremental reviews by work item ID
   - Extracts verdict (Pass/Fail) and finding counts (C/S/M) from review files
-  - "Returns markdown table: #, Title, File Scope, Incremental Verdict, Findings (C/S/M), Work Item Path, Review Path"
+  - 'Returns markdown table: #, Title, File Scope, Incremental Verdict, Findings (C/S/M), Work Item Path, Review Path'
   - Items without reviews show None for verdict
   - Read-only — no file side-effect write
 module: null
 domain: null
-notes: |
+notes: >
   # WI-187: Execution Status Tools
+
 
   ## ideate_get_execution_status
 
+
   ### Query Strategy
+
   1. Get all work items: `SELECT n.id, n.status, w.title, w.depends FROM nodes n JOIN work_items w ON w.id = n.id`
-  2. Get incremental review verdicts: scan `archive/incremental/*.md` files (or query findings table for incremental reviews). Cross-reference with journal entries for `Status: complete` lines.
+
+  2. Get incremental review verdicts: scan `archive/incremental/*.md` files (or query findings table for incremental
+  reviews). Cross-reference with journal entries for `Status: complete` lines.
+
   3. Build `completed_items` set: items with both passing review AND journal completion entry.
+
   4. Build `pending_items`: items NOT in completed set.
+
   5. For each pending item, check if all `depends` entries are in completed set:
      - If yes → `ready` (dependencies satisfied)
      - If no → `blocked` (list unsatisfied dependencies)
 
   ### Response Format
+
   ```markdown
+
   ## Execution Status
 
+
   Completed: {N} ({id-list})
+
   Pending: {N} ({id-list})
+
   Ready to execute: {N} ({id-list})
+
   Blocked: {N}
+
   - {id} blocked by: {dep1}, {dep2}
+
   - ...
 
+
   Total: {N}
+
   ```
 
+
   ### Edge case
-  If no work items exist or no incremental reviews exist, return all items as pending with dependencies from the work item specs.
+
+  If no work items exist or no incremental reviews exist, return all items as pending with dependencies from the work
+  item specs.
+
 
   ## ideate_get_review_manifest
 
+
   ### Query Strategy
+
   1. Get all work items: `SELECT n.id, w.title, w.scope FROM nodes n JOIN work_items w ON w.id = n.id`
+
   2. Scan `archive/incremental/*.md` files — for each, extract:
      - Work item ID from filename (NNN prefix)
      - Verdict from `## Verdict: {Pass|Fail}` line
      - Finding counts by counting `### C`, `### S`, `### M` headings
   3. LEFT JOIN work items with reviews by ID
 
+
   ### Response Format
+
   ```markdown
+
   # Review Manifest — Cycle {N}
+
 
   ## Work Items
 
+
   | # | Title | File Scope | Incremental Verdict | Findings (C/S/M) | Work Item Path | Review Path |
+
   |---|---|---|---|---|---|---|
+
   | 181 | Schema v7 DDL | schema.ts | Pass | 0/0/1 | work-items.yaml#181 | archive/incremental/181-schema-v7.md |
+
   ```
+
 
   Items without reviews: verdict = "None", findings = "—", review path = "—".
 
+
   ### Read-only
+
   No file side-effect. The review skill writes the manifest file itself using this tool's response content if needed.
 cycle_created: 1
 cycle_modified: null
 content_hash: f1246438017d96404e5a7ad627cad5b7898370fc80915f0dbb1d683c25c577e2
 token_count: 857
-file_path: .ideate/work-items/WI-187.yaml
-resolution: "Verified complete: handleGetExecutionStatus and handleGetReviewManifest"
+file_path: work-items/WI-187.yaml
+resolution: 'Verified complete: handleGetExecutionStatus and handleGetReviewManifest'

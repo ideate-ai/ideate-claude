@@ -1,0 +1,42 @@
+id: spec-adherence
+type: cycle_summary
+scope: full-audit-20260328
+reviewer: spec-reviewer
+content: |-
+  ## Spec Adherence Review — Full Audit 2026-03-28
+
+  **Verdict**: Fail
+  **Principle Violation Verdict**: Fail
+
+  ## Architecture Deviations
+
+  ### D1: ARCHITECTURE.md config.ts source file entry incomplete (OQ-4)
+  - ARCHITECTURE.md:682 lists 4 exports; config.ts exports 11 symbols. Missing: writeConfig, readRawConfig, readIdeateConfig, findIdeateConfig, resolveArtifactDir, createIdeateDir, IdeateConfig, IDEATE_SUBDIRS, CONFIG_SCHEMA_VERSION.
+
+  ### D2: ARCHITECTURE.md missing null-signal documentation (OQ-3)
+  - ideate_update_config described as 'deep-merge' only; null-signal deletion for model_overrides not mentioned.
+
+  ### D3: handleGetContextPackage implementation vs ARCHITECTURE.md section 9.3 mismatch
+  - Architecture specifies a 'Full Document Paths' section; context.ts assembles only 4 sections. Needs investigation.
+
+  ## Principle Violations
+
+  ### P1: P-33 violated in tool descriptions
+  - index.ts:586 ideate_bootstrap_project: 'Create .ideate/ directory with config.json'
+  - index.ts:662 ideate_update_config: 'Update .ideate/config.json settings'
+  - index.ts:244 ideate_append_journal: 'Append entry to journal.md'
+
+  ### P2: P-35 violated (D1, D2)
+
+  ## Minor Findings
+
+  ### N1: bootstrap description says 'Returns JSON with paths' but returns subdirectory names
+  ### N2: ideate_append_journal description references 'journal.md'
+
+  ## Principle Adherence Evidence
+  - GP-14: All 9 autopilot SKILL.md autopilot state calls use ideate_manage_autopilot_state. No .ideate/ paths in skill docs.
+  - P-16: plugin.json and marketplace.json both version 3.4.0.
+  - P-17: writeConfig called only from bootstrap and handleUpdateConfig.
+content_hash: bd85662b7f5d8f4f5a7ebf4054118b0f1b06f250d470ceaedd7cd283ffd0f806
+token_count: 440
+file_path: .ideate/cycles/000/spec-adherence.yaml

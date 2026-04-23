@@ -2,42 +2,5 @@ id: interviews/refine-017/_general
 type: interview
 cycle: 17
 source_path: steering/interviews/refine-017/_general.md
-entries:
-  - id: IQ-017-001
-    question: "Guiding principles still hold?"
-    answer: "Yes."
-    domain: null
-    seq: 1
-  - id: IQ-017-002
-    question: "Existing 7 MCP read tools — rewrite against new index in this phase, or remove and recreate later?"
-    answer: "Remove them entirely. They were built against the markdown backend. Recreate intentionally as needed in later phases. If they're not needed for this phase, they shouldn't exist."
-    domain: null
-    seq: 2
-  - id: IQ-017-003
-    question: "Directory structure — mirror current specs/ layout or reorganize?"
-    answer: |-
-      Create `.ideate/` directory at project root alongside `.git/`. Type-organized directories (work-items/, findings/, policies/) instead of phase-organized (steering/, plan/, archive/).
-    domain: null
-    seq: 3
-  - id: IQ-017-004
-    question: "Coexistence with old format during transition?"
-    answer: "Hard cutover. No coexistence. Migration converts once, new format is source of truth. Skills break until Phase 4 — accepted."
-    domain: null
-    seq: 4
-  - id: IQ-017-005
-    question: "Artifact format — YAML with markdown body, or pure YAML?"
-    answer: "YAML everywhere. No markdown bodies. Markdown is human-readable but YAML is more compact and easier to parse. Create tools to convert to human-readable markdown for reporting tasks."
-    domain: null
-    seq: 5
-  - id: IQ-017-006
-    question: "Journal — database-only or flat file?"
-    answer: "Flat YAML file. SQLite is purely for fast lookups and indexing."
-    domain: null
-    seq: 6
-  - id: IQ-017-007
-    question: "Archive structure — type-organized or cycle-organized?"
-    answer: "Keep archive/cycles/{NNN}/ for cycle-scoped review artifacts to avoid massive directories. Everything is indexed in SQLite for cross-cycle queries."
-    domain: null
-    seq: 7
-content_hash: "35676e540505766c0892c904b5aa5f52168de514cb173066d5ee34c5682f7df6"
+content_hash: 35676e540505766c0892c904b5aa5f52168de514cb173066d5ee34c5682f7df6
 token_count: 470

@@ -1,0 +1,30 @@
+id: WI-254
+type: work_item
+title: Fix autopilot review phase output file references from .md to .yaml
+status: done
+complexity: medium
+scope:
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends:
+  - WI-251
+blocks: []
+criteria:
+  - All review output file references changed from .md to .yaml
+  - All ideate_write_artifact calls include cycle parameter
+  - spec-adherence.md references in convergence checking updated to spec-adherence.yaml
+  - review-manifest.md references updated to review-manifest.yaml
+  - Zero .md output file references in operational instructions
+domain: workflow
+notes: |-
+  # WI-254: Brrr Review Phase .md → .yaml
+
+  Same as WI-253 but for skills/autopilot/phases/review.md. Also update the convergence check in autopilot/SKILL.md that reads spec-adherence.md — but that file is in autopilot/SKILL.md scope (WI-252 covers it).
+
+  Actually, the convergence check in autopilot/SKILL.md references spec-adherence.md at lines 191-201. WI-252 touches SKILL.md so this should be covered there.
+resolution: null
+cycle_created: 33
+cycle_modified: null
+content_hash: 3285df537c94245e5ef5cd539e9c1e770e7f033fae85e23b31ced51593fef52c
+token_count: 263
+file_path: .ideate/work-items/WI-254.yaml

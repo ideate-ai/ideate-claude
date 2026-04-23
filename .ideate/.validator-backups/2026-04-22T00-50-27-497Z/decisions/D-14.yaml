@@ -1,0 +1,13 @@
+id: D-14
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: All `IDEATE_*` env vars in session-spawner were renamed to `OUTPOST_*` and the server name was updated to `outpost-session-spawner`.
+rationale: Session-spawner is user-facing configuration configured fresh per installation, so renaming aligns outward identity with project ownership without breaking existing deployments (archive/cycles/001/decision-log.md D4).
+cycle_created: 1
+cycle_modified: null
+content_hash: "459386cf12a9d0b8cf6c80f14fe6b1f5aee44d0096c17733b8740e6b8157788e"
+token_count: 144
+file_path: .ideate/decisions/D-14.yaml

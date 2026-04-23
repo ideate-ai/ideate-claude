@@ -1,0 +1,30 @@
+id: CQ-072
+type: cycle_summary
+title: Code Quality Review — Cycle 7
+reviewer: code-reviewer
+verdict: Fail
+content: |-
+  ## Verdict: Fail
+
+  One significant finding.
+
+  ## Significant Findings
+
+  ### S1: report.sh missing `if false` dead-code wrapper — deviates from sibling format
+  - **File**: `scripts/report.sh:10`
+  - **Issue**: The three sibling scripts (report-cycle.sh, report-cost.sh, report-executive.sh) all wrap the legacy code body in `# --- DEPRECATED CODE BELOW ---` + `# shellcheck disable=all` + `if false; then ... fi`. report.sh ends at `exit 1` (line 9) then the legacy Python body begins at line 11 without any guard. The legacy body is unreachable (exit 1 precedes it) but shellcheck will lint it and the dead-code quarantine convention is not followed.
+  - **Suggested fix**: Add `# --- DEPRECATED CODE BELOW (retained for reference only) ---\n# shellcheck disable=all\nif false; then` after exit 1 and close with `fi` at end of file.
+
+  ## Confirmed Fixed
+
+  - WI-429 resolveContent null guard: `if (row.da_content !== null && row.da_content !== undefined)` at analysis.ts:131. Empty string no longer treated as absent.
+  - WI-429 non-string content guard: console.warn fires before return null at analysis.ts:138-139. Does not fall through to raw JSON.
+  - WI-429 adherenceRow two-phase selection: SA-* prefix checked first, includes('adherence') only as fallback. analysis.ts:118-120.
+  - WI-429 dist rebuilt: dist/tools/analysis.js reflects all three source changes.
+  - WI-430 README: all four deprecated scripts noted, ideate_get_metrics referenced.
+  - WI-430 deletePhase chained form: ctx.db.transaction(...).exclusive() at write.ts:306-310.
+  - WI-430 dist/write.js rebuilt.
+  - 501 tests pass.
+content_hash: 6591ccea507557373aebc7951b73d79876dc72fd95a7fa3e4a366ee6f1d0f1c8
+token_count: 431
+file_path: .ideate/cycles/072/CQ-072.yaml

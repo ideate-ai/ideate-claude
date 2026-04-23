@@ -1,47 +1,90 @@
 id: spec-adherence
 type: cycle_summary
 reviewer: spec-reviewer
-content: |
+content: >
   # Cycle 31 Capstone — Spec Adherence
+
 
   **Verdict:** Conditional Pass — 1 Significant, 3 Minor
 
+
   **Principle Adherence Verdict:** Pass (GP-14, P-37, P-88, P-49 all satisfied with evidence)
 
+
   ## Architecture Deviations
+
   None.
+
 
   ## Unmet Acceptance Criteria
 
+
   ### SA-S1 (WI-869, Criterion 2): adapter-interface.md clause omits 'empty-string'
-  adapter-contract.md says 'non-null, non-empty'. adapter-interface.md:409 says only 'non-null'. Spec required 'the same filtering clause'. Runtime behavior is equivalent (SQLite IS NULL excludes empty string), but a downstream implementer reading interface.md in isolation could implement 'non-null only' filtering and miscount empty-string findings.
+
+  adapter-contract.md says 'non-null, non-empty'. adapter-interface.md:409 says only 'non-null'. Spec required 'the same
+  filtering clause'. Runtime behavior is equivalent (SQLite IS NULL excludes empty string), but a downstream implementer
+  reading interface.md in isolation could implement 'non-null only' filtering and miscount empty-string findings.
+
   - Required: add 'or empty-string' / 'non-empty' to match adapter-contract.md wording.
 
+
   ### SA-M1 (WI-869, Criterion 4): tools/index.ts tool description omits 'principle verdict'
-  Criterion prescribes ending the description with 'principle verdict. Use to check if cycle converged.'. Actual description drops 'principle verdict' and adds 'Returns ~300 chars.'. Tool does return principle_verdict in its output (analysis.ts:141), so the omission understates the surface.
+
+  Criterion prescribes ending the description with 'principle verdict. Use to check if cycle converged.'. Actual
+  description drops 'principle verdict' and adds 'Returns ~300 chars.'. Tool does return principle_verdict in its output
+  (analysis.ts:141), so the omission understates the surface.
+
   - Required: restore 'principle verdict' to the description.
 
+
   ### SA-M2 (WI-870, Criterion 3): WI-860 P-49 backfill assessment incomplete
-  WI-860 notes cite P-49 ('backfill implementing P-49 semantics in the query layer') but lack the explicit visibility statement specified by WI-870: 'Existing findings with addressed_by set will become invisible to convergence checks immediately. No data migration required; this is the intended behavior — resolved findings should not count toward convergence. Pre-existing findings without addressed_by are unaffected.'
+
+  WI-860 notes cite P-49 ('backfill implementing P-49 semantics in the query layer') but lack the explicit visibility
+  statement specified by WI-870: 'Existing findings with addressed_by set will become invisible to convergence checks
+  immediately. No data migration required; this is the intended behavior — resolved findings should not count toward
+  convergence. Pre-existing findings without addressed_by are unaffected.'
+
   - Required: refine WI-860 notes with the explicit backfill statement.
 
+
   ### SA-M3 (WI-870, Criterion 4): WI-860 reproducer missing before-fix contrast
-  Reproducer states only the post-fix outcome ('observe condition_a == true'). WI-870 criterion 4 required the before-fix contrast ('Before the fix: returns significant≥1, condition_a=false').
+
+  Reproducer states only the post-fix outcome ('observe condition_a == true'). WI-870 criterion 4 required the
+  before-fix contrast ('Before the fix: returns significant≥1, condition_a=false').
+
   - Required: expand reproducer with the before-fix state.
 
+
   ## Principle Adherence Evidence
-  - **GP-14**: work item artifacts carry content_hash and token_count fields consistent with server-side write path, confirming MCP tool use.
-  - **P-37**: all five modified work items (WI-860, WI-867, WI-868, WI-869, WI-870) show cycle_modified: 27 and MCP-computed metadata. WI-870 resolution states updates persisted via ideate_update_work_items per P-37.
-  - **P-88 (resolved-finding exclusion)**: reader.ts:804 (countNodes severity) and reader.ts:931 (getConvergenceData) both carry 'AND addressed_by IS NULL'. Symmetric.
+
+  - **GP-14**: work item artifacts carry content_hash and token_count fields consistent with server-side write path,
+  confirming MCP tool use.
+
+  - **P-37**: all five modified work items (WI-860, WI-867, WI-868, WI-869, WI-870) show cycle_modified: 27 and
+  MCP-computed metadata. WI-870 resolution states updates persisted via ideate_update_work_items per P-37.
+
+  - **P-88 (resolved-finding exclusion)**: reader.ts:804 (countNodes severity) and reader.ts:931 (getConvergenceData)
+  both carry 'AND addressed_by IS NULL'. Symmetric.
+
   - **P-49 (findings lifecycle)**: cited in WI-860:17 and WI-868:31 backfill assessment.
 
+
   ## WI-868 Criterion 2 Judgment
-  The spec said: 'writer.ts uses || instead of ?? **(or equivalent explicit empty-string guard)** so empty string coerces to null at write time.' The worker kept ?? and argues reader-side IS NULL is equivalent. **Defensible per the escape hatch.** SQLite IS NULL evaluates false for empty strings, so countNodes and getConvergenceData both exclude empty-string addressed_by findings from their result sets. The two new WI-868 regression tests assert this correctly. Criterion 2 is met via the spec's authorized escape hatch; judgment consistent with GP-2.
+
+  The spec said: 'writer.ts uses || instead of ?? **(or equivalent explicit empty-string guard)** so empty string
+  coerces to null at write time.' The worker kept ?? and argues reader-side IS NULL is equivalent. **Defensible per the
+  escape hatch.** SQLite IS NULL evaluates false for empty strings, so countNodes and getConvergenceData both exclude
+  empty-string addressed_by findings from their result sets. The two new WI-868 regression tests assert this correctly.
+  Criterion 2 is met via the spec's authorized escape hatch; judgment consistent with GP-2.
+
 
   ## Cross-Cutting Alignment
-  Cycle 30 flagged that getConvergenceData and countNodes severity had identical semantic purpose but different filtering. WI-868 aligned them. Verified: both now use AND addressed_by IS NULL in the same form. Alignment is actual, not just claimed.
+
+  Cycle 30 flagged that getConvergenceData and countNodes severity had identical semantic purpose but different
+  filtering. WI-868 aligned them. Verified: both now use AND addressed_by IS NULL in the same form. Alignment is actual,
+  not just claimed.
 content_hash: 40f9ef1b8c9fc16c17b1c9cd9909deae58fbc64f4a2bb812dd2200b69caeffd2
 token_count: 977
-file_path: .ideate/cycles/068/spec-adherence.yaml
+file_path: cycles/031/spec-adherence.yaml
 cycle: 31
 cycle_modified: 27

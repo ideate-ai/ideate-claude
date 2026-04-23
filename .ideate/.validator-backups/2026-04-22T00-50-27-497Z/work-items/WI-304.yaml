@@ -1,0 +1,50 @@
+id: WI-304
+type: work_item
+title: Metadata and version fixes
+status: done
+complexity: low
+scope:
+  - path: .claude-plugin/marketplace.json
+    op: modify
+  - path: .claude-plugin/plugin.json
+    op: modify
+  - path: mcp/artifact-server/package.json
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - marketplace.json version matches plugin.json version
+  - mcp/artifact-server/package.json version matches plugin.json version
+  - All three version fields are the same value (3.1.0 or whatever the current plugin.json version is)
+  - "Note in resolution: Q-075 and Q-076 referenced in cycle 034 summary never existed as artifact files — no action needed"
+domain: project-boundaries
+notes: |-
+  # WI-304: Metadata and version fixes
+
+  ## Overview
+  Cycle 034 identified marketplace.json version (3.0.2) not matching plugin.json (3.0.5). The architect analysis also found mcp/artifact-server/package.json at 3.0.5 vs plugin.json at 3.1.0. Policy P-16 requires version sync.
+
+  ## Changes
+
+  ### Version sync
+  Read the current version from `.claude-plugin/plugin.json`. Update:
+  - `.claude-plugin/marketplace.json` version field to match
+  - `mcp/artifact-server/package.json` version field to match
+
+  The plugin.json version (currently 3.1.0) is authoritative.
+
+  ### Q-075/Q-076 resolution
+  Cycle 034 finding: 'Q-75 and Q-76 not marked resolved after WI-192 fixed the CTE bugs they describe.'
+
+  Investigation during this refinement found that Q-075 and Q-076 do not exist as artifact files in any location (.ideate/questions/, .ideate/domain_question/, or .ideate/domain_file/). They were referenced only in the cycle 034 summary text. No action is needed — this finding is resolved by documenting their non-existence.
+
+  ## Files
+  - `.claude-plugin/marketplace.json` — bump version
+  - `.claude-plugin/plugin.json` — read only (authoritative version source)
+  - `mcp/artifact-server/package.json` — bump version
+resolution: null
+cycle_created: 40
+cycle_modified: null
+content_hash: 48caa4f06fd8a314bacffad337ce462689b3784bfd91977e86294e6cfa862824
+token_count: 493
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-304.yaml

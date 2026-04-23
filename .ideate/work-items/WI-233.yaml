@@ -21,10 +21,10 @@ criteria:
   - description: All {artifact-dir} placeholders changed to {project_root} in review and refine skills
     verification_method: grep_search
 domain: workflow
-notes: "# WI-233: Standardize path placeholders to {project_root}"
+notes: '# WI-233: Standardize path placeholders to {project_root}'
 resolution: null
 cycle_created: null
 cycle_modified: null
 content_hash: 25f20bd74d26610b1f960422b9cfe485da70d3d1902e0605cf0d18ae6c34df55
 token_count: 157
-file_path: .ideate/work-items/WI-233.yaml
+file_path: work-items/WI-233.yaml

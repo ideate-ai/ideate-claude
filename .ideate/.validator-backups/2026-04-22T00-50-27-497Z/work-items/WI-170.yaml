@@ -1,0 +1,75 @@
+id: WI-170
+type: work_item
+title: Watcher debounce
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/watcher.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/watcher.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - ArtifactWatcher applies a 500ms trailing debounce to file event callbacks
+  - N rapid file write events trigger exactly 1 rebuild invocation, not N
+  - src/index.ts watcher setup uses the debounced callback
+  - A new watcher test verifies multiple rapid events coalesce into a single callback invocation after the debounce window
+  - All existing watcher tests pass
+  - npm run build succeeds; all tests pass
+module: null
+domain: null
+notes: |
+  # WI-170: Watcher debounce
+
+  ## Problem
+
+  Each `change`/`add`/`unlink` event from chokidar triggers a full `rebuildIndex()` call immediately. When a skill or migration script writes 10+ YAML files in rapid succession, each write fires a separate event, producing N rebuilds instead of 1. Cycle 018 code review flagged this as Significant (S1).
+
+  ## Implementation
+
+  Add a 500ms trailing debounce to the event handler in `ArtifactWatcher`.
+
+  **Approach**: Use a `setTimeout`/`clearTimeout` pattern (no external dependencies).
+
+  ```typescript
+  // In watcher.ts ArtifactWatcher class or start() method:
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const debouncedCallback = () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      onRebuild(); // the actual rebuildIndex call
+    }, 500);
+  };
+
+  watcher.on('change', debouncedCallback)
+         .on('add', debouncedCallback)
+         .on('unlink', debouncedCallback);
+  ```
+
+  The 500ms window is sufficient to coalesce burst writes from any skill execution. The rebuild is idempotent so there is no correctness risk.
+
+  ## Test
+
+  Add a new integration test in `watcher.test.ts` that:
+  1. Writes 5 files in rapid succession (< 50ms apart)
+  2. Waits for the debounce window to expire (600ms)
+  3. Verifies the rebuild callback was called exactly once, not 5 times
+
+  Use the existing test setup patterns (tmp dir, ArtifactWatcher instance).
+
+  ## Files
+
+  - `mcp/artifact-server/src/watcher.ts` — add debounce logic
+  - `mcp/artifact-server/src/index.ts` — verify the callback setup uses debounce (may need no change if watcher.ts encapsulates it)
+  - `mcp/artifact-server/src/__tests__/watcher.test.ts` — add coalescing test
+cycle_created: 1
+cycle_modified: null
+content_hash: 5264f4093e694b08db900f912f71fe3b8ec99d066f8c55da04686194ace34b3f
+token_count: 669
+file_path: .ideate/work-items/WI-170.yaml
+resolution: "Verified complete: 500ms debounce with timer pattern; coalescing test passes"

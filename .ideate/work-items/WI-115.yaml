@@ -16,39 +16,66 @@ criteria:
   - No other sections in artifact-conventions.md are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-115: Add metrics.jsonl to artifact-conventions.md
+
 
   ## Context
 
-  `specs/artifact-conventions.md` is the authoritative schema reference for the artifact directory. It documents every file in the directory with Purpose, Format, Phases, and Semantics. `metrics.jsonl` is absent from both the directory tree diagram and the file specification sections, despite being:
+
+  `specs/artifact-conventions.md` is the authoritative schema reference for the artifact directory. It documents every
+  file in the directory with Purpose, Format, Phases, and Semantics. `metrics.jsonl` is absent from both the directory
+  tree diagram and the file specification sections, despite being:
+
   - Written by all five skills (autopilot, execute, review, refine via metrics instrumentation)
+
   - The sole data source for `scripts/report.sh`
+
   - Added to README.md, architecture.md, and individual SKILL.md files by WI-088–093
+
 
   This is gap G-S1 from cycle 004 gap-analysis and minor finding M2 from cycle 004 code-quality.
 
+
   ## Changes
+
 
   **File**: `specs/artifact-conventions.md`
 
+
   ### Change 1 — Directory tree
 
-  Find the directory tree at the top of the file. Add `├── metrics.jsonl` after `├── journal.md` (both are root-level files in the artifact directory).
+
+  Find the directory tree at the top of the file. Add `├── metrics.jsonl` after `├── journal.md` (both are root-level
+  files in the artifact directory).
+
 
   ### Change 2 — Add metrics.jsonl file specification section
 
+
   After the `journal.md` section, add a new section for `metrics.jsonl` following the same format as other file specs:
 
+
   ```markdown
+
   #### `metrics.jsonl`
+
   - **Purpose**: Machine-readable telemetry log for all agent spawns and review quality events
-  - **Format**: One JSON object per line (JSONL). Two event types: agent-spawn events (one per Agent tool call) and quality_summary events (one per review cycle).
-  - **Semantics**: Written by all five skills on a best-effort basis — if writing fails, execution continues without interruption. Never read by skills during execution; consumed by `scripts/report.sh` for reporting. Append-only; never overwritten.
+
+  - **Format**: One JSON object per line (JSONL). Two event types: agent-spawn events (one per Agent tool call) and
+  quality_summary events (one per review cycle).
+
+  - **Semantics**: Written by all five skills on a best-effort basis — if writing fails, execution continues without
+  interruption. Never read by skills during execution; consumed by `scripts/report.sh` for reporting. Append-only; never
+  overwritten.
+
   - **Phases**: plan (write), execute (write), review (write), refine (write), autopilot (write)
 
+
   **Agent-spawn event schema**:
+
   ```json
+
   {
     "timestamp": "<ISO8601>",
     "skill": "<plan|execute|review|refine|autopilot>",
@@ -66,10 +93,15 @@ notes: |
     "cache_write_tokens": <N or null>,
     "mcp_tools_called": []
   }
+
   ```
 
-  **Quality summary event schema** (emitted by `review` and `autopilot` skills at end of each review cycle; `skill` field is `"review"` or `"autopilot"` depending on emitter):
+
+  **Quality summary event schema** (emitted by `review` and `autopilot` skills at end of each review cycle; `skill`
+  field is `"review"` or `"autopilot"` depending on emitter):
+
   ```json
+
   {
     "timestamp": "<ISO8601>",
     "event_type": "quality_summary",
@@ -94,19 +126,27 @@ notes: |
     "work_items_reviewed": <N>,
     "andon_events": <N>
   }
+
   ```
+
   ```
+
 
   ## Acceptance Criteria
 
+
   1. `specs/artifact-conventions.md` directory tree includes `metrics.jsonl` as a root-level entry
+
   2. `specs/artifact-conventions.md` has a `metrics.jsonl` section with Purpose, Format, Phases, and Semantics
+
   3. The section includes the agent-spawn event schema
+
   4. The section includes the quality_summary event schema with the `<review|autopilot>` skill field enum
+
   5. No other sections in artifact-conventions.md are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 5bbe85cbc70b7128cb4a949d10081899326d96694fa3e40f977475aa48523efe
 token_count: 1137
-file_path: .ideate/work-items/WI-115.yaml
+file_path: work-items/WI-115.yaml
 resolution: Target file specs/artifact-conventions.md removed in v3 migration

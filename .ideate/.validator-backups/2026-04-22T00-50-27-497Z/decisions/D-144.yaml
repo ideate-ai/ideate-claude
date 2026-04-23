@@ -1,0 +1,12 @@
+id: D-144
+type: domain_decision
+domain: artifact-structure
+title: Metrics data path changed from JSONL append to YAML+SQLite
+decision: The metrics subsystem now writes individual YAML files to metrics/ subdirectory and indexes them in SQLite, replacing the previous metrics.jsonl append-only format. Existing metrics.jsonl content is discarded per user direction.
+rationale: User explicitly chose Option A (YAML+SQLite) and confirmed existing JSONL data can be discarded. YAML+SQLite aligns with the GP-08 pattern where YAML is source of truth and SQLite is derived index.
+source: cycle 1 decision-log D3; WI-415
+cycle: 1
+status: settled
+content_hash: 0b3a7354b9059e6b43169f29e1945127cb27644cb9119ea1b97a1e066909d056
+token_count: 159
+file_path: .ideate/decisions/D-144.yaml

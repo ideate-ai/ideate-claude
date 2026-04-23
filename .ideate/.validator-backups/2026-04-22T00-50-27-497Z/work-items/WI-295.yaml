@@ -1,0 +1,21 @@
+id: WI-295
+type: work_item
+title: Fix handleGetWorkItemContext double-dirname in context.ts
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - context.ts line 307 uses path.dirname(ctx.ideateDir) not path.dirname(path.dirname(ctx.ideateDir))
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: "Same fix as WI-282 but for the other occurrence. Line 307: change path.dirname(path.dirname(ctx.ideateDir)) to path.dirname(ctx.ideateDir)."
+resolution: Fixed double-dirname at line 307 of context.ts.
+cycle_created: 39
+cycle_modified: null
+content_hash: 6fd179101d9c1b02d885295756710f72e0d2699c414af02d2517fd91a6518df9
+token_count: 162
+file_path: .ideate/work-items/WI-295.yaml

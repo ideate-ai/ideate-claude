@@ -1,0 +1,32 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  ## Significant Findings
+
+  ### S1: handleUpdateConfig cannot delete keys from model_overrides — Clear model override is silently broken
+  - File: mcp/artifact-server/src/tools/config.ts:55-60
+  - The merge strategy spreads rawStored.model_overrides first, then patch.model_overrides. Any key present in rawStored but absent from the patch is preserved. The settings skill's Clear flow passes the remaining map without the cleared key — but the stored key survives the spread. Clear operation silently fails; the key persists in config.json.
+  - Fix: When patch.model_overrides is defined, treat it as the full desired state (replace semantics), not a key-level add/update. Strip empty objects after merge.
+
+  ### S2: Writing model_overrides: {} violates sparse write requirement
+  - File: mcp/artifact-server/src/tools/config.ts:55
+  - When stored config has model_overrides and patch supplies {}, condition rawStored.model_overrides !== undefined fires and merged.model_overrides = {} is written. Violates sparse write invariant established by the test suite.
+  - Fix: After building merged.model_overrides, delete the key if it is empty.
+
+  ## Minor Findings
+
+  ### M1: No test for key deletion from model_overrides via handleUpdateConfig
+  - File: mcp/artifact-server/src/__tests__/config.test.ts
+  - No test exercises removing a key from an existing model_overrides map. The sparse-write test starts from a fresh config.
+
+  ## Unmet Acceptance Criteria
+  - WI-364: 'User can clear a model override' — silently non-functional due to S1.
+
+  ## Test Suite
+  - All 416 tests pass.
+content_hash: a4773146b006e0c101bca84404752ad346a6f9b191ae93cf95de3d73466e073d
+token_count: 419
+file_path: .ideate/cycles/068/code-quality.yaml

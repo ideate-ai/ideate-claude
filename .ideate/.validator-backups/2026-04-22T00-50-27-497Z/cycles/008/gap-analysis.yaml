@@ -1,0 +1,101 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Fail
+
+  Two P-85 doc-surface gaps: adapter-method-specs.md Section 17 describes removed pre-WI-824 fallback; adapter-contract.md NodeType union missing autopilot_state.
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  ### S1: docs/platform/adapter-method-specs.md Section 17 describes removed LocalAdapter convergence behavior
+  - File: docs/platform/adapter-method-specs.md:811, 827
+  - Gap: Section 17 still states 'Looks in document_artifacts table for content. Falls back to reading YAML file from file_path' and 'da.cycle = ? OR file_path pattern %/cycles/NNN/%'. WI-824 deleted both behaviors (canonical-only path: targetRow = adherenceRow ?? summaryRow).
+  - Impact: developer reading this file to understand convergence lookup will implement or debug against removed code path.
+  - WI-824 scope was reader.ts + tools.test.ts. P-85 required enumerating all doc surfaces describing affected behavior; this one was missed.
+  - Fix: update Section 17 to describe strict canonical-only selection.
+
+  ### S2: mcp/artifact-server/docs/adapter-contract.md NodeType union missing autopilot_state (residual D5)
+  - File: mcp/artifact-server/docs/adapter-contract.md:643–673
+  - Gap: WI-826 fixed D5 in docs/platform/adapter-interface.md but not the parallel contract doc. NodeType union ends at 'domain_index' and omits 'autopilot_state' (present in adapter.ts:43 and ALL_NODE_TYPES).
+  - Impact: external adapter implementors referencing adapter-contract.md as canonical will miss autopilot_state.
+  - Fix: add 'autopilot_state' to NodeType union in adapter-contract.md.
+
+  ## Minor Findings
+
+  ### M1: ARCHITECTURE.md lines 801, 805 contain stale createAdapter / createLocalAdapter references
+  - WI-825 fixed docs/platform/architecture-overview.md (D2) but scoped away from top-level ARCHITECTURE.md.
+  - Fix: update ARCHITECTURE.md references to selectAdapter and remove createLocalAdapter mention.
+
+  ### M2: getMetricsEvents work_item and phase filters have zero contract test coverage
+  - NodeFilter documents both (adapter.ts:205, 457–458); RemoteAdapter implements both (remote/index.ts:1132–1149); neither has a contract test case.
+  - Deferred from WI-827 as M2.
+
+  ### M3: No domain policy drafted for 'da.cycle is not provenance' fact
+  - Surfaced in WI-824 rework and documented in J-071-417 + reader.ts comment, but not captured as a domain_policy or domain_decision.
+  - Analogous to P-74 (CONFIG_SCHEMA_VERSION as migration guard) — equal standing as indexer behavior invariant.
+  - Fix: domain-curator drafts policy in artifact-structure domain citing WI-824 and D-211.
+
+  ### M4: WI-817 correctly closed; no other orphans. WI-809/WI-811 are skipped IDs only.
+
+  ### M5: Integration-test coverage for WI-824 convergence-checker path is sufficient — no gap.
+
+  ## Closure check for cycle-6 findings
+  - Cycle-6 significant findings (6) and minor findings (11) addressed by cycle-7 work.
+  - Residuals surface as S1/S2 here (doc surfaces missed by P-85 enumeration).
+content_hash: 7233e5b30daeb221cfb61cc9d0b20d8c2a968ddd24d96ad479a534c8e6c54272
+token_count: 1762
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Fail
+phase: PH-045
+scope: differential cycle 8 (commits b799ccc..3377298)
+summary: Two significant gaps (worker re-sync policy undocumented; tokenProvider has no regression test) plus one minor (reader.ts:1076 da.cycle filter lacks P-86-compliance explanation). Not a correctness problem for current behavior but open risk for future regressions.
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 8
+cycle_modified: 27
+review_mode: full
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf
+critical_findings: []
+significant_findings:
+  - id: C8-GA-S1
+    title: Worker GP-14 violation recovery pattern is undocumented
+    looked_at:
+      - .ideate/policies/
+      - skills/autopilot/phases/execute.md
+      - skills/autopilot/SKILL.md
+      - .ideate/decisions/
+    expected: Policy or decision artifact codifying worker-writes-directly -> parent-re-syncs-via-MCP recovery pattern. Previously flagged by cycle-7 spec-reviewer as undocumented.
+    found: "Only WI-830.resolution string mentions it: 'P-86 domain_policy written via ideate_write_artifact (after worker GP-14 violation self-corrected by parent MCP re-sync).' GP-14 is boundary declaration, silent on recovery. P-52 says 'fix the tool' but silent on parent reconciliation. execute.md says 'report error and stop' — different path from what actually happened."
+    severity: Significant
+    recommendation: "Create new domain policy codifying: (a) workers must always use MCP tools; (b) if a worker writes .ideate/ directly, parent detects in incremental review finding and re-issues the write via MCP to establish provenance; (c) GP-14 violation still recorded as a finding (minor) even when mitigated."
+  - id: C8-GA-S2
+    title: tokenProvider field documented in AdapterConfig but has no regression test
+    looked_at:
+      - docs/platform/adapter-interface.md:787-790
+      - mcp/artifact-server/src/adapters/remote/client.ts:276-290
+      - mcp/artifact-server/src/__tests__/
+    expected: At minimum one test exercising the 401 -> tokenProvider -> retry path, given cycle 8 added tokenProvider to documented AdapterConfig in adapter-interface.md Section 7.
+    found: Zero test files reference tokenProvider. Implementation exists at client.ts:276-285 (401 handling, token rotation, retry on new token, throw on rotation failure). Neither WI-826/827/828/829/830 scoped a test. remote-adapter.test.ts tests selectAdapter wiring but not 401 rotation path.
+    severity: Significant
+    recommendation: Add test in __tests__/ (or remote-adapter.test.ts) that mocks HTTP layer to return 401, asserts tokenProvider is called, verifies retry uses new token. Also verify tokenProvider returning null throws (per client.ts:285).
+minor_findings:
+  - id: C8-GA-M1
+    title: da.cycle = ? in reader.ts:1076 lacks explanatory comment justifying P-86 compliance
+    looked_at:
+      - mcp/artifact-server/src/adapters/local/reader.ts:1069-1100
+      - .ideate/policies/P-86.yaml
+    expected: Because P-86 declares da.cycle is not a provenance guard and says reviewers should flag any SQL/TS filter using da.cycle as grouping/ownership predicate, the query at :1076 will be flagged by future reviewers.
+    found: Existing comment at :1087-1090 explains canonical filename is real provenance guard but doesn't explain why da.cycle = ? OR clause is safe (pre-filter allowing false positives eliminated by downstream endsWith check at :1093-1097). Mechanical P-86 application will flag this line.
+    severity: Minor
+    recommendation: Defer — add inline comment above :1076 in next maintenance cycle explaining da.cycle = ? is a performance hint (pre-filter), not a provenance predicate, and that the canonical filename check below is the actual provenance guard per P-86.

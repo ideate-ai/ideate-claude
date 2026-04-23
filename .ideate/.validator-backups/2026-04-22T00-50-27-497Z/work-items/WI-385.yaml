@@ -1,0 +1,33 @@
+id: WI-385
+type: work_item
+title: Fix command injection vulnerability in dispatchHook
+status: done
+complexity: medium
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/hooks.ts
+depends: []
+blocks: []
+criteria:
+  - The dispatchHook function uses spawn with explicit argument arrays instead of execSync for user-provided variables
+  - substituteVariables function escapes shell metacharacters or the hook execution path validates hook values against a whitelist of safe command patterns
+  - "P-40 policy is satisfied: no string interpolation with execSync for user-controlled content"
+domain: artifact-structure
+notes: |-
+  ## Finding
+  C1 from cycle 1 code-quality review: Command Injection Vulnerability in Hook Execution.
+
+  **File**: `mcp/artifact-server/src/hooks.ts:100-107`
+
+  **Issue**: The `dispatchHook` function executes shell commands via `execSync` with user-provided variables substituted directly into the command string. The `substituteVariables` function performs a simple string replacement using `${varName}` pattern, but the resulting command is then passed directly to `execSync` without any sanitization or escaping.
+
+  **Impact**: If the `variables` parameter contains values from untrusted sources (e.g., work item titles, domain names, user-provided content), an attacker could inject arbitrary shell commands.
+
+  ## Suggested Fix
+  Use `child_process.spawn` with explicit argument arrays instead of execSync, or escape shell metacharacters before substitution. The hook value itself should also be validated to only allow safe command patterns.
+resolution: null
+cycle_created: 1
+cycle_modified: 1
+content_hash: b2c13ddffc820315b746af9f00450ed37cf7db2ade0a325cd64964866f216810
+token_count: 406
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-385.yaml

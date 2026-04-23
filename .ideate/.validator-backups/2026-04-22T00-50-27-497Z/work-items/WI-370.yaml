@@ -1,0 +1,95 @@
+id: WI-370
+type: work_item
+title: Fix inline notes rendering in handleGetWorkItemContext and P-33 error path
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - In context.ts lines 301-323, the notes assembly section uses `workItemRow.notes` directly as inline string content — no `fs.readFileSync` call exists in this section
+  - In context.ts lines 301-323, when `workItemRow.notes` is truthy the notes content is passed to `truncateLines` and included in the output markdown under an `## Implementation Notes` heading
+  - In context.ts lines 301-323, the catch block with 'Notes file not found' message is removed (no longer needed since there is no file read)
+  - In context.ts line 959, the error fallback uses `*Content not available for ${row.id} (${row.type})*` instead of exposing `row.file_path`
+  - In tools.test.ts, a new test case in the handleGetWorkItemContext describe block inserts a work item with inline notes text in the `notes` column and verifies that handleGetWorkItemContext returns that text in the output
+  - All existing tests in tools.test.ts continue to pass
+  - "TypeScript compilation succeeds with no errors: `npx tsc --noEmit` in mcp/artifact-server/"
+domain: artifact-structure
+notes: |-
+  Two bug fixes in context.ts plus one new test.
+
+  ## Fix 1: Inline notes (lines 301-323)
+
+  The `work_items` table has a `notes TEXT` column (schema.ts line 392) that stores inline text content — not a file path. The current code at line 303 calls `fs.readFileSync(workItemRow.notes, 'utf8')` which always throws ENOENT, falling into the catch block that returns 'Notes file not found'.
+
+  Replace the entire try/catch block (lines 301-323) with direct inline content handling:
+
+  ```typescript
+  if (workItemRow.notes) {
+    const { text: notesText, truncated, total } = truncateLines(workItemRow.notes, 200);
+    const notesSection: string[] = [
+      `## Implementation Notes`,
+      "",
+      `> Source: Implementation notes`,
+      "",
+      notesText,
+    ];
+    if (truncated) {
+      notesSection.push(
+        "",
+        `*(truncated — showing 200 of ${total} lines)*`
+      );
+    }
+    sections.push(notesSection.join("\n"));
+  }
+  ```
+
+  Check whether `fs` import is still used elsewhere in context.ts (e.g., `readArtifactContent` uses it). Remove the `fs.readFileSync` call only — keep the import if other functions use `fs`.
+
+  ## Fix 2: P-33 error path (line 959)
+
+  In `handleAssembleContext`, line 959 currently reads:
+  ```typescript
+  typeSection.push("", `*Content not available for \`${row.file_path}\`*`);
+  ```
+
+  Replace with:
+  ```typescript
+  typeSection.push("", `*Content not available for ${row.id} (${row.type})*`);
+  ```
+
+  This uses the artifact's ID and type (already available on `row`) instead of the internal file system path.
+
+  ## Test addition
+
+  In tools.test.ts, add a test to the `handleGetWorkItemContext` describe block:
+
+  ```typescript
+  it("returns inline notes content from the notes column", async () => {
+    insertNode("WI-010", "work_item", { status: "pending" });
+    insertWorkItem("WI-010", "Item with notes");
+    db.prepare(`UPDATE work_items SET notes = ? WHERE id = ?`)
+      .run("These are inline implementation notes.\nLine two of notes.", "WI-010");
+
+    const result = await handleGetWorkItemContext(ctx, {
+      work_item_id: "WI-010",
+    });
+
+    expect(result).toContain("Implementation Notes");
+    expect(result).toContain("These are inline implementation notes.");
+    expect(result).toContain("Line two of notes.");
+    expect(result).not.toContain("not found");
+  });
+  ```
+
+  Use WI-010 to avoid ID collisions with existing tests. Check which IDs are already used in the test file.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 0c1415e138663e3b1df988fdc49512e567bdfa871998348c86ba2452c584295e
+token_count: 974
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-370.yaml

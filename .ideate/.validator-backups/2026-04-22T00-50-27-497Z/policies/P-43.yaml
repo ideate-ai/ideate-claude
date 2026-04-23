@@ -1,0 +1,11 @@
+id: P-43
+type: domain_policy
+description: "New modules in the ideate codebase must have unit tests covering their public interface. Minimum coverage: each exported function must have at least one test case. Integration tests are required for modules that interact with the filesystem or SQLite. No percentage threshold is enforced — the requirement is functional coverage, not line coverage."
+domain: workflow
+impact: New modules added without tests create technical debt. Future changes risk regressions. However, test coverage is already enforced through incremental review — reviewers flag untested modules as part of code quality checks.
+reexamination_trigger: When incremental review fails to catch untested modules for 3 consecutive cycles.
+source: full-audit cycle 000 EC1, Q-88 resolution
+status: active
+content_hash: 2c3d029f330137c0b9268593b05d835ad06612a2534a515d18ff543d29a57372
+token_count: 203
+file_path: .ideate/policies/P-43.yaml

@@ -1,0 +1,56 @@
+id: WI-305
+type: work_item
+title: Documentation and stale reference fixes
+status: done
+complexity: low
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: ARCHITECTURE.md
+    op: modify
+  - path: scripts/validate-specs.sh
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - skills/plan/SKILL.md Phase 3 contains no Write tool fallback language — all artifact writes use MCP tools exclusively
+  - ARCHITECTURE.md contains no references to artifact_dir parameter (replaced by {project_root} per P-33)
+  - ARCHITECTURE.md Section 9 tool signatures are accurate for the current MCP tool set
+  - scripts/validate-specs.sh references to consolidated plan/work-items.yaml format are removed or updated to reference per-file .ideate/work-items/WI-*.yaml format
+  - No new functionality is added — changes are limited to removing stale references
+domain: workflow
+notes: |-
+  # WI-305: Documentation and stale reference fixes
+
+  ## Overview
+  Addresses cycle 034 minor findings about stale references in documentation and scripts.
+
+  ## Changes
+
+  ### skills/plan/SKILL.md — Remove Write tool fallback
+  Cycle 034 spec-reviewer finding: Phase 3 retains Write tool fallback language. Per GP-08 and P-06, skills write artifacts exclusively through MCP tools. Remove any language suggesting Write tool as a fallback for artifact creation.
+
+  Search for: mentions of Write tool, fallback, direct file write in the context of artifact creation. Remove or replace with MCP-only language.
+
+  ### ARCHITECTURE.md — Fix stale references
+  1. Replace all `artifact_dir` parameter references with `{project_root}` per P-33
+  2. Update Section 9.2/9.3 tool signatures to match current MCP tool set (17 tools per architect analysis)
+  3. Remove any references to the old `specs/` directory structure
+
+  ### scripts/validate-specs.sh — Update format references
+  The script references a consolidated `plan/work-items.yaml` format (line 31 area) that predates the per-file `WI-{NNN}.yaml` structure. Either:
+  - Update to glob `.ideate/work-items/WI-*.yaml` and validate each file
+  - Or add a comment noting the script needs updating and is not currently functional for v3
+
+  The simpler option (comment + skip) is acceptable if the script is not actively used. Check git log for recent usage.
+
+  ## Files
+  - `skills/plan/SKILL.md` — remove Write fallback language
+  - `ARCHITECTURE.md` — fix artifact_dir refs, update tool signatures
+  - `scripts/validate-specs.sh` — update or annotate stale format references
+resolution: null
+cycle_created: 40
+cycle_modified: null
+content_hash: d626c2ec042f98a72dbb349ff9ffeeaeebaddedba07d352f8d11bea560d7432d
+token_count: 639
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-305.yaml

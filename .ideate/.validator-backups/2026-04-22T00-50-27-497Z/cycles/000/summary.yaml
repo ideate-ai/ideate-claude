@@ -1,0 +1,131 @@
+id: summary
+type: cycle_summary
+scope: full-audit-20260328
+verdict: Fail
+finding_counts:
+  critical: 1
+  significant: 8
+  minor: 6
+content: |-
+  # Full Audit Review Summary — 2026-03-28
+
+  **Scope**: Full project audit (all domains, full source tree)
+  **Overall Verdict**: Fail — 1 critical, 8 significant findings
+
+  ---
+
+  ## Critical Findings (1)
+
+  ### EC1: Implementation notes never rendered in handleGetWorkItemContext
+  **Source**: gap-analyst
+  **File**: `mcp/artifact-server/src/tools/context.ts:301-323`
+
+  `handleGetWorkItemContext` calls `fs.readFileSync(workItemRow.notes, 'utf8')`, treating the `notes` DB column value (inline text) as a file path. This always throws ENOENT. The catch block returns 'Notes file not found.' for every work item that has notes.
+
+  **Impact**: Every work item worker throughout this project's execution history has received no implementation notes. Workers have been executing against acceptance criteria alone, without the implementation guidance stored in work items. This has gone undetected because workers still produced code that passed incremental review.
+
+  **Fix**: Read `workItemRow.notes` directly from the DB column. No file read needed.
+
+  **Related**: ARCHITECTURE.md section 9.2 still documents the stale file-based model ('notes file is read from disk') — must be updated simultaneously.
+
+  ---
+
+  ## Significant Findings (8)
+
+  ### S1: handleAssembleContext exposes internal file path in error response (P-33 violation)
+  **Source**: code-reviewer, gap-analyst
+  **File**: `mcp/artifact-server/src/tools/context.ts:959`
+
+  Error fallback renders `row.file_path` (absolute filesystem path) in the assembled context string returned to agents: `*Content not available for \`${row.file_path}\`*`. Violates P-33 (MCP abstraction boundary). Fix: `*Content not available for ${row.id} (${row.type})*`.
+
+  ### S2: Three-way deferral signal inconsistency
+  **Source**: code-reviewer
+  **Files**: `skills/autopilot/phases/execute.md:213`, `agents/proxy-human.md:90`, `mcp/artifact-server/src/schema.ts:308`
+
+  - `execute.md:213` checks uppercase `DEFER`
+  - `proxy-human.md:90` writes `DEFERRED`
+  - `schema.ts:308` defines lowercase `"deferred"` as the authoritative value
+
+  Autopilot has never correctly detected a proxy-human deferral. All deferred Andon events have been silently treated as approved. **Fix**: Standardize on schema lowercase `"deferred"` in execute.md and proxy-human.md.
+
+  ### II1: Autopilot review phase contradicts domain-curator write protocol
+  **Source**: gap-analyst
+  **Files**: `skills/autopilot/phases/review.md:248-256`, `agents/domain-curator.md`
+
+  `review.md` instructs the domain-curator to call `ideate_write_artifact` directly. `domain-curator.md` states 'Do not write artifacts directly' — the agent returns structured content for the skill orchestrator to parse and write. Domain-curator has only Read/Glob tools, not Write tools. The standalone review skill correctly implements parse-and-write. Autopilot domain curator output is silently lost.
+
+  ### II2: Refine skill uses wrong artifact type for journal query
+  **Source**: gap-analyst
+  **File**: `skills/refine/SKILL.md:70`
+
+  Calls `ideate_artifact_query({type: "journal"})`. Correct type is `"journal_entry"`. This silently returns zero results. The refine skill has always operated without project history context.
+
+  ### P1: P-33 violated in three tool descriptions
+  **Source**: spec-reviewer
+  **File**: `mcp/artifact-server/src/tools/index.ts`
+
+  Three tool descriptions expose internal `.ideate/` paths:
+  - Line 586 (`ideate_bootstrap_project`): 'Create .ideate/ directory with config.json'
+  - Line 662 (`ideate_update_config`): 'Update .ideate/config.json settings'
+  - Line 244 (`ideate_append_journal`): 'Append entry to journal.md'
+
+  Tool descriptions are surfaced as agent documentation. These violate P-33.
+
+  ### D1: ARCHITECTURE.md config.ts entry lists 4 exports; file has 11
+  **Source**: spec-reviewer
+  **File**: `ARCHITECTURE.md:682`
+
+  Missing from documentation: `writeConfig`, `readRawConfig`, `readIdeateConfig`, `findIdeateConfig`, `resolveArtifactDir`, `createIdeateDir`, `IdeateConfig`, `IDEATE_SUBDIRS`, `CONFIG_SCHEMA_VERSION`. Violates P-35 (architecture kept current).
+
+  ### D2: ARCHITECTURE.md missing null-signal deletion semantics for model_overrides
+  **Source**: spec-reviewer, gap-analyst
+  **File**: `ARCHITECTURE.md` Section 5
+
+  `ideate_update_config` described as 'deep-merge' only. The null-signal deletion behavior (`patch.model_overrides[key] = null` → delete key from stored map) is not documented. Implemented and validated in cycle 1. Violates P-35.
+
+  ### MI2: ARCHITECTURE.md section 9.2 documents stale file-based notes model
+  **Source**: gap-analyst
+  **File**: `ARCHITECTURE.md:587`
+
+  Section 9.2 says 'notes file is read from disk.' Notes are stored inline in the SQLite DB column. This is the documentation correlate of EC1 — the stale model was likely the original source of the `readFileSync` bug.
+
+  ---
+
+  ## Minor Findings (6)
+
+  - **M1**: ARCHITECTURE.md edge type count says 11; `schema.ts:EDGE_TYPE_REGISTRY` has 13 (`governed_by`, `informed_by` added)
+  - **M2**: `metrics.test.ts:55` `insertNode` helper uses `'metric_event'` instead of `'metrics_event'`
+  - **M3**: Missing closing backtick in `execute.md:269`
+  - **D3**: ARCHITECTURE.md section 9.3 specifies 'Full Document Paths' section in context package; `handleGetContextPackage` does not emit it — either unimplemented feature or stale doc (requires investigation)
+  - **MI3**: Null-signal semantics not documented in ARCHITECTURE.md Section 5 (OQ-3 from prior cycle; partially overlaps D2)
+  - **IR1**: ARCHITECTURE.md:585 mentions 'file path' in `ideate_get_work_item_context` response; code is P-33 compliant (no paths exposed) — stale doc
+
+  ---
+
+  ## Confirmed Resolved
+
+  The following open questions from prior cycles are confirmed closed by this audit:
+  - OQ-1: ideate_bootstrap_project return format — resolved
+  - OQ-2: writeConfig singleton constraint — resolved
+  - OQ-5: governed_by / informed_by edge types in EDGE_TYPE_REGISTRY — resolved
+  - OQ-6: PPR damping factor alpha range — resolved
+  - OQ-7: domain curator agent model default — resolved
+  - OQ-8: findIdeateConfig upward traversal — resolved
+  - Q-91: Null-signal deletion semantics — resolved
+
+  ---
+
+  ## Recommended Next Cycle
+
+  Refinement scope for the next cycle (prioritized):
+
+  1. **EC1** — Fix `context.ts:301-323`: read notes from DB column directly + update ARCHITECTURE.md 9.2
+  2. **S2** — Standardize deferral signal on schema lowercase `"deferred"` (execute.md, proxy-human.md)
+  3. **II1** — Fix autopilot phases/review.md domain-curator write protocol
+  4. **II2** — Fix `refine/SKILL.md:70`: change `type: "journal"` to `type: "journal_entry"`
+  5. **S1/P1** — Fix P-33 violations: context.ts:959, index.ts:586/:662/:244
+  6. **D1/D2** — Update ARCHITECTURE.md: config.ts exports, null-signal semantics, edge type count, D3 investigation
+  7. **M2** — Fix `metrics.test.ts:55` node type string
+content_hash: 33b5fdbd39b8a57b052f46b55a8712d0ff7897300dfce2bfd666a5be6ebdcc0d
+token_count: 1768
+file_path: .ideate/cycles/000/summary.yaml

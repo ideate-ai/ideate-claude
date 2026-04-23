@@ -1,0 +1,56 @@
+id: WI-004
+type: work_item
+title: Review Agents (code-reviewer, spec-reviewer, gap-analyst, journal-keeper)
+status: obsolete
+complexity: medium
+scope:
+  - {path: agents/code-reviewer.md, op: create}
+  - {path: agents/spec-reviewer.md, op: create}
+  - {path: agents/gap-analyst.md, op: create}
+  - {path: agents/journal-keeper.md, op: create}
+depends:
+  - "001"
+blocks:
+  - "007"
+  - "008"
+criteria:
+  - "### code-reviewer"
+  - "`agents/code-reviewer.md` exists with valid frontmatter"
+  - "Tools: Read, Grep, Glob, Bash"
+  - "Checks: acceptance criteria satisfaction, correctness (logic errors, race conditions, null handling), security (OWASP top 10), quality (readability, dead code, complexity), test coverage"
+  - "Output format: Verdict (Pass/Fail), Findings by severity (Critical/Significant/Minor), with file:line references and suggested fixes"
+  - Does not praise good code — only reports problems
+  - "### spec-reviewer"
+  - "`agents/spec-reviewer.md` exists with valid frontmatter"
+  - "Tools: Read, Grep, Glob"
+  - "Checks: architecture adherence, guiding principle adherence (with concrete evidence), acceptance criteria completeness, naming/pattern consistency"
+  - "Output format: Deviations from architecture, unmet acceptance criteria, principle violations, undocumented additions"
+  - Focuses on adherence, not quality (that's code-reviewer's job)
+  - "### gap-analyst"
+  - "`agents/gap-analyst.md` exists with valid frontmatter"
+  - "Tools: Read, Grep, Glob"
+  - "Identifies: missing requirements from interview, unhandled edge cases, incomplete integrations, missing infrastructure (logging, config, deployment, docs), implicit requirements"
+  - Each gap has severity and recommendation (address now vs defer with rationale)
+  - Re-reads interview transcript to catch requirements mentioned in passing
+  - "### journal-keeper"
+  - "`agents/journal-keeper.md` exists with valid frontmatter"
+  - "Tools: Read, Grep, Glob"
+  - "Produces: chronological decision log (decision, rationale, alternatives, implications) and open questions list (question, impact, who answers, consequence of inaction)"
+  - Synthesizes across all reviews without duplicating their content
+  - Connects related findings across different reviewers
+module: null
+domain: null
+notes: |
+  # Implementation Notes: 004
+  
+  All review agents should use `sonnet` — review is focused analysis, not open-ended reasoning. MaxTurns: code-reviewer 20, spec-reviewer 25, gap-analyst 25, journal-keeper 15.
+  
+  Code-reviewer should also be usable for incremental reviews during execution (scoped to a single work item's files). The same agent definition works for both incremental and comprehensive review — the difference is in the spawn prompt.
+  
+  Gap-analyst should pay special attention to "implicit requirements" — things not stated but expected by any reasonable user. Examples: error messages should be meaningful, APIs should return appropriate status codes, CLI tools should have help text.
+resolution: "All four review agents exist but have been rewritten multiple times since cycle 1. Original spec superseded."
+cycle_created: 1
+cycle_modified: null
+content_hash: "1b4a8aca54350fcca4e2aca95bd515e4e703a63d9b56d0504c0f0d61c0a9c023"
+token_count: 749
+file_path: .ideate/work-items/WI-004.yaml

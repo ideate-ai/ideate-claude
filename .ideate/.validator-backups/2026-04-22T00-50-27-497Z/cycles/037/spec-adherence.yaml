@@ -1,0 +1,43 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |
+  ## Verdict
+
+  9 of 10 criteria pass cleanly. One criterion (F-CYCLE-36-S5) partially implemented.
+
+  ## Principle Adherence
+
+  **Principle Adherence Verdict**: Pass
+
+  GP-08, GP-14/P-33, GP-02, C-07, C-13 all upheld.
+
+  ## Significant Findings
+
+  - S5 retroactive: test loops cycles 27-35 but DB empty; assertion only covers P-33 non-leakage, not verdict=pass.
+
+  ## Minor Findings
+
+  - restart.sh header comment line 12 says 'Does NOT send SIGKILL' but implementation does escalate.
+
+  ## Criteria Pass Matrix
+  - S1..S4, S6, M1, M2: Pass
+  - S5: Partial
+  - Test suite: 1500 passed
+content_hash: 5074d846c41b1608f3fe4224561c7b71cf791f234600c801cdd93ae72d875b39
+token_count: 477
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 37
+cycle_modified: 27
+verdict: Fail
+principle_verdict: Pass
+scope: WI-873 adherence to architecture, guiding principles, constraints, and 11 acceptance criteria
+summary: "ADAPTER-INTERFACE criterion partially unmet: adapter-interface.md correctly updated to non-null, non-empty, but adapter-contract.md:398 (countNodes clause) and adapter.ts:459 (countNodes JSDoc) still retain the old non-null, non-undefined, and non-empty-string phrasing. Criterion explicitly said standardize across both files. Functionality correct; documentation inconsistent across multiple surfaces. GP-14 compliance confirmed (historical worker bypass was corrected via ideate_write_artifact re-writes)."
+findings_summary:
+  critical: 0
+  significant: 1
+  minor: 0
+significant_findings_refs:
+  - F-CYCLE-33-S1
+principle_adherence_verdict: Pass
+principle_adherence_notes: "**Principle Adherence Verdict**: Pass. GP-14 MCP Abstraction Boundary compliant in final state. All 10 finding-closure YAMLs have correct addressed_by populated via merge-write semantics. No lingering direct-write code paths in WI-873 scope files."

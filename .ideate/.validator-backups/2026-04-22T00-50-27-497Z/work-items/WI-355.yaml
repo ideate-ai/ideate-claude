@@ -1,0 +1,33 @@
+id: WI-355
+type: work_item
+title: Add P-35 policy for test coverage requirements
+status: done
+complexity: small
+scope: []
+depends:
+  - WI-353
+  - WI-354
+blocks: []
+criteria:
+  - P-35 policy file created in .ideate/policies/
+  - Policy defines minimum test coverage expectation for new modules
+  - Policy specifies which test types are required (unit, integration)
+  - ARCHITECTURE.md references the policy in testing section
+domain: workflow
+notes: |-
+  Create policy P-35 defining test coverage requirements for the ideate codebase.
+
+  The policy should:
+  - Require unit tests for all new MCP tools
+  - Specify minimum test coverage for critical infrastructure (events, metrics)
+  - Define what constitutes adequate coverage (happy path, error paths, edge cases)
+
+  Files to create/modify:
+  - .ideate/policies/P-35.yaml
+  - ARCHITECTURE.md (add reference in Section 5 or testing section)
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 4d06c6b029c8be45830aa8bd5013de930dfb0d9d8ac8fef14f8aa5135e2dae5d
+token_count: 237
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-355.yaml

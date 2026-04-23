@@ -1,0 +1,14 @@
+id: Q-59
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: The `interview_responses` table is permanently empty. Structured per-domain interview queries via MCP tools return zero results. User decision required.
+source: archive/cycles/018/gap-analysis.md MR1; archive/cycles/018/decision-log.md OQ1
+resolution: WI-171 removed the `interview_responses` table entirely — DDL, Drizzle table definition, TypeScript interface, union member, and all dispatch entries. `CURRENT_SCHEMA_VERSION` bumped from 5 to 6. Any existing `index.db` at version 5 is deleted and rebuilt on next startup. See D-83.
+resolved_in: 19
+description: "The `interview_responses` table has a full schema (Drizzle table, DDL, buildRow case, TYPE_TO_TABLE entry) with `domain_tag` and `cycle` fields, but no migration code produces records with `type: \"interview_response\"`. The `interview` type maps to `document_artifacts` (holistic blobs). Is `interview_response` a Phase 2 capability for structured per-domain indexing, or should the current interview-to-document_artifacts mapping be reconsidered?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "673ea34c822e8c3baee920d1be4a1e5725dada0fe03aea1efa0dd5fa0adaf1a0"
+token_count: 301
+file_path: .ideate/questions/Q-59.yaml

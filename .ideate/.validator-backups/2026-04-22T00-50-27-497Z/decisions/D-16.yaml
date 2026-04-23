@@ -1,0 +1,13 @@
+id: D-16
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: Outpost's guiding principles and constraints were created as independent steering documents specific to MCP orchestration (12 principles), distinct from ideate's 12 SDLC-focused principles.
+rationale: Independent evolution requires independent principles; co-locating outpost principles in ideate's steering directory would re-entangle the concerns that were just separated (archive/cycles/001/decision-log.md D8).
+cycle_created: 1
+cycle_modified: null
+content_hash: "0b46655183c892eb8ee5cd39b85c11eaf247777d88daa8ee39cbc27bcbb98f63"
+token_count: 157
+file_path: .ideate/decisions/D-16.yaml

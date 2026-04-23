@@ -1,0 +1,12 @@
+id: D-150
+type: domain_decision
+domain: artifact-structure
+title: Three-way invariant test pattern for cycle-scoped artifact writes
+description: "WI-423 rework established a verification pattern for cycle-scoped writes: tests must assert that (1) the live SQLite write, (2) the serialized YAML file, and (3) an index rebuild from that YAML file all produce the same document_artifacts.cycle value. This pattern was added to tools.test.ts after the initial WI-423 implementation passed incremental review without adequate test coverage."
+rationale: The initial fix passed review but the gap-analyst identified missing roundtrip verification. The rework added explicit assertions for all three data sources, preventing regressions where one path diverges from the others.
+source: cycle 4 decision-log DL-4-03; finding F-423-001
+status: settled
+cycle: 4
+content_hash: ec14106e3784864096f1b50335d2e986839279cae7a03605be9cd8bdd9419886
+token_count: 212
+file_path: .ideate/decisions/D-150.yaml

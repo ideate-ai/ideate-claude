@@ -1,0 +1,28 @@
+id: WI-349
+type: work_item
+title: Update Q-081 status to resolved
+status: done
+complexity: small
+scope: []
+depends:
+  - WI-345
+  - WI-347
+blocks: []
+criteria:
+  - Q-081 status changed from 'open' to 'resolved'
+  - resolution field documents fix
+  - resolved_in cycle set to 066
+domain: workflow
+notes: |-
+  Update Q-081 domain question status after fixes are implemented.
+
+  Resolution: Review skill now uses MCP query instead of file globs. *.md reference changed to *.yaml. Migrated to canonical location.
+
+  File to modify:
+  - .ideate/questions/Q-081.yaml
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: eabc5cabb302f1e336eadb0a1d6bed56e85ebf7fafb79e4a8dc705e3600a32e5
+token_count: 154
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-349.yaml

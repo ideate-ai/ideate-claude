@@ -1,0 +1,39 @@
+id: WI-247
+type: work_item
+title: Double maxTurns on all agents
+status: done
+complexity: low
+scope:
+  - path: agents/code-reviewer.md
+    op: modify
+  - path: agents/spec-reviewer.md
+    op: modify
+  - path: agents/gap-analyst.md
+    op: modify
+  - path: agents/journal-keeper.md
+    op: modify
+  - path: agents/domain-curator.md
+    op: modify
+  - path: agents/decomposer.md
+    op: modify
+  - path: agents/architect.md
+    op: modify
+  - path: agents/researcher.md
+    op: modify
+  - path: agents/proxy-human.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "code-reviewer: 20→40, spec-reviewer: 25→50, gap-analyst: 25→50, journal-keeper: 15→30, domain-curator: 25→50, decomposer: 25→50, architect: 40→80, researcher: 20→40, proxy-human: 40→80"
+domain: agent-system
+notes: |-
+  # WI-247: Double maxTurns
+
+  All 9 agents get doubled maxTurns. Current limits cause reviewers to exhaust turns before writing output files.
+resolution: null
+cycle_created: 31
+cycle_modified: null
+content_hash: d6793d2a5e4e98366ef5d7962dc4bfac12a632369a721bdec0a4e724e8795fa4
+token_count: 245
+file_path: .ideate/work-items/WI-247.yaml

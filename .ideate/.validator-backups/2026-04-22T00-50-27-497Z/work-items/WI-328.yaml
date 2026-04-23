@@ -1,0 +1,76 @@
+id: WI-328
+type: work_item
+title: Rename autopilot skill to autopilot — directory, files, and all content references
+status: done
+complexity: large
+scope:
+  - path: skills/autopilot/
+    op: delete
+  - path: skills/autopilot/
+    op: create
+  - path: skills/autopilot/SKILL.md
+    op: create
+  - path: skills/autopilot/phases/execute.md
+    op: create
+  - path: skills/autopilot/phases/review.md
+    op: create
+  - path: skills/autopilot/phases/refine.md
+    op: create
+  - path: skills/autopilot/phases/reporting.md
+    op: create
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/refine/SKILL.md
+    op: modify
+  - path: skills/init/SKILL.md
+    op: modify
+  - path: agents/proxy-human.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - skills/autopilot/ directory exists with SKILL.md and phases/ subdirectory containing execute.md, review.md, refine.md, reporting.md
+  - skills/autopilot/ directory no longer exists
+  - All content in skills/autopilot/ references 'autopilot' not 'autopilot' (skill name, phase references, journal tags, metric skill field)
+  - All other skill files reference /ideate:autopilot not /ideate:autopilot
+  - agents/proxy-human.md references autopilot mode not autopilot mode
+  - SKILL.md frontmatter name field is 'autopilot'
+  - The DEFER signal name is preserved unchanged (not renamed)
+  - grep -r 'autopilot' skills/ agents/ returns no matches except historical comments if any
+domain: workflow
+notes: |-
+  ## Implementation
+
+  1. Copy `skills/autopilot/` to `skills/autopilot/`
+  2. In all files under `skills/autopilot/`:
+     - Replace `/ideate:autopilot` with `/ideate:autopilot`
+     - Replace `skill: "autopilot"` with `skill: "autopilot"` (metric fields)
+     - Replace `autopilot` with `autopilot` in SKILL.md frontmatter name
+     - Replace `autopilot-state` references with `autopilot-state` (tool names)
+     - Replace `ideate_get_autopilot_state` with `ideate_get_autopilot_state`
+     - Replace `ideate_update_autopilot_state` with `ideate_update_autopilot_state`
+     - Replace natural language references to 'autopilot' mode/phase/loop
+     - Preserve DEFER signal name unchanged
+  3. In all other skill files (plan, review, execute, refine, init):
+     - Replace `/ideate:autopilot` with `/ideate:autopilot`
+     - Replace any 'autopilot' references in prose
+  4. In agents/proxy-human.md:
+     - Replace 'autopilot' mode references with 'autopilot'
+  5. Delete `skills/autopilot/` directory
+
+  ## Key files to reference
+  - `skills/autopilot/SKILL.md` — main skill definition
+  - `skills/autopilot/phases/execute.md` — execution phase
+  - `skills/autopilot/phases/review.md` — review phase
+  - `skills/autopilot/phases/refine.md` — refine phase
+  - `skills/autopilot/phases/reporting.md` — reporting phase
+resolution: Renamed skills/autopilot/ to skills/autopilot/. All content references updated. agents/proxy-human.md updated. grep confirms zero autopilot references in skills/ and agents/.
+cycle_created: null
+cycle_modified: null
+content_hash: be435bd0ceb9265675fa6dec0b36b1ef18941ad09bf672ea2f4e2a65f10d405a
+token_count: 743
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-328.yaml

@@ -1,0 +1,64 @@
+id: WI-398
+type: work_item
+title: Add transaction boundaries to write operations
+status: done
+complexity: medium
+scope:
+  - op: modify
+    path: mcp/artifact-server/src/tools/write.ts
+depends:
+  - WI-397
+blocks: []
+criteria:
+  - YAML file writes and SQLite upserts are wrapped in proper transaction boundaries
+  - A crash between file write and DB upsert leaves the system in a recoverable state
+  - The transaction pattern is documented in code comments
+  - Tests verify transaction rollback on simulated failure
+domain: artifact-structure
+notes: |-
+  ## Context
+  The `handleWriteWorkItems` function performs multiple write operations (YAML file writes and SQLite upserts) without proper transaction boundaries. If the SQLite transaction fails after files are written, the filesystem is left in an inconsistent state.
+
+  ## Problem Location
+  - `mcp/artifact-server/src/tools/write.ts:495-581` (handleWriteWorkItems)
+
+  ## Approach
+  1. Write YAML files first (they're the source of truth)
+  2. Wrap all SQLite operations in a single transaction
+  3. If SQLite transaction fails:
+     - Log the error
+     - Attempt to clean up written YAML files (best effort)
+  4. Document the transaction semantics in code comments
+
+  ## Transaction Pattern
+  ```typescript
+  // Pseudocode
+  try {
+    // 1. Write YAML files
+    for (const item of items) {
+      fs.writeFileSync(yamlPath, yamlContent);
+    }
+    
+    // 2. SQLite transaction
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        await tx.insert(...).onConflictDoUpdate(...);
+      }
+    });
+  } catch (error) {
+    // 3. Cleanup on failure (best effort)
+    for (const yamlPath of writtenFiles) {
+      try { fs.unlinkSync(yamlPath); } catch {}
+    throw error;
+  }
+  ```
+
+  ## Verification
+  - Unit test that simulates a failure mid-transaction
+  - Verify cleanup is attempted
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: f3f288472354c3d94fd15f880a63fb7f6a760fa71ae4b2bde18b6101c843a239
+token_count: 479
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-398.yaml

@@ -1,0 +1,23 @@
+id: WI-270
+type: work_item
+title: Bump marketplace.json version to match plugin.json
+status: done
+complexity: low
+scope:
+  - path: .claude-plugin/marketplace.json
+    op: modify
+  - path: .claude-plugin/plugin.json
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - marketplace.json version field matches plugin.json version field
+  - Both files have the same version string (bump to 3.0.6 for cycle 035 changes)
+domain: project-boundaries
+notes: P-16 requires both files updated when skills/agents change. Bump both to 3.0.6 (new version for cycle 035). Update version in marketplace.json metadata.version AND plugins[0].version fields.
+resolution: Both plugin.json and marketplace.json bumped to 3.0.6
+cycle_created: 35
+cycle_modified: null
+content_hash: 21e019f378fa09fd43fcfb6a56d9bf6d77745f6f86ae9154d82df8ad921767f2
+token_count: 186
+file_path: .ideate/work-items/WI-270.yaml

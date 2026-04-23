@@ -1,0 +1,14 @@
+id: P-23
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - D-45 (smoke test infrastructure failure handling); Q-26 (smoke test blocking scenario); user decision in cycle 011 refinement interview
+established: cycle 011
+amended: null
+description: When the smoke test cannot execute at all (infrastructure failure — runner not found, environment setup error, pre-execution crash), the executor must determine whether the failure is a regression caused by this work item's changes before routing to Andon. If the failure is determined to be a regression (e.g., the work item changed config, dependencies, port bindings, or environment files and those changes are causally linked to the failure), diagnose and attempt a careful surgical fix within scope. If the fix fails or the failure is not a regression (pre-existing or environmental), route to Andon with a journal note citing the diagnostic finding. Silent treatment of infra failures as application failures is incorrect.
+cycle_created: 1
+cycle_modified: null
+content_hash: ea82fce9f87594227ee5caa1350245fbca36166b3cd0942ad7ff6890d2d5ba4d
+token_count: 274
+file_path: .ideate/policies/P-23.yaml

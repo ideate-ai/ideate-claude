@@ -1,0 +1,37 @@
+id: GA-072
+type: cycle_summary
+title: Gap Analysis — Cycle 7
+reviewer: gap-analyst
+verdict: Fail
+content: |-
+  ## Verdict: Fail
+
+  Three test coverage gaps for new resolveContent code paths.
+
+  ## Gaps Found
+
+  ### G1: No test for resolveContent with da_content = "" (empty string)
+  - **Area**: tools.test.ts handleGetConvergenceStatus suite
+  - **Missing**: Test that inserts document_artifacts row with content = "" and verifies S1 behavior (falls through to file-path fallback). Without it, regression to falsy-check form is silent.
+
+  ### G2: No test for resolveContent where JSON parses but .content is not a string
+  - **Area**: tools.test.ts handleGetConvergenceStatus suite
+  - **Missing**: Test where da_content = JSON.stringify({content: 42}) and verifies principle_verdict: unknown. The console.warn + return null path (S2 fix) is untested.
+
+  ### G3: No test for SA-* preferred over spec-adherence-* when both rows exist
+  - **Area**: tools.test.ts handleGetConvergenceStatus suite
+  - **Missing**: Test inserting both SA-NNN and spec-adherence-NNN cycle_summary rows for the same cycle with contradictory verdicts, verifying SA-* wins. The two-phase find is never tested under competitive conditions.
+
+  ### G4: report.sh deprecated body has no dead-code guard (minor)
+  - **Area**: scripts/report.sh
+  - **Missing**: if false; then ... fi wrapper around legacy Python code below exit 1 (sibling convention). Python body is unreachable but not quarantined.
+
+  ## No Gaps Found In
+
+  - README.md: report.sh listed alongside other three deprecated scripts
+  - report.sh: exit 1 with D-155 reference is present; Python body unreachable
+  - write.ts deletePhase: chained form correct; write-transaction tests remain valid
+  - dist/ rebuild: both analysis.js and write.js reflect src/ changes
+content_hash: 5fd724b23ff0ad417f04694244c4ef81fb1d450ae04838ed683ffdc778f4e354
+token_count: 450
+file_path: .ideate/cycles/072/GA-072.yaml

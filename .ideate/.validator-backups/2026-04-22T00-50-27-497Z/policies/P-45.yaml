@@ -1,0 +1,13 @@
+id: P-45
+type: domain_policy
+domain: artifact-structure
+title: Extension-table writes routed through db-helpers.ts
+rule: All Drizzle ORM extension-table write operations must route through the typed helper functions in db-helpers.ts. Direct table inserts or updates bypassing these helpers are prohibited.
+derived_from:
+  - D-132
+  - GP-08
+established: cycle 1
+status: active
+content_hash: d4dbdd881299995bae6b5c23820424ac6f286f9d474ea937bae9d3a1fc5e9985
+token_count: 94
+file_path: .ideate/policies/P-45.yaml

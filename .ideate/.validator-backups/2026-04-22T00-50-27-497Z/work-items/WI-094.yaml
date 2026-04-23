@@ -1,0 +1,146 @@
+id: WI-094
+type: work_item
+title: Metrics report script
+status: done
+complexity: high
+scope:
+  - {path: scripts/report.sh, op: create}
+depends:
+  - "092"
+  - "093"
+blocks: []
+criteria:
+  - "`scripts/report.sh` exists and is executable"
+  - "Running `scripts/report.sh --help` prints a usage message describing arguments and all report sections, then exits 0"
+  - "Running `scripts/report.sh` with no arguments attempts auto-discovery via `.ideate.json` walk; if not found, prints error to stderr and exits 1"
+  - "Running `scripts/report.sh path/to/metrics.jsonl` produces a markdown report to stdout"
+  - "Report contains exactly these H2 sections in order: Executive Summary, Per-Cycle Breakdown, Per-Task Breakdown, Phase Analysis, Agent Performance, RAG vs Flat-File Usage, Quality Trends"
+  - "Executive Summary includes: total agent spawns, total input+output tokens, total wall-clock time (human-readable), cycles completed, work items completed"
+  - "Per-Cycle Breakdown table columns: Cycle, Tokens, Wall Clock, Work Items, Critical, Significant, Minor"
+  - "Per-Task Breakdown table columns: Work Item, Tokens, Wall Clock, Spawns"
+  - "Phase Analysis table: phase, tokens, wall clock, spawns — sorted by tokens descending"
+  - "Agent Performance table: agent type, total tokens, avg tokens, total time, avg time, avg turns — sorted by total tokens descending"
+  - RAG vs Flat-File Usage section shows per-skill percentage of spawns with non-empty mcp_tools_called; top MCP tools by call count
+  - Quality Trends section shows per-cycle finding counts by severity with trend indicator (improving/stable/degrading)
+  - Null token values treated as 0 in all aggregations
+  - Script uses Python 3 for JSON parsing; checks for python3 availability and exits with error if not found
+  - Script handles empty or missing metrics.jsonl gracefully
+module: null
+domain: null
+notes: |
+  # Implementation Notes: 094 — Metrics report script
+  
+  ## Architecture
+  
+  `scripts/report.sh` is a bash wrapper that embeds an inline Python 3 script via heredoc. Python handles all JSON parsing and report generation.
+  
+  ```bash
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  if ! command -v python3 &>/dev/null; then
+      echo "Error: python3 is required but not found on PATH" >&2
+      exit 1
+  fi
+  
+  python3 - "$@" << 'PYTHON_SCRIPT'
+  # ... Python code ...
+  PYTHON_SCRIPT
+  ```
+  
+  ## Auto-discovery logic
+  
+  1. If first arg is a file path, use it
+  2. If no args, walk from CWD upward (max 10 levels) looking for `.ideate.json`
+  3. Parse `.ideate.json`, read `artifact_dir`
+  4. Resolve `artifact_dir` relative to `.ideate.json` location, append `/metrics.jsonl`
+  5. If not found: print `"Error: no metrics.jsonl found. Provide a path or run from a directory with .ideate.json"` to stderr; exit 1
+  
+  ## Python implementation
+  
+  Use only stdlib: `json`, `sys`, `os`, `collections`, `datetime`, `pathlib`.
+  
+  ### Data loading
+  
+  ```python
+  entries = []
+  quality_events = []
+  for line in open(path):
+      line = line.strip()
+      if not line:
+          continue
+      try:
+          e = json.loads(line)
+          if e.get('event_type') == 'quality_summary':
+              quality_events.append(e)
+          else:
+              entries.append(e)
+      except json.JSONDecodeError:
+          continue
+  ```
+  
+  ### Token helpers
+  
+  ```python
+  def tokens(e):
+      return (e.get('input_tokens') or 0) + (e.get('output_tokens') or 0)
+  
+  def fmt_tokens(n):
+      if n >= 10000:
+          return f"{n/1000:.1f}k"
+      return str(n)
+  
+  def fmt_ms(ms):
+      s = ms // 1000
+      m = s // 60
+      h = m // 60
+      if h > 0:
+          return f"{h}h {m%60}m {s%60}s"
+      if m > 0:
+          return f"{m}m {s%60}s"
+      return f"{s}s"
+  ```
+  
+  ### Section generation
+  
+  Each section is a function returning a list of markdown lines.
+  
+  **Executive Summary**: aggregate all entries; count distinct non-null work_items; count quality events as cycle markers plus distinct `cycle` field values from autopilot entries.
+  
+  **Per-Cycle Breakdown**: group entries by `cycle` field (from autopilot entries); join with quality_summary events on cycle number. Columns: Cycle | Tokens | Wall Clock | Work Items | Critical | Significant | Minor.
+  
+  **Per-Task Breakdown**: group entries by `work_item` (exclude nulls). Columns: Work Item | Tokens | Wall Clock | Spawns.
+  
+  **Phase Analysis**: group by `phase`. Sum tokens and wall_clock_ms, count spawns. Sort by total tokens descending.
+  
+  **Agent Performance**: group by `agent_type`. Compute total/avg tokens, total/avg wall_clock_ms, avg turns_used (skip nulls). Sort by total tokens descending.
+  
+  **RAG vs Flat-File Usage**:
+  - Per skill: count spawns where `mcp_tools_called` is non-empty vs total; show as percentage
+  - Flatten all `mcp_tools_called` arrays; count per tool name; show top 10
+  
+  **Quality Trends**:
+  - List quality_summary events sorted by cycle number
+  - Show critical/significant/minor per cycle
+  - Trend: compare last two cycles; if critical+significant decreased → "improving", increased → "degrading", equal → "stable"
+  
+  ### Output format
+  
+  - All tables use GFM pipe syntax with header separator row
+  - Numbers use comma separators: `1,234`
+  - Tokens use `fmt_tokens` (k suffix when >= 10,000)
+  - Times use `fmt_ms`
+  - Empty states: "No data available." for sections with no matching entries
+  
+  ### Edge cases
+  
+  - Empty `entries` after loading: print `No metrics data found.` and exit 0
+  - No quality_summary events: Quality Trends prints `No quality data recorded. Run /ideate:review to generate quality metrics.`
+  - No mcp_tools_called in any entry: RAG section prints `No MCP tool usage recorded. Update skills to WI-092 schema to enable this report.`
+  - Null fields: treated as 0 for numeric aggregations, empty array for mcp_tools_called
+resolution: "scripts/report.sh exists."
+cycle_created: 1
+cycle_modified: null
+content_hash: c7e8dcec35435bf1ffa60ec390649b046ca7a3a311520d2e81070e685e6a698f
+token_count: 1458
+file_path: .ideate/work-items/WI-094.yaml

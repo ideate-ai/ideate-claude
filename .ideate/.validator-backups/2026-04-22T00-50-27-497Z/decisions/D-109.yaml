@@ -1,0 +1,13 @@
+id: D-109
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Base `nodes` table plus 12 extension tables with FK ON DELETE CASCADE. Source_type and target_type columns dropped from edges; node_type dropped from node_file_refs. The schema version bumps from 6 to 7; existing databases are deleted and rebuilt on mismatch.
+rationale: Class table inheritance is idiomatic for property graphs in SQL. The database is a derived cache (P-26), so a fresh rewrite is safe.
+cycle_created: 1
+cycle_modified: null
+content_hash: "8e2b5ff292bcd4d2f9ba5b06f0cec654e9009115fcb4ffb7e13545b3f9fd7d39"
+token_count: 155
+file_path: .ideate/decisions/D-109.yaml

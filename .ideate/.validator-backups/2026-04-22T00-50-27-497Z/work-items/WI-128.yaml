@@ -1,0 +1,103 @@
+id: WI-128
+type: work_item
+title: Add smoke test infrastructure failure handling
+status: done
+complexity: medium
+scope:
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: specs/domains/workflow/policies.md
+    op: modify
+depends:
+  - "126"
+blocks: []
+criteria:
+  - skills/execute/SKILL.md Phase 8 contains a named exception for "Smoke test infrastructure failure" distinct from the startup-failure exception
+  - The infra-failure exception instructs the executor to determine if the failure is a regression caused by this work item
+  - "If regression: diagnose, attempt careful surgical fix (no scope expansion, no architectural decisions), re-run smoke test, Andon if still fails"
+  - "If not a regression: route to Andon cord immediately with journal note"
+  - skills/autopilot/phases/execute.md finding-handling contains an equivalent infra-failure bullet
+  - specs/domains/workflow/policies.md P-22 or a new P-23 captures the infra-failure regression-check rule
+  - No other sections in any of the three files are modified
+module: null
+domain: null
+notes: |
+  # WI-128: Add smoke test infrastructure failure handling
+
+  ## Context
+
+  Q-26 (Cycle 007/008, deferred): The current startup-failure exception handles application-level failures (the code cannot build or start). It is silent when the smoke test infrastructure itself fails — e.g., the test runner cannot be invoked, a required port is already in use, a dependency is missing from the environment, or the CI harness crashes before executing the test.
+
+  **Design decision (recorded in refine-011 interview)**:
+  - Determine if the infra failure is a **regression** (caused by changes in this work item — e.g., the work item changed a config file, port binding, or dependency that broke the test runner).
+  - If **regression**: diagnose, attempt a careful surgical fix (no scope expansion, no architectural decisions), re-run the smoke test, Andon if it still fails.
+  - If **not a regression** (pre-existing environmental issue, unrelated infrastructure problem): route to Andon cord immediately. Do not attempt to fix pre-existing infra issues within a work item.
+
+  This work item depends on WI-126 (generalized smoke test concept must be in place before adding infra-failure handling that references it).
+
+  ## Protocol Definition
+
+  An **infrastructure failure** is distinct from an **application failure**:
+  - Application failure: the smoke test runs but the output indicates the code failed (crash, error exit, test assertion failed)
+  - Infrastructure failure: the smoke test cannot run at all (runner not found, environment setup failed, pre-execution error)
+
+  **How to determine regression**:
+  1. Check if the work item's changed files include any infrastructure-adjacent files (config files, dependency manifests, Docker/CI files, port configurations, environment variable definitions).
+  2. If yes: the infra failure is likely a regression. Diagnose and attempt a surgical fix.
+  3. If no: the infra failure is pre-existing or environmental. Route to Andon.
+  4. If uncertain: treat as a regression and attempt diagnosis. If diagnosis cannot establish causation, treat as non-regression and route to Andon.
+
+  ## Changes
+
+  ### File 1: `skills/execute/SKILL.md`
+
+  **Location**: Phase 8 Critical Findings, after the startup-failure exception block (after line 403, before the "General critical findings" label).
+
+  Add a new exception block:
+
+  ```
+  **Exception — Smoke test infrastructure failure**: If the smoke test cannot execute at all (runner not found, environment setup error, pre-execution crash — not an application failure), this is a distinct case from a startup failure. Instead:
+  1. Determine if the infrastructure failure is a regression caused by this work item's changes (e.g., changes to config files, dependency manifests, port bindings, or environment definitions).
+  2. If it is a regression: diagnose the root cause. Apply a careful surgical fix — do not expand scope or make architectural decisions. Re-run the smoke test. If it still fails, treat as indeterminate and route to the Andon cord (Phase 9) with journal note: `Diagnosis: {root cause finding}. Routing to Andon — smoke test infrastructure failure persists after fix.`
+  3. If it is not a regression (pre-existing or environmental): append to the journal — `Smoke test infrastructure failure detected. Not a regression — routing to Andon.` Route to the Andon cord (Phase 9).
+  ```
+
+  ### File 2: `skills/autopilot/phases/execute.md`
+
+  **Location**: finding-handling block, after the startup-failure Critical bullet (line 158, after WI-126's changes).
+
+  Add a new bullet:
+
+  ```
+  - **Smoke test infrastructure failure (runner cannot execute)**: Determine if the failure is a regression caused by this work item (config files, dependency manifests, port bindings changed). If regression: diagnose, apply surgical fix (no scope expansion), re-run. If still fails: journal — `Diagnosis: {root cause finding}. Routing to Andon — smoke test infrastructure failure persists after fix.` Route to Andon cord → proxy-human. If not a regression: journal — `Smoke test infrastructure failure detected. Not a regression — routing to Andon.` Route to Andon cord → proxy-human.
+  ```
+
+  ### File 3: `specs/domains/workflow/policies.md`
+
+  Add a new policy P-23 after P-22:
+
+  ```
+  ## P-23: Smoke test infrastructure failures require regression determination before Andon escalation
+  When the smoke test cannot execute at all (infrastructure failure — runner not found, environment setup error, pre-execution crash), the executor must determine whether the failure is a regression caused by this work item's changes before routing to Andon. If the work item changed infrastructure-adjacent files (config, dependencies, port bindings, environment), diagnose and attempt a careful surgical fix within scope. If the fix fails or the failure is not a regression, route to Andon with a journal note citing the diagnostic finding. Silent treatment of infra failures as application failures is incorrect.
+  - **Derived from**: Q-26 (smoke test blocking scenario), user decision in cycle 011 refinement interview
+  - **Established**: cycle 011
+  - **Status**: active
+  ```
+
+  ## Acceptance Criteria
+
+  1. `skills/execute/SKILL.md` Phase 8 contains a named exception for "Smoke test infrastructure failure" separate from the startup-failure exception
+  2. The exception distinguishes regression (work item caused it) from non-regression (pre-existing/environmental)
+  3. Regression path: diagnose → surgical fix → re-run → Andon if still fails
+  4. Non-regression path: Andon immediately with journal note
+  5. `skills/autopilot/phases/execute.md` finding-handling contains an equivalent bullet
+  6. `specs/domains/workflow/policies.md` contains P-23 capturing the regression-check rule
+  7. No other sections in any of the three files are modified
+cycle_created: 1
+cycle_modified: null
+content_hash: f5c9f92b80661b3027c4f778092573a66f80a64f7d501a78a80057ea1b8dc265
+token_count: 1755
+file_path: .ideate/work-items/WI-128.yaml
+resolution: Implemented during v3 migration

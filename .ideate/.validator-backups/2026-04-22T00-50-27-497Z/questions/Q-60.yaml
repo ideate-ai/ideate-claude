@@ -1,0 +1,14 @@
+id: Q-60
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Agents consuming the source code index will not see 12 exported symbols and may re-implement equivalent logic. Every future agent planning work against these modules starts with an incorrect interface map.
+source: archive/cycles/018/spec-adherence.md D1, D2, U1, U2; archive/cycles/018/decision-log.md OQ5, CR2
+resolution: WI-173 regenerated the source code index for five modules (config.ts, migrate-to-v3.ts, indexer.ts, schema.ts, watcher.ts). The `db.ts` row remains incomplete — see Q-64. See D-90.
+resolved_in: 19
+description: The architecture-level source code index omits 3 exports from config.ts and 9 functions from migrate-to-v3.ts, and lists a non-existent constant (`CURRENT_SCHEMA_VERSION` instead of `CONFIG_SCHEMA_VERSION` for config.ts). Should the source code index be regenerated, or should it be deprecated in favor of a different context assembly mechanism?
+cycle_created: 1
+cycle_modified: null
+content_hash: "91b13edf4b6a44af1fff5caf9c76a4974de8daff1d5e13f6175c1481753c85bc"
+token_count: 267
+file_path: .ideate/questions/Q-60.yaml

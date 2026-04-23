@@ -1,0 +1,42 @@
+id: WI-334
+type: work_item
+title: Update legacy shell scripts to replace autopilot with autopilot
+status: done
+complexity: small
+scope:
+  - path: scripts/report-executive.sh
+    op: modify
+  - path: scripts/report-cycle.sh
+    op: modify
+  - path: scripts/report.sh
+    op: modify
+  - path: scripts/migrate-to-optimized.sh
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - grep -r 'autopilot' scripts/report-executive.sh scripts/report-cycle.sh scripts/report.sh scripts/migrate-to-optimized.sh returns no matches
+  - Scripts remain syntactically valid (no broken string replacements)
+  - The migrate-autopilot-to-autopilot.sh script is excluded from this change (it references autopilot by design)
+domain: project-boundaries
+notes: |-
+  ## Implementation
+
+  Mechanical sed replacements in 4 shell scripts:
+  - `/ideate:autopilot` -> `/ideate:autopilot`
+  - `autopilot` -> `autopilot` in prose (whole-word, context-aware)
+  - `autopilot-state` -> `autopilot-state`
+
+  The migrate-autopilot-to-autopilot.sh script is NOT modified — it references autopilot as the source pattern by design.
+
+  Files:
+  - scripts/report-executive.sh — 5 references
+  - scripts/report-cycle.sh — 8 references  
+  - scripts/report.sh — 1 reference
+  - scripts/migrate-to-optimized.sh — 15+ references
+resolution: 4 legacy shell scripts updated. Zero brrr references remain. migrate-brrr-to-autopilot.sh preserved unchanged.
+cycle_created: null
+cycle_modified: null
+content_hash: c968da19aa08c96f7af3022c8bd63cc8866828d5d2944a1c5f2df101ce7efb2b
+token_count: 361
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-334.yaml

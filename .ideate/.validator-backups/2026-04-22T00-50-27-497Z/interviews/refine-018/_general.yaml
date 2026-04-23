@@ -1,0 +1,56 @@
+id: interviews/refine-018/_general
+type: interview
+cycle: 18
+source_path: steering/interviews/refine-018/_general.md
+entries:
+  - id: IQ-018-001
+    question: |-
+      Review findings exist from cycle 017. Are you here to address those findings, to make other changes, or both?
+    answer: |-
+      Address cycle 017 findings. All significant and minor findings should be addressed in this cycle.
+    domain: null
+    seq: 1
+  - id: IQ-018-002
+    question: |-
+      The journal migration layout is contested across three spec files (notes/143.md, notes/144.md, and notes/157.md). Option A keeps the per-entry file layout that migrateJournal already implements and updates the spec files to match. Option B reverts migrateJournal to produce a flat journal.yaml array. Which layout is authoritative?
+    answer: |-
+      Option A — keep per-entry files in cycles/{NNN}/journal/. Update notes/143.md and notes/144.md to reflect this layout.
+    domain: null
+    seq: 2
+  - id: IQ-018-003
+    question: |-
+      "The WI-154 acceptance criterion says \"No column names or table names are interpolated as strings in SQL anywhere in indexer.ts.\" detectCycles uses raw SQL but does not interpolate identifiers — it loads all depends_on edges with a fixed query then runs Kahn's algorithm in TypeScript. Is the WI-154 criterion intended to cover detectCycles?"
+    answer: |-
+      No. The criterion was for write-path SQL injection only. detectCycles is out of scope for that fix. However, detectCycles should have a depth/iteration limit to prevent runaway processing on large graphs.
+    domain: null
+    seq: 3
+  - id: IQ-018-004
+    question: |-
+      The summary proposes addressing all five minor findings in this refinement. Do any minor findings need to be deferred?
+    answer: |-
+      None deferred. All minor findings should be addressed.
+    domain: null
+    seq: 4
+  - id: IQ-018-005
+    question: |-
+      Does this refinement change the project's core vision, guiding principles, or constraints?
+    answer: |-
+      No changes to principles or constraints.
+    domain: null
+    seq: 5
+  - id: IQ-018-006
+    question: |-
+      "The file scope conflicts require sequencing. Proposed order: WI-160 → WI-161 (indexer.ts), and WI-162 → WI-163 → WI-164 → WI-165 (migrate files). WI-165 already depends on WI-162; adding depends on WI-164 as well. Accept this resolution?"
+    answer: |-
+      "Yes (implicit — user chose to formalize via refine).  **Changes applied**: Added depends edges and updated execution-strategy.md with four-phase ordering. No new work items created. No principles or constraints changed."
+    domain: null
+    seq: 6
+  - id: IQ-018-007
+    question: |-
+      "WI-167 requires modifying indexer.ts (buildRow for domain_questions). WI-160 and WI-161 both modify indexer.ts and must run first. Proposed resolution: add indexer.ts to WI-167 file scope; set WI-167 depends on WI-160 and WI-161; move WI-167 to Phase C alongside WI-164 (no file scope conflict). Accept this resolution?"
+    answer: |-
+      "Yes (implicit — user chose to formalize via refine).  **Changes applied**: Added `indexer.ts` to WI-167 scope. Set WI-167 `depends: [\"160\", \"161\"]`. Updated WI-160 `blocks` to include 167. Updated WI-161 `blocks` to include 167. Updated execution-strategy.md: Phase A = WI-160/162/166; Phase B = WI-161/163; Phase C = WI-164/WI-167 (parallel); Phase D = WI-165. No new work items created. No principles or constraints changed."
+    domain: null
+    seq: 7
+content_hash: fe591c1327c5d8365ce522cee0fb214e814205902bcd0733b99e03a260532fd2
+token_count: 832

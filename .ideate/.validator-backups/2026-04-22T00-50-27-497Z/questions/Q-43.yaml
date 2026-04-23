@@ -1,0 +1,14 @@
+id: Q-43
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: All pre-migration findings index with `work_item = ""` and `verdict = ""`. Phase 2 queries on historical findings by work item or verdict return no results.
+source: archive/cycles/017/code-quality.md S2; archive/cycles/017/gap-analysis.md IG2; archive/cycles/017/decision-log.md OQ-2
+resolution: WI-162 added extraction logic for `work_item` and `verdict` fields from source review files.
+resolved_in: 18
+description: "Finding objects produced by `migrateArchiveCycles` omit `work_item` and `verdict`, both `NOT NULL` in the findings DDL. `verdict` is extractable from `## Verdict:` lines; `work_item` requires inferring from review file context. Should extraction logic be added?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "0b83416fe9e3d38c2853d2ef2893cebeeb0b49f3769ae8ae1b1a61a6ff009eff"
+token_count: 218
+file_path: .ideate/questions/Q-43.yaml

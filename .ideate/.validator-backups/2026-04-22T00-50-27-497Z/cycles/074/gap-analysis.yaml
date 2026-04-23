@@ -1,0 +1,72 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |
+  Verdict: Fail
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: No test for YAML file missing (ENOENT) on the q164 fallback path
+
+  - File: mcp/artifact-server/src/__tests__/q164-regression.test.ts
+  - The catch block in getConvergenceData falls back to SQLite (count as open) when YAML cannot be read. Three identified mechanisms include watcher lag — genuine transient file absence. No test deletes a finding's YAML file, calls getConvergenceData, and asserts the fallback path counts it as open and emits [q164] warn.
+  - Impact: The fallback is the only safety net for watcher-lag (B) and historical write-path bugs (C). Untested regression would make getConvergenceData throw instead of return conservative counts.
+
+  ### S2: No test for YAML with `addressed_by: null` literal
+
+  - File: mcp/artifact-server/src/__tests__/q164-regression.test.ts
+  - Fix code checks `addressedBy !== null && addressedBy !== undefined && addressedBy !== ''`. All fixtures pass null to writeFinding, which omits the key. No test writes `addressed_by: null` as an explicit YAML null and confirms the row is still counted as open.
+  - Impact: A future refactor that collapses null/undefined/missing-key branches could silently misclassify explicit-null as resolved, producing false-zero convergence counts.
+
+  ### S3: Monotonic-advance test does not enforce strict monotonicity
+
+  - File: mcp/artifact-server/src/__tests__/q160-regression.test.ts:175
+  - Assertions use `toBeGreaterThan(prev - 1)` which is equivalent to `>= prev`, not strict `> prev`. Test will pass when the formula is non-monotonic. Defeats the stated purpose.
+  - Fix: Use `expect(c2).toBeGreaterThan(c1)` and `expect(c3).toBeGreaterThan(c2)` with inputs where cyclesCompleted dominates. (Also reported by code-reviewer as S1.)
+
+  ### S4: Q-160 option-(c) known limitation is not recorded
+
+  - The algorithm `max(current_cycle, cycles_completed) + 1` does not scan existing cycle-directory slots. If a workspace has cycle directories HIGHER than both counters (e.g., cycles/050/ with cycles_completed=0 and current_cycle=10), autopilot would land on slot 11 and not 51 — collision still possible. This gap surfaced during cycle 74's own setup (algorithm yielded 28 while slots 28-73 are populated; manually picked 74).
+  - No open question, follow-up WI, or domain decision records this. Q-160.status=resolved is therefore optimistic.
+  - Fix: File a follow-up question or work item documenting the limitation and proposing a scan-the-cycle-dir-tree extension, or accept as known gap with explicit annotation in D-217.
+
+  ## Minor Findings
+
+  ### M1: getConvergenceData JSDoc does not document YAML-verification step
+
+  - File: mcp/artifact-server/src/adapter.ts lines 487-495
+  - StorageAdapter interface doc says only 'Excludes findings with non-null, non-empty addressed_by.' Does not mention LocalAdapter reads YAML per row to defend against stale DB. Any caller relying on pure-SQLite fidelity will be surprised.
+
+  ### M2: No observability aggregation for SQL/YAML mismatch frequency
+
+  - File: mcp/artifact-server/src/adapters/local/reader.ts
+  - [q164] logs per row but no per-call summary, counter, or metric. If stale rows become frequent (watcher consistently lagging), invisible without log-grep.
+
+  ### M3: Resume path underspecified for non-numeric current_cycle
+
+  - File: skills/autopilot/SKILL.md
+  - Spec says 'default 0 if absent' but does not cover null, wrong-type, or post-crash malformed values. Math.max with NaN degrades to NaN in JS. A `||`-style defensive guard is unspecified.
+content_hash: 3ddc33ef906b06451e1024d978b41e69193a7dbcb31e5fc6b0d226dacf5b0eeb
+token_count: 1194
+file_path: .ideate/cycles/068/gap-analysis.yaml
+cycle: 74
+cycle_modified: 27
+verdict: Pass
+scope: WI-873 completeness — missing coverage, infrastructure, edge cases
+summary: "10 of 11 acceptance criteria fully satisfied. One partial gap: WI-873 criterion 9 (wording standardization) incomplete — adapter-contract.md:398 countNodes clause retains non-null, non-undefined, and non-empty-string while getConvergenceData clause at adapter-contract.md:425 uses the shorter non-null, non-empty. All 10 finding back-fills present and correct. All 3 fixtures exist and are documented. No 3-clause filter pattern remains in codebase (grep-verified)."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 1
+minor_findings_refs:
+  - F-CYCLE-33-MI1
+criteria_status:
+  total: 11
+  pass: 10
+  partial: 1
+  fail: 0
+regression_prevention_check: No remaining 3-clause !== '' filter patterns anywhere in mcp/artifact-server/src. Only 2 JS filter sites, both 2-clause correct. Two SQL filter sites in reader.ts, both immune to inversion bug.

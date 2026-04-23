@@ -1,0 +1,26 @@
+id: summary
+type: cycle_summary
+cycle: 61
+content: |-
+  # Review Summary — Cycle 061
+
+  ## Overview
+  Cycle 061 fixed resolveArtifactPath routing and type string issues from cycle 060. Review found 2 significant and 3 minor findings, all fixed in-session as rework. 326 tests pass.
+
+  ## Significant Findings (fixed)
+  - [code-reviewer] GP-14 file_path field still pointed to old guiding_principle/ path after move — fixed
+  - [gap-analyst] refine/SKILL.md used type: 'modules' instead of 'module_spec' — fixed
+
+  ## Minor Findings (fixed)
+  - [gap-analyst] module_spec missing from resolveArtifactPath switch — added
+  - [code-reviewer] domains/ missing from IDEATE_SUBDIRS — added
+  - [code-reviewer] Routing tests only cover 6 of 9 switch cases — deferred (non-functional)
+
+  ## Findings Requiring User Input
+  None.
+
+  ## Proposed Refinement Plan
+  No critical or significant findings remain after rework. The project is ready for user evaluation.
+content_hash: bf3c0073e298a9e1d51b732a581a277608009488c013629762ff2286d9105396
+token_count: 238
+file_path: .ideate/cycles/061/summary.yaml

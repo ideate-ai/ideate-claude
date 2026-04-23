@@ -1,0 +1,108 @@
+id: RF-recursive-decomposition
+type: research_finding
+topic: Recursive Project Decomposition
+status: active
+date: "2026-03-08"
+content: |
+  # Recursive Project Decomposition
+  
+  Research compiled: 2026-03-08
+  
+  ## Summary
+  
+  Recursive decomposition is well-established in human PM (SAFe epic-to-story chains, PMI WBS 100% rule) and emerging in AI agent systems. Claude Code cannot natively recurse (no sub-subagents, no nested teams), but the same effect is achievable through multi-pass flat decomposition within a single session (iterating over a tree on disk) optionally combined with subagent-per-module delegation for parallelism.
+  
+  ## Human PM Decomposition Hierarchies
+  
+  Standard levels: Portfolio → Program → Project → Workstream → Work Package → Task
+  
+  Key principles from PMI WBS:
+  - **100% rule**: Children must collectively equal parent scope — no gaps, no overlap
+  - **Mutual exclusivity**: No overlap between siblings at same level
+  - **Outcome-oriented**: Each element describes a deliverable, not an activity
+  - **Progressive elaboration**: Lower levels detailed only when parent enters active planning
+  
+  SAFe decomposes progressively ("last responsible moment") — not all at once. Epics stay lightweight until they enter the PI planning window.
+  
+  ## AI Agent Systems
+  
+  - **AutoGen**: Nested group chats, manager delegates to specialists. Conversational decomposition.
+  - **CrewAI**: Hierarchical mode with manager→workers, but single-level only.
+  - **MetaGPT**: Fixed SOP pipeline (PM→Architect→Engineer→QA). Publish-subscribe artifacts.
+  - **ADaPT**: Failure-driven recursive decomposition — decomposes only when a task fails. Depth adapts to difficulty.
+  
+  Common coordination patterns: shared message history, artifact passing (file-based), task queues, publish-subscribe, direct delegation.
+  
+  ## Claude Code Constraints
+  
+  1. No sub-subagents
+  2. No nested teams
+  3. No cross-session state
+  4. Context window limits
+  5. Subagents receive only spawn prompt
+  
+  ## Practical Patterns
+  
+  ### Pattern A: Multi-Pass Flat Decomposition (Primary)
+  Orchestrator iterates through decomposition levels in a single session, writing artifacts at each level:
+  - Pass 1: Idea → Modules
+  - Pass 2: Per module → Features
+  - Pass 3: Per feature → Work Items
+  
+  Works within all constraints. Sequential but inspectable/resumable.
+  
+  ### Pattern B: Subagent-Per-Module (Optimization)
+  Spawn subagent per top-level module for parallel decomposition. Parent reconciles results. Requires pre-defined interface contracts to prevent inconsistency.
+  
+  ### Pattern C: File-Based Message Passing
+  Write "request files" that separate Claude sessions pick up. Requires external orchestration but enables true parallelism and arbitrary depth.
+  
+  ### Recommended: A + B Combined
+  - Plan skill does top-level decomposition iteratively (Pattern A)
+  - For large projects (5+ modules), delegates module decomposition to subagents (Pattern B)
+  - All artifacts on disk at each level
+  - Decomposition tree flattened into work items for execution
+  
+  ## Artifact Structure Addition
+  
+  ```
+  plan/
+  ├── modules/              # Intermediate decomposition level
+  │   ├── auth.md           # Module spec: scope, interfaces, responsibilities
+  │   ├── api.md
+  │   └── ui.md
+  └── work-items/           # Leaf-level executable tasks
+  ```
+  
+  Each module spec defines interface contracts:
+  - **Provides**: What this module exports
+  - **Requires**: What it imports from other modules
+  - **Boundary rules**: Constraints on module's behavior
+  
+  This prevents inconsistent sibling decomposition when parallel agents work on different modules.
+  
+  ## Failure Modes
+  
+  | Mode | Mitigation |
+  |------|-----------|
+  | Premature decomposition | Decompose in passes; defer detail |
+  | Decomposition mismatch | Let architect propose decomposition axis |
+  | Lost context at leaf | Include principles + architecture in every spawn |
+  | Inconsistent siblings | Pre-define interface contracts; reconciliation pass |
+  | 100% rule violation | Explicit coverage check step |
+  | Over-decomposition | Minimum complexity threshold |
+  | Integration neglect | Always include integration work items |
+  | Depth imbalance | Max depth limit; review tree shape |
+  
+  ## Risks
+  
+  - Simulated recursion is fragile to context window limits for wide trees
+  - Subagent decomposition can produce inconsistent outputs without pre-defined contracts
+  - Over-decomposition wastes tokens on small projects — needs size detection
+  - All AI recursive decomposition patterns are early-stage and unproven at scale
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "3bfa46ebccf785f1365f3ff505f2d73df75820fa2112ff6cceeb2497253fb9f6"
+token_count: 1169
+file_path: .ideate/research/RF-recursive-decomposition.yaml

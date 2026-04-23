@@ -1,0 +1,13 @@
+id: D-57
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: "The chokidar `ignored: /(^|[/\\\\])\\../` bug in `watcher.ts:24` caused the watcher to never fire for any `.ideate/` files, making incremental rebuild entirely non-functional. All seven incremental reviews for WI-143 through WI-149 returned Pass. The bug was caught only in the capstone review. No integration test existed that wrote a YAML file to a temp `.ideate/` directory and asserted the watcher triggered a rebuild."
+rationale: "Three independent reviewers (code-reviewer, spec-reviewer, gap-analyst) independently flagged both the bug and the missing integration test. The gap is structural: unit tests on the watcher and rebuild functions in isolation cannot detect a broken wiring between them. Only an end-to-end test of the assembled chain (file write -> watcher event -> rebuild call) would have caught this."
+cycle_created: 1
+cycle_modified: null
+content_hash: "5320868213902f57878d4a33c89df7090b4a49559398e79d5286a348f5268b74"
+token_count: 256
+file_path: .ideate/decisions/D-57.yaml

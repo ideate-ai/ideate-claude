@@ -1,0 +1,37 @@
+id: WI-335
+type: work_item
+title: Complete autopilot-to-autopilot migration in .ideate/ artifacts
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - grep -r 'autopilot' .ideate/ returns only references in historical cycle artifacts where autopilot appeared as the actual skill name at the time (acceptable as history)
+  - All active artifacts (policies, decisions, questions, plan/, steering/) have zero autopilot references
+  - metrics.jsonl autopilot entries are left as-is (historical metric data)
+  - Re-running scripts/migrate-autopilot-to-autopilot.sh reports 0 files modified (idempotent check)
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  Re-run the migration script to catch remaining references:
+  ```
+  ./scripts/migrate-autopilot-to-autopilot.sh .
+  ```
+
+  Then verify active artifacts are clean. Historical cycle artifacts (findings, journal entries, decision logs from past cycles) may retain autopilot references as historical record — that's acceptable since they describe what happened at the time.
+
+  Key areas to check:
+  - .ideate/policies/ — active policies mentioning autopilot (P-18, P-20, P-22)
+  - .ideate/questions/ — open questions mentioning autopilot (17 files)
+  - .ideate/decisions/ — decisions mentioning autopilot
+  - .ideate/plan/ — architecture.yaml, overview.yaml
+  - .ideate/steering/research/ — research findings mentioning autopilot
+  - .ideate/metrics.jsonl — historical metrics (leave as-is)
+resolution: "Migration script re-run: 302 YAML files migrated. Second run: 0 files modified (idempotent). Zero brrr references in .ideate/ YAML files."
+cycle_created: null
+cycle_modified: null
+content_hash: 3b34c1139d467670318bd0909b20933c606e898322787ef2993f80c498edde36
+token_count: 417
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-335.yaml

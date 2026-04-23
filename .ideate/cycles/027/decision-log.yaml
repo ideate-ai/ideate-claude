@@ -1,10 +1,17 @@
 id: decision-log
 type: cycle_summary
 reviewer: journal-keeper
-content: "Decision log for cycle 27 (PH-042: PPR Divergence Investigation — spike phase). 14 decisions recorded (D-027-01 through D-027-14). 12 open questions (OQ-027-01 through OQ-027-12). 5 cross-references connecting findings across reviewers (CR1-CR5). Key decisions: scope expanded beyond PPR-only to full StorageAdapter boundary (D-027-01), normalization framed as anti-pattern (D-027-02), D5 edge loading scope classified as non-remediable (D-027-07), Option B (composed calls) recommended over Option A (new interface methods) for context.ts leaks (D-027-10). Key open questions: research artifact storage path (OQ-027-01), metrics composition feasibility (OQ-027-07), D-131/D-134 statusNotIn omission from proposal (OQ-027-08), 8 vs 6 test files (OQ-027-09)."
+content: >-
+  Decision log for cycle 27 (PH-042: PPR Divergence Investigation — spike phase). 14 decisions recorded (D-027-01
+  through D-027-14). 12 open questions (OQ-027-01 through OQ-027-12). 5 cross-references connecting findings across
+  reviewers (CR1-CR5). Key decisions: scope expanded beyond PPR-only to full StorageAdapter boundary (D-027-01),
+  normalization framed as anti-pattern (D-027-02), D5 edge loading scope classified as non-remediable (D-027-07), Option
+  B (composed calls) recommended over Option A (new interface methods) for context.ts leaks (D-027-10). Key open
+  questions: research artifact storage path (OQ-027-01), metrics composition feasibility (OQ-027-07), D-131/D-134
+  statusNotIn omission from proposal (OQ-027-08), 8 vs 6 test files (OQ-027-09).
 content_hash: 94df813fea8de5877eeddbd8dcfa9bb775465d31a4f3f8f82f5853e12a6a6ee5
 token_count: 1017
-file_path: .ideate/cycles/068/decision-log.yaml
+file_path: cycles/027/decision-log.yaml
 cycle: 27
 decisions:
   - id: D-CY23-01
@@ -18,10 +25,14 @@ decisions:
     outcome: Comment overstates quoting need — SQLite allows trigger unquoted in DML. Production code already uses it unquoted.
   - id: D-CY23-04
     topic: cols.length assertion omitted from 8 new describe blocks
-    outcome: Systematic omission flagged by 3 reviewers independently. nodes table establishes the pattern at line 74 but new blocks don't follow it.
+    outcome: >-
+      Systematic omission flagged by 3 reviewers independently. nodes table establishes the pattern at line 74 but new
+      blocks don't follow it.
   - id: D-CY23-05
     topic: NOT NULL tests omitted for projects and phases
-    outcome: Gap identified by code-reviewer (M3) and gap-analyst (MI2). Only extension tables with column tests but no NOT NULL assertions.
+    outcome: >-
+      Gap identified by code-reviewer (M3) and gap-analyst (MI2). Only extension tables with column tests but no NOT
+      NULL assertions.
   - id: D-CY23-06
     topic: Unspecified reserved keyword comment in CASCADE test
     outcome: Comment added in WI-766 CASCADE test for constraints table, outside WI-766 spec. Consistent with WI-763 intent.
@@ -74,5 +85,7 @@ cross_references:
     topic: WI-767 test name vs content
     reviewers:
       - code-reviewer M4
-convergence: Zero critical, zero significant. Cleanest cycle since cycle 20. Residual gaps are column-count assertions and NOT NULL coverage for projects, phases, interview_questions.
+convergence: >-
+  Zero critical, zero significant. Cleanest cycle since cycle 20. Residual gaps are column-count assertions and NOT NULL
+  coverage for projects, phases, interview_questions.
 cycle_modified: 25

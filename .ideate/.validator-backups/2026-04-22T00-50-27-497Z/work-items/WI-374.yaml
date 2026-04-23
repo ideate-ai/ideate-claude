@@ -1,0 +1,33 @@
+id: WI-374
+type: work_item
+title: Fix refine skill journal artifact type from 'journal' to 'journal_entry'
+status: done
+complexity: low
+scope:
+  - path: skills/refine/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - 'In skills/refine/SKILL.md Phase 3 step 7, the query uses `type: "journal_entry"` instead of `type: "journal"`'
+  - 'No other occurrence of `type: "journal"` (without `_entry`) exists in skills/refine/SKILL.md'
+domain: workflow
+notes: |-
+  Single string fix.
+
+  Find line ~70 in Phase 3:
+  ```
+  7. Call `ideate_artifact_query({type: "journal"})` — retrieves project history (if it exists).
+  ```
+  Change to:
+  ```
+  7. Call `ideate_artifact_query({type: "journal_entry"})` — retrieves project history (if it exists).
+  ```
+
+  The type `"journal"` does not exist in TYPE_TO_EXTENSION_TABLE (db.ts). The correct type is `"journal_entry"` (maps to journalEntries table). Using the wrong type returns zero results silently — refine has never had project history context.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 2ba86d05fe04cff5c265dd43fb107fc6fcd4d5c618799144bb386ae440aab2ab
+token_count: 262
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-374.yaml

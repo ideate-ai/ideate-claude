@@ -1,0 +1,30 @@
+id: WI-426
+type: work_item
+title: Add write→convergence roundtrip integration test
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-424
+blocks: []
+criteria:
+  - "Test writes a cycle_summary artifact with id 'SA-roundtrip-001', cycle: 8, content including '**Principle Violation Verdict**: Pass' and no critical/significant findings"
+  - "Test then calls handleGetConvergenceStatus(8) and asserts converged: true, condition_a: true, condition_b: true, principle_verdict: 'pass'"
+  - Test is in the handleGetConvergenceStatus describe block in tools.test.ts
+  - Test passes after WI-424 fix is applied (works whether or not document_artifacts has the entry, since WI-424 adds file_path fallback)
+  - All 496+ existing tests continue to pass
+domain: artifact-structure
+notes: |-
+  Addresses gap analysis Gap 2: no end-to-end test covering the write-then-query convergence roundtrip. This test exercises the full path: handleWriteArtifact → YAML + SQLite write → handleGetConvergenceStatus query.
+
+  Add test after the existing handleGetConvergenceStatus tests in tools.test.ts. Call handleWriteArtifact with type='cycle_summary', id='SA-roundtrip-001', cycle=8, content={title: 'SA roundtrip test', content: '## Verdict: Pass\n\n**Principle Violation Verdict**: Pass'}. Then call handleGetConvergenceStatus(8). Assert converged:true.
+
+  Note: this test depends on WI-424 being applied first, since the current code would fail for artifacts missing from document_artifacts.
+resolution: null
+cycle_created: 5
+cycle_modified: 4
+content_hash: c9f1449631df10cb3d4e1c8c78da3062b7f4a97895882d32e7a18265bd5d9669
+token_count: 400
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-426.yaml

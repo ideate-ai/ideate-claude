@@ -52,13 +52,16 @@ criteria:
   - All paths use .ideate/ structure
   - Skills use ideate_write_artifact for overview, execution-strategy, and interview writes
 domain: workflow
-notes: |-
+notes: >-
   # WI-238: Comprehensive Audit
 
-  Grep all skills/ and agents/ for: specs/ paths, artifact_dir in MCP calls, plan/notes/*.md creation, plan/work-items.yaml refs, direct Write to .ideate/ artifacts, archive/incremental/ refs, domains/index.md. Fix each occurrence.
-resolution: "Verified complete: zero specs/, artifact_dir, plan/notes/, archive/incremental/ refs in skills/agents"
+
+  Grep all skills/ and agents/ for: specs/ paths, artifact_dir in MCP calls, plan/notes/*.md creation,
+  plan/work-items.yaml refs, direct Write to .ideate/ artifacts, archive/incremental/ refs, domains/index.md. Fix each
+  occurrence.
+resolution: 'Verified complete: zero specs/, artifact_dir, plan/notes/, archive/incremental/ refs in skills/agents'
 cycle_created: 29
 cycle_modified: null
 content_hash: 805d7d50ab131021e856d276b763dd0092d40988b91ac271b8e4313553b74c7f
 token_count: 473
-file_path: .ideate/work-items/WI-238.yaml
+file_path: work-items/WI-238.yaml

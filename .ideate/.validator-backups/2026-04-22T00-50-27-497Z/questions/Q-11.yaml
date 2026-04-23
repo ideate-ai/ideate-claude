@@ -1,0 +1,14 @@
+id: Q-11
+type: domain_question
+domain: project-boundaries
+status: obsolete
+impact: Future outpost users will encounter a naming inconsistency between the session-spawner (OUTPOST_*) and the remote-worker (IDEATE_*); this creates confusion in configuration documentation.
+source: archive/cycles/001/decision-log.md D3
+resolution: "No IDEATE_* env vars in codebase. Remote-worker fully migrated to outpost."
+resolved_in: 37
+description: The remote-worker retains `IDEATE_*` env var names even though it is logically owned by outpost. No work item was created to align these names in a future release. Should a compatibility shim or a migration plan be documented?
+cycle_created: 1
+cycle_modified: null
+content_hash: cd3c5988048c240db3d8855ec0501bd82cec70c490489ebe28c3607527d92b3d
+token_count: 173
+file_path: .ideate/questions/Q-11.yaml

@@ -1,0 +1,30 @@
+id: WI-294
+type: work_item
+title: Code quality fixes — Q-72, Q-73, Q-74, Q-80
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/package.json
+    op: modify
+  - path: mcp/artifact-server/src/schema.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/schema.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "Q-72: pretest has comment documenting intentional error swallowing"
+  - "Q-73: schema test does not rely on checkSchemaVersion internal handle close"
+  - "Q-80: walkDir skips symbolic links"
+  - All 4 question files updated to resolved
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: "Q-72: Expand pretest to documented script. Q-73: Refactor stale-version test. Q-74: Verify yaml lib handles quoting, close if so. Q-80: Add isSymbolicLink() guard in walkDir."
+resolution: Q-72 (pretest.js), Q-73 (test refactor), Q-74 (yaml lib handles it), Q-80 (symlink skip) all resolved.
+cycle_created: 38
+cycle_modified: null
+content_hash: c53ad3bf7102453c95c18b8b51980d67601cd0210a660363512730a324fb4da2
+token_count: 263
+file_path: .ideate/work-items/WI-294.yaml

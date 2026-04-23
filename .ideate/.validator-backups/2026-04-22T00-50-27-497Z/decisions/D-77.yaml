@@ -1,0 +1,13 @@
+id: D-77
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Rather than creating individual tables for each of 10 unregistered document types (decision_log, cycle_summary, review_manifest, gap_analysis, code_quality, spec_adherence, architecture, execution_strategy, overview, interview), a single `document_artifacts` table was created with shared columns (title, cycle, content). The `interview_response` type remains in its own table for structured per-domain data.
+rationale: All 10 types share the same holistic structure (title + content blob). Individual tables would duplicate DDL and Drizzle definitions without adding query capability. The decision emerged from the WI-165 Andon cord event when three archive document types were unknown to the indexer; a codebase survey found seven more.
+cycle_created: 1
+cycle_modified: null
+content_hash: fb5e7d58aa967c78f94f562abb256b018af0ee170dcac980aa907c0769d3d8e3
+token_count: 238
+file_path: .ideate/decisions/D-77.yaml

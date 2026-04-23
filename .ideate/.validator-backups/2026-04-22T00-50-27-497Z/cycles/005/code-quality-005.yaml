@@ -1,0 +1,42 @@
+id: code-quality-005
+type: cycle_summary
+title: Code Quality Review — Cycle 5
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  Two critical findings introduced by WI-411's metrics_event redirect. Interview_question routing and rollback tests are correct. 484 tests pass.
+
+  ## Critical Findings
+
+  ### C1: metrics_event redirect writes to a sink that handleGetMetrics never reads
+  - **File**: `mcp/artifact-server/src/tools/write.ts:754-758`
+  - **Issue**: The redirect appends `JSON.stringify(content)` to `metrics.jsonl`. `handleGetMetrics` reads exclusively from the SQLite `metrics_events` table joined with `nodes` — it never reads `metrics.jsonl`. Data written via `handleWriteArtifact` with `type=metrics_event` is permanently invisible to `handleGetMetrics`.
+  - **Impact**: Any call to `ideate_write_artifact` with `type=metrics_event` silently succeeds but the data is never retrievable via `handleGetMetrics`.
+  - **Suggested fix**: Either (a) restore the dispatch branch (write YAML to a properly-routed path that the indexer scans, which then populates SQLite for handleGetMetrics), or (b) redirect to `handleEmitMetric` AND also upsert into SQLite, or (c) add a proper `case 'metrics_event'` in resolveArtifactPath routing to a scanned directory.
+
+  ### C2: metrics_event redirect emits different JSON format than handleEmitMetric
+  - **File**: `mcp/artifact-server/src/tools/write.ts:757`
+  - **Issue**: Redirect writes `JSON.stringify(content)` (full content object). `handleEmitMetric` writes `JSON.stringify(payload)` where payload is `args.payload` (the inner value). Mixed-format lines in `metrics.jsonl`.
+  - **Impact**: Latent correctness bug if metrics.jsonl is ever parsed as the authoritative source.
+
+  ## Significant Findings
+
+  ### S1: P-46 coverage test only checks subset direction (cases covers registry), not reverse
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:2205-2210`
+  - **Issue**: The coverage test iterates `expectedTypes` and asserts each appears in `coveredTypes`. It does not assert the reverse — that every case in the `cases` array corresponds to a registered (non-excluded) type. A stale entry in cases for a removed type would not be detected.
+  - **Suggested fix**: Add symmetric assertion: `for (const t of coveredTypes) { if (!EXCLUDED_TYPES.has(t)) expect(expectedTypes).toContain(t); }`
+
+  ## Minor Findings
+
+  ### M1: metrics_event redirect lacks ensureDir call before appendFileSync
+  - **File**: `mcp/artifact-server/src/tools/write.ts:757`
+  - **Issue**: No `ensureDir(ctx.ideateDir)` before `fs.appendFileSync`. Fragile in test environments before bootstrapping.
+
+  ### M2: interviewFiles() rollback assertion uses total count which is fragile
+  - **File**: `mcp/artifact-server/src/__tests__/write-transaction.test.ts`
+  - **Issue**: `expect(interviewFiles()).toHaveLength(0)` assumes no other test wrote to interviews/. The path-specific `fs.existsSync(expectedPath)` check already covers correctness; the count assertion is fragile.
+  - **Suggested fix**: Remove or weaken the toHaveLength(0) assertion; rely on the fs.existsSync check.
+content_hash: ea803072e1265d06fa0a36f4229a8a0735597c2f86a7edff895745a81518fef7
+token_count: 781
+file_path: .ideate/cycles/005/code-quality-005.yaml

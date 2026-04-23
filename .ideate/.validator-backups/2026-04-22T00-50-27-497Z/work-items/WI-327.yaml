@@ -1,0 +1,40 @@
+id: WI-327
+type: work_item
+title: Version bump to 3.2.1 and sync plugin cache
+status: done
+complexity: low
+scope:
+  - path: .claude-plugin/plugin.json
+    op: modify
+  - path: .claude-plugin/marketplace.json
+    op: modify
+  - path: mcp/artifact-server/package.json
+    op: modify
+depends:
+  - WI-323
+  - WI-324
+blocks: []
+criteria:
+  - Version updated to 3.2.1 in plugin.json, marketplace.json, and mcp/artifact-server/package.json
+  - Plugin cache at ~/.claude/plugins/cache/marketplace/ideate/ updated with current skill and agent files
+  - MCP server dist rebuilt with version stamp matching 3.2.1
+domain: project-boundaries
+notes: |-
+  ## Implementation
+
+  1. Update version string from 3.2.0 to 3.2.1 in:
+     - `.claude-plugin/plugin.json` (line 3)
+     - `.claude-plugin/marketplace.json` (line 8 and line 15)
+     - `mcp/artifact-server/package.json` (line 3)
+
+  2. Copy updated skills/ and agents/ to the plugin cache:
+     - `~/.claude/plugins/cache/marketplace/ideate/3.2.0/` → update in place or create 3.2.1 directory
+     - The exact cache structure depends on how Claude Code manages plugin versions
+
+  3. Rebuild MCP server: `npm run build` in `mcp/artifact-server/` to update dist/.build-version
+resolution: Version bumped to 3.2.1 in all three files. Plugin cache at ~/.claude/plugins/cache/marketplace/ideate/3.2.0/ synced with updated skills, agents, and MCP server dist.
+cycle_created: null
+cycle_modified: null
+content_hash: 316ce082d140d0b815aa7debe46c454e5b024fd0b66c8e8a5f4564a35c553836
+token_count: 358
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-327.yaml

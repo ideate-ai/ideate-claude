@@ -1,0 +1,13 @@
+id: D-84
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-170 added a 500ms trailing debounce to `ArtifactWatcher.onEvent()` via a `debounceTimers` map with `clearTimeout`/`setTimeout`. The debounce delay is configurable via a `debounceMs` constructor parameter. Resolves Q-54.
+rationale: "The rebuild is idempotent, so debouncing is safe. A 500ms window coalesces typical burst writes from skill execution and migration. Tests use `awaitWriteFinish: false` to exercise the debounce logic directly rather than relying on chokidar's built-in stabilization."
+cycle_created: 1
+cycle_modified: null
+content_hash: "96085cbbeb494b4ef2e8373d1ecc160b8c743cf4f8d2cd58ab3b487fc3cc0369"
+token_count: 179
+file_path: .ideate/decisions/D-84.yaml

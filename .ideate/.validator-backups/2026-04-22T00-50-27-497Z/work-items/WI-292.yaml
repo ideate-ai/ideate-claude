@@ -1,0 +1,24 @@
+id: WI-292
+type: work_item
+title: Resolve Q-16/Q-19 — remove by_reviewer.suggestion from quality_summary
+status: done
+complexity: low
+scope:
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends:
+  - WI-289
+blocks: []
+criteria:
+  - quality_summary schema has no suggestion key in by_reviewer objects
+  - Q-16 and Q-19 updated to resolved
+domain: artifact-structure
+notes: Remove vestigial suggestion key from by_reviewer sub-objects in quality_summary schema. Code-reviewer has no suggestion severity by design.
+resolution: by_reviewer.suggestion removed from quality_summary schema. Q-16, Q-19 resolved.
+cycle_created: 38
+cycle_modified: null
+content_hash: 519a4809fa1eeda0d84e048d686187a38b6a2565c6dcdd907e22780b2cda1b9b
+token_count: 175
+file_path: .ideate/work-items/WI-292.yaml

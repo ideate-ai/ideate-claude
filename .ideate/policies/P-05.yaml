@@ -6,9 +6,11 @@ derived_from:
   - GP-6 (Andon Cord Interaction Model)
 established: planning phase
 amended: null
-description: During execute, review, and autopilot phases the user is not consulted for routine decisions; unresolvable gaps are batched and surfaced at natural pause points or when blocking progress (Andon cord).
+description: >-
+  During execute, review, and autopilot phases the user is not consulted for routine decisions; unresolvable gaps are
+  batched and surfaced at natural pause points or when blocking progress (Andon cord).
 cycle_created: 1
 cycle_modified: null
-content_hash: "9d692ac24b4ab9db1f7599eac69f4ccd5b1865a7531e0c0afc4e257cb2274930"
+content_hash: 9d692ac24b4ab9db1f7599eac69f4ccd5b1865a7531e0c0afc4e257cb2274930
 token_count: 117
-file_path: .ideate/policies/P-05.yaml
+file_path: policies/P-05.yaml

@@ -1,0 +1,43 @@
+id: WI-222
+type: work_item
+title: Resolve open domain questions post-v3
+status: done
+complexity: small
+scope:
+  - path: specs/domains/artifact-structure/questions.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - 'Q-20 status changed from "open" to "resolved" with resolution note: "v3 architecture stores findings under .ideate/cycles/{NNN}/findings/. Both autopilot and standalone review write to the same location. The manifest location divergence no longer applies."'
+  - 'Q-77 status changed from "open" to "resolved" with resolution note: "Resolved by WI-221 which updates Section 9 source code index to list all tools/ files."'
+  - No other questions are modified
+  - Resolution notes include cycle number reference (cycle 027 or current cycle)
+module: null
+domain: null
+notes: |
+  # WI-222: Resolve Open Domain Questions Post-v3
+
+  ## Q-20 Resolution
+
+  Current status: open
+  New status: resolved
+
+  Resolution: The v3 architecture stores findings under `.ideate/cycles/{NNN}/findings/`. Both autopilot and standalone review write to the same location. The review manifest location divergence described in Q-20 no longer applies — both paths now produce findings in the cycle directory structure.
+
+  ## Q-77 Resolution
+
+  Current status: open
+  New status: resolved
+
+  Resolution: Resolved by WI-221 which updates Section 9 of architecture.md to list all tools/ directory files (tools/index.ts, tools/context.ts, tools/query.ts, tools/execution.ts, tools/analysis.ts, tools/write.ts).
+
+  ## Format for resolution notes
+
+  Each question gets a resolution note appended:
+cycle_created: 1
+cycle_modified: null
+content_hash: bdef040b0a130f9621160cdd03b445365196de4379de4fa2b9b6f918bb029911
+token_count: 427
+file_path: .ideate/work-items/WI-222.yaml
+resolution: "Verified complete: Q-20 and Q-77 resolved with resolution text and resolved_in fields"

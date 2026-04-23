@@ -1,0 +1,12 @@
+id: Q-36
+type: domain_question
+addressed_by: null
+description: "`skills/review/SKILL.md:437-442` conditionally selects sonnet or opus for the domain-curator based on conflict signal detection. `skills/autopilot/phases/review.md:245-246` unconditionally uses opus. Should autopilot adopt the conditional logic, or is unconditional opus intentional for autonomous operation where stronger reasoning is preferred?"
+domain: agent-system
+impact: Behavioral divergence between autopilot and standalone review for domain-curator model selection. Relates to the broader autopilot vs standalone review divergence tracked in Q-20 (artifact-structure).
+resolution: "D-131: Autopilot uses opus unconditionally for domain-curator. Standalone review uses conditional sonnet/opus logic because a human reviewer can override model choice. Autonomous operation lacks this oversight, making stronger model choice appropriate for all domain curation tasks."
+resolved_in: 3
+source: archive/cycles/013/code-quality.md M2; archive/cycles/013/decision-log.md OQ-11
+content_hash: 9c16edf8d1deffd2f0e10bd2c21dedf4c51ef44e07e798a8f41dc80efd5c7ecf
+token_count: 260
+file_path: .ideate/questions/Q-36.yaml

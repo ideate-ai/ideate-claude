@@ -1,0 +1,13 @@
+id: D-18
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Versioning applies only to the artifact directory schema. Skills do not carry version numbers and do not check `schema_version` at invocation time.
+rationale: Skills do not yet need migration or quality gates; keeping versioning scope narrow reduces complexity.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5e0efb4f813d6c8b2ce329969ab4e9be97fc2341ed6b6c1de0cf93dc2aae36ad"
+token_count: 119
+file_path: .ideate/decisions/D-18.yaml

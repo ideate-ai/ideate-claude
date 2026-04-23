@@ -1,0 +1,45 @@
+id: WI-323
+type: work_item
+title: MCP server dormant mode for graceful first-time startup
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Server starts without process.exit(1) when .ideate/ directory does not exist
+  - ideate_bootstrap_project works in dormant mode and triggers lazy initialization of DB + index + watcher
+  - "ideate_get_project_status returns {status: 'not_initialized'} in dormant mode"
+  - All other MCP tools return a clear error message directing user to run /ideate:init or /ideate:plan
+  - Server state (db, drizzleDb, ctx) is only committed after full initialization succeeds
+  - Graceful shutdown handles null db without crash (db?.close())
+  - npm run build succeeds with no TypeScript errors
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  Refactor `index.ts` to support a dormant/active state machine:
+
+  1. Extract DB initialization into `openDatabase(dir)` function
+  2. Extract full server init (DB + index + watcher) into `initServer(dir)` function
+  3. Try `resolveArtifactDir({})` at startup — catch and continue in dormant mode instead of exit(1)
+  4. Server state (`db`, `drizzleDb`, `ctx`) starts as null in dormant mode
+  5. Request handler intercepts dormant-safe tools before checking ctx:
+     - `ideate_bootstrap_project`: creates .ideate/ via createIdeateDir, then calls initServer() for lazy init
+     - `ideate_get_project_status`: returns {status: 'not_initialized', message: '...'}
+  6. All other tools return isError: true with message directing to /ideate:init
+  7. initServer() uses local variables and only commits to module-level state after all steps succeed
+  8. Shutdown handlers use optional chaining: db?.close()
+
+  ## Key files
+  - `mcp/artifact-server/src/index.ts` — main changes
+  - `mcp/artifact-server/src/config.ts` — imports: createIdeateDir, CONFIG_SCHEMA_VERSION, IDEATE_SUBDIRS, IdeateConfigJson
+  - No changes needed to tools/index.ts or any handler files — dormant logic is contained in index.ts
+resolution: Implemented in this conversation. index.ts rewritten with dormant mode support.
+cycle_created: null
+cycle_modified: null
+content_hash: 75442e4fa8b84d3192163ffd5e01bf00dbcb53cf418f89f1889f9d81089b63a0
+token_count: 549
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-323.yaml

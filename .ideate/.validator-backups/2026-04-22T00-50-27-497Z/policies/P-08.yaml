@@ -1,0 +1,16 @@
+id: P-08
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-1 (Spec Sufficiency)
+  - GP-13 (Appropriate Validation Strategy)
+  - constraint C-7
+established: planning phase
+amended: cycle 026 — expanded from machine-verifiable-only to include human-in-the-loop validation for subjective criteria
+description: Work items must express acceptance criteria with an explicit validation method. For objectively measurable criteria, use machine verification (test pass/fail, type checks, structural assertions, behavioral contracts). For inherently subjective criteria (aesthetics, UX design, content tone), use human-in-the-loop verification with an identified approval authority. Subjective decisions resolved during planning become objective specs — subsequent validation checks against the documented choice, not the subjective dimension. Criteria with no stated validation method signal unresolved ambiguity in the spec.
+cycle_created: 1
+cycle_modified: null
+content_hash: bdaa07b68c3f9cdb7d147f2e4b0e05348cdc433dd0c938498e338c89e80554ad
+token_count: 262
+file_path: .ideate/policies/P-08.yaml

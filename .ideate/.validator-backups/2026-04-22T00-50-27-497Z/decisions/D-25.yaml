@@ -1,0 +1,13 @@
+id: D-25
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: The domain-curator agent uses MCP semantic search against existing domain policy files before writing a new policy entry, to detect near-duplicate or overlapping policies that should be amended rather than duplicated.
+rationale: Decided during refine-008 interview to prevent policy accumulation as the domain layer grows across cycles.
+cycle_created: 1
+cycle_modified: null
+content_hash: b08fccbd4fd3ff0a2992a456d1765e02112d0a3ec4eb1776d9131cece31db13b
+token_count: 136
+file_path: .ideate/decisions/D-25.yaml

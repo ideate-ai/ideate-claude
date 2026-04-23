@@ -1,0 +1,14 @@
+id: P-30
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - D-75 (cycle 017 incremental-vs-capstone divergence); D-66 (migration script implemented against WI-157 without checking WI-146 steps 7-12)
+established: cycle 017
+amended: null
+description: When a refinement cycle decomposes a feature-level spec (e.g., WI-146 "migration script") into per-cycle child work items (e.g., WI-157 "migration completion"), the child's notes spec must be validated against the parent for missing steps before execution begins. The decomposer or refiner must confirm that the union of all child work items covers every step in the parent spec. Omissions in a child spec are invisible to incremental reviewers who see only the child's notes — the capstone review is the first opportunity to detect gaps, at which point rework is required.
+cycle_created: 1
+cycle_modified: null
+content_hash: "6a5797d502c1f54277ecd5302048905863f686e5b7e370a2f55be73e0a4651c2"
+token_count: 237
+file_path: .ideate/policies/P-30.yaml

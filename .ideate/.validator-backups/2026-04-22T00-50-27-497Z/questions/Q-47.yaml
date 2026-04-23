@@ -1,0 +1,14 @@
+id: Q-47
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Interview responses are not queryable via MCP tools after migration.
+source: archive/cycles/017/gap-analysis.md MR2; archive/cycles/017/decision-log.md OQ-6
+resolution: WI-164 added `migrateInterviews` handling both legacy `steering/interview.md` and per-cycle `steering/interviews/**/*.md` files.
+resolved_in: 18
+description: No migration function handles `steering/interview.md` or `steering/interviews/**/*.md`. This is step 11 of the WI-146 notes spec. The `.ideate/interviews/` subdirectory exists in `IDEATE_SUBDIRS` but nothing is migrated into it.
+cycle_created: 1
+cycle_modified: null
+content_hash: "4f20858a0609f02d81ede51300b6b6e5da2049c28ca1073d7fdbcb89e1891f34"
+token_count: 186
+file_path: .ideate/questions/Q-47.yaml

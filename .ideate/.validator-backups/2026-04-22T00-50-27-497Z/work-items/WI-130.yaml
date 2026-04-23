@@ -1,0 +1,74 @@
+id: WI-130
+type: work_item
+title: Replace hardcoded claude-opus-4-6 with opus tier alias
+status: done
+complexity: low
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: skills/refine/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: specs/plan/architecture.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - skills/plan/SKILL.md contains zero occurrences of the string "claude-opus-4-6"
+  - skills/refine/SKILL.md contains zero occurrences of the string "claude-opus-4-6"
+  - skills/review/SKILL.md contains zero occurrences of the string "claude-opus-4-6"
+  - skills/autopilot/phases/execute.md contains zero occurrences of the string "claude-opus-4-6"
+  - specs/plan/architecture.md contains zero occurrences of the string "claude-opus-4-6"
+  - Every location that previously referenced claude-opus-4-6 now references opus
+  - No other lines in any of the five files are modified
+module: null
+domain: null
+notes: |
+  # Implementation Notes — WI-130
+
+  ## What to change
+
+  Replace every `claude-opus-4-6` model string with `opus` in skill files. These are spawn-time model overrides for agents that need the capable tier.
+
+  ## Exact locations
+
+  ### skills/plan/SKILL.md
+  - Line 297: `model: claude-opus-4-6` → `model: opus` (architect spawn)
+  - Line 368: `model: claude-opus-4-6` → `model: opus` (decomposer spawn)
+  - Line 736: metrics schema example `"claude-opus-4-6"` → `"opus"`
+
+  ### skills/refine/SKILL.md
+  - Line 36: `model: claude-opus-4-6` → `model: opus` (architect analyze spawn)
+  - Line 267: `model: claude-opus-4-6` → `model: opus` (architect design spawn)
+  - Line 299: `model: claude-opus-4-6` → `model: opus` (decomposer spawn)
+  - Line 379: metrics schema example `"claude-opus-4-6"` → `"opus"`
+
+  ### skills/review/SKILL.md
+  - Line 441: `model: claude-opus-4-6` → `model: opus` (domain-curator conflict spawn)
+  - Line 651: metrics schema example `"claude-opus-4-6"` → `"opus"`
+
+  ### skills/autopilot/phases/execute.md
+  - Line 174: `model: "claude-opus-4-6"` → `model: "opus"` (proxy-human spawn)
+
+  ### specs/plan/architecture.md
+  - Line 223: Update note about plan/refine overriding to `claude-opus-4-6` → `opus`
+  - Line 234: Same update for decomposer entry
+
+  ## Pattern
+
+  Each replacement follows the same pattern: the phrase `claude-opus-4-6` becomes `opus`. The surrounding context (e.g., "This overrides the agent's default model for this task") remains unchanged.
+
+  The metrics schema examples change from `"claude-opus-4-6"` to `"opus"` as an illustrative value.
+
+  ## Rationale
+
+  Policy P-11 states model overrides are applied at spawn time. Currently the overrides use a specific Anthropic model ID rather than the tier alias. This bypasses Claude Code's `ANTHROPIC_DEFAULT_OPUS_MODEL` env var, which remaps what `opus` resolves to. Using the tier alias makes the env var mechanism work correctly.
+cycle_created: 1
+cycle_modified: null
+content_hash: 241297dfaae05d19ddf506f098d023990e4b6e7804279f49fbf8e3a622d905fa
+token_count: 755
+file_path: .ideate/work-items/WI-130.yaml
+resolution: Implemented during v3 migration

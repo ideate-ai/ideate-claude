@@ -1,0 +1,13 @@
+id: Q-86
+type: domain_question
+content_hash: a30240067dd4eba5949d97bbf27c805e830ee0ad7351919a582bce3fce94ce28
+cycle_created: 66
+deferred_rationale: Most critical tools already have size hints; gap is minor polish.
+domain: artifact-structure
+file_path: .ideate/questions/Q-86.yaml
+impact: Inconsistent adherence to P-34 across tool descriptions. Some tools lack response size hints.
+question: Should ideate_get_domain_state, ideate_get_convergence_status, ideate_get_project_status, and ideate_get_execution_status include response size expectations in their descriptions per P-34?
+reexamination_trigger: When tool descriptions are next revised or when P-34 compliance is audited.
+source: gap-analysis.yaml cycle 066, finding IR1
+status: deferred
+token_count: 157

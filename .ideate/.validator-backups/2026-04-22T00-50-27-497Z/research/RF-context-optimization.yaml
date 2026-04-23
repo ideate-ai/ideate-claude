@@ -1,0 +1,205 @@
+id: RF-context-optimization
+type: research_finding
+topic: "Research: Context Optimization for LLM Consumption of Structured Data"
+status: active
+date: null
+content: |
+  # Research: Context Optimization for LLM Consumption of Structured Data
+  
+  **Date**: 2026-03-23
+  **Scope**: Techniques for assembling minimal-but-sufficient context from structured data for LLM consumption, with specific application to the ideate MCP tool design.
+  
+  ---
+  
+  ## Summary
+  
+  Multiple converging research streams confirm the same principle: context size beyond a task-relevant minimum actively degrades LLM performance. The degradation is not linear — it follows a U-shaped attention curve (primacy/recency bias) and accelerates on complex tasks. For structured data fed through MCP tools, the design implication is clear: tool responses must pre-assemble the minimum sufficient context, not return raw large artifacts and leave filtering to the LLM. Pre-computation of derived data (topological sorts, completion percentages, dependency satisfaction) by code is well-supported; asking the LLM to compute these from raw structured data wastes tokens and introduces error. The most token-efficient serialization format depends on data shape: compact YAML or TOON for flat/tabular data, markdown for mixed prose+structure.
+  
+  ---
+  
+  ## Key Facts
+  
+  ### 1. Context Size and Performance Degradation
+  
+  - **"Lost in the Middle" (Liu et al., 2024, TACL)**: Performance degrades by 30%+ when relevant information sits in the middle of a long context. Models reliably attend to the start and end of context but not the middle. The effect is present even in models explicitly trained for long context.
+  
+  - **"Context Rot" (Chroma Research, July 2025)**: A study of 18 models including Claude Sonnet 4, GPT-4.1, and Gemini 2.5 found that performance degradation begins well before the context window is full. A model with a 200K-token window showed significant degradation at 50K tokens. Degradation is more severe on complex tasks than simple retrieval.
+  
+  - **"Lost in the Haystack" (PMC, 2024)**: Smaller, more specific "gold contexts" (precise facts) degrade performance more than large chunks, and exacerbate positional sensitivity. This is directly relevant when passing structured records (work items, findings) rather than prose.
+  
+  - **Anthropic's own position (2025)**: "Good context engineering means finding the smallest possible set of high-signal tokens that maximize the likelihood of some desired outcome."
+  
+  - **Practical threshold**: No published hard threshold exists for all models/tasks. The evidence supports treating token minimization as a correctness concern, not merely a cost concern.
+  
+  ### 2. How AI Coding Assistants Handle Context
+  
+  - **Aider's repo map**: Uses tree-sitter to extract symbol definitions from all files, then PageRank on a file-dependency graph to rank which definitions are most relevant to the current task. A token budget (default 1K, adjustable with `--map-tokens`) caps the map. Only the highest-ranked symbols make it into context. This achieves 80–98% token reduction vs. including full files.
+  
+  - **Cody (Sourcegraph)**: Uses a two-stage pipeline — retrieval (high recall, finds all potentially relevant items) followed by ranking (high precision, filters to fit token budget). Both stages are distinct. The ranking stage is what enforces the token budget.
+  
+  - **Cline**: Tracks context window fill level and summarizes older history when the window approaches capacity, preventing long-session degradation.
+  
+  - **Cursor**: Context window approximately 20K tokens; large files overflow it. No published strategy for ranking/selection beyond implicit recency.
+  
+  - **Common pattern across tools**: None of them pass full file contents for all potentially relevant files. All implement some form of query-relative scoring before deciding what to include.
+  
+  ### 3. Serialization Format Token Efficiency
+  
+  Benchmarks measured with tiktoken on equivalent data:
+  
+  | Format | Relative token count | Notes |
+  |--------|---------------------|-------|
+  | XML    | ~180% vs markdown   | Most expensive for nested data |
+  | JSON (verbose) | ~135% vs markdown | Standard indented JSON |
+  | JSON (compact) | ~115% vs markdown | No whitespace |
+  | YAML   | ~110–115% vs markdown | Competitive with compact JSON; ~30% fewer tokens than verbose JSON |
+  | Markdown | 100% (baseline) | Best for mixed prose+structure |
+  | TOON   | ~60–70% vs JSON compact | Best for flat/tabular data only |
+  | CSV    | ~50–60% vs JSON for tabular | Best for pure tabular data |
+  
+  - **TOON (Token-Oriented Object Notation, released Oct 2024)**: In a benchmark of 209 data retrieval questions across 4 models, TOON achieved 73.9% accuracy vs. JSON's 69.7%, using 39.6% fewer tokens. However, TOON loses its advantage over JSON/YAML for nested or hierarchical data. No independent peer-reviewed validation exists as of March 2026.
+  
+  - **Poor data serialization wastes 40–70% of tokens** according to a New Stack analysis — excess whitespace, redundant field names, unnecessary nesting.
+  
+  - **For work items**: YAML with compact structure outperforms verbose JSON. Keys matter — short field names (`id`, `deps`, `done`) vs. long ones (`identifier`, `dependencies`, `is_complete`) save meaningful tokens at scale.
+  
+  - **Requiring structured output (JSON) for LLM responses costs accuracy**: One study found a 27.3 percentage-point accuracy drop on GSM8K when requiring JSON output vs. natural language output. This applies to output format, not input format, but illustrates that format constraints have cognitive overhead.
+  
+  ### 4. MCP Tool Design for Token Efficiency
+  
+  - **Schema loading is 60–80% of static tool token cost**: Speakeasy measured that in large MCP servers, tool schemas dominate token usage. Lazy-loading schemas (expose only tool names by default, load schema on demand) achieves up to 160x token reduction vs. static toolsets. A 400-tool server drops from 405K tokens to ~6K with dynamic discovery.
+  
+  - **Filtering at the tool layer, not the LLM layer**: RubyMine's Rails MCP tools apply server-side filters before returning results. This is the documented best practice: reduce the search space before the LLM sees it.
+  
+  - **Pagination is context-aware**: Effective pagination preserves data sequence and avoids gaps. The LLM should never receive a truncated result without knowing it is truncated.
+  
+  - **Response size bounding**: The ideate work item 082 already specifies bounds (200–500 lines for work item context, 500–800 lines for review context). This aligns with current best practice.
+  
+  - **Error messages must include recovery instructions**: Without recovery instructions, LLMs make additional tool calls to figure out what went wrong, wasting tokens and turns.
+  
+  ### 5. Pre-Computation and Materialization
+  
+  What should be computed by code and stored, rather than computed by the LLM:
+  
+  - **Topological sort / execution order**: DAG traversal is deterministic and cheap in code. LLMs can compute it from adjacency data but will spend tokens on it and may make errors with complex dependency graphs. Store the computed execution groups alongside the raw `depends`/`blocks` fields.
+  
+  - **Dependency satisfaction status**: For each work item, whether all dependencies are complete. A boolean per item, precomputed on read. The LLM should not scan all items to determine this.
+  
+  - **Completion percentages and counts**: Total items, completed count, percentage — these are counting operations. Research confirms LLMs are poor at exact counting over structured data (one study put GPT-4o at 77% accuracy on JSON counting tasks). Compute and return the number.
+  
+  - **Finding counts by severity**: A review cycle may produce dozens of findings. Pre-aggregate by severity (critical/high/medium/low) before returning to the LLM. Do not ask the LLM to count.
+  
+  - **Cycle number and latest cycle path**: Looked up once by code, passed as a value. Should not require the LLM to scan directory names.
+  
+  - **Domain membership per file scope**: Which domain owns a given file path. Looked up from the domain index. Should not require the LLM to infer from context.
+  
+  - **Summary materialization**: Domain `decisions.md` and `policies.md` are already a form of summary materialization — the curator writes distilled summaries so downstream agents read 6–10 lines per decision rather than the raw archive. This is the correct pattern. Extending it to work items (a status rollup per domain, per cycle) follows the same logic.
+  
+  ### 6. Graph-Based Multi-Hop Retrieval
+  
+  - **Traditional vector RAG fails at multi-hop queries**: "Find all findings related to work items that touch auth middleware" requires entity linking (findings → work items → file scope → middleware). Vector search returns semantically similar chunks but cannot follow relational chains.
+  
+  - **Microsoft GraphRAG (2024)**: Introduced community detection and graph traversal over knowledge graphs to answer multi-hop queries. Shows 35% accuracy improvement over vector-only RAG on complex reasoning tasks in some benchmarks.
+  
+  - **Inference-Scaled GraphRAG (2025)**: 64.7% improvement over traditional GraphRAG on multi-hop questions, improving from 15.26% to 31.44% accuracy on hard multi-hop benchmarks.
+  
+  - **N-hop neighborhood**: For a query rooted at a node (e.g., a work item), 1-hop gives directly related nodes (its findings, its dependencies, its files). 2-hop gives nodes related to those (findings on those dependencies, other work items touching the same files). Controlling hop depth controls context size.
+  
+  - **For ideate's scale**: Full GraphRAG (community detection, knowledge graph ingestion pipeline) is likely over-engineered. The artifact graph is small and explicitly structured. A simpler approach — store explicit relationship maps (file → domain, work item → files, finding → work item) and do indexed lookups — achieves multi-hop retrieval without embedding infrastructure.
+  
+  - **Hybrid retrieval**: In practice, best-performing systems use vector search for initial recall followed by graph traversal for relationship resolution. The artifact MCP server (082) already plans keyword-based search for the initial layer and embedding search for 083.
+  
+  ### 7. Tiered Context / Progressive Disclosure
+  
+  - **Progressive disclosure** is the pattern with the most documented real-world adoption for LLM agent context: expose only the minimum entry-level context first (index, metadata), load capability/detail on demand.
+  
+  - A three-tier example from production agent systems: Entry layer (320 tokens) → Capability layer loaded on demand (~1,200 tokens) → Execution layer dynamically injected (~400 tokens). Actual tokens per invocation: ~1,920 vs. ~6,800 with monolithic approach. Claimed 72% reduction.
+  
+  - **Summary-first, detail-on-demand**: Return summaries by default; include a path/citation so the LLM can fetch full content when it needs it. This is what the domain layer already does for archive content.
+  
+  - **Query-based context assembly**: Rather than assembling context from a fixed set of files, assemble from the query. For a work item execution query, the relevant context is: that item's spec + its notes + policies for its domain + items that block it (not all items). This is what `artifact_context(work_item)` in 082 is designed to do.
+  
+  ---
+  
+  ## Recommendations
+  
+  **Option 1: Pre-assembled, query-scoped tool responses (primary recommendation)**
+  - Tool calls receive query parameters (work item ID, review scope, domain name) and return pre-assembled context.
+  - The server computes all derived fields (topological order, dependency satisfaction, completion counts) before returning.
+  - Response is bounded (200–800 lines depending on tool), with citations to full files.
+  - Pros: Eliminates LLM-side parsing/extraction errors. Minimizes tokens. Consistent with progressive disclosure. Consistent with existing 082/083 design direction.
+  - Cons: Requires building and maintaining the assembly logic in the server. The server must stay current with artifact structure changes.
+  - When to use: Default design for all MCP tool responses in the artifact server.
+  
+  **Option 2: Tiered detail with explicit depth parameter**
+  - Tools accept a `detail` parameter: `summary` (metadata + status + citations only), `standard` (includes full spec fields), `full` (includes notes, related findings, linked decisions).
+  - The LLM starts with `summary`, requests `standard` or `full` when it needs more.
+  - Pros: LLM controls depth. Context grows only as needed. Works well when the LLM's next action depends on what it finds.
+  - Cons: Multi-turn overhead. Two tool calls where one sufficed for well-defined tasks.
+  - When to use: When the LLM is exploring (e.g., `artifact_query`, free-text search) rather than executing a known task.
+  
+  **Option 3: Compact YAML for structured list responses**
+  - When returning lists (work items, findings, policies), use compact YAML with short field names rather than verbose JSON.
+  - Pros: 30–40% token reduction vs. JSON for equivalent data. Better than markdown tables for machine-parseable data. LLMs handle YAML well.
+  - Cons: Requires format consistency. TOON achieves better compression but lacks ecosystem support and peer-reviewed validation.
+  - When to use: Any tool response returning a list of structured records. Not for prose-heavy responses (use markdown for those).
+  
+  **Option 4: Explicit relationship maps for multi-hop queries (vs. vector/graph RAG)**
+  - Store and maintain explicit index files: `file-to-domain.json`, `workitem-to-files.json`, `finding-to-workitem.json`. MCP tools use these for O(1) lookup rather than graph traversal.
+  - Pros: Zero infrastructure cost (no embedding model, no graph DB). Exact results. Fast. Sufficient for ideate's data volume.
+  - Cons: Index files must be kept current. Does not generalize to arbitrary multi-hop queries on unknown graphs. Not useful if data volume grows by 100x.
+  - When to use: For the multi-hop queries ideate actually has (find findings for a work item's files, find policies for a work item's domain). Full GraphRAG is over-engineered for this scale.
+  
+  ---
+  
+  ## Risks
+  
+  **Context rot is a correctness issue, not just a cost issue.** Adding more context to help the LLM can make it perform worse, especially on complex tasks. The ideate MCP server must default to minimum sufficient context and require explicit requests for additional detail.
+  
+  **Middle-context blindness affects structured data more than prose.** When a work item appears mid-context surrounded by many other items, the LLM is more likely to miss or misread it than if it were at the start or end. Tool responses should order highest-priority content first and last.
+  
+  **Requiring structured output (JSON) for LLM responses degrades reasoning accuracy** by up to 27 percentage points in some benchmarks. This applies to LLM output, not input — but it means tool response design should not add cognitive load to the LLM's output path unnecessarily.
+  
+  **TOON format has no independent validation.** Its benchmarks come from the project's own authors. The format was released October 2024. Using it for MCP responses introduces a non-standard format dependency. YAML compact achieves ~70% of TOON's savings with no ecosystem risk.
+  
+  **Schema tokens dominate in large tool registries.** If the artifact MCP server exposes many tools with verbose schemas, schema tokens will dominate total token cost per invocation. Lazy schema loading (expose names first, load schema on demand) should be the default for any tools that are rarely used.
+  
+  **GraphRAG infrastructure cost is high for small corpora.** Full GraphRAG requires an ingestion pipeline (NER, relation extraction, embedding, graph storage). For ideate's artifact corpus (hundreds of files, not millions), explicit relationship index files are both cheaper and more reliable.
+  
+  **LLM counting and aggregation over structured data is unreliable.** Research confirms accuracy drops for counting tasks over JSON. Any aggregated statistic (finding counts by severity, completion percentage) should be computed by code, not derived by the LLM from raw data.
+  
+  **Context assembly logic creates coupling.** If the MCP server pre-assembles context by reading multiple artifact files, changes to artifact structure require server updates. The server's assembly logic must be versioned alongside artifact schema changes.
+  
+  ---
+  
+  ## Sources
+  
+  - "Lost in the Middle: How Language Models Use Long Contexts" (Liu et al., 2024, TACL): https://arxiv.org/abs/2307.03172
+  - "Lost in the Haystack: Smaller Needles are More Difficult for LLMs to Find" (PMC 2024): https://pmc.ncbi.nlm.nih.gov/articles/PMC12478432/
+  - "Context Rot: How Increasing Input Tokens Impacts LLM Performance" (Chroma Research, 2025): https://research.trychroma.com/context-rot
+  - "Effective Context Engineering for AI Agents" (Anthropic Engineering, 2025): https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+  - "AI-assisted Coding with Cody: Lessons from Context Retrieval and Evaluation" (Sourcegraph, arxiv 2024): https://arxiv.org/html/2408.05344v1
+  - "Building a better repository map with tree-sitter" (Aider): https://aider.chat/2023/10/22/repomap.html
+  - "Repository map | Aider docs": https://aider.chat/docs/repomap.html
+  - "How Good Are LLMs at Processing Tool Outputs?" (arxiv 2024): https://arxiv.org/html/2510.15955v1
+  - "Reducing MCP token usage by 100x" (Speakeasy): https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2
+  - "Building LLM-Friendly MCP Tools: Pagination, Filtering, and Error Design" (JetBrains): https://blog.jetbrains.com/ruby/2026/02/rubymine-mcp-and-the-rails-toolset/
+  - "Token Efficiency Serialization Benchmarks" (ShShell.com): https://shshell.com/blog/token-efficiency-module-13-lesson-2-format-comparison
+  - "TOON format benchmarks" (TOON project): https://github.com/toon-format/toon
+  - "TOON vs JSON for LLM Prompts" (DEV Community): https://dev.to/r_elena_mendez_escobar/toon-vs-json-for-llm-prompts-can-we-reduce-tokens-without-losing-response-quality-59ed
+  - "GraphRAG vs. Vector RAG" (Meilisearch): https://www.meilisearch.com/blog/graph-rag-vs-vector-rag
+  - "Knowledge Graph vs. Vector RAG: Benchmarking" (Neo4j): https://neo4j.com/blog/developer/knowledge-graph-vs-vector-rag/
+  - "Progressive Context Enrichment for LLMs" (Inferable): https://www.inferable.ai/blog/posts/llm-progressive-context-encrichment
+  - "Progressive Disclosure in AI Agents" (Medium, Feb 2026): https://medium.com/@martia_es/progressive-disclosure-the-technique-that-helps-control-context-and-tokens-in-ai-agents-8d6108b09289
+  - "Context Engineering for Agents" (LangChain): https://docs.langchain.com/oss/python/langchain/context-engineering
+  - "MCP strategies for grounded prompts and token-efficient context" (k2view): https://www.k2view.com/blog/mcp-strategies-for-grounded-prompts-and-token-efficient-llm-context/
+  - "Markdown is 15% more token efficient than JSON" (OpenAI forum): https://community.openai.com/t/markdown-is-15-more-token-efficient-than-json/841742
+  - "A Guide to Token-Efficient Data Prep for LLM Workloads" (The New Stack): https://thenewstack.io/a-guide-to-token-efficient-data-prep-for-llm-workloads/
+  - Ideate project files: `/Users/dan/code/ideate/specs/plan/work-items-legacy/082-mcp-artifact-server.md`, `083-rag-artifact-retrieval.md`, `087-dense-spec-format.md`, `079-shared-context-package.md`
+  - Ideate design doc: `/Users/dan/code/ideate/specs/steering/research/domain-knowledge-layer.md`
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "25e6f590a6d9bd99d3ad7dc3a5586f081cc9e8c51901189d0faaadee5032b521"
+token_count: 4958
+file_path: .ideate/research/RF-context-optimization.yaml

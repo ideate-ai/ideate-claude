@@ -1,0 +1,11 @@
+id: GP-03
+type: guiding_principle
+name: Guiding Principles Over Implementation Details
+status: active
+description: Users care about objectives, not every technical choice. The tool must determine what level of granularity requires user input versus what can be delegated. Guiding principles serve as the decision framework — if a question can be answered by the principles, it should be answered without asking the user.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: ace944ba5a5e1a9c12f131cad3b28db4838bd9ac47f3f2fb91b98f8ee8c287ce
+token_count: 136
+file_path: .ideate/principles/GP-03.yaml

@@ -4,57 +4,89 @@ title: Execution Instructions Injection
 status: obsolete
 complexity: low
 scope:
-  - {path: mcp/session-spawner/server.py, op: modify}
+  - path: mcp/session-spawner/server.py
+    op: modify
 depends: []
 blocks:
-  - "025"
+  - '025'
 criteria:
-  - "`spawn_session` tool schema includes `exec_instructions` (string, optional) with description \"Execution instructions prepended to the spawned session's prompt. Overrides IDEATE_EXEC_INSTRUCTIONS env var for this call and its children.\""
-  - "When `exec_instructions` is provided (non-empty), it takes precedence over `IDEATE_EXEC_INSTRUCTIONS` env var"
-  - "When neither `exec_instructions` parameter nor `IDEATE_EXEC_INSTRUCTIONS` env var is set, prompt is passed through unchanged"
-  - "When instructions are present, the prompt sent to the subprocess is:"
-  - "```"
-  - "[EXECUTION INSTRUCTIONS]\\n{instructions}\\n[END EXECUTION INSTRUCTIONS]\\n\\n{original_prompt}"
-  - "```"
+  - >-
+    `spawn_session` tool schema includes `exec_instructions` (string, optional) with description "Execution instructions
+    prepended to the spawned session's prompt. Overrides IDEATE_EXEC_INSTRUCTIONS env var for this call and its
+    children."
+  - When `exec_instructions` is provided (non-empty), it takes precedence over `IDEATE_EXEC_INSTRUCTIONS` env var
+  - >-
+    When neither `exec_instructions` parameter nor `IDEATE_EXEC_INSTRUCTIONS` env var is set, prompt is passed through
+    unchanged
+  - 'When instructions are present, the prompt sent to the subprocess is:'
+  - '```'
+  - '[EXECUTION INSTRUCTIONS]\n{instructions}\n[END EXECUTION INSTRUCTIONS]\n\n{original_prompt}'
+  - '```'
   - with a single blank line between the instruction block and original prompt
-  - "`IDEATE_EXEC_INSTRUCTIONS` is set in the child subprocess environment to the resolved instructions value (param > env var), enabling recursive propagation"
-  - "If no instructions are present, `IDEATE_EXEC_INSTRUCTIONS` is not added to (or removed from) the child env — it inherits whatever the parent process has"
-  - "`prompt_bytes` logged in the session registry reflects the original prompt length before injection (see work item 022)"
-  - The prompt size validation (100KB limit) applies to the original prompt before injection; injected instructions do not count toward the limit
+  - >-
+    `IDEATE_EXEC_INSTRUCTIONS` is set in the child subprocess environment to the resolved instructions value (param >
+    env var), enabling recursive propagation
+  - >-
+    If no instructions are present, `IDEATE_EXEC_INSTRUCTIONS` is not added to (or removed from) the child env — it
+    inherits whatever the parent process has
+  - >-
+    `prompt_bytes` logged in the session registry reflects the original prompt length before injection (see work item
+    022)
+  - >-
+    The prompt size validation (100KB limit) applies to the original prompt before injection; injected instructions do
+    not count toward the limit
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 024
-  
+
+
   **Resolve instructions**:
+
   ```python
+
   exec_instructions = arguments.get("exec_instructions") or os.environ.get("IDEATE_EXEC_INSTRUCTIONS", "")
+
   ```
+
   A falsy value (empty string, None) means no injection.
-  
+
+
   **Prompt augmentation** (after prompt size validation, before building the cmd):
+
   ```python
+
   effective_prompt = prompt
+
   if exec_instructions:
       effective_prompt = (
           f"[EXECUTION INSTRUCTIONS]\n{exec_instructions}\n[END EXECUTION INSTRUCTIONS]\n\n{prompt}"
       )
   ```
+
   Use `effective_prompt` in the `cmd` array. Use `prompt` (original) for `prompt_bytes` logging.
-  
+
+
   **Env propagation**:
+
   ```python
+
   if exec_instructions:
       env["IDEATE_EXEC_INSTRUCTIONS"] = exec_instructions
   ```
+
   Add this to the env dict construction block alongside `IDEATE_SPAWN_DEPTH` and `IDEATE_TEAM_NAME`.
-  
+
+
   **Tool schema parameter placement**: Add `exec_instructions` after `team_name` in `inputSchema.properties`.
-  
-  **Prompt size check**: The existing validation `if prompt_byte_len > MAX_PROMPT_BYTES` uses `len(prompt.encode("utf-8"))` where `prompt` is the raw argument. This must not change — `effective_prompt` is only built after the validation passes.
-resolution: "mcp/session-spawner/server.py no longer exists. Architecture replaced by mcp/artifact-server."
+
+
+  **Prompt size check**: The existing validation `if prompt_byte_len > MAX_PROMPT_BYTES` uses
+  `len(prompt.encode("utf-8"))` where `prompt` is the raw argument. This must not change — `effective_prompt` is only
+  built after the validation passes.
+resolution: mcp/session-spawner/server.py no longer exists. Architecture replaced by mcp/artifact-server.
 cycle_created: 1
 cycle_modified: null
-content_hash: "1896d602ae2b7487057e1114d45f73df66b738d4f17300c73f70cbb490a7ebc5"
+content_hash: 1896d602ae2b7487057e1114d45f73df66b738d4f17300c73f70cbb490a7ebc5
 token_count: 716
-file_path: .ideate/work-items/WI-024.yaml
+file_path: work-items/WI-024.yaml

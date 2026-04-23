@@ -1,0 +1,22 @@
+id: interview-refine-007
+type: interview
+title: "Refinement Interview — Cycle 7: Post-Review Corrections"
+cycle: 7
+entries:
+  - question: Review findings exist from Cycle 6. Are you here to address those findings?
+    answer: Yes, addressing review findings.
+    domain: null
+  - question: "Q-121: Is BELONGS_TO_DOMAIN an active relationship or deprecated? Option A (node with relationships) or Option B (property)?"
+    answer: "Option B — domain as a property. Remove BELONGS_TO_DOMAIN. Reasoning: hub distortion in PPR from high fan-in, and cross-cutting edges already handle cross-domain discovery."
+    domain: artifact-structure
+  - question: "Q-122: Is Cycle a first-class node?"
+    answer: No. Cycles are individual runs in a phase. Remove from diagram.
+    domain: artifact-structure
+  - question: "Q-123: WorkItemComplexity — 3 or 5 values?"
+    answer: 3 values (small/medium/large).
+    domain: artifact-structure
+  - question: "Q-124: Should archiveCycle be on the StorageAdapter interface?"
+    answer: Yes, add it with per-adapter semantics.
+    domain: artifact-structure
+content_hash: 6ca2f76b7c6496ea7a2e0a427c275b37684451c7a047508058c9a9cf988668cc
+token_count: 272

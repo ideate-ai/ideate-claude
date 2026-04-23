@@ -1,0 +1,37 @@
+id: WI-310
+type: work_item
+title: README proofread and fixes
+status: done
+complexity: low
+scope:
+  - path: README.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - README.md contains no factual errors about the current project state
+  - README.md artifact structure section matches the actual .ideate/ directory layout
+  - README.md tool references match the current 17-tool MCP tool set
+  - README.md contains no broken links or references to non-existent files
+  - README.md version references match the current 3.1.0 version
+  - No structural changes to README — fixes are limited to accuracy corrections and proofreading
+domain: project-boundaries
+notes: |-
+  # WI-310: README proofread and fixes
+
+  ## Overview
+  User-requested proofread of README.md. Check for:
+  - Factual accuracy against current codebase state
+  - Artifact structure description matches .ideate/ layout
+  - Tool references match current MCP tool set (17 tools)
+  - Version references (should be 3.1.0)
+  - Broken links (Q-09 flagged github.com/dan/outpost link)
+  - Grammar, clarity, formatting
+
+  Be surgical — fix errors and inaccuracies, don't rewrite working sections.
+resolution: null
+cycle_created: 59
+cycle_modified: null
+content_hash: ba8db08286a6320e1c8ad59c3156368d0645aa4b2017d0172fbc3df2692b4160
+token_count: 302
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-310.yaml

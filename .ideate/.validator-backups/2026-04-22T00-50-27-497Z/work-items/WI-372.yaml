@@ -1,0 +1,50 @@
+id: WI-372
+type: work_item
+title: Standardize proxy-human deferral signal to lowercase per schema.ts
+status: done
+complexity: low
+scope:
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: agents/proxy-human.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - In execute.md, the deferral check uses `"deferred"` (lowercase, quoted) — not `DEFER` or `DEFERRED`
+  - In execute.md, no occurrence of uppercase `DEFER` exists as a signal value
+  - In proxy-human.md, the decision field template uses lowercase `"approved" | "deferred" | "escalated"` — not `APPROVED | DEFERRED | ESCALATED`
+  - 'The values match the authoritative schema.ts ProxyHumanDecision interface: `decision: "approved" | "deferred" | "escalated"`'
+domain: workflow
+notes: |-
+  Two markdown edits to align signal values with schema.ts (D-123, P-39).
+
+  ## Change 1: execute.md line ~213
+  Find the deferral handling section. Current text:
+  ```
+  If the decision is `DEFER`, add it to the cycle's deferred items list
+  ```
+  New:
+  ```
+  If the decision is `"deferred"`, add it to the cycle's deferred items list
+  ```
+
+  Also search execute.md for any other occurrences of `DEFER` or `DEFERRED` used as signal values (not as prose words like 'deferred items'). Change all signal value occurrences to lowercase `"deferred"`.
+
+  ## Change 2: proxy-human.md line ~90
+  Find the decision field template. Current:
+  ```yaml
+    decision: {APPROVED | DEFERRED | ESCALATED}
+  ```
+  New:
+  ```yaml
+    decision: "approved" | "deferred" | "escalated"
+  ```
+
+  Authoritative reference: schema.ts ProxyHumanDecision interface at line ~308: `decision: "approved" | "deferred" | "escalated"`.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 4da44625441ee7fd701f78800a6f4f97311024e2e2ca6bf0c87c2fe052b83161
+token_count: 430
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-372.yaml

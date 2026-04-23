@@ -1,0 +1,22 @@
+id: WI-293
+type: work_item
+title: Fix domain-curator Write access — route through MCP (Q-83)
+status: done
+complexity: small
+scope:
+  - path: agents/domain-curator.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - domain-curator.md tools list does not include Write
+  - Curator returns proposed updates in response, does not write directly
+  - Q-83 updated to resolved
+domain: agent-system
+notes: Same pattern as WI-268 (researcher fix). Remove Write from curator tools. Skills already parse curator response and write via ideate_write_artifact.
+resolution: Write removed from domain-curator. Returns proposed updates in response. Q-83 resolved.
+cycle_created: 38
+cycle_modified: null
+content_hash: f725fa8bf15c31f7f33807feed7d5b64a250a789e3f89f4365e03c3467f190d8
+token_count: 172
+file_path: .ideate/work-items/WI-293.yaml

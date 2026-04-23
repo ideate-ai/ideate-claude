@@ -1,0 +1,24 @@
+id: WI-245
+type: work_item
+title: Clean up empty specs/plan/notes/ directory
+status: done
+complexity: low
+scope:
+  - path: specs/plan/notes/
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - specs/plan/notes/ directory no longer exists
+  - No other specs/plan/ artifacts remain (specs/plan/ can be removed if empty)
+domain: project-boundaries
+notes: |-
+  # WI-245: Clean Up v2 Remnants
+
+  Remove the empty specs/plan/notes/ directory. Check if specs/plan/ is also empty after removal and remove it too. Check if specs/ itself can be cleaned up (may still have other content).
+resolution: Removed empty specs/plan/notes/ and specs/plan/. Only specs/metrics.jsonl remains.
+cycle_created: 30
+cycle_modified: null
+content_hash: 9bc4a100ee03c2533d7e723fa3eac7c73bdd51f6c04450d2331792e394746d5f
+token_count: 178
+file_path: .ideate/work-items/WI-245.yaml

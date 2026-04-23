@@ -1,0 +1,47 @@
+reviewer: gap-analyst
+cycle: 30
+type: full_audit
+content: |-
+  ## Verdict: Partial
+
+  ## Critical Findings
+
+  **CF1: Domain-curator points to wrong directory path**
+  - **File**: `agents/domain-curator.md` line 166
+  - **Issue**: Says to create `{project_root}/domains/{name}/` but should be `{project_root}/.ideate/domains/{name}/`
+  - **Impact**: The domain-curator would create domains at the wrong level
+  - **Fix**: Add `.ideate/` to the path
+
+  ## Significant Findings
+
+  **SF1: Review skill still references *.md pattern**
+  - **File**: `skills/review/SKILL.md` line 406
+  - **Issue**: References `domains/*/policies.md` instead of `domains/*/policies/*.yaml`
+  - **Note**: WI-260 was supposed to fix this but missed line 406 (only fixed line 436)
+
+  **SF2: Context package spec still references .md files**
+  - **File**: `docs/context-package-spec.md` lines 17, 26, 32, 61-63
+  - **Issue**: WI-262 only changed placeholders but left file extensions as `.md`:
+    - Line 17: `plan/architecture.md` (should be `.yaml`)
+    - Line 26: `steering/guiding-principles.md` (should be `.yaml`)
+    - Line 32: `steering/constraints.md` (should be `.yaml`)
+    - Lines 61-63: Reference absolute paths to `.md` files
+
+  ## Minor Findings
+
+  **MF1: Domain-curator section headers use .md suffix**
+  - **File**: `agents/domain-curator.md` lines 96, 104, 134
+  - **Issue**: Headers like "### 4.1 decisions.md" still use .md suffix
+
+  ## Cross-Cutting Observations
+
+  1. **Incomplete WI-260 fix**: Only fixed line 436 but missed line 406
+  2. **Incomplete WI-262 fix**: Placeholders changed but file extensions not updated
+  3. **Pattern search gap**: Fixes were too narrowly scoped
+
+  ## Suggestions
+
+  1. Expand scope of fixes to include cross-skill consistency checks
+  2. Pattern search before marking work items complete
+  3. Update documentation spec to be fully consistent with P-25
+  4. Consider archive migration notes for historical files

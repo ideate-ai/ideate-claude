@@ -1,0 +1,13 @@
+id: D-79
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-166 renamed the constant in `config.ts` from `CURRENT_SCHEMA_VERSION` to `CONFIG_SCHEMA_VERSION`. The SQLite schema version constant in `schema.ts` retains the name `CURRENT_SCHEMA_VERSION`. Both constants now have distinct names, though the naming convention is asymmetric (`CONFIG_` prefix vs `CURRENT_` prefix).
+rationale: The name collision between config.ts and schema.ts (identified in Q-50) would cause a compilation error or shadowing in any Phase 2 module that imported from both. The rename resolves the collision; the asymmetric naming is noted as a minor inconsistency (spec-adherence N1) but not blocking.
+cycle_created: 1
+cycle_modified: null
+content_hash: c926a3b027e1e964d9d17e193cf599c30cef3798ffdb806747be41018ae43c96
+token_count: 209
+file_path: .ideate/decisions/D-79.yaml

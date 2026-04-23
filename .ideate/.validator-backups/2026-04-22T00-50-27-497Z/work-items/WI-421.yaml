@@ -1,0 +1,27 @@
+id: WI-421
+type: work_item
+title: Fix handleGetMetrics LIKE false positives — use json_extract for payload field filters
+status: done
+complexity: low
+scope:
+  - file: mcp/artifact-server/src/tools/metrics.ts
+    action: modify
+  - file: mcp/artifact-server/src/__tests__/metrics.test.ts
+    action: modify
+depends: []
+blocks: []
+criteria:
+  - handleGetMetrics uses json_extract(payload, '$.work_item') = ? (not LIKE) for work_item filter
+  - handleGetMetrics uses json_extract(payload, '$.phase') = ? (not LIKE) for phase filter
+  - handleGetMetrics uses json_extract(payload, '$.agent_type') = ? (not LIKE) for agent_type filter if agent_type is stored in payload
+  - A filter for work_item='WI-1' does NOT match rows with work_item='WI-10' or 'WI-100'
+  - All 492 tests pass
+  - Existing metrics.test.ts filter tests updated to reflect exact-match semantics
+domain: artifact-structure
+notes: "# WI-421: Fix handleGetMetrics LIKE false positives — use json_extract for payload field filters"
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 9361081f673cd3174cd9fcbae8dd7460e27ad7e2008d91f82c2d8d498c375d33
+token_count: 262
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-421.yaml

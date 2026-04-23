@@ -1,0 +1,41 @@
+id: WI-367
+type: work_item
+title: Add model_overrides clause to autopilot/SKILL.md Phase 0
+status: done
+complexity: low
+scope:
+  - path: skills/autopilot/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - Phase 0 of autopilot/SKILL.md contains the model_overrides clause identical in substance to the clause in skills/execute/SKILL.md Phase 0
+  - The clause instructs the skill to hold {config}.model_overrides and use it when spawning any agent (proxy-human and any other agents spawned by the coordinator)
+  - No other changes to autopilot/SKILL.md
+domain: workflow
+notes: |-
+  ## Context
+
+  Cycle 068 gap-analyst finding II1: WI-363 added the model_overrides clause to 6 skill files but the autopilot coordinator (skills/autopilot/SKILL.md) Phase 0 was outside the work item's scope. The coordinator spawns proxy-human and needs to honor model_overrides.
+
+  ## Change
+
+  In `skills/autopilot/SKILL.md`, the current Phase 0 text (line 17) is:
+
+  ```
+  Call `ideate_get_config()` to read project configuration. Hold the response as `{config}`. Use `{config}.agent_budgets.{agent_name}` as the maxTurns value when spawning agents. If `ideate_get_config` is unavailable or returns no agent_budgets, use the agent's frontmatter maxTurns as fallback.
+  ```
+
+  Append the model_overrides clause (matching execute/SKILL.md line 15 verbatim):
+
+  ```
+  Call `ideate_get_config()` to read project configuration. Hold the response as `{config}`. Use `{config}.agent_budgets.{agent_name}` as the maxTurns value when spawning agents. If `ideate_get_config` is unavailable or returns no agent_budgets, use the agent's frontmatter maxTurns as fallback. Also hold `{config}.model_overrides` — a map of agent name to model string. When spawning any agent, use `{config}.model_overrides['{agent_name}']` as the model parameter if present and non-empty; otherwise use the hardcoded default listed in the spawn instruction.
+  ```
+
+  This is a single-line change to the Phase 0 paragraph. Do not modify any other part of the file.
+resolution: Phase 0 model_overrides clause added. Out-of-scope renames reverted during rework.
+cycle_created: 69
+cycle_modified: 68
+content_hash: d306ab01cbd8071da6202d5a23919e14cf380c3e6b8db826538b3df71a676dce
+token_count: 538
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-367.yaml

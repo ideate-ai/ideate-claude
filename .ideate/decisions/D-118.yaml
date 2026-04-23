@@ -1,10 +1,16 @@
 id: D-118
 type: domain_decision
 cycle_created: 66
-description: "Keep MCP tools separate when they serve different outcomes; consolidate only when tools serve the same outcome at the same time. Example: get_autopilot_state + update_autopilot_state were consolidated into manage_autopilot_state because both handle autopilot state at the same decision point."
+description: >-
+  Keep MCP tools separate when they serve different outcomes; consolidate only when tools serve the same outcome at the
+  same time. Example: get_autopilot_state + update_autopilot_state were consolidated into manage_autopilot_state because
+  both handle autopilot state at the same decision point.
 domain: artifact-structure
-file_path: .ideate/decisions/D-118.yaml
-rationale: Tool proliferation increases cognitive load and token costs (every tool description appears in every request). Consolidation reduces both, but premature consolidation creates tools with unclear boundaries. The 'same outcome at same time' heuristic provides a clear criterion.
+file_path: decisions/D-118.yaml
+rationale: >-
+  Tool proliferation increases cognitive load and token costs (every tool description appears in every request).
+  Consolidation reduces both, but premature consolidation creates tools with unclear boundaries. The 'same outcome at
+  same time' heuristic provides a clear criterion.
 source: cycle 066 interview Q5; WI-343 consolidation decision
 status: settled
 supersedes: null

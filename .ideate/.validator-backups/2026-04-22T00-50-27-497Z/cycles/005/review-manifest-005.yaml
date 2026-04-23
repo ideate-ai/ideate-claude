@@ -1,0 +1,28 @@
+id: review-manifest-005
+type: cycle_summary
+title: Review Manifest — Cycle 5
+cycle: 5
+diff_mode: full
+content: |-
+  # Review Manifest — Cycle 5
+
+  Full review (cycle 5 start commit not recorded — session resumed from context summary).
+
+  ## Work Items Reviewed
+
+  | ID | Title | Incremental Verdict | Findings |
+  |----|-------|--------------------|---------|
+  | WI-424 | handleGetConvergenceStatus: replace INNER JOIN with LEFT JOIN + file_path fallback | Pass (after rework) | S1: missing third WHERE branch; S2: no fallback path tests |
+  | WI-425 | Backfill cycle:3 into CS-003, CQ-003, GA-003 YAML | Pass | M1: cycle field position (minor, not blocking) |
+  | WI-426 | write→convergence roundtrip integration test | Pass | None |
+
+  ## Overall Incremental Verdict
+  Pass — all 3 work items passed incremental review. Test suite: 499/499 pass.
+
+  ## Key Changes This Cycle
+  - `mcp/artifact-server/src/tools/analysis.ts`: handleGetConvergenceStatus now uses raw SQL LEFT JOIN with three-branch WHERE (da.cycle=N, da.id IS NULL AND file_path LIKE, da.id IS NOT NULL AND da.cycle IS NULL AND file_path LIKE)
+  - `.ideate/cycles/003/CS-003.yaml`, `CQ-003.yaml`, `GA-003.yaml`: cycle: 3 added
+  - `mcp/artifact-server/src/__tests__/tools.test.ts`: 3 new tests for fallback paths and roundtrip
+content_hash: e82833f29d93170bacc7336d367654b3b866e681b7c35b46737dbb035835913a
+token_count: 323
+file_path: .ideate/cycles/005/review-manifest-005.yaml

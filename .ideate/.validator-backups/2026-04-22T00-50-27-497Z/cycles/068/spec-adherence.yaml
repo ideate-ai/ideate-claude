@@ -1,0 +1,30 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  ## Verdict: Fail
+
+  ## Principle Violations
+
+  ### P-17 Violation: config.json updated only by migration scripts
+  - P-17 states: 'config.json is written once and updated only by migration scripts, never by execute, review, or refine phases.'
+  - The ideate_update_config tool (WI-362) writes config.json via MCP at any time, invoked by the settings skill and available to any caller. P-17.amended is null — no amendment covers this new write path.
+  - This is a direct conflict. P-17 must be amended to carve out the settings skill / ideate_update_config tool, or a new superseding policy is needed.
+
+  ## Adherence Evidence (Passing)
+  - GP-14 / MCP-only artifact access: All 6 updated skills access config exclusively via ideate_get_config() and ideate_update_config. No direct .ideate/ path references in any skill file.
+  - P-33 (no file paths in responses): tools/config.ts response is { status: 'updated', updated_keys: [...] } — no file paths.
+  - P-34 (tool descriptions under 50 words): ideate_update_config description is 22 words.
+  - P-35 (ARCHITECTURE.md updated): '22 tools in 10 categories' heading; config tools section lists both tools; count matches TOOLS array.
+  - P-11 (model set at spawn time): Settings skill persists to config.json; skills read and apply at spawn time. Agent definition files not modified. Consistent with P-11.
+
+  ## Naming/Pattern Inconsistencies
+
+  ### N1: name: frontmatter key in settings skill has no precedent
+  - skills/settings/SKILL.md:2 — name: ideate:settings is present. No other SKILL.md file uses this key. The key is inert at runtime but inconsistent.
+
+  ### N2: WI-361 criterion uses valid_sources/valid_targets but implementation uses source_types/target_types
+  - EdgeTypeSpec defines source_types and target_types. The WI-361 criterion text says valid_sources/valid_targets. Functional intent is delivered but criterion field names do not match the implementation.
+content_hash: ac7cb0f59e57fde595377f4048dde9dc2ea95f83451bd067823bde4f9e488829
+token_count: 501
+file_path: .ideate/cycles/068/spec-adherence.yaml

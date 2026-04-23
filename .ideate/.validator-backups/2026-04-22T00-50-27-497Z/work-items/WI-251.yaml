@@ -1,0 +1,37 @@
+id: WI-251
+type: work_item
+title: Add cycle-scoped path routing to ideate_write_artifact
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-253
+  - WI-254
+criteria:
+  - "resolveArtifactPath handles cycle-scoped types: finding, cycle_summary, review_manifest, decision_log route to cycles/{cycle}/ when a cycle parameter is provided"
+  - ideate_write_artifact accepts optional cycle parameter (integer)
+  - When cycle is provided and type is cycle-scoped, file goes to {ideateDir}/cycles/{NNN}/{id}.yaml
+  - When cycle is not provided for cycle-scoped types, error is returned
+  - "At least 2 tests: write cycle-scoped artifact with cycle param, error without cycle for cycle-scoped type"
+domain: artifact-structure
+notes: |-
+  # WI-251: Cycle-Scoped Path Routing
+
+  Add cycle parameter to ideate_write_artifact. Update resolveArtifactPath:
+  - finding → cycles/{NNN}/findings/{id}.yaml
+  - cycle_summary, review_output → cycles/{NNN}/{id}.yaml
+  - review_manifest → cycles/{NNN}/{id}.yaml
+  - decision_log → cycles/{NNN}/{id}.yaml
+
+  Update inputSchema in index.ts to add optional cycle property.
+resolution: null
+cycle_created: 33
+cycle_modified: null
+content_hash: 2716b614b7a21a3ddfedf9ef2dbf81c4ee2c047ec8d1d949b5b557570f3b84c5
+token_count: 326
+file_path: .ideate/work-items/WI-251.yaml

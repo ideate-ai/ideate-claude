@@ -4,57 +4,84 @@ title: Factor autopilot Prompt into Phase Documents
 status: done
 complexity: medium
 scope:
-  - {path: skills/autopilot/SKILL.md, op: modify}
-  - {path: skills/autopilot/phases/execute.md, op: create}
-  - {path: skills/autopilot/phases/review.md, op: create}
-  - {path: skills/autopilot/phases/refine.md, op: create}
-  - {path: skills/autopilot/phases/reporting.md, op: create}
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: create
+  - path: skills/autopilot/phases/review.md
+    op: create
+  - path: skills/autopilot/phases/refine.md
+    op: create
+  - path: skills/autopilot/phases/reporting.md
+    op: create
 depends:
-  - "076"
-  - "077"
-  - "079"
+  - '076'
+  - '077'
+  - '079'
 blocks: []
 criteria:
-  - "`skills/autopilot/SKILL.md` is reduced to ~150 lines containing: argument parsing, artifact validation, loop control logic, convergence checking, and phase dispatch"
-  - "Phase-specific instructions are extracted to separate files in `skills/autopilot/`"
-  - "`skills/autopilot/phases/execute.md` contains the execute phase instructions (current Phase 6a content)"
-  - "`skills/autopilot/phases/review.md` contains the comprehensive review instructions (current Phase 6b content)"
-  - "`skills/autopilot/phases/refine.md` contains the refinement phase instructions (current Phase 6d content)"
-  - "`skills/autopilot/phases/reporting.md` contains the activity report and convergence declaration instructions (current Phases 7-9)"
+  - >-
+    `skills/autopilot/SKILL.md` is reduced to ~150 lines containing: argument parsing, artifact validation, loop control
+    logic, convergence checking, and phase dispatch
+  - Phase-specific instructions are extracted to separate files in `skills/autopilot/`
+  - '`skills/autopilot/phases/execute.md` contains the execute phase instructions (current Phase 6a content)'
+  - '`skills/autopilot/phases/review.md` contains the comprehensive review instructions (current Phase 6b content)'
+  - '`skills/autopilot/phases/refine.md` contains the refinement phase instructions (current Phase 6d content)'
+  - >-
+    `skills/autopilot/phases/reporting.md` contains the activity report and convergence declaration instructions
+    (current Phases 7-9)
   - The loop controller reads the relevant phase document at the start of each phase transition using the Read tool
-  - "Each phase document is self-contained: it includes all necessary context, entry conditions, exit conditions, and output expectations without referencing other phase documents"
-  - "The Andon cord → proxy-human routing logic is included in `execute.md` (where it's used) rather than in the controller"
-  - "Incremental review logic (per-work-item code-reviewer spawn) is included in `execute.md`"
-  - The autopilot loop writes the same artifact files to the same paths as before factoring (journal.md, autopilot-state.md, archive/incremental/*, archive/cycles/*, proxy-human-log.md)
+  - >-
+    Each phase document is self-contained: it includes all necessary context, entry conditions, exit conditions, and
+    output expectations without referencing other phase documents
+  - >-
+    The Andon cord → proxy-human routing logic is included in `execute.md` (where it's used) rather than in the
+    controller
+  - Incremental review logic (per-work-item code-reviewer spawn) is included in `execute.md`
+  - >-
+    The autopilot loop writes the same artifact files to the same paths as before factoring (journal.md,
+    autopilot-state.md, archive/incremental/*, archive/cycles/*, proxy-human-log.md)
   - The convergence check logic (Conditions A and B) remains in the controller, not in a phase document
   - The "What You Do Not Do" section remains in the main SKILL.md (it applies to all phases)
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 081
-  
+
+
   ### Directory structure
-  
+
+
   ```
+
   skills/autopilot/
+
   ├── SKILL.md              # Loop controller (~150 lines)
+
   └── phases/
       ├── execute.md         # Phase 6a logic
       ├── review.md          # Phase 6b logic (includes manifest generation from 076)
       ├── refine.md          # Phase 6d logic
       └── reporting.md       # Phases 7, 8, 9
   ```
-  
+
+
   ### Controller structure
-  
-  Phases 1-5 (setup) remain inline — they're small and run once. Phase 6 main loop dispatches to phase documents via Read tool. Convergence check (~20 lines) stays inline. "What You Do Not Do" stays in controller (applies to all phases).
-  
+
+
+  Phases 1-5 (setup) remain inline — they're small and run once. Phase 6 main loop dispatches to phase documents via
+  Read tool. Convergence check (~20 lines) stays inline. "What You Do Not Do" stays in controller (applies to all
+  phases).
+
+
   ### Phase document template
-  
-  Each document: Entry Conditions, Instructions (self-contained), Exit Conditions, Artifacts Written. No cross-references between phase documents.
-resolution: "skills/autopilot/phases/ directory exists with execute.md, review.md, refine.md, reporting.md."
+
+
+  Each document: Entry Conditions, Instructions (self-contained), Exit Conditions, Artifacts Written. No
+  cross-references between phase documents.
+resolution: skills/autopilot/phases/ directory exists with execute.md, review.md, refine.md, reporting.md.
 cycle_created: 1
 cycle_modified: null
-content_hash: "4abaa07635d90de6e35a9a7cdf093a28db9d94b8139ce2deb2a89da62cdf3e65"
+content_hash: 4abaa07635d90de6e35a9a7cdf093a28db9d94b8139ce2deb2a89da62cdf3e65
 token_count: 737
-file_path: .ideate/work-items/WI-081.yaml
+file_path: work-items/WI-081.yaml

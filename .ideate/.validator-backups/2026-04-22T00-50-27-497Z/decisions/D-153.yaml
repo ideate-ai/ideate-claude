@@ -1,0 +1,12 @@
+id: D-153
+type: domain_decision
+domain: artifact-structure
+title: parsePrincipleVerdict Step 2 broken for JSON-encoded document_artifacts.content
+description: "handleWriteArtifact stores document_artifacts.content as JSON.stringify(content). The indexer stores the raw YAML content string. parsePrincipleVerdict Step 1 (bold-tag regex) works against both formats, but Step 2 (split on newline, scan for ## headings) fails on JSON-encoded strings because literal \\n escape sequences are not real newlines. When a cycle_summary lacks the explicit bold verdict tag, Step 2 returns 'unknown' via the DB path while the file-path fallback returns the correct verdict."
+rationale: "Root cause is format divergence between two write paths into the same column. Immediate fix: JSON.parse unwrap in resolveContent before passing to parsePrincipleVerdict, falling back to raw string on parse failure."
+source: cycle 5 code-quality S1; gap-analysis EC1; decision-log OQ-5-01
+status: settled
+cycle: 5
+content_hash: 27fd5a6d86fd4b1db98102b1b2bc48c178cea77640f5ad305dce0399030a0254
+token_count: 247
+file_path: .ideate/decisions/D-153.yaml

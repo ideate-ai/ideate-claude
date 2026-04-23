@@ -1,0 +1,15 @@
+id: P-11
+type: domain_policy
+domain: agent-system
+status: active
+derived_from:
+  - GP-3 (Guiding Principles Over Implementation Details) — model selection is a spawn-time concern
+  - not a hardcoded agent identity
+established: cycle 001 (WI-040)
+amended: null
+description: "Agent definition files specify `model: sonnet` as default; skills that require a more capable model (e.g., opus for architect, decomposer, proxy-human) set the model parameter at spawn time, not in the agent definition."
+cycle_created: 1
+cycle_modified: null
+content_hash: "9988bcca8f30b56b62482f736fefaef7a5a410d4cfe97a165a0b03ce9a7f5e19"
+token_count: 148
+file_path: .ideate/policies/P-11.yaml

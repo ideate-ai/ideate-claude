@@ -1,0 +1,55 @@
+id: spec-adherence
+type: cycle_summary
+reviewer: spec-reviewer
+content: |-
+  ## Verdict
+  Pass
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  None.
+
+  ## Minor Findings
+
+  ### M1: Phase 2 YAML-write-failure rollback path lacks automated test
+  - **File**: src/adapters/local/writer.ts:1639-1648, src/__tests__/write-transaction.test.ts
+  - **Issue**: WI-748 criteria do not explicitly require a test for Phase 2 YAML write failure. The rollback path at lines 1640-1648 (delete placeholder + re-throw) is untested. P-36 requires test coverage for critical infrastructure; whether Phase 2 failure qualifies is a judgment call. Not a criterion violation.
+
+  ### M2: WI-750 fixed a file not listed in its acceptance criteria
+  - **File**: tests/adapters/always-include-types-validation.test.ts:403
+  - **Issue**: WI-750 acceptance criteria covered schema.test.ts description and writer.ts header. The .toBe(27)→28 fix in always-include-types-validation.test.ts was within the work item's declared file scope but not in the criteria. The change is correct and harmless.
+
+  ## Adherence Verification
+
+  **WI-747**: All criteria met.
+  - CONFIG_SCHEMA_VERSION = 5 in src/config.ts:4
+  - P-74 invariant test at config.test.ts:45-46
+  - migrations.test.ts: three scenarios (no-op, v4→v5 run, idempotency)
+  - v4→v5 migration uses PRAGMA table_info guard (idempotent)
+  - tools.test.ts imports CONFIG_SCHEMA_VERSION, no hardcoded 4
+
+  **WI-748**: All explicit criteria met.
+  - YAML write (line 1636-1638) is outside any exclusive() callback
+  - Placeholder INSERT in Phase 1 exclusive tx prevents sequence collision
+  - Phase 2 rollback: deletes placeholder, re-throws original error
+  - Phase 3 rollback: unlinks YAML, deletes placeholder, throws ValidationError(TRANSACTION_FAILED)
+  - Existing appendJournalEntry rollback tests continue to pass
+
+  **WI-749**: All criteria met.
+  - D-190 created with full investigation findings (domain_index fully implemented)
+  - Q-145 status set to resolved with reference to D-190
+  - No code changes (appropriate for spike finding no dead code)
+  - domain_index confirmed in ALL_NODE_TYPES at adapter.ts:73
+
+  **WI-750**: All explicit criteria met.
+  - schema.test.ts:606 description has no stale (3)
+  - writer.ts header lists appendJournalEntry with three-phase description
+  - Extra fix (27→28) within-scope and correct
+content_hash: dd469c5a987a7d747730f44455b305d0b002a4711c39fb6fa68098e93ecd4f05
+token_count: 639
+file_path: .ideate/cycles/068/spec-adherence.yaml
+cycle: 21
+verdict: Pass
+cycle_modified: 20

@@ -1,0 +1,14 @@
+id: P-07
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture)
+established: planning phase
+amended: cycle 016 — changed from append-only `journal.md` to individual write-once YAML files under the cycle directory structure
+description: Each journal entry is an individual YAML file in `.ideate/cycles/{NNN}/journal/`. Once written, a journal entry file must not be edited or deleted. Chronological ordering is maintained by sequential filenames (J-{cycle}-{seq}) and timestamp fields. The journal is the authoritative chronological record of project decisions and execution history.
+cycle_created: 1
+cycle_modified: null
+content_hash: f6adce128a040d3927bd31b0469b3477a523656adb578c6bd02f15d370840c82
+token_count: 186
+file_path: .ideate/policies/P-07.yaml

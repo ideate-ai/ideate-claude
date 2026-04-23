@@ -1,0 +1,93 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  WI-832 codified the P-87 recovery protocol but left P-87's own verification criterion partially unmet: the execute.md worker prompt does not include the explicit 'do not write .ideate/ directly' prohibition that P-87 requires worker-spawning skills to contain.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: P-87 verification criterion not satisfied — execute.md worker prompt missing .ideate/ write prohibition
+  - **File**: skills/autopilot/phases/execute.md:78-86
+  - **Issue**: P-87's verification states: 'At design time, ensure worker-spawning skills instruct workers not to write .ideate/ directly.' The worker-prompt list in execute.md contains seven bullets but none prohibit direct .ideate/ writes. The GP-14 enforcement paragraph at line 51 addresses the parent orchestrator's MCP calls, not the worker's behavior.
+  - **Impact**: Workers will continue to fall back to Write/Edit for .ideate/ mutations because their prompt does not prohibit it. Every such violation requires parent re-sync, but the root cause persists.
+  - **Suggested fix**: Add to the worker-prompt list: 'Do not write files under .ideate/ directly — all .ideate/ mutations must go through MCP tools (ideate_write_artifact, ideate_update_work_items, ideate_append_journal).'
+
+  ## Minor Findings
+
+  ### M1: Dead reference to non-existent adapter-interface.md in test comment
+  - **File**: mcp/artifact-server/src/__tests__/remote-adapter.test.ts:222
+  - **Issue**: Comment references 'adapter-interface.md Section 7' but the file does not exist under docs/. Actual docs: adapter-contract.md, ppr-alignment-research.md, tls-configuration.md.
+  - **Fix**: Update reference to adapter-contract.md or remove.
+
+  ### M2: Test D assertion does not verify specific error code
+  - **File**: mcp/artifact-server/src/__tests__/remote-adapter.test.ts:356
+  - **Issue**: Assertion 'err instanceof StorageAdapterError' is too weak. ConnectionError extends StorageAdapterError, so the assertion passes even if the wrong error type is thrown.
+  - **Fix**: Add 'err.code === "HTTP_401"' check alongside instance check.
+
+  ### M3: WI-831 regression test fixture uses different id pattern than WI-797 fixture
+  - **File**: mcp/artifact-server/src/__tests__/tools.test.ts:1117
+  - **Issue**: WI-831 fixture (cycle 204) uses id:spec-adherence-204; WI-797 fixture (cycle 200) uses id:spec-adherence unsuffixed. Inconsistent pattern for future fixture authors.
+  - **Fix**: Normalize cycle 200 fixture to id:spec-adherence-200.
+
+  ### M4: executeOnceWithAuth does not wrap fetch() network errors as ConnectionError
+  - **File**: mcp/artifact-server/src/adapters/remote/client.ts:347
+  - **Issue**: executeOnceWithAuth calls fetch() without try/catch. A network failure on the post-rotation retry throws a raw TypeError that bypasses isRetryableError and propagates as an unclassified error. Sibling executeOnce wraps correctly at 260-274.
+  - **Fix**: Wrap fetch() call identically to executeOnce.
+
+  ## Test Results
+  - TypeScript: clean
+  - Test suite: 1440 passed, 339 skipped (equivalence tests need live server)
+
+  ## Requires Human Review
+  - P-87.yaml written via MCP (ideate_write_artifact), not direct Write tool call. The file is untracked, no git history. Static review cannot confirm the write tool used; MCP call log or autopilot session journal for cycle 9 must be checked.
+content_hash: 1bf4d602bb205b3934d939f087b18ac64dc249c9674cc376e89af8bf9ee83042
+token_count: 1623
+file_path: .ideate/cycles/068/code-quality.yaml
+verdict: Fail
+phase: PH-045
+scope: differential cycle 8 (commits b799ccc..3377298)
+summary: Cycle 8 delta is functionally correct. All 99 adapter-contract tests pass; tsc clean. Doc-vs-code discrepancies are limited to selectAdapter type-parameter omissions and a misleading test comment. No Critical or Significant findings.
+findings:
+  critical: 0
+  significant: 1
+  minor: 2
+cycle: 9
+cycle_modified: 27
+review_mode: full
+findings_count:
+  critical: 0
+  significant: 2
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf
+test_status: 1417 pass / 0 fail; tsc clean
+critical_findings: []
+significant_findings: []
+minor_findings:
+  - id: C8-CR-M1
+    title: selectAdapter doc signature drops type parameters from both database arguments
+    file: docs/platform/adapter-interface.md
+    lines: 803-807
+    issue: "Documented signature writes `db?: Database` and `drizzleDb?: BetterSQLite3Database` (no type params). Actual impl (server.ts:65-70) uses `db?: InstanceType<typeof Database>` and `drizzleDb?: BetterSQLite3Database<typeof dbSchema>`. Reader implementing against doc loses schema inference."
+    recommendation: "Update signature to: `function selectAdapter(dir: string, db?: InstanceType<typeof Database>, drizzleDb?: BetterSQLite3Database<typeof dbSchema>): StorageAdapter;` Add note that dbSchema refers to schema exported from db.js."
+  - id: C8-CR-M2
+    title: Misleading comment in shape test attributes wrong value to event_name
+    file: mcp/artifact-server/src/__tests__/adapter-contract.test.ts
+    lines: "1689"
+    issue: 'Comment reads `// event_name is written as "test_event" (string)`. The test calls writeMetricsEvent with agentType: "shape-tester" and no eventName. writer.ts:315-316 sets event_name to content.agent_type when that is a string, so event_name is stored as "shape-tester", not "test_event". Assertion passes regardless but comment creates false understanding of the write path.'
+    recommendation: 'Change comment to: `// event_name is derived from agentType ("shape-tester") by writer.ts:315-316`'
+  - id: C8-CR-M3
+    title: adapter-method-specs.md provenance guard terminology conflicts with P-86 framing
+    file: docs/platform/adapter-method-specs.md
+    lines: "828"
+    issue: Line reads "the local approach is a provenance guard against legacy ID-named files." WI-830 introduces P-86 with the statement "da.cycle is not a provenance guard." Applied to file_path selector in same doc edited this cycle, the terminology is likely to confuse readers who have read P-86.
+    recommendation: 'Rephrase: "the local approach uses canonical file_path suffixes to exclude legacy SA-NNN/CQ-NNN/GA-NNN files (per WI-824). Note: da.cycle alone is not used as a selector because it is not a reliable provenance signal (P-86)."'
+test_results:
+  tsc: clean (exit 0)
+  vitest_adapter_contract: 99/99 passed, ~891ms

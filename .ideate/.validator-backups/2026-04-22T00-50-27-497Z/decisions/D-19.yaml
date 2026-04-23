@@ -1,0 +1,13 @@
+id: D-19
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 6
+supersedes: null
+description: "`skills/autopilot/phases/review.md` reimplements review orchestration in full; it does not delegate to `skills/review/SKILL.md`. Any feature added to the standalone review skill that should also apply in autopilot-driven cycles must be added to both files independently."
+rationale: Cycle 006 gap analysis identified that the quality_summary emission (WI-093) was added only to `skills/review/SKILL.md`. Because autopilot does not delegate, autopilot-driven projects never emit quality_summary events and the Quality Trends section of report.sh is permanently empty for them. The planning phase did not identify autopilot/phases/review.md as a required target.
+cycle_created: 1
+cycle_modified: null
+content_hash: "2d03cc3c4853da261f2f029d97c8269633ab0f18aedf1f09ab6af5f3258a999d"
+token_count: 210
+file_path: .ideate/decisions/D-19.yaml

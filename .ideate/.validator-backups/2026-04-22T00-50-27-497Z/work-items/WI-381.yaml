@@ -1,0 +1,42 @@
+id: WI-381
+type: work_item
+title: "Update completed work items WI-377, WI-378, WI-379 to status: done"
+status: done
+complexity: low
+scope:
+  - op: update
+    path: .ideate/work-items/WI-377.yaml
+  - op: update
+    path: .ideate/work-items/WI-378.yaml
+  - op: update
+    path: .ideate/work-items/WI-379.yaml
+depends: []
+blocks: []
+criteria:
+  - WI-377.status is 'done'
+  - WI-378.status is 'done'
+  - WI-379.status is 'done'
+  - ideate_get_execution_status shows these items as complete
+domain: workflow
+notes: |-
+  ## Work Item Status Updates
+
+  Three work items completed in cycle 2 but remain in `status: pending`:
+
+  1. WI-377: Fix pre-existing TypeScript type errors — passed review
+  2. WI-378: Remove P-33 violations from tool descriptions — passed review after 1 rework
+  3. WI-379: Fix stale ARCHITECTURE.md section 9.2 — passed review
+
+  ## Implementation
+
+  Call `ideate_update_work_items` with status: 'done' for each.
+
+  ## Impact
+
+  Without this fix, `ideate_get_execution_status` reports these as pending/ready, causing autopilot to potentially re-execute them in future cycles.
+resolution: null
+cycle_created: 58
+cycle_modified: 1
+content_hash: 907c8d2e917536f6cbd780fc5a842bd3244509e97c84f3cec52cc2fdb70c843a
+token_count: 286
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-381.yaml

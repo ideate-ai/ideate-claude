@@ -1,0 +1,8 @@
+id: Q-87
+type: domain_question
+resolution: "Fixed in cycle 066: bootstrap.ts now returns {status: 'initialized'} without exposing paths. context.ts no longer returns filesystem paths — it returns artifact IDs and delegates to query tools for path resolution."
+resolved_in: 66
+status: resolved
+content_hash: fd25200185d815fb6044dffa610095591f04562f7f374c890daa40d9f9b46b89
+token_count: 73
+file_path: .ideate/questions/Q-87.yaml

@@ -1,0 +1,14 @@
+id: Q-56
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Current runtime behavior is correct (SQLite enforces the raw-SQL constraints regardless). Risk is in future Drizzle version upgrades that rely on constraint metadata for conflict resolution.
+source: archive/cycles/018/code-quality.md S3; archive/cycles/018/decision-log.md OQ4, CR1
+resolution: WI-171 added `primaryKey()` to the `nodeFileRefs` Drizzle table and `unique()` to the `edges` Drizzle table. Definitions now mirror the raw-SQL DDL. See D-86.
+resolved_in: 19
+description: The raw-SQL DDL defines `node_file_refs` with a composite PRIMARY KEY and `edges` with a UNIQUE constraint. The Drizzle table definitions omit both. Drizzle's `onConflictDoNothing()` and `onConflictDoUpdate()` rely on Drizzle metadata to infer conflict targets. Should Drizzle definitions be updated to declare these constraints, or should explicit `target` be passed to all `onConflict*` calls?
+cycle_created: 1
+cycle_modified: null
+content_hash: "709d0a1e10b64d30dabaf1bc75822079d7a14df7ece37230b76902585e238884"
+token_count: 267
+file_path: .ideate/questions/Q-56.yaml

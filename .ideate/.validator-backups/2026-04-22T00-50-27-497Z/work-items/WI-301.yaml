@@ -1,0 +1,97 @@
+id: WI-301
+type: work_item
+title: MCP deferred startup with readiness gate
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/indexer.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/indexer.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-302
+criteria:
+  - server.connect(transport) is called BEFORE rebuildIndex — the MCP initialize handshake completes without waiting for indexing
+  - rebuildIndex runs asynchronously after connect completes
+  - A readiness gate (Promise or flag) exists that tool handlers await before executing
+  - Tool calls arriving during index rebuild block until rebuild completes, then execute normally — no error returned to caller
+  - If rebuildIndex fails, the error is logged and tools receive a clear error on subsequent calls
+  - Cold start (no index.db) completes the MCP initialize handshake within 2 seconds regardless of YAML file count
+  - Warm start (existing index.db with matching schema version) behavior is unchanged — hash-check skip still works
+  - npm test passes with all existing tests plus at least one new test verifying tool calls block during async rebuild
+domain: artifact-structure
+notes: |-
+  # WI-301: MCP deferred startup with readiness gate
+
+  ## Overview
+  The MCP server currently runs rebuildIndex synchronously at module scope before calling server.connect(transport). With 1,200+ YAML files, cold starts can approach or exceed Claude Code's ~30s MCP timeout, causing the server to appear in an error state.
+
+  ## Current startup sequence (index.ts)
+  ```
+  1. resolveArtifactDir (sync)
+  2. open SQLite DB + createSchema (sync)
+  3. rebuildIndex (sync, blocking) ← bottleneck
+  4. start file watcher (sync)
+  5. create Server + register handlers
+  6. server.connect(transport) ← MCP becomes available HERE
+  ```
+
+  ## Target startup sequence
+  ```
+  1. resolveArtifactDir (sync)
+  2. open SQLite DB + createSchema (sync)
+  3. create Server + register handlers
+  4. server.connect(transport) ← MCP available immediately
+  5. rebuildIndex (async, non-blocking)
+  6. set readiness flag when rebuild completes
+  7. start file watcher after rebuild completes
+  ```
+
+  ## Readiness gate implementation
+
+  Add a module-level readiness mechanism:
+
+  ```typescript
+  let indexReady: Promise<void>;
+  let resolveReady: () => void;
+  indexReady = new Promise(resolve => { resolveReady = resolve; });
+  ```
+
+  In the tool dispatcher (tools/index.ts), await the readiness gate before executing any tool handler:
+
+  ```typescript
+  // At the top of handleTool, before the switch:
+  await indexReady;
+  ```
+
+  After rebuildIndex completes:
+  ```typescript
+  rebuildIndex(db, drizzleDb, ideateDir);
+  resolveReady();
+  // Now start the file watcher
+  ```
+
+  The rebuildIndex call itself remains synchronous (it uses sync fs APIs). The 'async' part is that it runs after connect() rather than before. The readiness Promise gates tool execution until rebuild is done.
+
+  If rebuildIndex throws, catch the error, log it, and leave the readiness Promise unresolved (tools will hang) or reject it (tools will receive the error). Rejecting is preferred — tools get a clear error message.
+
+  ## Testing
+
+  Add to indexer.test.ts or a new startup.test.ts:
+  - Test that server can be connected before rebuildIndex runs
+  - Test that a tool handler awaiting the readiness gate blocks until the gate resolves
+  - Test that if the gate is rejected, tool handlers receive the error
+
+  ## Files
+  - `mcp/artifact-server/src/index.ts` — reorder startup, add readiness gate
+  - `mcp/artifact-server/src/indexer.ts` — no changes to rebuildIndex itself, but export may need to be async-compatible
+  - `mcp/artifact-server/src/__tests__/indexer.test.ts` — new readiness gate tests
+resolution: null
+cycle_created: 40
+cycle_modified: null
+content_hash: d3701c55effff44d041af4545822654b4623d3583a81656a407cbe6e1b6b4a8d
+token_count: 965
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-301.yaml

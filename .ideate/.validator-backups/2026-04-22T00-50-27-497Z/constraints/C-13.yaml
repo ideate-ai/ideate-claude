@@ -1,0 +1,10 @@
+id: C-13
+type: constraint
+category: process
+status: active
+description: Neutral, critical tone throughout. All skills and agents communicate without encouragement, validation, praise, enthusiasm, or hedging qualifiers. Problems are stated directly with explanations.
+cycle_created: 1
+cycle_modified: null
+content_hash: "7011d93984a219d51181bef4beda4e7e0ac63407340cf175c3b6da920d745035"
+token_count: 91
+file_path: .ideate/constraints/C-13.yaml

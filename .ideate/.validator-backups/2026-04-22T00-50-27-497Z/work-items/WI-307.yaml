@@ -1,0 +1,44 @@
+id: WI-307
+type: work_item
+title: Update ARCHITECTURE.md startup and watcher descriptions
+status: done
+complexity: low
+scope:
+  - path: ARCHITECTURE.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - ARCHITECTURE.md startup sequence shows server.connect(transport) BEFORE rebuildIndex
+  - ARCHITECTURE.md describes rebuildIndex as deferred via setImmediate after connect
+  - ARCHITECTURE.md describes the readiness gate that blocks tool calls until index is ready
+  - ARCHITECTURE.md watcher description says watcher calls indexFiles/removeFiles, NOT rebuildIndex
+  - No other sections of ARCHITECTURE.md are modified
+domain: workflow
+notes: |-
+  # WI-307: Update ARCHITECTURE.md startup and watcher descriptions
+
+  ## Overview
+  Addresses gap-analyst S2 and M1 from cycle 058 review. Sections 2 and 4 still show the pre-WI-301 startup order and pre-WI-302 watcher behavior.
+
+  ## Changes
+
+  ### Startup sequence (Sections 2 and/or 4)
+  Update to reflect actual order:
+  1. resolveArtifactDir
+  2. open SQLite DB + createSchema
+  3. create Server + register handlers
+  4. server.connect(transport) — MCP available immediately
+  5. setImmediate: rebuildIndex (readiness gate blocks tool calls until complete)
+  6. start file watcher after rebuild
+
+  Mention the readiness gate: tool calls arriving before indexing completes block on the indexReady Promise.
+
+  ### Watcher description (Section 4 or wherever mentioned)
+  Change from 'watcher calls rebuildIndex' to 'watcher calls indexFiles for changed files and removeFiles for deleted files — incremental, not full rebuild.'
+resolution: null
+cycle_created: 59
+cycle_modified: null
+content_hash: 7922f6bae39ca014e7e37eb51bd2b343446e1e32d84b7071293122083ae9ab77
+token_count: 408
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-307.yaml

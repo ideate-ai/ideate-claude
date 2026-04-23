@@ -1,0 +1,14 @@
+id: P-16
+type: domain_policy
+domain: project-boundaries
+status: active
+derived_from:
+  - GP-10 (Full SDLC Ownership) — the plugin manifest is the user-facing contract
+established: cycle 001 (WI-029, WI-048, WI-061)
+amended: null
+description: The version field in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` must be updated before cycle completion whenever skills, agents, or externally visible interfaces change.
+cycle_created: 1
+cycle_modified: null
+content_hash: "55c3202437415ecf4809b47fb9955caa148642391f89ebc5866a76a01bb7311c"
+token_count: 134
+file_path: .ideate/policies/P-16.yaml

@@ -12,29 +12,39 @@ criteria:
   - scripts/report-executive.sh is executable (chmod +x)
   - Script requires python3 (checks and exits with error if not found)
   - Script accepts optional METRICS_FILE argument (same auto-discovery pattern as scripts/report.sh)
-  - "Script produces markdown output with sections: Project Summary, Quality Metrics, Cost Summary, ROI Indicators"
-  - "Project Summary shows: total work items completed, total cycles, total agent spawns, total wall-clock time"
-  - "Quality Metrics shows: latest cycle finding counts, trend direction, first-pass acceptance rate"
-  - "Cost Summary shows: total tokens consumed, estimated cost (if available), average tokens per work item"
-  - "ROI Indicators shows: rework rate trend, convergence speed trend, tokens-per-finding ratio"
+  - 'Script produces markdown output with sections: Project Summary, Quality Metrics, Cost Summary, ROI Indicators'
+  - 'Project Summary shows: total work items completed, total cycles, total agent spawns, total wall-clock time'
+  - 'Quality Metrics shows: latest cycle finding counts, trend direction, first-pass acceptance rate'
+  - 'Cost Summary shows: total tokens consumed, estimated cost (if available), average tokens per work item'
+  - 'ROI Indicators shows: rework rate trend, convergence speed trend, tokens-per-finding ratio'
   - Script handles empty or missing metrics file with informative message
   - Script supports --help flag
 module: null
 domain: null
-notes: |
+notes: >
   # WI-217: Executive Reporting Script
+
 
   ## Design
 
+
   `scripts/report-executive.sh` — high-level summary for project stakeholders.
+
 
   ### Sections:
 
-  1. **Project Summary** — Aggregate stats: total work items completed, total cycles, total agent spawns, total wall-clock time. Single table.
 
-  2. **Quality Metrics** — Latest cycle: finding counts by severity, trend vs previous cycle. First-pass acceptance rate (latest cycle). Overall rework rate.
+  1. **Project Summary** — Aggregate stats: total work items completed, total cycles, total agent spawns, total
+  wall-clock time. Single table.
 
-  3. **Cost Summary** — Total tokens consumed (input + output). Estimated cost (if available). Average tokens per work item. Average tokens per cycle.
+
+  2. **Quality Metrics** — Latest cycle: finding counts by severity, trend vs previous cycle. First-pass acceptance rate
+  (latest cycle). Overall rework rate.
+
+
+  3. **Cost Summary** — Total tokens consumed (input + output). Estimated cost (if available). Average tokens per work
+  item. Average tokens per cycle.
+
 
   4. **ROI Indicators** — Derived metrics:
      - Rework rate trend: is rework_count per item increasing or decreasing?
@@ -43,10 +53,11 @@ notes: |
      - First-pass rate trend: improving, stable, or degrading?
 
   ### Formatting
+
   Compact output suitable for pasting into a status update. Use markdown tables throughout.
 cycle_created: 1
 cycle_modified: null
 content_hash: 1075be0bd0fe2c79af5b0bf1508545190f26edb45a8f1a228b69bc59424fa9f3
 token_count: 566
-file_path: .ideate/work-items/WI-217.yaml
-resolution: "Verified complete: scripts/report-executive.sh exists, documented in README"
+file_path: work-items/WI-217.yaml
+resolution: 'Verified complete: scripts/report-executive.sh exists, documented in README'

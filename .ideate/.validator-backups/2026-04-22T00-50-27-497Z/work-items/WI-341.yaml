@@ -1,0 +1,35 @@
+id: WI-341
+type: work_item
+title: Optimize MCP tool descriptions
+status: done
+complexity: medium
+scope: []
+depends: []
+blocks: []
+criteria:
+  - All tool descriptions under 50 words
+  - Descriptions specify when to use the tool
+  - Descriptions include response size expectations where relevant
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Optimize all tool descriptions in the MCP artifact server. Every word costs tokens on every request.
+
+  Follow MCP best practices:
+  - Keep descriptions surgical
+  - Specify when to use
+  - Include response size hints
+  - Avoid implementation details
+
+  Example:
+  BEFORE: "Query the artifact index. Filter by type, domain, status, cycle, severity, phase, or work item. Optionally follow graph edges to retrieve related artifacts. Returns a JSON array of matching artifact objects."
+  AFTER: "Query artifacts by type with filters. Use for: work items (type=work_item), findings (type=finding), policies (type=domain_policy). Graph traversal: related_to + edge_types."
+
+  Files to modify:
+  - mcp/artifact-server/src/server.ts (tool definitions)
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: ea37e23e0e9a98a4eb24a7b967bc2726967914961175c63d8dcee418c9c2424f
+token_count: 288
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-341.yaml

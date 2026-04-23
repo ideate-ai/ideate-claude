@@ -1,0 +1,81 @@
+id: WI-369
+type: work_item
+title: "Fix autopilot SKILL.md: replace split tool names with ideate_manage_autopilot_state"
+status: done
+complexity: low
+scope:
+  - path: skills/autopilot/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - 'All occurrences of ideate_get_autopilot_state() replaced with ideate_manage_autopilot_state({action: "get"})'
+  - 'All occurrences of ideate_update_autopilot_state({state:...}) replaced with ideate_manage_autopilot_state({action: "update", state:...})'
+  - "Self-check at bottom of file reads: 'autopilot-state access uses ideate_manage_autopilot_state exclusively'"
+  - No other changes to the file
+  - Phase 0 model_overrides clause (added in WI-367) is preserved exactly
+  - grep -c ideate_get_autopilot_state skills/autopilot/SKILL.md returns 0
+  - grep -c ideate_update_autopilot_state skills/autopilot/SKILL.md returns 0
+  - grep -c ideate_manage_autopilot_state skills/autopilot/SKILL.md returns 9 (matching prior pre-WI-367 count)
+domain: artifact-structure
+notes: |-
+  ## Context
+
+  In cycle 066 (WI-343), the autopilot state tools were consolidated from get + update into a single ideate_manage_autopilot_state tool (action: 'get' | 'update'). The phase sub-documents (execute.md, review.md, reporting.md) and ARCHITECTURE.md were updated at that time. skills/autopilot/SKILL.md was not updated.
+
+  In cycle 069 (WI-367), the worker introduced renames FROM ideate_manage_autopilot_state TO the split names, and the incremental reviewer incorrectly validated this, forcing rework to revert. The revert restored the split names, leaving SKILL.md inconsistent with the actual MCP registration.
+
+  The actual registered MCP tool (confirmed in tools/index.ts:633): ideate_manage_autopilot_state
+  Not registered: ideate_get_autopilot_state, ideate_update_autopilot_state
+
+  ## Fix locations in skills/autopilot/SKILL.md
+
+  Phase 4 (~line 77):
+    WRONG: Call `ideate_get_autopilot_state()` to check for an existing session.
+    CORRECT: Call `ideate_manage_autopilot_state({action: "get"})` to check for an existing session.
+
+  Phase 4 Initialize (~line 87):
+    WRONG: Call `ideate_update_autopilot_state({state: {...}})`
+    CORRECT: Call `ideate_manage_autopilot_state({action: "update", state: {...}})`
+
+  Phase 6a start commit (~line 142):
+    WRONG: call `ideate_update_autopilot_state({state: {"cycle_{N}_start_commit": "{hash}"}})`
+    CORRECT: call `ideate_manage_autopilot_state({action: "update", state: {"cycle_{N}_start_commit": "{hash}"}})`
+
+  Phase 6a end commit (~line 148):
+    WRONG: Call `ideate_update_autopilot_state({state: {"cycle_{N}_end_commit": "{hash}"}})`
+    CORRECT: Call `ideate_manage_autopilot_state({action: "update", state: {"cycle_{N}_end_commit": "{hash}"}})`
+
+  Phase 6c (~line 168):
+    WRONG: Update session state via `ideate_update_autopilot_state({state: {...}})`
+    CORRECT: Update session state via `ideate_manage_autopilot_state({action: "update", state: {...}})`
+
+  Phase 6e (~line 179):
+    WRONG: Call `ideate_get_autopilot_state()` to read...then call `ideate_update_autopilot_state({state: {cycles_completed: {N+1}}})`
+    CORRECT: Call `ideate_manage_autopilot_state({action: "get"})` to read...then call `ideate_manage_autopilot_state({action: "update", state: {cycles_completed: {N+1}}})`
+
+  Metrics section (~line 254):
+    WRONG: Equal to `cycles_completed` from `ideate_get_autopilot_state()`
+    CORRECT: Equal to `cycles_completed` from `ideate_manage_autopilot_state({action: "get"})`
+
+  What You Do Not Do (~line 268):
+    WRONG: autopilot session state (via `ideate_update_autopilot_state`)
+    CORRECT: autopilot session state (via `ideate_manage_autopilot_state`)
+
+  Self-Check (~line 281):
+    WRONG: autopilot-state access uses `ideate_get_autopilot_state` / `ideate_update_autopilot_state` exclusively
+    CORRECT: autopilot-state access uses `ideate_manage_autopilot_state` exclusively
+
+  ## Verification
+
+  After changes:
+  - grep for ideate_get_autopilot_state → 0 results
+  - grep for ideate_update_autopilot_state → 0 results
+  - grep for ideate_manage_autopilot_state → should find ~9 occurrences
+  - Phase 0 model_overrides line (added in WI-367) must still be present
+resolution: All 9 split tool name occurrences replaced with ideate_manage_autopilot_state. Self-check updated. Phase 0 model_overrides preserved.
+cycle_created: 69
+cycle_modified: 68
+content_hash: 1c48d8a593b8a32c4d17a7e273586a6d886fdf812cfe4a1b3552a89d6ff1cdd0
+token_count: 1094
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-369.yaml

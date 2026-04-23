@@ -1,0 +1,43 @@
+id: gap-analysis-002
+type: cycle_summary
+title: Gap Analysis — Cycle 2
+cycle: 2
+reviewer: gap-analyst
+content: |-
+  ## Significant Gaps
+
+  ### Gap 1: research_finding type resolved to wrong directory in resolveArtifactPath
+  - **File**: `mcp/artifact-server/src/tools/write.ts` (resolveArtifactPath)
+  - **Issue**: `resolveArtifactPath` has no case for `research_finding`; falls to default → `{ideateDir}/research_finding/{id}.yaml` instead of `{ideateDir}/research/{id}.yaml`. No `research_findings` extension table row created.
+  - **Impact**: Any skill writing a `research_finding` artifact puts the file in the wrong place with no extension data.
+
+  ### Gap 2: handleWriteArtifact missing extension table upserts for document types, module_spec, research_finding, metrics_event, interview_question
+  - **File**: `mcp/artifact-server/src/tools/write.ts:814-889`
+  - **Issue**: Transaction block handles 6 types (domain_policy, domain_decision, domain_question, proxy_human_decision, guiding_principle, constraint) but has no else-if branches for module_spec, research_finding, metrics_event, interview_question, or document types (overview, execution_strategy, architecture, cycle_summary, etc.). These get a node row but no extension table row.
+  - **Impact**: `handleGetConvergenceStatus` JOINs `document_artifacts` to find `cycle_summary` content. If `cycle_summary` has no `document_artifacts` row, convergence check silently returns false with a warning.
+
+  ### Gap 3: handleWriteArtifact tests for domain_policy/decision/question verify routing only — extension rows untested
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:2023-2065`
+  - **Issue**: Tests check files land in correct directories but do not verify extension table rows exist. A regression dropping an else-if branch would pass routing tests but break domain state queries.
+
+  ### Gap 4: No transaction rollback tests for handleWriteArtifact
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts`
+  - **Issue**: `write-transaction.test.ts` covers `handleWriteWorkItems`, `handleWriteArtifact` (partial), `handleUpdateWorkItems`, `handleAppendJournal`. Coverage is incomplete: the rollback paths for the domain type extension table upserts in `handleWriteArtifact` are untested.
+
+  ### Gap 5: handleGetConvergenceStatus depends on document_artifacts row that handleWriteArtifact does not populate
+  - **Files**: `mcp/artifact-server/src/tools/analysis.ts`, `mcp/artifact-server/src/tools/write.ts`
+  - **Issue**: `handleGetConvergenceStatus` queries `document_artifacts JOIN nodes WHERE type='cycle_summary'`. `handleWriteArtifact` upserts node row for `cycle_summary` but has no `document_artifacts` branch. The `resolveContent` fallback reads `file_path` from the filesystem, which works if the path is valid. But the JOIN requires a `document_artifacts` row — without it the query returns zero rows and handler warns `no cycle_summary found`.
+
+  ## Minor Gaps
+
+  ### Gap 6: handleArchiveCycle Phase 3b scope limited to findings; other cycle-scoped artifacts leave stale nodes
+  - Latent gap — current archival scope is findings-only. Document the limitation explicitly.
+
+  ### Gap 7: handleGetProjectStatus returns zero finding counts when cycleNumber is null with no warning
+  - When cycle index is missing, fall back to MAX(cycle) from findings table or note cycle unknown.
+
+  ### Gap 8: execution.test.ts beforeEach creates unused pre-v3 directories
+  - archive/incremental and archive/cycles are never read after WI-405 fix.
+content_hash: fb3fe7224c9a117d2755c679a230bcd38527192bebf3288a4be19d471a55be5c
+token_count: 882
+file_path: .ideate/cycles/002/gap-analysis-002.yaml

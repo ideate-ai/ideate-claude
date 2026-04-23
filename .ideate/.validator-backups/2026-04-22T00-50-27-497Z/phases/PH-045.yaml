@@ -1,0 +1,25 @@
+id: PH-045
+type: phase
+name: RemoteAdapter P2 dead code and convention cleanup
+phase_type: implementation
+project: PR-002
+status: complete
+started_date: 2026-04-14
+intent: "Low-risk cleanup of RemoteAdapter divergences identified in RF-clean-interface-proposal as P2: CONTAINMENT_EDGE_TYPES removal, edge type case normalization, test-only adapter fallback removal. Includes the autopilot tooling reliability bug WI-797 (convergence-checker false positive) and minor deferred documentation findings MF1/MF2 from PH-044 cycle 2."
+steering: "Continue PH-044 conventions: preserve adapter-agnostic behavior, favor composition over new adapter methods, no new abstraction leaks (no ctx.db.prepare in tool handlers, no casts to concrete adapter classes). Apply P-85 (documentation surface enumeration) to all WIs in this phase."
+work_items:
+  - WI-797
+  - WI-798
+  - WI-799
+  - WI-800
+  - WI-801
+  - WI-802
+success_criteria:
+  - "RemoteAdapter P2 items from RF-clean-interface-proposal closed: CONTAINMENT_EDGE_TYPES removed (or formally retained with rationale), edge type case normalization unified, test-only adapter fallback removed."
+  - "WI-797 resolved: ideate_get_convergence_status no longer reports false-negative condition_b when legacy ID-named cycle artifacts collide with new-format files in the same workspace cycle directory."
+  - Deferred MF1/MF2 from PH-044 cycle 2 closed (graphql-schema.md cross-reference and ppr-alignment-research.md Appendix B annotation).
+cycle_modified: 27
+content_hash: a63df35756fc9d434df9ec1c1e203199c51e5f10a8d4ff62cee62654f99af68f
+token_count: 409
+completed_date: 2026-04-15
+convergence_cycle: 9

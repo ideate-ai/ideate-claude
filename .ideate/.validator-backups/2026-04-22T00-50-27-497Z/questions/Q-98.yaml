@@ -1,0 +1,12 @@
+id: Q-98
+type: domain_question
+deferred_rationale: Interview explicitly stated this will be addressed in a future dedicated brainstorming cycle. The feature has potential to change principles and domain policies.
+description: Should ideate provide a UX for cycle counting (e.g., displaying current cycle number in output, cycle history in state)? The gap-analyst deferred this feature brainstorm to a future cycle.
+domain: workflow
+impact: Users may not have visibility into how many cycles autopilot has run or the progression of work across cycles.
+reexamination_trigger: When UX improvements are prioritized or when autopilot users request cycle visibility features.
+source: gap-analysis MR1, cycle 1
+status: deferred
+content_hash: 4fee1ca26c2488d76993664d101e688df1e990033c23daec4e3d405089deb20a
+token_count: 180
+file_path: .ideate/questions/Q-98.yaml

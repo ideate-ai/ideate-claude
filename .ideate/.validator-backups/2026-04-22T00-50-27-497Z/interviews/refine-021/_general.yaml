@@ -1,0 +1,10 @@
+id: interviews/refine-021/_general
+type: interview
+cycle: 21
+source_path: steering/interviews/refine-021/_general.md
+entries:
+  - {id: IQ-021-001, question: Do the current guiding principles still hold?, answer: Yes, all principles hold. No changes needed., domain: null, seq: 1}
+  - {id: IQ-021-002, question: "The cycle 019 review produced 1 significant finding (Q-63: build:migration absent) and 5 minor findings (Q-64 through Q-67, plus 1 suggestion). Address all findings this cycle?", answer: Yes — all 5 questions addressed (Q-63 through Q-67). The close() debounceTimers.clear() suggestion (cycle 019 suggestion) is out of scope for this cycle., domain: null, seq: 2}
+  - {id: IQ-021-003, question: Any new requirements or scope beyond the review findings?, answer: No., domain: null, seq: 3}
+content_hash: "6f41fa98443092bc17890aace1c0002a2794cbec7288b2e951f77e22da319b13"
+token_count: 205

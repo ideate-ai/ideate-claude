@@ -1,0 +1,40 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |
+  ## Verdict: Fail
+
+  ## Critical Findings
+
+  ### C1: Step3 warning YAML not parseable when content contains newlines
+
+  analysis.ts line ~162: rawSnippet built by slicing content without stripping newlines. Single-quoted YAML scalars cannot span multiple lines when emitted inline — `yaml.parse()` throws 'Missing closing quote'.
+
+  S2 test uses single-line content and does not exercise this. Reproducer: any spec-adherence content with newlines in first 200 chars triggers invalid YAML output.
+
+  Fix: replace newlines in rawSnippet before emission (.replace(/\n/g, ' ')) OR switch to block scalar (>-).
+
+  ## Minor Findings
+
+  - restart.sh:12 header 'Does NOT send SIGKILL' contradicts implementation.
+  - JSDoc lists 'Unknown' as step1 keyword but no STEP1_UNKNOWN_RES exists — doc drift.
+content_hash: cdefe0527c0c268accd3b5b62143017262485cd2cf5a66ef77eea767caff61d5
+token_count: 396
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 37
+cycle_modified: 27
+verdict: Pass
+scope: WI-873 deltas — getConvergenceData empty-string parity fix + doc/test/fixture syncs
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345

@@ -6,9 +6,13 @@ derived_from:
   - D-19 (autopilot/phases/review.md is an independent reimplementation)
 established: cycle 006
 amended: null
-description: When a feature is added to `skills/review/SKILL.md` that governs review orchestration behavior (event emission, agent sequencing, output format), the corresponding work item must also list `skills/autopilot/phases/review.md` in its file scope, because autopilot reimplements review orchestration independently and does not inherit changes to the standalone review skill.
+description: >-
+  When a feature is added to `skills/review/SKILL.md` that governs review orchestration behavior (event emission, agent
+  sequencing, output format), the corresponding work item must also list `skills/autopilot/phases/review.md` in its file
+  scope, because autopilot reimplements review orchestration independently and does not inherit changes to the
+  standalone review skill.
 cycle_created: 1
 cycle_modified: null
-content_hash: "5812fc51741fb284852e54e26450c9eafdc4e3542ac7841c79a42c8a785c856c"
+content_hash: 5812fc51741fb284852e54e26450c9eafdc4e3542ac7841c79a42c8a785c856c
 token_count: 164
-file_path: .ideate/policies/P-18.yaml
+file_path: policies/P-18.yaml

@@ -1,0 +1,12 @@
+id: D-142
+type: domain_decision
+domain: artifact-structure
+title: Write handlers must store absolute file_path in SQLite node rows
+decision: All MCP write handlers must store absolute file paths (resolved against ideateDir) in the SQLite nodes table file_path column. Relative paths resolve against CWD at read time, which varies across invocations and breaks content retrieval in PPR context assembly and resolveContent fallbacks.
+rationale: handleEmitMetric stored path.join('metrics', id + '.yaml') — a relative path. Every other handler stores an absolute path. readArtifactContent calls fs.readFileSync(filePath) which resolves relative paths against CWD, not ideateDir, producing silent read failures.
+source: cycle 1 code-quality S1; decision-log D8/OQ-1
+cycle: 1
+status: settled
+content_hash: f4dade49abea44ab2999d8402b0bdbc74061609b93c2b47d4a3225a83e744923
+token_count: 196
+file_path: .ideate/decisions/D-142.yaml

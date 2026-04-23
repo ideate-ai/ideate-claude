@@ -1,0 +1,25 @@
+id: WI-415
+type: work_item
+title: Unify metrics write path — handleEmitMetric writes YAML + SQLite, deprecates JSONL
+status: done
+complexity: M
+scope: mcp/artifact-server/src/tools/metrics.ts (modify), mcp/artifact-server/src/config.ts (modify), mcp/artifact-server/src/__tests__/metrics.test.ts (modify)
+depends: []
+blocks: []
+criteria: |-
+  1. handleEmitMetric no longer appends to metrics.jsonl — the fs.appendFileSync call is removed.
+  2. handleEmitMetric generates a unique ID using randomUUID() from the Node 'crypto' module, prefixed as ME- (e.g., ME-3f2a1b4c using the first 8 hex chars of the UUID).
+  3. handleEmitMetric writes a YAML artifact to {ideateDir}/metrics/{id}.yaml with type: metrics_event. Content fields map from the payload: event_name derived as `${skill}:${agentType ?? phase ?? 'unknown'}`; structured columns (input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, outcome, finding_count, finding_severities, first_pass_accepted, rework_count) extracted from payload; full raw payload stored as JSON string in the payload column.
+  4. handleEmitMetric follows the P-44 two-phase write: YAML written first, then db.transaction() upserts node row + metrics_events row. On SQLite failure, YAML file is cleaned up.
+  5. finding_severities is serialized with the same conditional pattern as write.ts: pass through if already a string, JSON.stringify if object, null if absent.
+  6. config.ts IDEATE_SUBDIRS array includes 'metrics'.
+  7. metrics.test.ts verifies that after calling handleEmitMetric, (a) a YAML file exists at metrics/{id}.yaml, and (b) a metrics_events row exists in SQLite queryable via handleGetMetrics.
+  8. All existing tests pass. Build passes.
+domain: null
+notes: "# WI-415: Unify metrics write path — handleEmitMetric writes YAML + SQLite, deprecates JSONL"
+resolution: null
+cycle_created: null
+cycle_modified: 3
+content_hash: 9d836e92029c70eb06f099eaf29641fcd2c46f2df13137c32303a3261f93b41a
+token_count: 468
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-415.yaml

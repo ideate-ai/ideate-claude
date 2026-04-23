@@ -1,0 +1,14 @@
+id: P-24
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - D-57 (watcher ignored-pattern bug survived all incremental reviews due to absent integration test)
+established: cycle 016
+amended: null
+description: When a work item delivers a feature that depends on an asynchronous event chain (e.g., file watcher -> callback -> index rebuild), the work item's acceptance criteria must include at least one integration test that exercises the full chain end-to-end against a real or realistic environment. Unit tests on individual links in the chain are insufficient — the chain must be tested as assembled. A missing integration test for an async path is a specification gap, not merely a quality gap.
+cycle_created: 1
+cycle_modified: null
+content_hash: dc0001f115ce22754b68c2ba73fe609b9742014cc95b45cfae8959e4b72442fd
+token_count: 204
+file_path: .ideate/policies/P-24.yaml

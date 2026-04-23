@@ -2,11 +2,5 @@ id: interviews/refine-008/_general
 type: interview
 cycle: 8
 source_path: steering/interviews/refine-008/_general.md
-entries:
-  - {id: IQ-008-001, question: Do the guiding principles still apply as-is?, answer: Yes, all 12 principles hold unchanged., domain: null, seq: 1}
-  - {id: IQ-008-002, question: For proxy-human deferrals in autopilot — should significant deferrals interrupt the loop or just be logged?, answer: Andon behavior should be mode-relative. In autopilot, log deferrals visibly (in cycle status messages and the activity report) without interrupting the loop. The existing interrupt-and-ask behavior stays for standalone execute., domain: null, seq: 2}
-  - {id: IQ-008-003, question: Should quality improvements and token efficiency go in one cycle or split?, answer: Split. Cycle A covers quality improvements and structural risks. Token efficiency (context package to file, lazy research loading, metrics schema dedup, refine architect skip, autopilot refine dedup) deferred to Cycle B., domain: null, seq: 3}
-  - {id: IQ-008-004, question: Any constraint on the RAG/MCP tooling?, answer: Continue using the RAG (ideate MCP artifact server) to keep the domain layer clean — specifically, domain-curator should use semantic search before writing new policies to detect duplicates., domain: null, seq: 4}
-  - {id: IQ-008-005, question: Any scope boundaries?, answer: All changes are to markdown files (skill definitions, agent definitions, artifact conventions). No code changes. No changes to steering/guiding-principles.md or steering/constraints.md., domain: null, seq: 5}
 content_hash: cad93ecc0d65a9fc5ab743f17513e3bf32bd793ebcb1b966aef0f1a586314981
 token_count: 402

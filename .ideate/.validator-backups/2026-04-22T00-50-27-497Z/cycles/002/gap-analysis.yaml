@@ -1,0 +1,119 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Fail
+
+  Three Significant findings identified. No Critical findings.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: Missing 'adapter required' guard tests for context.ts and query.ts
+  - **Component**: mcp/artifact-server/src/__tests__/tools.test.ts
+  - **Scenario**: WI-803 and WI-804 introduced getAdapter(ctx) guards. metrics.test.ts tests this path explicitly (describe block at line 219-231). No equivalent test exists in tools.test.ts for handleGetArtifactContext or handleArtifactQuery/handleGetNextId.
+  - **Gap**: No test verifies handleGetArtifactContext or handleArtifactQuery without a configured adapter produces the expected error.
+  - **Recommendation**: Add 'handleGetArtifactContext throws when ctx.adapter is not set' and 'handleArtifactQuery throws when ctx.adapter is not set' tests mirroring the metrics.test.ts pattern.
+
+  ### S2: Remaining live ctx.db/ctx.drizzleDb access in server.ts is not tracked by any work item
+  - **Component**: mcp/artifact-server/src/server.ts lines 165 and 168
+  - **Scenario**: server.ts calls indexFiles(state.ctx.db, state.ctx.drizzleDb, yamlChanged) and removeFiles(state.ctx.db, state.ctx.drizzleDb, yamlDeleted) directly. These are live (not comment) references to ctx.db and ctx.drizzleDb outside the adapter layer.
+  - **Gap**: server.ts is not an adapter implementation — it is the server entry point. The watcher integration is a production code path, meaning indexFiles and removeFiles bypass the adapter contract in production. This is a Leak the cleanup campaign has not catalogued and has no assigned work item.
+  - **Recommendation**: Create cycle 3 work item to route the indexer/watcher through the adapter (or document explicitly that indexFiles/removeFiles are local-mode-only paths with a guard at the call site).
+
+  ### S3: No test for three-dimensional filter combination in metrics aggregation
+  - **Component**: mcp/artifact-server/src/__tests__/metrics.test.ts
+  - **Scenario**: WI-805 acceptance criterion requires the new TypeScript-side filter logic to handle all-filters-combined. The 'combines multiple filters' test at line 564 covers only {cycle: 5, agent_type: 'code-reviewer'}. No test combines all four filter dimensions, and no test combines phase with any other filter dimension.
+  - **Gap**: The phase filter is tested in isolation but never in combination. A bug in any one of the phase-related filter branches would not be caught.
+  - **Recommendation**: Add one test combining {cycle: N, agent_type: 'X', phase: 'execute'} with a dataset that includes rows matching all three, some two, and none.
+
+  ## Minor Findings
+
+  ### M1: RF-clean-interface-proposal Markdown doc does not exist
+  - **Component**: mcp/artifact-server/docs/RF-clean-interface-proposal.md (referenced but absent)
+  - **Recommendation**: Defer — YAML form is authoritative.
+
+  ### M2: adapter-contract.md does not reflect the post-cleanup invariants
+  - **Component**: mcp/artifact-server/docs/adapter-contract.md
+  - **Recommendation**: Defer — add 'Implementation Constraints' section listing the two invariants.
+
+  ### M3: No LocalAdapter vs. mock-adapter equivalence test for context.ts and query.ts post-WI-803/804
+  - **Component**: mcp/artifact-server/src/__tests__/tools.test.ts
+  - **Recommendation**: Defer to PH-046-candidate (RemoteAdapter equivalence test gap closure) as already noted in horizon.
+
+  ## Confirmed Clean
+
+  - All ctx.db/ctx.drizzleDb in tools/ are in comment text only. No live references in any tools file.
+  - All catalogued Leaks 1-12 from RF §2 are addressed by completed work items.
+  - WI-805 filter logic handles all dimensions including empty result sets and null work_item dimensions.
+  - Backward compatibility preserved: callers go through tools/index.ts dispatch (unchanged); server always provides configured adapter.
+content_hash: 832b4740807be3a9d50c55e3fd502ce7a16fe89b899ad0bc7647a22abd87f749
+token_count: 2217
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Fail
+phase: PH-045
+scope: cycle 1 capstone
+summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+findings:
+  critical: []
+  significant:
+    - id: S1
+      title: WI-800 AC2 incomplete — query.ts ctx.db fallback paths not removed (Leaks 8-12 unresolved)
+      files:
+        - mcp/artifact-server/src/tools/query.ts:243-244,348,357,371-372,384,570,577,619,799-868
+      detail: runFilterMode and runGraphMode reachable from handleArtifactQuery line 799 else-branch. Six ctx.db.prepare calls. Comment says 'Test-only fallback path' but it's live production code guarded only by if (ctx.adapter). WI-803 scoped to context.ts only — query.ts uncovered.
+      recommendation: "Add a work item for query.ts: getAdapter(ctx) guard at top of handleArtifactQuery, delete runFilterMode/runGraphMode/buildSummaryMap. Same pattern as write.ts."
+    - id: S2
+      title: metrics.ts ctx.db usage (Leak 7) untracked by any work item
+      file: mcp/artifact-server/src/tools/metrics.ts:514-527
+      detail: "handleGetMetrics calls ctx.adapter.queryNodes as a gate-check (line 522) then immediately falls back to ctx.db.prepare(fullQuery).all(...) (line 523). The else branch at 524-526 is identical ctx.db with no adapter involvement. RF-clean-interface-proposal §2 explicitly identifies this as Leak 7: 'handleGetMetrics silently uses wrong data path with RemoteAdapter'. Not in WI-800 or WI-803 or any pending WI."
+      impact: With RemoteAdapter active, handleGetMetrics returns local SQLite data, not remote backend data. Adapter call is decorative.
+      recommendation: Create a new work item for metrics.ts Leak 7. RF-clean-interface-proposal §2 Option B fix proposal already written.
+  minor:
+    - id: M1
+      title: WI-797 regression tests cover spec-adherence collision but not code-quality/gap-analysis
+      file: mcp/artifact-server/src/__tests__/tools.test.ts:876-940
+      detail: Tests cover only spec-adherence.yaml/SA-NNN collision pair. reader.ts:957-960 only has canonical-preference logic for spec-adherence (the only file feeding condition_b). Not a production gap (other files don't drive condition_b), but WI-797 wording implied broader coverage.
+      recommendation: Defer — document in WI-797 resolution that code-quality/gap-analysis files don't drive condition_b.
+    - id: M2
+      title: metrics.ts adapter branch reads ctx.db even when adapter is present
+      file: mcp/artifact-server/src/tools/metrics.ts:523
+      detail: Subsumed by S2; called out separately because the 'Adapter-first branch' comment at line 515 is misleading — the adapter call is a no-op gate, not a data fetch.
+      recommendation: Address with S2's WI.
+    - id: M3
+      title: No adapter-guard test for autopilot-state.ts or events.ts
+      files:
+        - mcp/artifact-server/src/tools/autopilot-state.ts
+        - mcp/artifact-server/src/tools/events.ts
+      detail: Neither file uses ctx.db (no current leak), but neither has the getAdapter(ctx) pattern at handler tops. Misconfiguration would produce undefined-behavior failure mode.
+      recommendation: Defer — add hardening chore to install getAdapter pattern when WI-803 completes.
+    - id: M4
+      title: WI-799 EDGE_TYPE_REGISTRY coverage for DEFAULT_EDGE_TYPE_WEIGHTS untracked
+      file: mcp/artifact-server/src/ppr.ts:60-66
+      detail: "DEFAULT_EDGE_TYPE_WEIGHTS covers 5 of 15 EDGE_TYPES; the other 10 (containment-style: belongs_to_*, derived_from, relates_to, etc.) get implicit weight 1.0 fallback. WI-799 incremental review noted as M1 'non-blocking, not part of this WI's scope' but never captured as follow-on."
+      recommendation: Defer — create a domain question or decision capturing intended weight policy for containment edges; add PPR test asserting unlisted edge types receive expected weight.
+  human_review_items:
+    - id: HR1
+      title: Should query.ts ctx.db fallback be tracked as WI-800 failure or new WI?
+      options:
+        - (1) Reconsider WI-800 status; create a new WI for query.ts analogous to WI-803.
+        - (2) Treat query.ts fallback as labelled-test-only and address in later phase alongside metrics.ts.
+      evidence: Code comments say 'Test-only fallback path' but production code path at line 799 is unconditional when ctx.adapter is falsy. Human judgment needed on prioritization.
+  items_met:
+    - WI-797
+    - WI-798
+    - WI-799
+    - WI-800 Leak 4
+    - WI-800 Leaks 8-12 (analysis.ts only)
+    - WI-801
+    - WI-802
+cycle: 2
+cycle_modified: 27
+review_mode: differential
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3

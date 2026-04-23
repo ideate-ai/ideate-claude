@@ -1,0 +1,20 @@
+id: Q-082
+type: domain_question
+domain: workflow
+impact: The domain-curator agent cannot currently fulfill its role without violating active policies. Until fixed, it is a source of technical debt and policy inconsistency.
+question: |-
+  The domain-curator agent (agents/domain-curator.md) has been identified with multiple policy violations:
+  1. Uses `{artifact-dir}` instead of `{project_root}` (violates P-33)
+  2. References `policies.md`, `decisions.md`, `questions.md` (violates P-25)
+  3. Instructs direct Write tool usage instead of MCP (violates P-06)
+
+  Given that this is the agent responsible for maintaining domain policies, how should these violations be prioritized and fixed? Should the agent be rewritten to use MCP, or should it be deprecated in favor of a different approach?
+reexamination_trigger: When agent system architecture is next reviewed.
+resolution: Resolved in cycle 066 via WI-342. The ideate_write_artifact MCP tool now supports domain_policy, domain_decision, and domain_question types with proper extension table inserts. The domain-curator agent already correctly instructs not to write artifacts directly (Phase 7), returning structured content for the spawning skill to write via MCP.
+resolved_in: 66
+source: gap-analysis.yaml, cycle 029, CF1, CF2, SF1; code-quality.yaml, cycle 029, S1
+status: resolved
+title: Domain-curator agent has multiple policy violations
+content_hash: 1ca9c95f455d6dbdd05bdc00d1c2d360d757afa17a54d2379f208837607f664d
+token_count: 350
+file_path: .ideate/questions/Q-082.yaml

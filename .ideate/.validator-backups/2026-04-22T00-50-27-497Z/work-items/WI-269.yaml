@@ -1,0 +1,23 @@
+id: WI-269
+type: work_item
+title: Mark Q-75 and Q-76 as resolved after WI-192 CTE fix
+status: done
+complexity: low
+scope:
+  - path: .ideate/questions/Q-75.yaml
+    op: modify
+  - path: .ideate/questions/Q-76.yaml
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "Q-75.yaml has status: resolved, resolution referencing WI-192, resolved_in: 34"
+  - "Q-76.yaml has status: resolved, resolution referencing WI-192, resolved_in: 34"
+domain: artifact-structure
+notes: "Update both question files via ideate_write_artifact or direct edit. Set status: resolved, resolution: 'Fixed by WI-192 — UNION deduplication and node_id alias applied in query.ts', resolved_in: 34."
+resolution: "Q-75 and Q-76 updated to status: resolved with resolution referencing WI-192, resolved_in: 34"
+cycle_created: 35
+cycle_modified: null
+content_hash: cd7224f1ccd6bccdfe450d97e76402d93003e90a6c7b6e4575305e5f764db893
+token_count: 203
+file_path: .ideate/work-items/WI-269.yaml

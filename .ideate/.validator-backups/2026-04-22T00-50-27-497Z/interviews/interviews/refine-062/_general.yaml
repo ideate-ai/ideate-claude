@@ -1,0 +1,24 @@
+id: interviews/refine-062/_general
+type: interview
+title: Refinement Interview — Cycle 062
+cycle: 62
+domain: null
+entries:
+  - question: What triggered this refinement?
+    answer: "User bug report: fresh install on a different machine produces three errors. (1) MCP server crashes at first launch because of a data race between .ideate being created and the MCP expecting it to exist. (2) Some skill prompts fail because they reference agents by short names (researcher) instead of qualified plugin names (ideate:researcher). (3) In directories without ideate initialized, the MCP server crashes because .ideate/ is missing."
+    domain: null
+  - question: Review findings exist from a previous cycle. Are you here to address those findings, to make other changes, or both?
+    answer: No review findings — this is requirement evolution driven by real-world testing on a fresh machine. The changes were blocking enough that they had to be fixed before ideate could even run, so they were implemented directly before the refinement cycle could be planned.
+    domain: null
+  - question: Do the current guiding principles still apply?
+    answer: Yes, all principles still hold. GP-14 (MCP Abstraction Boundary) is directly served by the dormant mode fix.
+    domain: null
+  - question: "Test coverage for dormant mode: should we add tests?"
+    answer: Yes, add test coverage. Also research testing frameworks for LLM prompt testing — need to consider how to ensure the plaintext agents/skills portions of the code are tested.
+    domain: agent-system
+  - question: "Plugin cache sync: version bump and cache update?"
+    answer: Bump the version to handle these fixes. Update the cached copy so we can continue safely.
+    domain: project-boundaries
+content_hash: 479b6ea7e1a873f0f436499196b7b82ed6ec256e66c519ded0f8849563ac1ec5
+token_count: 437
+file_path: .ideate/interviews/interviews/refine-062/_general.yaml

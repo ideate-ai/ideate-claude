@@ -1,0 +1,58 @@
+id: WI-418
+type: work_item
+title: Complete ToolContext import migration to types.ts across all tool files
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/analysis.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/execution.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/query.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/bootstrap.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/events.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/config.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/autopilot-state.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/metrics.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - All tool files in mcp/artifact-server/src/tools/ import ToolContext from '../types.js' not from './index.js'
+  - tools/index.ts still re-exports ToolContext from '../types.js' for external consumers
+  - metrics.test.ts imports ToolContext from '../types.js' not from '../tools/index.js'
+  - No circular import chain through tools/index.ts for any tool file
+  - npm run build produces no errors
+  - All 492 tests pass
+domain: artifact-structure
+notes: |-
+  WI-415 extracted ToolContext to src/types.ts and migrated only metrics.ts. Eight other tool files still import from './index.js':
+  analysis.ts, write.ts, execution.ts, query.ts, context.ts, bootstrap.ts, events.ts, config.ts, autopilot-state.ts
+
+  For each file, change:
+    import { ToolContext } from './index.js'
+  to:
+    import type { ToolContext } from '../types.js'
+
+  Also update metrics.test.ts:
+    import { ToolContext } from '../tools/index.js'
+  to:
+    import type { ToolContext } from '../types.js'
+
+  tools/index.ts already re-exports ToolContext from '../types.js' — do not remove this.
+  This is a mechanical change. Build and test to verify no regressions.
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 008ba8e1bb64805da0b2bc31c2acbea4fda28e9de7bb48bc6666cce0acd3fdf5
+token_count: 510
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-418.yaml

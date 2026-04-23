@@ -1,0 +1,13 @@
+id: D-61
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 16
+supersedes: null
+description: Each artifact (work item, finding, policy, decision, question, journal entry) is a separate YAML file with a unique ID. No consolidated files for artifact types that multiple agents or developers might create concurrently. The existing `work-items.yaml` consolidated format will be migrated to individual files.
+rationale: Two developers creating different findings in parallel produce different files — no merge conflicts. A consolidated file (e.g., `work-items.yaml`) would conflict when two developers add items concurrently. Individual files are also more natural for the indexer (each file = one database row).
+cycle_created: 1
+cycle_modified: null
+content_hash: "8401f055235044a8f2e88debd432f9140e1dfbc4295f8cff211c102e3137d5cc"
+token_count: 208
+file_path: .ideate/decisions/D-61.yaml

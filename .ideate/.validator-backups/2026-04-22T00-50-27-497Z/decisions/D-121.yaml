@@ -1,0 +1,10 @@
+id: D-121
+type: domain_decision
+domain: artifact-structure
+cycle: 68
+supersedes: null
+description: Cycle 068 introduced ideate_update_config (WI-362) and /ideate:settings (WI-364), establishing a new runtime write path to config.json via MCP. This directly conflicts with P-17, which restricts config.json writes to migration scripts only. P-17 was written before the settings skill was conceived; an amendment is required pending user confirmation.
+rationale: The settings skill needs to persist user preferences (model overrides, agent budgets) to config.json at runtime. P-17 made sense when config.json held only schema_version, but the file now serves as a runtime settings store. See Q-90.
+content_hash: 81939ae2fab66594a2f28a1ad2f7afa2567c74a6fa6de414e10f4641f3a4272a
+token_count: 174
+file_path: .ideate/decisions/D-121.yaml

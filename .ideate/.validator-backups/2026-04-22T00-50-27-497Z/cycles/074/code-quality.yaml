@@ -1,0 +1,61 @@
+id: code-quality
+type: cycle_summary
+reviewer: code-reviewer
+content: |
+  Verdict: Fail
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: q160 monotonic-advance test does not verify strict increase
+
+  - File: mcp/artifact-server/src/__tests__/q160-regression.test.ts:175-180
+  - Test named 'monotonic advance: resolved cycle strictly increases when cycles_completed increments' asserts `expect(c2).toBeGreaterThan(c1 - 1)` and `expect(c3).toBeGreaterThan(c2 - 1)`. With currentCycle=27 fixed and cyclesCompleted 0/1/2, resolveCycleNumber returns 28/28/28; assertions pass because 28 > 27, but the sequence is flat, not strictly increasing. Property named in the test title is not locked in.
+  - Fix: Replace with `expect(c2).toBeGreaterThan(c1)` and `expect(c3).toBeGreaterThan(c2)`. Use inputs where cyclesCompleted dominates: resolveCycleNumber(3,0)=4, (3,4)=5, (3,5)=6.
+
+  ### S2: Step 4 of cycle-number resolution (mid-session restart guard) is untested
+
+  - File: mcp/artifact-server/src/__tests__/q160-regression.test.ts:110-113
+  - resolveCycleNumber helper implements only step 3 (`Math.max(currentCycle, cyclesCompleted) + 1`). Step 4 — 'if this is not the first iteration, {cycle_number} must be strictly greater than the previous iteration\'s {cycle_number} — if not, increment by 1 until it is' — is absent from helper and tests.
+  - Impact: Mid-session restart collision (review-phase interruption before domain-index write) is the specific scenario step 4 was written for. Not regression-tested.
+  - Fix: Helper should accept previousCycleNumber parameter. Test should simulate two consecutive iterations where current_cycle has NOT been updated between them.
+
+  ## Minor Findings
+
+  ### M1: insertFinding in tools.test.ts generates q164 YAML-read warnings in CI logs
+
+  - File: mcp/artifact-server/src/__tests__/tools.test.ts:112
+  - insertFinding stores file_path=/tmp/{id}.yaml without writing an actual YAML file. After the Q-164 fix, every call to handleGetConvergenceStatus logs [WARN] [q164] Could not read/parse YAML per finding. Visible noise in CI; may mask real q164 warnings.
+  - Fix: Write stub YAML at the path, or point file_path into artifactDir.
+
+  ### M2: Test title misstates what it verifies (pairs with S1)
+
+  - File: mcp/artifact-server/src/__tests__/q160-regression.test.ts:175
+  - Title claims 'strictly increases' but assertions permit `>=`.
+
+  ## Dynamic Testing
+
+  Full vitest suite run: 1528 pass / 0 fail. No regressions introduced by WI-885 or WI-887.
+content_hash: 3913ee21fa89f2dcee87ff1a93081c59168b466e2e1fbc3c16bcb2d9ad001ffe
+token_count: 809
+file_path: .ideate/cycles/068/code-quality.yaml
+cycle: 74
+cycle_modified: 27
+verdict: Pass
+scope: WI-873 deltas — getConvergenceData empty-string parity fix + doc/test/fixture syncs
+summary: "All machine-verifiable acceptance criteria satisfied. Line 1357 2-clause filter correct. npm test: 1481 passed, 0 failed, 345 skipped. All 10 finding-closure YAMLs carry correct addressed_by. Three minor issues, non-blocking."
+findings_summary:
+  critical: 0
+  significant: 0
+  minor: 3
+minor_findings_refs:
+  - F-CYCLE-33-M1
+  - F-CYCLE-33-M2
+  - F-CYCLE-33-M3
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345

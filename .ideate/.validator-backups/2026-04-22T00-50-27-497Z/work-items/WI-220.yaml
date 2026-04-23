@@ -1,0 +1,47 @@
+id: WI-220
+type: work_item
+title: Skill integration for hook event emission
+status: done
+complexity: medium
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends:
+  - "219"
+blocks: []
+criteria:
+  - "skills/plan/SKILL.md emits plan.complete event via ideate_emit_event after Phase 8 (presenting plan summary), with variables: {ARTIFACT_DIR, WORK_ITEM_COUNT}"
+  - "skills/execute/SKILL.md emits work_item.started before each work item execution, with variables: {ARTIFACT_DIR, WORK_ITEM_ID, WORK_ITEM_TITLE}"
+  - "skills/execute/SKILL.md emits work_item.completed after each work item passes incremental review, with variables: {ARTIFACT_DIR, WORK_ITEM_ID, VERDICT}"
+  - "skills/review/SKILL.md emits review.complete after Phase 5 (synthesis), with variables: {ARTIFACT_DIR, CYCLE_NUMBER, FINDING_COUNT}"
+  - skills/autopilot/phases/execute.md emits work_item.started and work_item.completed with same variables as execute/SKILL.md
+  - skills/autopilot/phases/review.md emits review.complete with same variables as review/SKILL.md
+  - "skills/autopilot/SKILL.md emits cycle.converged when convergence conditions are met, with variables: {ARTIFACT_DIR, CYCLE_NUMBER, TOTAL_CYCLES}"
+  - All event emissions use ideate_emit_event MCP tool call
+  - "All event emissions are best-effort: if the tool call fails, skill continues without interruption"
+  - No review.finding or andon.triggered events emitted in this work item (those require per-finding granularity to be added in a future iteration)
+module: null
+domain: null
+notes: |
+  # WI-220: Skill Integration for Hook Event Emission
+
+  ## Event emission points
+
+  ### skills/plan/SKILL.md
+  After Phase 8 (presenting plan summary), before the closing section:
+cycle_created: 1
+cycle_modified: null
+content_hash: 544d3d19221812c381d434d6b7a91c1ee4323095d6243c20fc756cb2be20c165
+token_count: 520
+file_path: .ideate/work-items/WI-220.yaml
+resolution: "Verified complete: all skills emit hook events at documented lifecycle points"

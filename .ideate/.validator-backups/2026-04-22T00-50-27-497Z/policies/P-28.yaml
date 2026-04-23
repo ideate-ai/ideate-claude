@@ -1,0 +1,14 @@
+id: P-28
+type: domain_policy
+domain: artifact-structure
+status: active
+derived_from:
+  - GP-8 (Durable Knowledge Capture) — keeps directories manageable over long-lived projects with many cycles
+established: cycle 016
+amended: null
+description: Cycle-specific artifacts (findings, journal entries) live under `.ideate/cycles/{NNN}/`. Cross-cycle artifacts (work items, policies, decisions, principles, constraints, modules, research, interviews) live at the top level of `.ideate/`. The indexer traverses the full tree recursively — directory structure is organizational, not functional. The `type` field in each YAML file determines which SQLite table it maps to, regardless of file location.
+cycle_created: 1
+cycle_modified: null
+content_hash: bf8c933a3ad8de2b29f62645578f01a085dfdf49bbfb895715a86e414ee76cb2
+token_count: 199
+file_path: .ideate/policies/P-28.yaml

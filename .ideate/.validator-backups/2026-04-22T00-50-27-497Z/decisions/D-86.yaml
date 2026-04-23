@@ -1,0 +1,13 @@
+id: D-86
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: WI-171 added `primaryKey()` to the `nodeFileRefs` Drizzle table definition and `unique()` to the `edges` Drizzle table definition. Both definitions now mirror the raw-SQL DDL. Resolves Q-56.
+rationale: Drizzle's `onConflictDoNothing()` and `onConflictDoUpdate()` rely on Drizzle metadata to infer conflict targets. Omitting the constraint declarations creates risk if future Drizzle versions require explicit constraint metadata for conflict resolution.
+cycle_created: 1
+cycle_modified: null
+content_hash: "190154d08b65192087d57a2aad5d8028eb38b89171a3c7046fc53e012a172489"
+token_count: 167
+file_path: .ideate/decisions/D-86.yaml

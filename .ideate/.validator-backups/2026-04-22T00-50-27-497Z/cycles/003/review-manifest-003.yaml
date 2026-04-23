@@ -1,0 +1,16 @@
+id: review-manifest-003
+type: cycle_summary
+title: Review Manifest — Cycle 3
+cycle: 3
+reviewer: autopilot
+content: |-
+  Full review (differential detection unavailable — no commits made by workers).
+
+  | # | Work Item | Title | Files Touched | Incremental Verdict |
+  |---|-----------|-------|---------------|---------------------|
+  | 1 | WI-406 | Fix write.ts: resolveArtifactPath, document_artifacts extension upserts, journal sequence collision | src/tools/write.ts, src/db.ts, src/db-helpers.ts | Pass (after 2 rework cycles) |
+  | 2 | WI-407 | Add tools.test.ts extension row assertions | src/__tests__/tools.test.ts | Pass (after 1 rework cycle) |
+  | 3 | WI-408 | Add critical verdict test and rollback tests | src/__tests__/execution.test.ts, src/__tests__/write-transaction.test.ts | Pass (first review) |
+content_hash: 6a688f1c1e11b2b871a14fa170885064f24effeefde9bb6b6a6641e4412f61c5
+token_count: 204
+file_path: .ideate/cycles/003/review-manifest-003.yaml

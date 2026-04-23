@@ -1,0 +1,20 @@
+id: summary
+type: cycle_summary
+cycle: 65
+content: |-
+  # Review Summary
+
+  ## Overview
+  Cycle 065 consolidated /ideate:plan and /ideate:init into a single unified /ideate:init command. The 1103-line SKILL.md auto-detects existing codebases vs new projects. All cross-references updated. One missed reference found and fixed during review (server.ts dormant error messages still said '/ideate:plan').
+
+  ## Significant Findings
+  - [gap-analyst/self] server.ts lines 201 and 210 still referenced /ideate:plan in dormant mode error messages — relates to: WI-338 scope (cross-references). Fixed during review.
+
+  ## Findings Requiring User Input
+  None — all findings resolved from existing context.
+
+  ## Proposed Refinement Plan
+  No critical or significant findings require a refinement cycle. The project is ready for user evaluation.
+content_hash: a387ae7cb9e5ca740e1ba91f280afec313a8de40adab5c441a3ee2542ac316b8
+token_count: 209
+file_path: .ideate/cycles/065/summary.yaml

@@ -1,6 +1,6 @@
 reviewer: gap-analyst
 cycle: 30
-type: full_audit
+type: cycle_summary
 content: |-
   ## Verdict: Partial
 

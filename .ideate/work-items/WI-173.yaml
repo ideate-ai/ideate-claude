@@ -11,55 +11,90 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - Source code index entry for config.ts in architecture.md lists CONFIG_SCHEMA_VERSION (not CURRENT_SCHEMA_VERSION) and includes resolveArtifactDir, createIdeateDir, writeConfig
+  - >-
+    Source code index entry for config.ts in architecture.md lists CONFIG_SCHEMA_VERSION (not CURRENT_SCHEMA_VERSION)
+    and includes resolveArtifactDir, createIdeateDir, writeConfig
   - Source code index entry for migrate-to-v3.ts includes the exported functions added in WI-162 through WI-169
   - Source code index entry for migrate-to-v3.js updated to match migrate-to-v3.ts
-  - specs/plan/notes/144.md clarifies that idx_edges_composite was dropped as redundant with the UNIQUE constraint on (source_id, target_id, edge_type) which provides an equivalent index
+  - >-
+    specs/plan/notes/144.md clarifies that idx_edges_composite was dropped as redundant with the UNIQUE constraint on
+    (source_id, target_id, edge_type) which provides an equivalent index
 module: null
 domain: null
-notes: |
+notes: >
   # WI-173: Architecture and spec documentation updates
+
 
   ## Overview
 
-  Two documentation fixes from cycle 018 spec-adherence findings. No source code changes. Disjoint file scope from WI-170, WI-171, WI-172.
+
+  Two documentation fixes from cycle 018 spec-adherence findings. No source code changes. Disjoint file scope from
+  WI-170, WI-171, WI-172.
+
 
   ## Changes
 
+
   ### Q-60 — Source code index in architecture.md
+
 
   The source code index at `specs/plan/architecture.md` (Section: Source Code Index) has two stale entries.
 
-  **config.ts entry**: Currently lists `CURRENT_SCHEMA_VERSION` as a key export — this constant was renamed to `CONFIG_SCHEMA_VERSION` in WI-166. Also missing: `resolveArtifactDir`, `createIdeateDir`, `writeConfig`.
+
+  **config.ts entry**: Currently lists `CURRENT_SCHEMA_VERSION` as a key export — this constant was renamed to
+  `CONFIG_SCHEMA_VERSION` in WI-166. Also missing: `resolveArtifactDir`, `createIdeateDir`, `writeConfig`.
+
 
   Update the entry to:
-  ```
-  | mcp/artifact-server/src/config.ts | TypeScript | CONFIG_SCHEMA_VERSION, IdeateConfigJson, IdeateConfig, readIdeateConfig, findIdeateConfig, resolveArtifactDir, createIdeateDir, writeConfig |
+
   ```
 
-  **migrate-to-v3.ts entry**: Missing 9 exported functions added in WI-162 through WI-169. Read the current `scripts/migrate-to-v3.ts` to enumerate its actual exports, then update the source code index row accordingly. Also update or add a matching row for `scripts/migrate-to-v3.js`.
+  | mcp/artifact-server/src/config.ts | TypeScript | CONFIG_SCHEMA_VERSION, IdeateConfigJson, IdeateConfig,
+  readIdeateConfig, findIdeateConfig, resolveArtifactDir, createIdeateDir, writeConfig |
+
+  ```
+
+
+  **migrate-to-v3.ts entry**: Missing 9 exported functions added in WI-162 through WI-169. Read the current
+  `scripts/migrate-to-v3.ts` to enumerate its actual exports, then update the source code index row accordingly. Also
+  update or add a matching row for `scripts/migrate-to-v3.js`.
+
 
   ### idx_edges_composite — notes/144.md clarification
 
+
   `specs/plan/notes/144.md` specifies:
+
   ```sql
+
   CREATE INDEX idx_edges_composite ON edges(source_id, target_id, edge_type);
+
   ```
+
 
   This index was not created in the actual `schema.ts` implementation. Cycle 018 spec-adherence flagged this divergence.
 
-  **Resolution**: The UNIQUE constraint on `edges(source_id, target_id, edge_type)` (added as part of the schema design) causes SQLite to create an implicit B-tree index on those three columns, which serves the same lookup purpose as `idx_edges_composite`. The explicit index is therefore redundant.
+
+  **Resolution**: The UNIQUE constraint on `edges(source_id, target_id, edge_type)` (added as part of the schema design)
+  causes SQLite to create an implicit B-tree index on those three columns, which serves the same lookup purpose as
+  `idx_edges_composite`. The explicit index is therefore redundant.
+
 
   Update `specs/plan/notes/144.md` in the Edge table section to note:
-  > `idx_edges_composite` was not created — the UNIQUE constraint on `(source_id, target_id, edge_type)` creates an implicit equivalent index. The explicit index definition is dropped.
+
+  > `idx_edges_composite` was not created — the UNIQUE constraint on `(source_id, target_id, edge_type)` creates an
+  implicit equivalent index. The explicit index definition is dropped.
+
 
   ## Files
 
+
   - `specs/plan/architecture.md` — update source code index rows for config.ts and migrate-to-v3.ts
+
   - `specs/plan/notes/144.md` — add note about idx_edges_composite
 cycle_created: 1
 cycle_modified: null
 content_hash: 1639071be1fefb73fd5db7b9746e499f24edde6aef21f0fff75b816d8e5b6928
 token_count: 791
-file_path: .ideate/work-items/WI-173.yaml
+file_path: work-items/WI-173.yaml
 resolution: Target files specs/plan/architecture.md and specs/plan/notes/144.md removed during v3 migration

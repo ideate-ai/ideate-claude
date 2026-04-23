@@ -1,0 +1,58 @@
+id: summary
+type: cycle_summary
+content: |
+  # Cycle 37 Summary (autopilot cycle 2 of PH-050)
+
+  **Executed**: WI-878 (bundled fix for 8 cycle-36 findings).
+  **Build/tests**: 1500/1500 passing.
+
+  ## Convergence Status
+  - condition_a: false (1 critical + 1 significant)
+  - condition_b: true (principle adherence verdict: Pass)
+
+  ## Findings
+  - F-CYCLE-37-C1 (critical, code-reviewer): Multiline snippet breaks YAML. Regression from S2 fix.
+  - F-CYCLE-37-S1 (significant, spec + gap consensus): S5 retroactive verification weaker than criterion text.
+  - F-CYCLE-37-M1 (minor, 3 reviewers): restart.sh header comment stale.
+  - F-CYCLE-37-M2 (minor, code-reviewer): JSDoc 'Unknown' pattern doc drift.
+  - F-CYCLE-37-M3 (minor, gap-analyst): Step 2 Fail branch untested.
+
+  ## Refinement direction
+  Single bug WI: newline-stripping in analysis.ts rawSnippet + multiline YAML test + S5 fixture test + 3 minor cleanups. All scoped to tools/analysis.ts, tools.test.ts, restart.sh.
+content_hash: 8431de78884ec74a209d0e040234dbf967c872ef464681148378597753f630eb
+token_count: 621
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 37
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: WI-876, WI-877
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001

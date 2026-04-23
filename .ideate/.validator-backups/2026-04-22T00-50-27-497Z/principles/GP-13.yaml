@@ -1,0 +1,11 @@
+id: GP-13
+type: guiding_principle
+name: Appropriate Validation Strategy
+status: active
+description: "Not all acceptance criteria can be machine-verified. For objectively measurable work (tests, type checks, structural assertions), machine verification is required. For inherently subjective work (aesthetics, UX design, content tone), human-in-the-loop verification is the appropriate method. The planning interview must identify which criteria are subjective and establish the validation approach for each — machine test, human review, user approval, or A/B comparison. Subjective decisions resolved during planning become objective specs: once the user approves a color palette, layout pattern, or interaction style, subsequent work is validated against that documented choice, not re-evaluated subjectively."
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "77203d3e1cf0a0a855fe0f977355e63c2c9d77455bed26c18ac0eb597fd6cd3f"
+token_count: 233
+file_path: .ideate/principles/GP-13.yaml

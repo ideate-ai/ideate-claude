@@ -1,0 +1,32 @@
+id: SA-002
+type: cycle_summary
+title: Spec Adherence Review — Cycle 2
+reviewer: spec-reviewer
+verdict: Fail
+content: |-
+  ## Verdict: Fail
+
+  Two principle violations found.
+
+  ## Principle Violations
+
+  ### P1: P-44 — Exclusive transaction mode missing from write.ts handlers
+  - **Policy**: P-44 requires `ctx.db.transaction(...).exclusive()` for all Phase 2 SQLite upserts.
+  - **Violation**: handleWriteWorkItems (`write.ts:647`), handleWriteArtifact (`write.ts:1000`), and handleUpdateWorkItems (`write.ts:1219`) call `upsertPhase()` with default deferred mode.
+  - **WI-417 fixed handleEmitMetric for this exact issue; the same fix was not applied to the three write.ts handlers.**
+  - **Correction**: Change `upsertPhase()` → `upsertPhase.exclusive()` at all three call sites.
+
+  ### P2: P-33 — ideate_emit_metric payload description exposes storage details
+  - **Policy**: P-33 prohibits file paths and storage implementation details in tool descriptions.
+  - **Violation**: `tools/index.ts:558–559` payload description says "Written as a YAML file in metrics/ and indexed in SQLite."
+  - **Correction**: Replace with "Metric payload to record. Any JSON-serializable object."
+
+  ## Compliant Items
+
+  - P-44: handleEmitMetric and handleAppendJournal use `.exclusive()` correctly.
+  - P-47: All handlers store absolute file_path via `path.join(ctx.ideateDir, ...)`.
+  - P-48: config.test.ts:195 iterates IDEATE_SUBDIRS dynamically.
+  - P-34: ideate_emit_metric description is 17 words.
+content_hash: 50236eef5217d81464158c966e33cf4195ff157121c3c0f06dc037a8f8d224a9
+token_count: 373
+file_path: .ideate/cycles/002/SA-002.yaml

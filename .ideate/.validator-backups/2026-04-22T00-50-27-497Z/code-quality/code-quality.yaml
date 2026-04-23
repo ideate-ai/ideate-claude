@@ -1,0 +1,8 @@
+id: code-quality
+type: code-quality
+findings: []
+overall_verdict: PASS
+summary: All 406 tests pass including 87 tests in tools.test.ts. Test imports corrected to use handleManageAutopilotState. Test assertions match function return formats. P-41 policy documentation accurately reflects implementation. No code quality issues found.
+content_hash: c05fb83d51469ec59646e3ab556112494bd564b7285559bf4ef7947db6c9fdf3
+token_count: 83
+file_path: .ideate/code-quality/code-quality.yaml

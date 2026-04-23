@@ -1,0 +1,286 @@
+id: RF-storage-format-tradeoffs
+type: research_finding
+topic: "Storage Format Trade-offs: SQLite in Git vs Structured Flat Files"
+status: active
+date: null
+content: |
+  # Storage Format Trade-offs: SQLite in Git vs Structured Flat Files
+  
+  Research date: 2026-03-23
+  
+  ## Context
+  
+  The ideate MCP server currently uses markdown files as the source of truth and SQLite-backed in-memory structures (LRU cache + embedding index) as a read-acceleration layer. The proposed inversion is: structured store as source of truth, MCP tools as the only access layer, markdown as generated output. The store must be committable to git.
+  
+  This document covers six questions posed by the planning session.
+  
+  ---
+  
+  ## Q1. Practical failure modes of committing SQLite to git
+  
+  ### Binary opacity
+  
+  Git treats `.sqlite` files as binary blobs. `git diff` produces no useful output by default. `git log -p` is useless. The only signal a commit changed the database is that the blob hash changed.
+  
+  ### Repository bloat from poor delta compression
+  
+  Git's packfile delta compression works on byte-level similarity between objects. SQLite uses a B-tree page format where a single-row insert can dirty multiple 4096-byte pages across the file. The delta between two SQLite versions covering a small logical change is often large in bytes. Each version is stored nearly in full. A repository that commits a frequently-modified SQLite database accumulates blob storage proportional to the number of commits, not proportional to the logical change size. There is no workaround within standard git; Git LFS shifts the problem (avoids repo bloat) but loses history diffability entirely.
+  
+  For the ideate use case — one commit per work item execution, one per review cycle — the bloat rate is bounded. A database covering 200 work items and 20 cycles with text content would be roughly 1-5 MB per snapshot. At 200+ commits, total repo storage could reach 200-1000 MB for the database objects alone. That said, the ideate artifact store is unlikely to exceed 50 MB as a live database (see Q5), so per-snapshot sizes are small.
+  
+  ### Merge conflicts are unresolvable at the binary level
+  
+  Two branches that each commit changes to the same SQLite file produce a binary merge conflict. Git cannot auto-merge it. The only resolution options are "take ours" or "take theirs" — one branch's changes are always discarded. This is a hard blocker for any workflow involving parallel branches.
+  
+  ### WAL and SHM sidecar files
+  
+  When SQLite is in WAL mode, it creates `db-wal` and `db-shm` sidecar files. If the main `.db` file is committed while the WAL has uncommitted transactions (e.g., the MCP server is still running), the committed database may not include those transactions. If `.gitignore` excludes the WAL/SHM files (standard practice), then checking out a branch on a machine where the WAL is present can leave stale WAL data that SQLite will replay against the checked-out database version — a documented corruption vector. SQLite's own documentation states: "If a database file is separated from its WAL file, then transactions that were previously committed to the database might be lost, or the database file might become corrupted."
+  
+  ### Corruption risk on concurrent access
+  
+  SQLite allows only one writer at a time. With WAL mode and `busy_timeout >= 5000ms`, multiple sequential writers (not simultaneous) are safe. However, with truly concurrent writers (e.g., multiple Claude Code agents writing simultaneously to the same database file), `SQLITE_BUSY` errors occur when the busy timeout is exhausted. At ~1000 concurrent writers, SkyPilot reported production crashes. For ideate (typically 3-8 concurrent agents per session), this is manageable with WAL mode and a 5-10 second busy timeout — but it is a real, documented failure mode that requires explicit mitigation.
+  
+  ### What projects actually report
+  
+  - The Datasette/sqlite-diffable ecosystem treats SQLite-in-git as a solved problem only after dumping to NDJSON first. Simon Willison's sqlite-diffable was created specifically because committing binary SQLite directly was unusable in practice.
+  - Home Assistant (which stores its event database in SQLite) treats the WAL/SHM issue as a recurring support problem — users regularly encounter "strange behavior" after unexpected shutdowns or file copies.
+  - The aiida-core project filed a bug report describing `database is locked` errors as persistent under multi-process workloads despite WAL mode.
+  - The gitsqlite and git-sqlite projects exist to address the binary opacity problem, confirming it is a real pain point with no built-in solution.
+  
+  ---
+  
+  ## Q2. Tools for making SQLite git-friendly
+  
+  ### sqlite-diffable (simonw/sqlite-diffable)
+  
+  Dumps a SQLite database to a directory of NDJSON files: one `{table}.ndjson` (rows as JSON arrays, one per line) and one `{table}.metadata.json` (schema). The result is a diffable directory structure that git handles well. Round-trips back to SQLite. Indexes, views, and triggers are not mentioned in available documentation — status on those is unconfirmed.
+  
+  Status as of research date: actively maintained on PyPI, Apache 2.0 license.
+  
+  ### git textconv with `.gitattributes`
+  
+  A `.gitconfig` entry `[diff "sqlite3"] textconv = sh -c 'sqlite3 $0 .dump'` combined with a `.gitattributes` entry `*.db diff=sqlite3` causes `git diff` and `git log -p` to show SQL dump output rather than binary garbage. This only affects display — it does not make merges work, does not prevent bloat, and does not make the stored objects text-based. It is a diagnostic aid, not a storage solution.
+  
+  Caveat: `.dump` output omits some metadata (`application_id`, `user_version`). The dump is not a complete representation.
+  
+  ### gitsqlite (danielsiegl/gitsqlite)
+  
+  Smudge/clean/diff git filters that transparently convert SQLite ↔ SQL text on commit and checkout. Stores the text form in git objects; binary form is never committed. This prevents binary bloat and makes diffs meaningful. Merge conflicts become SQL-text conflicts — resolvable in principle but still semantically complex (merging two INSERT sequences for the same table requires understanding the data).
+  
+  Status: available on GitHub; last activity date not confirmed from search results. This is a niche tool with limited adoption signal.
+  
+  ### sqldiff (official SQLite utility)
+  
+  A command-line tool included with SQLite (in the `sqlite3` apt package since Debian Stretch) that shows content differences between two SQLite databases as SQL statements. Useful for post-hoc comparison but not for git integration. Does not address bloat or merge conflicts.
+  
+  ### csvdb (jeff-gorelick/csvdb)
+  
+  Converts SQLite/DuckDB to a directory of CSV files (one per table) plus a `schema.sql`. Designed explicitly for git versioning: `git diff` shows row-level changes. Round-trips back to SQLite. Similar in concept to sqlite-diffable but CSV instead of NDJSON.
+  
+  Status: available on GitHub; adoption signal not confirmed from search results.
+  
+  ### Summary assessment
+  
+  None of these tools are widely adopted in production. textconv is the most commonly discussed but solves only the display problem. sqlite-diffable is the most production-tested (used by Datasette's own workflows) but requires a Python dependency and a dump/load cycle. gitsqlite and csvdb address the root storage problem but have niche adoption. No tool eliminates all three problems simultaneously (binary bloat, unresolvable merges, WAL safety).
+  
+  ---
+  
+  ## Q3. Structured flat files (YAML/JSON/JSONL) as an alternative
+  
+  Assuming access is exclusively through MCP tools and LLMs never parse files directly.
+  
+  ### Formats and their properties
+  
+  **YAML** — Human-readable, supports comments, multi-line strings without escaping. Parsing is slower than JSON. The YAML spec has edge cases that cause parser inconsistencies across languages (Norway problem, type coercion). File size is larger than JSON for equivalent data. Strong tooling in Python/Ruby ecosystems.
+  
+  **JSON** — No comments, verbose for multi-line strings (requires `\n` escaping). Faster to parse than YAML. Universally supported. Well-defined spec. Good for structured data that doesn't need comments or is machine-generated.
+  
+  **JSONL (newline-delimited JSON)** — Append-only by nature. Each line is a self-contained JSON object. Ideal for event logs and append-only sequences. Diffable at line granularity. Can be read line-by-line without loading the full file. Used by ideate already for `metrics.jsonl`.
+  
+  ### Queryability
+  
+  Flat files have no native query capability. All querying requires loading files into memory and filtering in application code. For the MCP layer, this means the MCP server reads and parses files on each query. This is acceptable when files are small (under 1 MB each) but becomes expensive at scale.
+  
+  SQLite supports SQL: joins, aggregations, range queries, full-text search (FTS5), indexed lookups. For the ideate use case — "find all decisions referencing domain X" or "get all work items in status Y" — SQL provides capabilities that would require substantial application code to replicate over flat files.
+  
+  **However**: the current ideate artifact structure is already organized so that the domain knowledge is in small, purpose-built files (policies.md, decisions.md, questions.md per domain). The MCP server already assembles queries by reading multiple specific files. The "query" workload is mostly path-based retrieval, not relational joins. SQL's queryability advantage is real but may not be load-bearing for this use case.
+  
+  ### Atomicity
+  
+  Flat file writes are not atomic by default. Writing a large YAML file requires reading the full current state, modifying it in memory, and writing the entire file back — a non-atomic operation. If the process dies mid-write, the file is corrupt.
+  
+  Mitigation: write to a temp file, then `rename()` (atomic on POSIX filesystems for files on the same filesystem). This is the standard pattern and is reliable on Linux/macOS. It does not help with concurrent writers.
+  
+  JSONL append is atomic for writes up to the OS pipe buffer size (typically 4096 bytes on Linux, 256 bytes on macOS per one source). A single JSONL record that exceeds this limit can be interleaved with another concurrent write. For small records (under 256 bytes), append is atomic. For larger records, file locking is required.
+  
+  **A real failure mode**: A GitHub issue in the anthropics/claude-code repository reports stack overflow crashes from corrupted JSONL session files during concurrent writes. This is a documented production problem with concurrent JSONL writes.
+  
+  SQLite has ACID transactions. A write either fully commits or is fully rolled back, even on crash. This is a genuine advantage over flat files for data that must not be partially written.
+  
+  ### Performance at scale
+  
+  For ideate's scale (see Q5), performance is not a distinguishing factor. Both approaches read/write kilobytes, not megabytes. At 10,000+ records per table, SQLite's indexed reads are measurably faster than loading a full JSON file. Below that scale, the difference is negligible.
+  
+  SQLite's own benchmarks show it reads small blobs 35% faster than individual files on disk. However, this applies to many small reads; for ideate's access patterns (read one domain file, read one work item) the comparison is less meaningful.
+  
+  ### Tooling ecosystem
+  
+  Flat files: readable with any text editor, diffable natively in git, supported by every language without dependencies, greppable with standard shell tools. The MCP server code to read flat files is trivial. No migration tooling needed for format changes — just update the files.
+  
+  SQLite: requires a SQLite library (available in Python stdlib as `sqlite3`, in Node.js via `better-sqlite3` or `node-sqlite3`). Schema migrations require explicit ALTER TABLE or table recreation. Tooling for inspection: `sqlite3` CLI, DB Browser for SQLite, Datasette. More infrastructure to maintain.
+  
+  ---
+  
+  ## Q4. Hybrid approach: SQLite as runtime cache, structured files as committed format
+  
+  The pattern: structured flat files are the source of truth committed to git. On startup, the application imports them into an in-memory or on-disk SQLite database. On shutdown (or on commit), it exports back to the flat files.
+  
+  ### Projects using this pattern
+  
+  No widely-cited public projects were found using this exact pattern in the search results. However, csvdb and sqlite-diffable both implement the export side of this pattern (SQLite → flat files for git). The import side (flat files → SQLite on startup) is straightforward with sqlite-utils or direct SQL.
+  
+  This pattern is common in a different form in build systems and caches: a tool reads source files (source of truth), builds an index or cache (transient), and rebuilds on source changes. Examples: `ctags`, LSP indexes, webpack module graphs.
+  
+  ### Pain points
+  
+  **Startup cost**: Import from flat files into SQLite adds latency at startup. For the MCP server use case, the server is long-running (one process per Claude Code session), so this cost is paid once. Acceptable.
+  
+  **Export timing**: When to export? Options: (a) on every write, (b) on shutdown, (c) on commit hook. Option (a) defeats the performance purpose of having SQLite. Option (b) risks data loss if the process crashes. Option (c) requires a git pre-commit hook that knows about the MCP server — coupling the git workflow to the application. A common approach is to export on shutdown only, with the understanding that uncommitted in-flight changes may be lost.
+  
+  **Divergence detection**: After export, the flat files and the SQLite database must be in sync. If the MCP server is restarted without exporting, or if git operations (checkout, merge) change the flat files while the server is not running, the database is stale. Import-on-startup solves this only if the startup cost is acceptable.
+  
+  **Round-trip fidelity**: SQLite types (INTEGER, REAL, TEXT, BLOB) must map cleanly to the flat file format. Long text content (markdown bodies, review texts) survives JSONL round-trips without issue. Null handling, Unicode edge cases, and floating-point representation need explicit treatment.
+  
+  **The current ideate architecture already implements half of this pattern**: the MCP server (LRU cache + embedding index) is already a runtime acceleration layer over markdown files. Inverting to make SQLite the source of truth would add the export side (currently missing) and replace the import side (currently the watcher + chunker + indexer pipeline).
+  
+  ---
+  
+  ## Q5. Maximum practical size of an ideate artifact database
+  
+  ### Estimation
+  
+  Typical content sizes for ideate artifacts:
+  
+  - Work item: 500-2000 bytes of markdown text
+  - Incremental review: 1000-5000 bytes
+  - Cycle review document: 2000-10000 bytes
+  - Domain file (policies/decisions/questions): 2000-8000 bytes each
+  - Journal entry: 200-500 bytes
+  - metrics.jsonl entry: 200-500 bytes
+  
+  For a project at the upper end (200 work items, 20 review cycles, 5 domains × 3 files, 100 journal entries, 500 metrics entries):
+  
+  | Content | Count | Avg bytes | Total |
+  |---|---|---|---|
+  | Work items | 200 | 1500 | 300 KB |
+  | Incremental reviews | 200 | 3000 | 600 KB |
+  | Cycle review docs (4 files × 20 cycles) | 80 | 5000 | 400 KB |
+  | Domain files (3 × 5 domains) | 15 | 5000 | 75 KB |
+  | Journal entries | 100 | 350 | 35 KB |
+  | metrics.jsonl entries | 500 | 350 | 175 KB |
+  | Steering docs, architecture, etc. | ~20 | 3000 | 60 KB |
+  
+  **Total raw content: ~1.6 MB**
+  
+  In a SQLite database with default 4096-byte pages and no full-text search index, this data would occupy approximately 2-5 MB. With FTS5 indexes, add 50-100% overhead: 3-10 MB total. With embedding vectors (the current MCP server uses them), add significantly more — embedding vectors for 1000+ chunks at 384 dimensions (float32) would add ~1.5 MB.
+  
+  **Conclusion**: The entire ideate artifact store for a large project fits comfortably in 5-15 MB as SQLite or as flat files. This is well within the range where performance characteristics between SQLite and flat files are indistinguishable for the access patterns ideate uses (read single artifact, search across artifacts). SQLite is not overkill from a capability standpoint, but its capabilities (joins, indexes, transactions) are largely unused by the access patterns.
+  
+  **Would a single well-structured YAML file suffice?** Yes, technically. At 1-2 MB, a single YAML file parses in under 100ms. However, a single file creates an append/update bottleneck: every write requires reading and rewriting the full file. A directory of YAML/JSON files (one per artifact, mirroring the current structure) avoids this and retains git's ability to show per-file diffs. A single file also makes concurrent writes impossible without file-level locking.
+  
+  ---
+  
+  ## Q6. Concurrent access: SQLite vs flat files with multiple agents
+  
+  ### SQLite concurrency model
+  
+  SQLite in WAL mode:
+  - Multiple concurrent readers: supported, readers never block writers or each other.
+  - Multiple concurrent writers: only one writer at a time. Additional writers queue and retry per `busy_timeout`. With `busy_timeout = 5000ms`, brief write contention (multiple agents finishing work items simultaneously) is handled gracefully. With `busy_timeout = 10000ms` or higher, occasional contention under heavier load is safe.
+  - `SQLITE_BUSY` is returned (not a crash) when the timeout is exhausted. The application must handle this error and retry or surface it.
+  - `BEGIN CONCURRENT` (which would allow non-conflicting overlapping writes) is in an experimental branch only, not in the main SQLite trunk as of early 2026.
+  - For ideate's concurrency profile (3-8 concurrent agents, each doing occasional short writes), WAL mode with a 5-10 second timeout is sufficient. At 100+ concurrent writers (not a realistic ideate scenario), this approach breaks down.
+  
+  ### Flat file concurrency model
+  
+  Flat files have no built-in concurrency management.
+  
+  **Append-only files (JSONL)**: Concurrent appends are atomic only for records under the OS pipe buffer limit (~256 bytes on macOS, ~4096 bytes on Linux). Records exceeding this limit can be interleaved, producing corrupt JSONL. The anthropics/claude-code repository has a confirmed open bug for exactly this failure mode in JSONL session files. Mitigation requires explicit file locking (e.g., `flock()` or a lock file).
+  
+  **Read-modify-write files (YAML/JSON)**: Not atomic. Two agents reading the same file, modifying their copy, and writing back will produce last-write-wins behavior — one agent's changes are silently discarded. This is a data loss failure mode, not just a performance issue. Mitigation requires exclusive file locking around the read-modify-write cycle, which serializes all writes and makes lock contention a bottleneck.
+  
+  **Directory-based isolation**: If each artifact is a separate file and agents write to different files, concurrent writes are safe (filesystem operations on different files are independent). This is the current ideate approach: each work item is a separate file, each review is a separate file. Agents working on different work items write to different files — no contention. This is the strongest argument for keeping the flat-file-per-artifact structure.
+  
+  **The key insight**: The current ideate structure naturally avoids concurrent write conflicts because the file granularity matches the work granularity. A SQLite database collapses all artifacts into one file, reintroducing the concurrency problem that the flat-file structure avoids.
+  
+  ---
+  
+  ## Cross-cutting observations relevant to the proposed inversion
+  
+  1. **D-5 (existing project decision)**: "Every artifact is a Markdown file; no binary or structured-data formats in the artifact directory." This was a deliberate choice grounded in human readability and auditability requirements from the interview. The proposed inversion directly contradicts D-5. The planning session should weigh whether the rationale behind D-5 has changed.
+  
+  2. **The MCP server already provides the access layer**: The current architecture has MCP tools (ideate_artifact_query, ideate_get_work_item_context, ideate_get_context_package) as the primary access layer. Agents already go through MCP tools for context assembly. The proposed inversion does not require changing the storage format to achieve this.
+  
+  3. **git diff granularity**: With flat files, `git diff` shows exactly which lines changed in which document. With SQLite (even with textconv), diff output is a full SQL dump comparison — much harder to read. With sqlite-diffable NDJSON, diff output shows which rows changed, but not in the same natural format as markdown diffs. For a tool where the artifacts are themselves the deliverable (plans, reviews, decisions), human-readable git history has non-trivial value.
+  
+  4. **The "structured files accessed through MCP tools" option is not a new architecture**: It is the current architecture. The current markdown files are accessed through MCP tools. The question is whether to change the format of those files (markdown → YAML/JSON) and call MCP tools the "only" access layer. The actual structural change being proposed is: MCP tools become the write layer (agents write through MCP calls rather than directly to files), and markdown becomes generated output rather than source. This is a workflow change, not a storage format change.
+  
+  ---
+  
+  ## Options summary
+  
+  **Option 1: Keep current architecture (markdown as source of truth, MCP as read-acceleration cache)**
+  - Pros: Already implemented, git-friendly, human-auditable diffs, no concurrency issues at file-per-artifact granularity, consistent with D-5.
+  - Cons: No atomic multi-file transactions, agents write directly to files (bypassing MCP layer), markdown requires LLM parsing to extract structured data.
+  - When to use: When auditability, git readability, and simplicity are priorities.
+  
+  **Option 2: Structured flat files (YAML/JSON per artifact) as source of truth, MCP as read/write layer**
+  - Pros: Machine-parseable without LLM, MCP tools provide a typed API, still git-friendly (text files), human-readable, concurrent-write-safe at file-per-artifact granularity.
+  - Cons: Requires migrating all existing artifacts and the write path in all five skills, YAML parsing complexity vs markdown, no native query capability beyond what MCP tools implement.
+  - When to use: When structured access patterns (queries, filters, type validation) are needed and LLM-direct-parse is unacceptable.
+  
+  **Option 3: SQLite as source of truth, committed to git**
+  - Pros: ACID transactions, indexed queries, single file.
+  - Cons: Binary diff in git, unresolvable merge conflicts, WAL/SHM corruption risk on branch operations, serializes concurrent writes, contradicts D-5.
+  - When to use: Not recommended for a committable source of truth in a git workflow with branching.
+  
+  **Option 4: SQLite as runtime cache, flat files as committed source of truth (hybrid)**
+  - Pros: Query capabilities at runtime, git-friendly committed state, flat files remain auditable.
+  - Cons: Export/import cycle adds startup latency and shutdown complexity, divergence risk if server crashes without export, requires implementing both the import and export paths.
+  - When to use: When SQL query capability at runtime is genuinely needed AND git readability/mergeability is required. Adds significant implementation complexity for benefits that the current use case may not require.
+  
+  **Option 5: JSONL per artifact type as source of truth**
+  - Pros: Append-only semantics match the ideate write pattern (archives are immutable, journals append, metrics append), line-level git diffs, trivial to parse.
+  - Cons: Not suitable for files that require update-in-place (domain policies, work item status changes), concurrent append is unsafe for records over ~256 bytes without locking.
+  - When to use: Appropriate for append-only artifacts (journal, metrics, incremental reviews). Not appropriate as a general replacement for the full artifact structure.
+  
+  ---
+  
+  ## Sources
+  
+  - [SQLite Database in Git - ongardie.net](https://ongardie.net/blog/sqlite-in-git/)
+  - [Tracking SQLite Database Changes in Git - Hacker News](https://news.ycombinator.com/item?id=38110286)
+  - [GitHub - simonw/sqlite-diffable](https://github.com/simonw/sqlite-diffable)
+  - [GitHub - cannadayr/git-sqlite](https://github.com/cannadayr/git-sqlite)
+  - [GitHub - danielsiegl/gitsqlite](https://github.com/danielsiegl/gitsqlite)
+  - [sqldiff.exe: Database Difference Utility](https://sqlite.org/sqldiff.html)
+  - [GitHub - jeff-gorelick/csvdb](https://github.com/jeff-gorelick/csvdb)
+  - [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)
+  - [SQLite concurrent writes and "database is locked" errors](https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/)
+  - [Abusing SQLite to Handle Concurrency - SkyPilot Blog](https://blog.skypilot.co/abusing-sqlite-to-handle-concurrency/)
+  - [What to do about SQLITE_BUSY errors despite setting a timeout](https://berthug.eu/articles/posts/a-brief-post-on-sqlite3-database-locked-despite-timeout/)
+  - [SQLite backend often raises "Database is locked" when dealing with multiple processes - aiida-core #6532](https://github.com/aiidateam/aiida-core/issues/6532)
+  - [Stack overflow crash from corrupted JSONL session files during concurrent writes - anthropics/claude-code #20992](https://github.com/anthropics/claude-code/issues/20992)
+  - [SQLite WAL SHM file issues - expo/expo #43441](https://github.com/expo/expo/issues/43441)
+  - [Are Files Appends Really Atomic? - Not The Wizard](https://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/)
+  - [SQLite: 35% Faster Than The Filesystem](https://sqlite.org/fasterthanfs.html)
+  - [When JSON Sucks or The Road To SQLite Enlightenment](https://pl-rants.net/posts/when-not-json/)
+  - [How to Use git diff with an sqlite3 Database - Adam Dunkels](https://dunkels.com/adam/git-diff-sqlite3/)
+  - [Git delta compression - matthewmccullough gist](https://gist.github.com/matthewmccullough/2695758)
+  - Project files examined: `/Users/dan/code/ideate/mcp/artifact-server/src/indexer.ts`, `/Users/dan/code/ideate/mcp/artifact-server/src/tools.ts`, `/Users/dan/code/ideate/specs/domains/artifact-structure/decisions.md`, `/Users/dan/code/ideate/specs/domains/artifact-structure/policies.md`, `/Users/dan/code/ideate/specs/domains/index.md`, `/Users/dan/code/ideate/specs/steering/research/domain-knowledge-layer.md`
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: da326433c6d4e59548d094db573383fc2f6827a8777becf3a9c2525a7d5c6b84
+token_count: 6709
+file_path: .ideate/research/RF-storage-format-tradeoffs.yaml

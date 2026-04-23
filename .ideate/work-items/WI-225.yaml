@@ -23,12 +23,14 @@ criteria:
   - 3+ tests
 module: null
 domain: artifact-structure
-notes: |
+notes: >
   # WI-225: Partial Update Tool
 
-  New handleUpdateWorkItems in write.ts. Reads YAML, shallow-merges provided fields, recomputes content_hash, writes back. Does not update id/type/cycle_created/file_path (immutable).
+
+  New handleUpdateWorkItems in write.ts. Reads YAML, shallow-merges provided fields, recomputes content_hash, writes
+  back. Does not update id/type/cycle_created/file_path (immutable).
 cycle_created: 28
 cycle_modified: null
 content_hash: bee035b0e72da444c65a63b11715f82b8aef76724899332264339a606f7c899f
 token_count: 230
-file_path: .ideate/work-items/WI-225.yaml
+file_path: work-items/WI-225.yaml

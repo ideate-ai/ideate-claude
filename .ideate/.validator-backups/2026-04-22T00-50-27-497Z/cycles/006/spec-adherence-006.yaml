@@ -1,0 +1,28 @@
+id: spec-adherence-006
+type: cycle_summary
+title: Spec Adherence Review — Cycle 6
+reviewer: spec-reviewer
+content: |-
+  ## Principle Violation Verdict: Pass
+
+  All 8 WI-412 acceptance criteria are met. No deviations, no principle violations.
+
+  ## Criteria Verification
+
+  - **AC1**: No early-return redirect for metrics_event. Pass.
+  - **AC2**: resolveArtifactPath case 'metrics_event' → metrics/{id}.yaml. Pass.
+  - **AC3**: Dispatch branch calls upsertMetricsEvent with all 16 MetricsEventRow fields. Pass.
+  - **AC4**: metrics_event in P-46 cases with event_name checkFields. Pass.
+  - **AC5**: EXCLUDED_TYPES = {work_item, journal_entry} only. Pass.
+  - **AC6**: P-46 coverage test is bidirectional. Pass.
+  - **AC7**: interviewFiles() uses not.toContain. Pass.
+  - **AC8**: 485 tests pass. Pass.
+
+  ## Policy Adherence
+
+  - **P-44**: Two-phase write for metrics_event (YAML first, then transaction). Pass.
+  - **P-45**: upsertMetricsEvent routed through db-helpers. Pass.
+  - **P-46**: All TYPE_TO_EXTENSION_TABLE types have dispatch branches; bidirectional test enforces invariant. Pass.
+content_hash: a9f3eeb3cd04c02bcc03f2f6d96eb5f666f233c232d4b2d4ccbc8a5e56782fa7
+token_count: 274
+file_path: .ideate/cycles/006/spec-adherence-006.yaml

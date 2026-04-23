@@ -1,0 +1,55 @@
+id: WI-378
+type: work_item
+title: Remove 3 remaining P-33 violations from tool descriptions in index.ts
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - ideate_emit_metric description contains no reference to 'metrics.jsonl' or any file path
+  - ideate_archive_cycle description contains no reference to 'archive/cycles/NNN/' or any directory path
+  - ideate_write_work_items description contains no reference to 'WI-{NNN}.yaml' or any file path pattern
+  - All three descriptions remain accurate and informative without the path references
+  - No other tool descriptions are modified
+  - All existing tests continue to pass
+domain: artifact-structure
+notes: |-
+  ## Residual P-33 Violations to Fix
+
+  Three tool descriptions in `mcp/artifact-server/src/tools/index.ts` still reference storage implementation details, violating GP P-33 (MCP tool responses AND descriptions must not include file paths or storage implementation details).
+
+  ### Fix 1: ideate_emit_metric (line ~563)
+  ```typescript
+  // Before:
+  description: "Append metric to metrics.jsonl. Use for all metric emissions. Returns confirmation string."
+  // After:
+  description: "Record a metric event for the current session. Use for all metric emissions. Returns confirmation string."
+  ```
+
+  ### Fix 2: ideate_archive_cycle (line ~278)
+  ```typescript
+  // Before:
+  description: "Create archive/cycles/NNN/ with summary. Use after review completes. Returns confirmation string."
+  // After:
+  description: "Archive a completed review cycle with its summary artifacts. Use after review completes. Returns confirmation string."
+  ```
+
+  ### Fix 3: ideate_write_work_items (line ~299)
+  ```typescript
+  // Before:
+  description: "Write/update work items as WI-{NNN}.yaml. Use during plan/refine to define work. Returns confirmation."
+  // After:
+  description: "Write or update work items atomically. Use during plan/refine to define work. Returns confirmation."
+  ```
+
+  ## Verification
+  Grep `index.ts` for `metrics.jsonl`, `archive/cycles`, and `WI-{NNN}.yaml` — all must return zero matches. Run `npm test` — all tests must pass.
+resolution: null
+cycle_created: 58
+cycle_modified: 58
+content_hash: 6cb96cae3d6313c7d9b6417cc30fc6060bbab0f46d1ca2650f4d4754251f09d2
+token_count: 561
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-378.yaml

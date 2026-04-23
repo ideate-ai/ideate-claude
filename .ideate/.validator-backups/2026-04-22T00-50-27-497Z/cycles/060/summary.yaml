@@ -1,0 +1,36 @@
+id: summary
+type: cycle_summary
+cycle: 60
+content: |-
+  # Review Summary — Cycle 060
+
+  ## Overview
+  Cycle 060 enforced GP-14 (MCP Abstraction Boundary) across all skills and agents. 5 new MCP tools added, GP-14 principle created, all 6 skills and 7 agents rewritten. All 320 tests pass. The abstraction boundary is clean — zero GP-14 violations found by the spec-reviewer across all 17 audited files. However, 5 significant findings were identified in the MCP server’s path routing, type registration, and data leakage.
+
+  ## Significant Findings
+  - [code-reviewer] guiding_principle artifacts written to .ideate/guiding_principle/ instead of .ideate/principles/ — resolveArtifactPath has no explicit case for guiding_principle type, falls through to default. GP-14 landed in wrong directory. — relates to: WI-311, WI-312
+  - [code-reviewer] handleBootstrapProject returns a hardcoded subdirs list that can drift from createIdeateDir’s IDEATE_SUBDIRS — the return value could silently lie. — relates to: WI-311
+  - [gap-analyst] plan/SKILL.md uses type: 'module' for 3 artifact kinds (architecture, overview, execution-strategy) — should use type: 'architecture', 'overview', 'execution_strategy'. Would route artifacts to wrong directory. — relates to: WI-313
+  - [gap-analyst] domain_index type not in TYPE_TO_EXTENSION_TABLE — domain index artifacts written to disk but silently not indexed in SQLite. — relates to: WI-311, cross-cutting
+  - [gap-analyst] init/SKILL.md and domain-curator.md embed internal storage paths (domains/{name}/policies/) in artifact content — GP-14 violation in data, not instructions. — relates to: WI-317, WI-319
+
+  ## Minor Findings
+  - [code-reviewer] handleEmitMetric writes JSONL only; handleGetMetrics reads SQLite only — two disconnected paths for metrics. Undocumented design split. — relates to: WI-311
+  - [gap-analyst] No ARCHITECTURE.md or README.md for MCP server package — tool count accurate in code but no package-level docs — relates to: cross-cutting
+  - [gap-analyst] CLAUDE.md artifact structure tree doesn’t match actual write.ts directory routing — relates to: cross-cutting
+  - [gap-analyst] autopilot/SKILL.md Phase 1 references .ideate.json by name — stale pre-v3 reference — relates to: WI-318
+
+  ## Findings Requiring User Input
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+  5 significant findings require a refinement cycle:
+  1. Add resolveArtifactPath cases for guiding_principle, constraint, and other types that currently fall through to default (fixes S1 from code-reviewer). Move GP-14 to correct directory.
+  2. Export IDEATE_SUBDIRS and use it in bootstrap return value (fixes S2 from code-reviewer).
+  3. Fix plan/SKILL.md type strings from 'module' to correct types (fixes II1 from gap-analyst).
+  4. Add domain_index to TYPE_TO_EXTENSION_TABLE (fixes II2 from gap-analyst).
+  5. Remove internal path strings from domain_index content in init/SKILL.md and domain-curator.md (fixes IR1 from gap-analyst).
+  Estimated: 3-4 work items, low complexity.
+content_hash: 6d3a7d6a28b6e68ecf330d1ec5842d7a1240121797d23e1a7b1602b7ddc64314
+token_count: 766
+file_path: .ideate/cycles/060/summary.yaml

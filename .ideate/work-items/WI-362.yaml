@@ -18,13 +18,13 @@ blocks: []
 criteria:
   - ideate_update_config tool is registered in TOOLS array and routes correctly
   - Partial patch updates only specified keys; unmentioned keys are preserved
-  - "agent_budgets merge: individual agent keys added/updated; other agents preserved"
-  - "model_overrides merge: individual agent keys added/updated; other agents preserved"
-  - "ppr merge: individual ppr keys updated; other ppr fields preserved"
-  - "ppr.edge_type_weights merge: individual edge type weights updated; others preserved"
-  - "Validation: agent_budget value of 0 or negative returns error, does not write"
-  - "Validation: model_overrides empty string value returns error, does not write"
-  - "Validation: ppr.alpha outside (0,1) returns error, does not write"
+  - 'agent_budgets merge: individual agent keys added/updated; other agents preserved'
+  - 'model_overrides merge: individual agent keys added/updated; other agents preserved'
+  - 'ppr merge: individual ppr keys updated; other ppr fields preserved'
+  - 'ppr.edge_type_weights merge: individual edge type weights updated; others preserved'
+  - 'Validation: agent_budget value of 0 or negative returns error, does not write'
+  - 'Validation: model_overrides empty string value returns error, does not write'
+  - 'Validation: ppr.alpha outside (0,1) returns error, does not write'
   - Response includes updated_keys list and no file paths (P-33)
   - Tool description is under 50 words (P-34)
   - All tests pass
@@ -83,4 +83,4 @@ cycle_created: 68
 cycle_modified: null
 content_hash: c1bf0ace46f1c0647887fa67596d13cb402ff20c89216630215e3179147f1555
 token_count: 942
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-362.yaml
+file_path: work-items/WI-362.yaml

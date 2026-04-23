@@ -1,0 +1,78 @@
+id: RF-prompt-testing-frameworks
+type: research
+title: LLM Prompt Testing Frameworks for Skill/Agent Validation
+date: 2026-03-27
+topic: prompt-testing
+summary: "Two distinct testing problems exist: (1) static validation of prompt files (checking agent name references, tool names, structural invariants without running any LLM) and (2) behavioral testing (verifying an LLM following instructions invokes the right tools). For the bug class discovered (wrong agent names), static analysis via vitest is the correct solution: zero cost, deterministic, catches the error class completely. LLM-in-the-loop frameworks (promptfoo, deepeval) address semantic correctness — a different, more expensive problem."
+frameworks_evaluated:
+  - name: Vitest static analysis
+    type: deterministic
+    recommendation: primary — implement first
+    description: "Parse agent .md frontmatter with gray-matter, scan skill files for agent name references via regex, validate all references match known agents with ideate: prefix. Zero LLM cost, < 1 second, deterministic."
+    pros:
+      - Zero cost per run
+      - Deterministic — no flakiness
+      - Catches the exact bug class
+      - Integrates with existing vitest setup
+      - Only needs gray-matter + fast-glob as deps
+    cons:
+      - Cannot verify behavioral correctness
+      - Cannot catch wrong behavior with correct names
+  - name: Promptfoo (deterministic assertions)
+    type: hybrid
+    recommendation: secondary — only after static layer
+    description: Run skill instructions through a Claude model, use contains/regex/javascript assertions to verify structural output properties. Supports trajectory:tool-used and trajectory:tool-sequence for verifying agent tool calls.
+    pros:
+      - Tests that the LLM actually follows instructions
+      - Can verify tool-call behavior via trajectory assertions
+      - YAML config, CI-compatible
+    cons:
+      - Costs $0.01-0.10 per assertion
+      - Non-deterministic
+      - Requires API key in CI
+      - Slow (seconds to minutes per test)
+      - Acquired by OpenAI March 2026 — long-term multi-provider support uncertain
+  - name: Promptfoo (LLM-as-judge)
+    type: llm-evaluated
+    recommendation: not recommended for this use case
+    description: Uses llm-rubric or deepeval G-Eval for semantic compliance evaluation.
+    pros:
+      - Can evaluate complex behavioral properties
+    cons:
+      - Highest cost
+      - Slowest
+      - Two points of non-determinism
+      - Requires prompt engineering for rubric
+  - name: DeepEval
+    type: llm-evaluated
+    recommendation: not recommended — Python-only
+    description: Python pytest-style framework with 50+ metrics. Not compatible with existing Node.js/vitest stack.
+    pros:
+      - Rich metric library
+    cons:
+      - Requires separate Python environment
+      - Incompatible with existing test infrastructure
+  - name: RAGAS
+    type: llm-evaluated
+    recommendation: not applicable — RAG-focused
+    description: Focused on retrieval-augmented generation evaluation. Not relevant to prompt instruction testing.
+  - name: LangSmith
+    type: llm-evaluated
+    recommendation: not applicable — LangChain-coupled
+    description: Tightly coupled to LangChain tracing. Ideate does not use LangChain.
+recommended_approach: "Option 1: Deterministic static analysis in vitest. Create a prompt-integrity.test.ts that: (1) enumerates agents/*.md, parses frontmatter, validates name/tools/model/maxTurns fields; (2) enumerates skills/**/*.md, scans for agent references, asserts each ideate:<name> has a corresponding agents/<name>.md; (3) checks subagent_type: fields use ideate: prefix. Run as CI gate on every commit."
+risks:
+  - No single source of truth for plugin name 'ideate' — static checker must hardcode or derive it
+  - Regex scanning may miss agent names not in backticks — scan should cover both patterns
+  - Promptfoo acquired by OpenAI — long-term Anthropic provider support uncertain
+sources:
+  - https://www.promptfoo.dev/docs/intro/
+  - https://www.promptfoo.dev/docs/configuration/expected-outputs/deterministic/
+  - https://www.promptfoo.dev/docs/providers/claude-agent-sdk/
+  - https://deepeval.com/docs/getting-started
+  - https://code.claude.com/docs/en/sub-agents
+  - https://code.claude.com/docs/en/plugins-reference
+  - https://www.braintrust.dev/articles/what-is-llm-as-a-judge
+content_hash: eee0d867e31ed969db622e75244f65a32bc9e77e5c09bf10f99b71f0c9406fe7
+token_count: 1091
+file_path: .ideate/steering/research/RF-prompt-testing-frameworks.yaml

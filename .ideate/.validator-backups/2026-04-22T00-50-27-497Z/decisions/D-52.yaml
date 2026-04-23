@@ -1,0 +1,13 @@
+id: D-52
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: The v3 architecture overhaul begins with a foundation-only Phase 1 delivering YAML schemas, SQLite rebuild pipeline, and migration script. All seven existing MCP tools are removed. Skills cannot function against the new format until Phase 4. The `.ideate/` directory convention replaces `specs/` for artifact storage.
+rationale: A hard cutover with no MCP tools allows the storage layer to be validated independently before tool contracts are written against it. Phases 2-4 depend on Phase 1 being correct.
+cycle_created: 1
+cycle_modified: null
+content_hash: b535e13ed3fce114b56ef30e553fccdf93b4de1f33ca1b7a9367bc5321ee44ad
+token_count: 180
+file_path: .ideate/decisions/D-52.yaml

@@ -4,47 +4,68 @@ title: Differential Review in autopilot Cycles 2+
 status: obsolete
 complexity: high
 scope:
-  - {path: skills/autopilot/SKILL.md, op: modify}
-  - {path: skills/autopilot/phases/review.md, op: modify}
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
 depends:
-  - "076"
-  - "081"
-  - "087"
+  - '076'
+  - '081'
+  - '087'
 blocks: []
 criteria:
-  - "`skills/autopilot/SKILL.md` Phase 6b tracks which cycle is running (already available from `cycles_completed`)"
-  - "For cycle 1: comprehensive review runs as currently specified (full project scope) — no change"
-  - "For cycles 2+: before spawning reviewers, a diff step identifies files changed since the start of the current cycle"
-  - "The diff step uses `git diff --name-only` against the commit hash recorded at the start of the cycle (see implementation notes)"
-  - "Reviewer prompts for cycles 2+ include: (a) the changed file list, (b) a reference to the prior cycle's review files as baseline, (c) instruction to focus on changed files and their interface boundaries"
-  - Interface boundary files (files that import/export from changed files) are always included in the review scope even if they didn't change
+  - '`skills/autopilot/SKILL.md` Phase 6b tracks which cycle is running (already available from `cycles_completed`)'
+  - 'For cycle 1: comprehensive review runs as currently specified (full project scope) — no change'
+  - 'For cycles 2+: before spawning reviewers, a diff step identifies files changed since the start of the current cycle'
+  - >-
+    The diff step uses `git diff --name-only` against the commit hash recorded at the start of the cycle (see
+    implementation notes)
+  - >-
+    Reviewer prompts for cycles 2+ include: (a) the changed file list, (b) a reference to the prior cycle's review files
+    as baseline, (c) instruction to focus on changed files and their interface boundaries
+  - >-
+    Interface boundary files (files that import/export from changed files) are always included in the review scope even
+    if they didn't change
   - The review output format remains identical — same file structure, same finding format
   - A full review is forced every 3 cycles (configurable) as a safety net, regardless of diff size
   - If the diff step fails (not a git repo, dirty state), fall back to full review and log the reason
-  - "The review manifest (from 076, updated by 087 to read from `work-items.yaml`) is still generated for the scoped set of work items relevant to the changed files"
+  - >-
+    The review manifest (from 076, updated by 087 to read from `work-items.yaml`) is still generated for the scoped set
+    of work items relevant to the changed files
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 080
-  
+
+
   ### Commit tracking in autopilot-state.md
-  
-  Record `cycle_{N}_start_commit` (at execute start) and `cycle_{N}_end_commit` (at execute end) via `git rev-parse HEAD`. Diff with `git diff --name-only {start}..HEAD`.
-  
+
+
+  Record `cycle_{N}_start_commit` (at execute start) and `cycle_{N}_end_commit` (at execute end) via `git rev-parse
+  HEAD`. Diff with `git diff --name-only {start}..HEAD`.
+
+
   ### Interface boundary detection
-  
-  Grep source files for imports/requires referencing changed files. Add dependents to review scope. Best-effort — the full-review safety net (every 3 cycles) covers gaps.
-  
+
+
+  Grep source files for imports/requires referencing changed files. Add dependents to review scope. Best-effort — the
+  full-review safety net (every 3 cycles) covers gaps.
+
+
   ### Reviewer prompt template (cycles 2+)
-  
-  Pass: changed file list, boundary file list, paths to prior cycle's review files as baseline. Instruct: "Do not re-examine files outside these lists unless a change in a listed file affects an unlisted file."
-  
+
+
+  Pass: changed file list, boundary file list, paths to prior cycle's review files as baseline. Instruct: "Do not
+  re-examine files outside these lists unless a change in a listed file affects an unlisted file."
+
+
   ### autopilot-state.md additions
-  
+
+
   `last_full_review_cycle: {N}` — tracks when the last full review ran.
-resolution: "Differential review in autopilot superseded by later architecture changes."
+resolution: Differential review in autopilot superseded by later architecture changes.
 cycle_created: 1
 cycle_modified: null
-content_hash: "6837d2e4f837ca5161f2193e52435b6bfda1bd06d2411d7a78566909117632d0"
+content_hash: 6837d2e4f837ca5161f2193e52435b6bfda1bd06d2411d7a78566909117632d0
 token_count: 616
-file_path: .ideate/work-items/WI-080.yaml
+file_path: work-items/WI-080.yaml

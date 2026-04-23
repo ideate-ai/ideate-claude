@@ -1,0 +1,68 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Fail
+
+  Two P-85 doc-surface gaps: adapter-method-specs.md Section 17 describes removed pre-WI-824 fallback; adapter-contract.md NodeType union missing autopilot_state.
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  ### S1: docs/platform/adapter-method-specs.md Section 17 describes removed LocalAdapter convergence behavior
+  - File: docs/platform/adapter-method-specs.md:811, 827
+  - Gap: Section 17 still states 'Looks in document_artifacts table for content. Falls back to reading YAML file from file_path' and 'da.cycle = ? OR file_path pattern %/cycles/NNN/%'. WI-824 deleted both behaviors (canonical-only path: targetRow = adherenceRow ?? summaryRow).
+  - Impact: developer reading this file to understand convergence lookup will implement or debug against removed code path.
+  - WI-824 scope was reader.ts + tools.test.ts. P-85 required enumerating all doc surfaces describing affected behavior; this one was missed.
+  - Fix: update Section 17 to describe strict canonical-only selection.
+
+  ### S2: mcp/artifact-server/docs/adapter-contract.md NodeType union missing autopilot_state (residual D5)
+  - File: mcp/artifact-server/docs/adapter-contract.md:643–673
+  - Gap: WI-826 fixed D5 in docs/platform/adapter-interface.md but not the parallel contract doc. NodeType union ends at 'domain_index' and omits 'autopilot_state' (present in adapter.ts:43 and ALL_NODE_TYPES).
+  - Impact: external adapter implementors referencing adapter-contract.md as canonical will miss autopilot_state.
+  - Fix: add 'autopilot_state' to NodeType union in adapter-contract.md.
+
+  ## Minor Findings
+
+  ### M1: ARCHITECTURE.md lines 801, 805 contain stale createAdapter / createLocalAdapter references
+  - WI-825 fixed docs/platform/architecture-overview.md (D2) but scoped away from top-level ARCHITECTURE.md.
+  - Fix: update ARCHITECTURE.md references to selectAdapter and remove createLocalAdapter mention.
+
+  ### M2: getMetricsEvents work_item and phase filters have zero contract test coverage
+  - NodeFilter documents both (adapter.ts:205, 457–458); RemoteAdapter implements both (remote/index.ts:1132–1149); neither has a contract test case.
+  - Deferred from WI-827 as M2.
+
+  ### M3: No domain policy drafted for 'da.cycle is not provenance' fact
+  - Surfaced in WI-824 rework and documented in J-071-417 + reader.ts comment, but not captured as a domain_policy or domain_decision.
+  - Analogous to P-74 (CONFIG_SCHEMA_VERSION as migration guard) — equal standing as indexer behavior invariant.
+  - Fix: domain-curator drafts policy in artifact-structure domain citing WI-824 and D-211.
+
+  ### M4: WI-817 correctly closed; no other orphans. WI-809/WI-811 are skipped IDs only.
+
+  ### M5: Integration-test coverage for WI-824 convergence-checker path is sufficient — no gap.
+
+  ## Closure check for cycle-6 findings
+  - Cycle-6 significant findings (6) and minor findings (11) addressed by cycle-7 work.
+  - Residuals surface as S1/S2 here (doc surfaces missed by P-85 enumeration).
+content_hash: e01209b5ed38f81ed6ef7adf0aae23fbe52b60cc314fedd53629b30a37b2b7e1
+token_count: 947
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Fail
+phase: PH-045
+scope: cycle 1 capstone
+summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 7
+cycle_modified: 27
+review_mode: full
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf

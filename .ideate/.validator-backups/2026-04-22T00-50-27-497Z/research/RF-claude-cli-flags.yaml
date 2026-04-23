@@ -1,0 +1,161 @@
+id: RF-claude-cli-flags
+type: research_finding
+topic: Claude CLI Flags Research
+status: active
+date: "2026-03-09"
+content: |
+  # Claude CLI Flags Research
+  
+  Research compiled: 2026-03-09
+  
+  ## Summary
+  
+  The `claude --print` CLI does **not** expose a `--system-prompt` flag, `--append-system-prompt` flag, or `--team` flag based on all available evidence: the existing codebase documentation, prior research, and the server.py implementation. The known supported flags for `claude --print` are a fixed set documented in the session-multiplexing research. System prompt injection must be accomplished by prepending instructions into the user prompt string itself. Team name cannot be passed as a CLI flag; it must be injected via environment variables or embedded in the prompt.
+  
+  Note: `claude --help` could not be run directly in this research session (Bash execution was not permitted). The findings below are based on: (1) the session-multiplexing research doc compiled 2026-03-08, (2) the server.py implementation, (3) exhaustive grep across all project markdown and code files for any mention of `--system-prompt`, `--append-system-prompt`, or `--team`.
+  
+  ---
+  
+  ## Question 1: Does `claude --print` support `--system-prompt` or similar?
+  
+  **Answer: No evidence of such a flag exists.**
+  
+  Exhaustive search across all project documentation and the codebase found zero references to `--system-prompt`, `--append-system-prompt`, `systemPrompt`, or any flag for injecting a system-level prompt via the CLI. The session-multiplexing research (compiled 2026-03-08 from Claude Code CLI documentation) lists the complete set of known headless flags and does not include any system prompt flag.
+  
+  **Workaround**: Prepend execution instructions directly into the `prompt` string before passing it to `spawn_session`. The prompt argument is the last positional argument in the `claude --print` command; it can contain any text including role framing or behavioral instructions.
+  
+  Example pattern for server.py:
+  ```python
+  full_prompt = f"{system_instructions}\n\n---\n\n{user_prompt}"
+  cmd = ["claude", "--print", ..., full_prompt]
+  ```
+  
+  This is the correct approach: Claude Code sessions spawned via `--print` receive a single prompt; behavioral instructions must live in that prompt.
+  
+  ---
+  
+  ## Question 2: Does `claude --print` support `--team` or similar?
+  
+  **Answer: No evidence of such a flag exists.**
+  
+  Zero references to `--team`, `team-name`, `team_name`, or any team-selection flag appear anywhere in the codebase or prior research. Agent teams in Claude Code are invoked interactively within a session (via `/team` commands or agent frontmatter), not by passing a CLI flag to `claude --print`.
+  
+  The experimental agent teams feature is enabled via the environment variable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, not via a CLI flag. Agent team names/configurations are defined in agent definition files inside the session, not passed at spawn time.
+  
+  **There is no CLI mechanism to pass a team name to a `claude --print` subprocess.** If team-name context is needed in a spawned session, it must be embedded in the prompt string.
+  
+  ---
+  
+  ## Question 3: Environment Variables Read at Claude CLI Startup
+  
+  The following environment variables are read by the Claude Code CLI at startup, based on project research and documentation:
+  
+  ### Confirmed (from project research)
+  
+  | Variable | Purpose |
+  |----------|---------|
+  | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Enables experimental agent teams feature. Without this, team mode is unavailable even if instructions reference it. |
+  | `ANTHROPIC_API_KEY` | API key for Claude. Required if not configured in `~/.claude/` settings. |
+  
+  ### From session-spawner (injected into subprocess env)
+  
+  The session-spawner server inherits the full parent environment (`os.environ`) and adds/overrides:
+  
+  | Variable | Set by server.py | Purpose |
+  |----------|------------------|---------|
+  | `IDEATE_SPAWN_DEPTH` | Yes, incremented per spawn | Tracks recursive spawn depth |
+  | `IDEATE_MAX_DEPTH` | Read at startup | Server-side depth ceiling |
+  | `IDEATE_MAX_CONCURRENCY` | Read at startup | Semaphore limit |
+  | `IDEATE_SAFE_ROOT` | Read per-call | Working directory boundary |
+  
+  Because server.py uses `env = {**os.environ, "IDEATE_SPAWN_DEPTH": str(current_depth + 1)}`, **all environment variables present in the parent process are forwarded to the subprocess**. This means:
+  
+  - Setting `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in the parent environment will propagate to all spawned sessions automatically.
+  - Any other Claude CLI environment variables (e.g., `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`) also propagate.
+  
+  **Implication for team name injection**: There is no Claude CLI env var for team name. The team name must go into the prompt string.
+  
+  ---
+  
+  ## Question 4: Full Flag List for `claude --print`
+  
+  The following flags are documented across project research (session-multiplexing.md compiled 2026-03-08 from CLI docs, plus server.py usage):
+  
+  | Flag | Values / Notes |
+  |------|----------------|
+  | `--print` | Headless mode. Required for subprocess use. No interactive UI. |
+  | `--output-format` | `json`, `text`, `stream-json`. Default appears to be `text`. Server.py defaults to `json`. |
+  | `--permission-mode` | `acceptEdits`, `dontAsk`. Controls whether the session asks for file edit confirmations. |
+  | `--max-turns` | Integer. Bounds the agentic loop. Prevents runaway sessions. |
+  | `--cwd` | Path. Sets working directory for the session. |
+  | `--allowedTools` | Comma-separated tool names (e.g., `"Read,Edit,Bash"`). Allowlist for tool access. |
+  | `--resume` | Session ID. Resumes a prior session. |
+  | `--plugin-dir` | Path. For loading a plugin during testing (`claude --plugin-dir ./my-plugin`). |
+  
+  **Not supported** (no evidence found):
+  - `--system-prompt` or `--append-system-prompt`
+  - `--team` or any team-selection flag
+  - `--model` (may exist but not documented in project research)
+  - `--no-tools` or similar blanket tool disabling
+  
+  **Caveat**: This list was compiled from project documentation, not from live `claude --help` output. Flags may have been added or removed in CLI versions released after the prior research was conducted (2026-03-08). Running `claude --help` directly is strongly recommended to get the authoritative current list.
+  
+  To get the authoritative flag list, run:
+  ```bash
+  claude --help
+  claude --print --help
+  ```
+  
+  ---
+  
+  ## Recommendations for session-spawner Enhancements
+  
+  ### Injecting execution instructions (preferring parallelism)
+  
+  Prepend instructions into the prompt. Add a `system_prompt` or `prepend_instructions` parameter to `spawn_session` that gets concatenated before the user prompt:
+  
+  ```python
+  # In call_tool():
+  system_prompt = arguments.get("system_prompt", "")
+  if system_prompt:
+      full_prompt = f"{system_prompt}\n\n---\n\n{prompt}"
+  else:
+      full_prompt = prompt
+  # Use full_prompt as the positional CLI argument
+  ```
+  
+  The tool description should document that `system_prompt` is prepended before the user prompt and can contain behavioral instructions (e.g., "prefer parallel execution", "use agent teams where available").
+  
+  ### Passing team_name
+  
+  No CLI flag exists. Options:
+  
+  1. **Embed in prompt** (simplest): Include team name in the `system_prompt` prepend. Example: `"You are executing as part of team: {team_name}. ..."`. This is immediately available without any server changes.
+  
+  2. **Pass as environment variable** (cleanest for structured config): Add a `team_name` parameter to `spawn_session` that gets set in the subprocess env as `IDEATE_TEAM_NAME`. The spawned session can read it via a CLAUDE.md instruction or hook. This requires the spawned session to be configured to read and act on this env var.
+  
+  3. **CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1**: This env var must be set in the parent process. Since server.py forwards `os.environ` to subprocesses, setting it in the environment where Claude Code is running (i.e., the user's session) is sufficient — no server.py change needed.
+  
+  ### Summary of required changes
+  
+  | Goal | Mechanism | server.py change needed? |
+  |------|-----------|--------------------------|
+  | Inject execution instructions | Add `system_prompt` param, prepend to prompt | Yes — add param, prepend logic |
+  | Enable agent teams | Set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in parent env | No — propagates automatically |
+  | Pass team_name | Embed in system_prompt string OR add `team_name` env param | Optional — embed is simplest |
+  
+  ---
+  
+  ## Sources
+  
+  - `/Users/dan/code/ideate/mcp/session-spawner/server.py` — full implementation, lines 210-228
+  - `/Users/dan/code/ideate/specs/steering/research/session-multiplexing.md` — documented CLI flags
+  - `/Users/dan/code/ideate/specs/steering/research/agent-teams-and-plugins.md` — `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+  - `/Users/dan/code/ideate/mcp/session-spawner/README.md` — environment variable table
+  - Codebase grep: zero matches for `--system-prompt`, `--append-system-prompt`, `--team`, `team_name` as CLI flags
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: ed6d9b266e2bf0693fe510f28f2c230ccf38dbca80b9d9dd94dcc2884c10d356
+token_count: 2318
+file_path: .ideate/research/RF-claude-cli-flags.yaml

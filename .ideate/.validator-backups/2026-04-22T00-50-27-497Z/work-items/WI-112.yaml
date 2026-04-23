@@ -1,0 +1,61 @@
+id: WI-112
+type: work_item
+title: autopilot/phases/review.md — add quality_summary emission after journal-keeper
+status: done
+complexity: low
+scope:
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - skills/autopilot/phases/review.md emits a quality_summary event to metrics.jsonl after the journal-keeper step
+  - The quality_summary event uses the same schema as skills/review/SKILL.md
+  - The event includes last_cycle_findings (critical/significant/minor counts) and the cycle number
+  - The quality_summary event is emitted before domain-curator is spawned
+module: null
+domain: null
+notes: |
+  # WI-112: autopilot/phases/review.md — add quality_summary emission after journal-keeper
+
+  ## Context
+
+  `skills/review/SKILL.md` emits a `quality_summary` event to `metrics.jsonl` after each review cycle (added in WI-093). `skills/autopilot/phases/review.md` is an independent reimplementation that was never updated. No quality_summary events are written for autopilot-driven projects. The Quality Trends section of `scripts/report.sh` is permanently empty for autopilot projects. This is Q-14 in the workflow domain, open since cycle 006.
+
+  ---
+
+  ## Fix: `skills/autopilot/phases/review.md` — add quality_summary emission
+
+  After the journal-keeper step and before the domain-curator spawn, add:
+
+  ```markdown
+  ### Emit quality_summary Event
+
+  After journal-keeper completes, write a `quality_summary` event to `{artifact_dir}/metrics.jsonl`:
+
+  ```json
+  {"timestamp":"<ISO8601>","skill":"autopilot","phase":"6b","cycle":<N>,"event":"quality_summary","critical":<critical_count>,"significant":<significant_count>,"minor":<minor_count>,"convergence_achieved":<bool>}
+  ```
+
+  Where:
+  - `critical`, `significant`, `minor` come from the findings counts synthesized from the four reviewers
+  - `convergence_achieved` is `false` (autopilot will determine this in Phase 6c)
+  - `cycle` is the current 1-based cycle number
+
+  Best-effort only: if writing fails, continue.
+  ```
+
+  ---
+
+  ## Acceptance Criteria
+
+  1. `skills/autopilot/phases/review.md` emits a `quality_summary` event to `metrics.jsonl` after the journal-keeper step
+  2. The `quality_summary` event uses the same schema as `skills/review/SKILL.md`
+  3. The event includes last_cycle_findings (critical/significant/minor counts) and the cycle number
+  4. The quality_summary event is emitted before domain-curator is spawned
+cycle_created: 1
+cycle_modified: null
+content_hash: 3404d26a51e1cbb4aa7cfbcd93ee5b97d354fe1edff8b02b6f9cbf3bc99942a0
+token_count: 617
+file_path: .ideate/work-items/WI-112.yaml
+resolution: Implemented during v3 migration

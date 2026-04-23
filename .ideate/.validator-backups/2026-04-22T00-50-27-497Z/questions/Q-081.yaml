@@ -1,0 +1,14 @@
+id: Q-081
+type: domain_question
+cycle_created: 29
+domain: artifact-structure
+impact: The domain curator receives incorrect file patterns in its prompt, though the actual review files are YAML. This is a latent bug that may cause confusion or errors if the curator attempts to glob files.
+question: 'skills/review/SKILL.md line 436 instructs the domain curator: "Review source: {output-dir}/*.md (all review files in the output directory)". This references `*.md` instead of `*.yaml`, violating P-25. Should this be updated to `*.yaml`?'
+reexamination_trigger: When review skill is next modified or when domain curator behavior is audited.
+resolution: 'Resolved in cycle 66. skills/review/SKILL.md line 442 now uses ideate_artifact_query({type: "finding", cycle: N}) instead of file glob. The file has been fully migrated to MCP-first data access with no path or file extension references.'
+source: gap-analysis.yaml, cycle 029, CF3
+status: resolved
+title: Review skill line 436 references deprecated *.md pattern
+content_hash: c4353903bea0256bec60bfb5c8a67a3b6e45054b1cf9e0f80fb1e7fc6763c8df
+token_count: 253
+file_path: .ideate/questions/Q-081.yaml

@@ -1,0 +1,38 @@
+id: decision-log-004
+type: cycle_summary
+cycle: 4
+reviewer: journal-keeper
+content: |-
+  ## Decision Log and Open Questions — Cycle 4
+
+  ### Key Decisions This Cycle
+
+  **DL-4-01**: Fixed agent_type parameter description (WI-422) — changed from 'event_name' to 'payload.agent_type'. All 22 tool descriptions now pass P-33 audit.
+
+  **DL-4-02**: Inject cycle into yamlObj in handleWriteArtifact for cycle-scoped types (WI-423) — write.ts:777-779 ensures YAML files contain top-level cycle: N so rebuilds correctly populate document_artifacts.cycle. Fix is forward-only.
+
+  **DL-4-03**: WI-423 rework added write-path integration test and cycle assertion (F-423-001) — three-way invariant now protected: live write, YAML serialization, and rebuild all produce matching document_artifacts.cycle.
+
+  **DL-4-04**: Cycle 4 code-quality, spec-adherence, principle adherence all Pass. Two significant gaps deferred to next cycle (Gap 1: existing artifact backfill; Gap 2: end-to-end convergence roundtrip test).
+
+  ### Patterns (Cycles 1-4)
+
+  - **Pattern A**: Documentation lags implementation by one cycle (ARCHITECTURE.md, tool descriptions, P-44 policy text)
+  - **Pattern B**: P-44 scope discovered incrementally; handleAppendJournal deviation not yet formally amended
+  - **Pattern C**: Forward-only fixes leave existing artifacts in inconsistent state (WI-406, WI-423)
+  - **Pattern D**: Rework required when test coverage not specified in acceptance criteria
+
+  ### Open Questions
+
+  **OQ-C4-01**: CS-003, CQ-003, GA-003 missing top-level cycle: field — null after index rebuild (Significant)
+
+  **OQ-C4-02**: No end-to-end write→convergence roundtrip test (Significant)
+
+  **OQ-C4-03**: P-44 not amended for handleAppendJournal's exclusive-within-transaction pattern
+
+  **OQ-C4-04**: ARCHITECTURE.md Section 5 stale storage-level detail in five tool descriptions
+
+  **OQ-C4-05**: WI-377, WI-378, WI-379 statuses not updated to done — autopilot will re-execute them
+content_hash: feebb9143376f836b1d14d450f420372798a2c9a5b92b2dd705375549f1cc533
+token_count: 491
+file_path: .ideate/cycles/004/decision-log-004.yaml

@@ -1,0 +1,14 @@
+id: interviews/refine-004/_general
+type: interview
+cycle: 4
+source_path: steering/interviews/refine-004/_general.md
+entries:
+  - {id: IQ-004-001, question: Are you here to address the cycle 003 findings, extend the project, or both?, answer: Both — address the cycle 003 findings and add new metrics/reporting capabilities., domain: null, seq: 1}
+  - {id: IQ-004-002, question: Do the guiding principles still hold?, answer: Yes, all principles unchanged., domain: null, seq: 2}
+  - {id: IQ-004-003, question: Confirm migration script removal — migrate-to-cycles.sh and migrate-to-domains.sh should be deleted along with the README migration section?, answer: Yes, confirmed., domain: null, seq: 3}
+  - {id: IQ-004-004, question: What form should the metrics tooling take?, answer: Shell script in scripts/ outputting a human-readable report with actionable insights about how well the tool is working., domain: null, seq: 4}
+  - {id: IQ-004-005, question: Extending the metrics schema to capture token counts — is that acceptable?, answer: Yes, these are valuable metrics. Token fields, cache fields, and MCP tools called per agent spawn., domain: null, seq: 5}
+  - {id: IQ-004-006, question: For qualitative metrics (requirements missed, bugs introduced, principles violated) — the review skill already produces structured findings. Should it emit a quality event to metrics.jsonl after each cycle?, answer: Yes, that works. Open to other suggestions as they arise., domain: null, seq: 6}
+  - {id: IQ-004-007, question: For RAG vs flat-file tracking — skill/phase level or per-agent-spawn level?, answer: Both — skill/phase is important, and understanding how well individual agents perform. Per-agent-spawn granularity with skill/phase context., domain: null, seq: 7}
+content_hash: "0851664d23d6cfb369b65f00dd8867b437673cec1990d8e246774a70d1426fd7"
+token_count: 451

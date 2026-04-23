@@ -1,0 +1,46 @@
+id: WI-346
+type: work_item
+title: Define proxy-human decision artifact format (Q-07)
+status: done
+complexity: medium
+scope: []
+depends:
+  - WI-342
+blocks: []
+criteria:
+  - PH-{cycle}-{seq} artifact format defined in schema
+  - triggered_by field creates graph edges to findings/work items
+  - "decision field: approved | deferred | escalated"
+  - skills/autopilot/SKILL.md updated to use new format
+  - Resolves Q-07
+  - All tests pass
+domain: artifact-structure
+notes: |-
+  Define structured proxy-human decision artifact format to replace ad-hoc proxy-human-log format. Resolves Q-07.
+
+  Format:
+  ```yaml
+  id: PH-{cycle}-{seq}
+  type: proxy_human_decision
+  cycle: NNN
+  trigger: andon | fallback | deferral
+  triggered_by:
+    - {type}: {id}  # e.g., finding: F-042
+  decision: approved | deferred | escalated
+  rationale: string
+  timestamp: ISO8601
+  status: resolved | pending_user_input
+  ```
+
+  Location: .ideate/cycles/{NNN}/proxy-human/
+
+  Files to modify:
+  - mcp/artifact-server/src/schema.ts (add proxy_human_decision type)
+  - mcp/artifact-server/src/tools/write.ts (handle proxy_human_decision type)
+  - skills/autopilot/SKILL.md (update fallback path to use new format)
+resolution: "Implemented proxy_human_decision artifact type with PH-{cycle}-{seq} ID format. Added to schema.ts, db.ts, write.ts, and query.ts. Updated autopilot SKILL.md, execute.md, and reporting.md to use ideate_write_artifact with type proxy_human_decision. Added triggered_by edge type for graph edges to findings/work items. All tests pass."
+cycle_created: null
+cycle_modified: null
+content_hash: b85949a7950b6af3cadf0e5e98f35b6a093a0fc14783d2c47f55fbe986514ae4
+token_count: 290
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-346.yaml

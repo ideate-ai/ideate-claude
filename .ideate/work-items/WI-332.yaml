@@ -28,9 +28,11 @@ notes: |-
 
   3. **DB handle leak** (review finding gap-analysis M1):
      In initServer, wrap `rebuildIndex(newDb, newDrizzle, dir)` in try/catch. On catch, call `newDb.close()` then re-throw.
-resolution: "Three fixes applied: (1) routeToolCall try/catch around bootstrap, (2) dead branch removed in handleBootstrapDormant, (3) DB handle leak guard in initServer. Build clean, 338 tests pass."
+resolution: >-
+  Three fixes applied: (1) routeToolCall try/catch around bootstrap, (2) dead branch removed in handleBootstrapDormant,
+  (3) DB handle leak guard in initServer. Build clean, 338 tests pass.
 cycle_created: null
 cycle_modified: null
 content_hash: 8d1a5fb373834fea1031726378a62518c09f60e183828e50b6d054f17d7466fd
 token_count: 411
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-332.yaml
+file_path: work-items/WI-332.yaml

@@ -11,31 +11,47 @@ scope:
   - path: specs/plan/notes/148.md
     op: create
 depends:
-  - "144"
-  - "145"
+  - '144'
+  - '145'
 blocks: []
 criteria:
-  - "EDGE_TYPES in schema.ts has a documented entry for every edge type: source artifact type(s), target artifact type(s), YAML field it is extracted from, and a one-line semantic description"
-  - The `references` edge type is either documented with full source/target/field metadata, or removed if it has no defined use case
+  - >-
+    EDGE_TYPES in schema.ts has a documented entry for every edge type: source artifact type(s), target artifact
+    type(s), YAML field it is extracted from, and a one-line semantic description
+  - >-
+    The `references` edge type is either documented with full source/target/field metadata, or removed if it has no
+    defined use case
   - rebuildIndex in indexer.ts extracts edges for all documented edge types (no undocumented edge types are extracted)
-  - An EdgeTypeSpec interface or constant object is exported from schema.ts mapping each EdgeType to its metadata (source_types, target_types, yaml_field, description)
+  - >-
+    An EdgeTypeSpec interface or constant object is exported from schema.ts mapping each EdgeType to its metadata
+    (source_types, target_types, yaml_field, description)
   - The edge type table in specs/plan/notes/148.md lists every edge type with full column definitions
 module: null
 domain: null
-notes: |
+notes: >
   # WI-148: Fully defined edge type registry
+
 
   ## Problem
 
-  `EDGE_TYPES` in `schema.ts` contains 10 edge types but only 9 are documented in the WI-144 spec table. The `references` type was added without source/target/field metadata. More broadly, edge types exist as a flat string array with no machine-readable metadata about what connects to what — making the indexer's edge extraction logic implicit and the schema hard to extend safely.
+
+  `EDGE_TYPES` in `schema.ts` contains 10 edge types but only 9 are documented in the WI-144 spec table. The
+  `references` type was added without source/target/field metadata. More broadly, edge types exist as a flat string
+  array with no machine-readable metadata about what connects to what — making the indexer's edge extraction logic
+  implicit and the schema hard to extend safely.
+
 
   ## Solution
 
+
   Export a structured edge type registry alongside the existing `EDGE_TYPES` array and `EdgeType` union.
+
 
   ### EdgeTypeSpec interface
 
+
   ```typescript
+
   export interface EdgeTypeSpec {
     description: string;
     source_types: string[];   // artifact type values (matches ArtifactCommon.type)
@@ -43,38 +59,69 @@ notes: |
     yaml_field: string | null; // field name on source YAML, or null if set explicitly
   }
 
+
   export const EDGE_TYPE_REGISTRY: Record<EdgeType, EdgeTypeSpec> = { ... };
+
   ```
+
 
   ### Full edge type table
 
+
   | Edge type | Source type(s) | Target type(s) | YAML field | Description |
+
   |---|---|---|---|---|
+
   | `depends_on` | `work_item` | `work_item` | `depends` | Work item depends on another before it can start |
+
   | `blocks` | `work_item` | `work_item` | `blocks` | Work item blocks another from starting |
+
   | `belongs_to_module` | `work_item` | `module_spec` | `module` | Work item is scoped to a module |
-  | `belongs_to_domain` | `work_item`, `domain_policy`, `domain_decision`, `domain_question` | `domain` | `domain` | Artifact belongs to a domain (target is a domain name string) |
-  | `derived_from` | `domain_policy` | `guiding_principle` | `derived_from` | Policy is derived from a guiding principle |
+
+  | `belongs_to_domain` | `work_item`, `domain_policy`, `domain_decision`, `domain_question` | `domain` | `domain` |
+  Artifact belongs to a domain (target is a domain name string) |
+
+  | `derived_from` | `domain_policy` | `guiding_principle` | `derived_from` | Policy is derived from a guiding principle
+  |
+
   | `relates_to` | `finding` | `work_item` | `work_item` | Finding is about a specific work item |
-  | `addressed_by` | `finding`, `domain_question` | `work_item` | `addressed_by` | Finding/question has been addressed by a work item (D-59) |
+
+  | `addressed_by` | `finding`, `domain_question` | `work_item` | `addressed_by` | Finding/question has been addressed
+  by a work item (D-59) |
+
   | `references` | any | any | explicit | Generic cross-reference between two artifacts |
-  | `amended_by` | `domain_policy` | `domain_policy` | `amended_by` | Policy has been superseded by a newer version (D-59) |
+
+  | `amended_by` | `domain_policy` | `domain_policy` | `amended_by` | Policy has been superseded by a newer version
+  (D-59) |
+
   | `supersedes` | `domain_decision` | `domain_decision` | `supersedes` | Decision supersedes an earlier decision |
+
 
   ### Indexer alignment
 
-  `rebuildIndex` in `indexer.ts` must only create edges for edge types defined in `EDGE_TYPE_REGISTRY`. Each extraction path should reference the registry entry rather than hardcoding the edge type string.
+
+  `rebuildIndex` in `indexer.ts` must only create edges for edge types defined in `EDGE_TYPE_REGISTRY`. Each extraction
+  path should reference the registry entry rather than hardcoding the edge type string.
+
 
   ## Implementation notes
 
-  - Add `EDGE_TYPE_REGISTRY` as an exported const immediately after the existing `EDGE_TYPES` and `EdgeType` definitions in `schema.ts`
-  - The `domain` target type for `belongs_to_domain` is a string id, not a typed artifact — document `target_types: ["domain"]` as a convention
-  - `addresses` and `references` have `yaml_field: null` — they are created by explicit reference, not auto-extracted from a single field
+
+  - Add `EDGE_TYPE_REGISTRY` as an exported const immediately after the existing `EDGE_TYPES` and `EdgeType` definitions
+  in `schema.ts`
+
+  - The `domain` target type for `belongs_to_domain` is a string id, not a typed artifact — document `target_types:
+  ["domain"]` as a convention
+
+  - `addresses` and `references` have `yaml_field: null` — they are created by explicit reference, not auto-extracted
+  from a single field
+
   - No changes to `EDGE_TYPES` array values — just add the registry alongside it
+
   - All 78+ tests must still pass after the change
 cycle_created: 1
 cycle_modified: null
 content_hash: 2591be0a2177d704ecd22928e64a4cd72d0f3cf87ba6ffa36ef294bb411c9d15
 token_count: 1079
-file_path: .ideate/work-items/WI-148.yaml
-resolution: "Verified complete: EDGE_TYPE_REGISTRY exported with full metadata for all 10 edge types"
+file_path: work-items/WI-148.yaml
+resolution: 'Verified complete: EDGE_TYPE_REGISTRY exported with full metadata for all 10 edge types'

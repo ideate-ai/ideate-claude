@@ -1,0 +1,12 @@
+id: D-145
+type: domain_decision
+domain: artifact-structure
+title: P-44 two-phase write transactions must use exclusive mode
+decision: The SQLite transaction in Phase 2 of the two-phase write pattern must use .exclusive() mode, not the default deferred mode. This prevents concurrent handlers from interleaving their YAML+SQLite phases.
+rationale: handleEmitMetric used ctx.db.transaction()() (deferred) while handleAppendJournal already used .exclusive(). With deferred mode, concurrent callers can both complete Phase 1 (YAML write) before either enters Phase 2, violating the atomicity intent. P-44 amended to codify this requirement.
+source: cycle 1 gap-analysis Gap 3; decision-log D9/OQ-4
+cycle: 1
+status: settled
+content_hash: 945cdb61c9349532682bdc9c3e976189e59951113aec9204f6c691d5aab542e3
+token_count: 179
+file_path: .ideate/decisions/D-145.yaml

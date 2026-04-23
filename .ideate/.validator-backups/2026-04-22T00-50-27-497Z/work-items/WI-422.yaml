@@ -1,0 +1,25 @@
+id: WI-422
+type: work_item
+title: Fix agent_type filter parameter description in metrics query tool
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - The agent_type parameter description in the ideate_get_metrics tool inputSchema reads 'Include only events whose payload.agent_type field equals this value.' (not 'event_name')
+  - No other parameter descriptions reference internal field names incorrectly
+  - All existing tests pass
+domain: artifact-structure
+notes: |-
+  Finding F-003-001 (cycle 3, significant): In tools/index.ts around line 469, the agent_type filter parameter description says 'Include only events with this event_name (agent type).' The implementation uses json_extract(me.payload, '$.agent_type') = ? — matching payload.agent_type, not event_name. The description misleads callers into supplying the wrong value and receiving empty results silently.
+
+  Fix: Change the description to 'Include only events whose payload.agent_type field equals this value.' This is a one-line change in the inputSchema description for the agent_type parameter of the ideate_get_metrics tool in tools/index.ts.
+resolution: null
+cycle_created: 3
+cycle_modified: 1
+content_hash: 02cdeba789dff208125b57c72102e6446b67b6fb9779924d5b86eadce0826c89
+token_count: 313
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-422.yaml

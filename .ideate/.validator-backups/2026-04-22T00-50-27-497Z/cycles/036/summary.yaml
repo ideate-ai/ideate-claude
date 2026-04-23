@@ -1,0 +1,94 @@
+id: summary
+type: cycle_summary
+content: |
+  # Cycle 36 Summary — PH-050 Autopilot Cycle 1
+
+  ## Cycle Scope
+
+  - WI-876 — Harden parsePrincipleVerdict against missing/malformed cycle_summary
+  - WI-877 — MCP server auto-reload on dist/ rebuild
+
+  Both work items executed via ideate:worker in parallel. Build passes, 1490 tests pass, 0 fail.
+
+  ## Review Outcome
+
+  | Reviewer | Verdict |
+  |----------|---------|
+  | code-reviewer | Fail (2 significant, 3 minor) |
+  | spec-reviewer | Pass (**Principle Adherence Verdict**: Pass) |
+  | gap-analyst | Fail (5 significant, 5 minor) |
+
+  **Principle Adherence Verdict**: Pass
+
+  **Convergence**: Not achieved. Condition A (zero critical + zero significant) fails — 6 unique significant findings. Condition B (principle adherence) passes. Refinement required.
+
+  ## Synthesized Findings
+
+  ### Critical: 0
+
+  ### Significant: 6 unique
+
+  1. **F1 — Step1 regex missing word boundary** (code-reviewer S1). Patterns match `Passed`/`Failed`/`Passthrough`. False convergence verdicts possible.
+  2. **F2 — Step3 warning produces invalid YAML** (code-reviewer S2 = gap-analyst EC1). JSON.stringify wrapped inside double-quoted YAML scalar. Verified via yaml parser throwing.
+  3. **F3 — P-33 violation in missing-cycle warning** (gap-analyst EC2). Absolute .ideate/ paths emitted in tool response.
+  4. **F4 — Step 2 parser entirely untested** (gap-analyst EC3). No test exercises section-body heuristic path.
+  5. **F5 — WI-876 AC5 retroactive verification absent** (gap-analyst EC4). No test for cycles 31/32/33; worker marked "verified statically".
+  6. **F6 — P-33 compliance suite missing handleGetConvergenceStatus** (gap-analyst IR1). Regression guard gap.
+
+  ### Minor: 8 unique
+
+  - M1: restart.sh pgrep treats path as regex (code-reviewer M1)
+  - M2: deployment-notes.md start.sh inaccuracy (code-reviewer M2)
+  - M3: JSDoc Unknown keyword overstated (code-reviewer M3)
+  - M4: principle_verdict_source not asserted (gap-analyst EC5)
+  - M5: adapter-contract.md Version History not bumped (gap-analyst II1)
+  - M6: autopilot no handling for unknown verdict (gap-analyst II2)
+  - M7: restart.sh no SIGKILL escalation (gap-analyst MI1)
+  - M8: WI-877 AC4 manual test not recorded (gap-analyst MI2)
+
+  ### Requires Human Review
+  - WI-877 operational end-to-end restart verification — cannot be machine-verified without live MCP host.
+
+  ## Next Steps (Refinement)
+
+  - Bundle F1-F6 into a single small bug WI (all in tools/analysis.ts + tools.test.ts). Est small.
+  - Minor items — address in same WI where scope overlaps (M1/M3/M4 co-located with F1-F6).
+  - M5 (Version History) can be one line in the same commit.
+  - M7/M8 optional defer with explicit rationale.
+content_hash: be280d4b5245da880742fc34ce20ceaad82756763a78c0b443390c3d92a174e8
+token_count: 1054
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 36
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: WI-876, WI-877
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001

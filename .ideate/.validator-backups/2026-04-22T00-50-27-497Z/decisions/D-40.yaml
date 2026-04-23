@@ -1,0 +1,13 @@
+id: D-40
+type: domain_decision
+domain: agent-system
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-122 replaced the stale phrase \"treat it as scope-changing — this is an Andon-level issue\" at `agents/code-reviewer.md:91` with language describing the current protocol: \"The executor will diagnose the root cause and attempt a surgical fix before routing to Andon if the cause is unfixable.\" The finding title convention (\"Startup failure after [work item name]\") was preserved."
+rationale: D-38 documented the inconsistency; D-36 had explicitly deferred this file as secondary. The gap analyst rated it Significant because the code-reviewer is invoked in every execution cycle and its stale instructions would lead any code-reviewer agent to describe the wrong expected executor behavior.
+cycle_created: 1
+cycle_modified: null
+content_hash: aff9491836fa680e77168e9b67c79d6911676299275ba40c6401f3e471444ecc
+token_count: 226
+file_path: .ideate/decisions/D-40.yaml

@@ -1,0 +1,13 @@
+id: D-91
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "WI-174 added `\"build:migration\": \"tsc ../../scripts/migrate-to-v3.ts --module NodeNext --target ES2022 --declaration false --outDir ../../scripts\"` to `mcp/artifact-server/package.json`. The `pretest` warning text was updated to reference `npm run build:migration`. Stale artifact paths (`migrate-to-v3.d.ts`, `migrate-to-v3.d.ts.map`, `migrate-to-v3.js.map`) were added to `.gitignore`. Closes Q-63 and fully resolves Q-58."
+rationale: "D-88 left detection in place but recovery broken. Any contributor following the JSDoc header instructions hit `npm error Missing script: \"build:migration\"` immediately. The `--declaration false` flag suppresses future `.d.ts` generation; `.gitignore` prevents future commits of build artifacts."
+cycle_created: 1
+cycle_modified: null
+content_hash: "5716cee0dae318387c962f7013f4b5943737a9048bfea64b50d2ca7f33759d3c"
+token_count: 238
+file_path: .ideate/decisions/D-91.yaml

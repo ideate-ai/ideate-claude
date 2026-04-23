@@ -1,59 +1,110 @@
 id: code-quality
 type: cycle_summary
 reviewer: code-reviewer
-content: |-
+content: >-
   # Code Quality Review — PH-049 Capstone (cycle 30)
+
 
   ## Verdict: Pass
 
-  The two work items deliver their stated objectives: the convergence false-negative bug is fixed for the primary (SQLite/local) code path, and the architecture overview accurately documents the operational telemetry surface. No issue causes incorrect behavior under observed production inputs. One significant adapter parity gap exists between the SQL filter and the remote client-side filter for the empty-string edge case, but there is no evidence this edge case occurs in practice.
+
+  The two work items deliver their stated objectives: the convergence false-negative bug is fixed for the primary
+  (SQLite/local) code path, and the architecture overview accurately documents the operational telemetry surface. No
+  issue causes incorrect behavior under observed production inputs. One significant adapter parity gap exists between
+  the SQL filter and the remote client-side filter for the empty-string edge case, but there is no evidence this edge
+  case occurs in practice.
+
 
   ## Critical Findings
 
+
   None.
+
 
   ## Significant Findings
 
+
   ### S1: Adapter parity gap — local SQL IS NULL misses empty-string addressed_by
+
   - **File**: mcp/artifact-server/src/adapters/local/reader.ts:930
-  - **Issue**: The local SQL filter uses `addressed_by IS NULL`, which only excludes SQL NULL. The remote adapter's client-side filter at index.ts:1297 uses `addressedBy !== null && addressedBy !== undefined && addressedBy !== ""`, which additionally excludes empty string. If a finding reaches SQLite with `addressed_by = ""` (possible: `toStrOrNull("") = ""` in indexer.ts:116-118, writer.ts:295 stores `(content.addressed_by as string | null) ?? null` — preserves "" because ?? only catches null/undefined), the local adapter counts it as unresolved (correct) while the remote adapter excludes it as resolved (incorrect).
-  - **Impact**: Divergent behavior between adapters violates the adapter contract. False-negative for remote deployments if `addressed_by: ""` is encountered.
-  - **Suggested fix**: Change the SQL to `WHERE cycle = ? AND (addressed_by IS NULL OR addressed_by = '')`. Alternatively, normalize in writer.ts:295 using `||` instead of `??`. Normalization is preferable.
+
+  - **Issue**: The local SQL filter uses `addressed_by IS NULL`, which only excludes SQL NULL. The remote adapter's
+  client-side filter at index.ts:1297 uses `addressedBy !== null && addressedBy !== undefined && addressedBy !== ""`,
+  which additionally excludes empty string. If a finding reaches SQLite with `addressed_by = ""` (possible:
+  `toStrOrNull("") = ""` in indexer.ts:116-118, writer.ts:295 stores `(content.addressed_by as string | null) ?? null` —
+  preserves "" because ?? only catches null/undefined), the local adapter counts it as unresolved (correct) while the
+  remote adapter excludes it as resolved (incorrect).
+
+  - **Impact**: Divergent behavior between adapters violates the adapter contract. False-negative for remote deployments
+  if `addressed_by: ""` is encountered.
+
+  - **Suggested fix**: Change the SQL to `WHERE cycle = ? AND (addressed_by IS NULL OR addressed_by = '')`.
+  Alternatively, normalize in writer.ts:295 using `||` instead of `??`. Normalization is preferable.
+
 
   ## Minor Findings
 
+
   ### M1: Regression test does not cover empty-string addressed_by edge case
+
   - **File**: adapter-contract.test.ts:1341
-  - **Issue**: The two new tests seed `addressed_by: null` and `addressed_by: "PH-001"`. No test covers `addressed_by: ""`, the exact value that would expose S1.
+
+  - **Issue**: The two new tests seed `addressed_by: null` and `addressed_by: "PH-001"`. No test covers `addressed_by:
+  ""`, the exact value that would expose S1.
+
   - **Suggested fix**: Add a third regression test case seeding `addressed_by: ""` and asserting it is excluded.
 
+
   ### M2: Remote getConvergenceData performs two serial GraphQL round-trips
+
   - **File**: mcp/artifact-server/src/adapters/remote/index.ts:1253
-  - **Issue**: The refactored method issues convergenceStatus query followed by artifactQuery. No semantic dependency between them.
+
+  - **Issue**: The refactored method issues convergenceStatus query followed by artifactQuery. No semantic dependency
+  between them.
+
   - **Suggested fix**: Issue both with `Promise.all`.
 
+
   ### M3: first: 10000 findings cap has no overflow guard or warning
+
   - **File**: mcp/artifact-server/src/adapters/remote/index.ts:1275
-  - **Issue**: Findings query capped at 10,000. If a cycle has >10,000 findings, counts will be silently incorrect. Local SQL has no such cap. No truncation indication.
+
+  - **Issue**: Findings query capped at 10,000. If a cycle has >10,000 findings, counts will be silently incorrect.
+  Local SQL has no such cap. No truncation indication.
+
   - **Suggested fix**: Warn or throw when `edges.length === 10000`.
+
 
   ## Unmet Acceptance Criteria
 
+
   None. All three stated success criteria are satisfied:
-  1. tool_usage surface is documented in Section 8 of architecture-overview.md with P-33 and D-211 cross-references. (D-211 is correct; the spec's D-210 was an error.)
-  2. ideate_get_convergence_status no longer returns condition_a: false from stale resolved artifacts under the local (SQLite) adapter.
-  3. Regression tests covering the reproducer are present in adapter-contract.test.ts (lines 1341–1412) and run via the contract harness against LocalAdapter.
+
+  1. tool_usage surface is documented in Section 8 of architecture-overview.md with P-33 and D-211 cross-references.
+  (D-211 is correct; the spec's D-210 was an error.)
+
+  2. ideate_get_convergence_status no longer returns condition_a: false from stale resolved artifacts under the local
+  (SQLite) adapter.
+
+  3. Regression tests covering the reproducer are present in adapter-contract.test.ts (lines 1341–1412) and run via the
+  contract harness against LocalAdapter.
+
 
   ## Requires Human Review
 
-  - **D-211 cross-reference substitution**: The WI-867 spec cited D-210, but D-210 governs max_nodes and is unrelated to telemetry. The worker substituted D-211 (metrics soft-deprecation). Verify D-211 is the intended cross-reference.
+
+  - **D-211 cross-reference substitution**: The WI-867 spec cited D-210, but D-210 governs max_nodes and is unrelated to
+  telemetry. The worker substituted D-211 (metrics soft-deprecation). Verify D-211 is the intended cross-reference.
+
 
   ## Principle Violation Verdict: Pass
 
-  No direct .ideate/ file edits. All changes under mcp/artifact-server/src/ and docs/platform/. P-33 correctly applied. Adapter abstraction pattern followed.
+
+  No direct .ideate/ file edits. All changes under mcp/artifact-server/src/ and docs/platform/. P-33 correctly applied.
+  Adapter abstraction pattern followed.
 content_hash: bc8e5d475b1d4437d23d7613d018fb2846bab84f83473ed1985dc68381194f0c
 token_count: 1040
-file_path: .ideate/cycles/068/code-quality.yaml
+file_path: cycles/030/code-quality.yaml
 cycle: 30
 cycle_modified: 27
 verdict: Pass

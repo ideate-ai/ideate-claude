@@ -1,0 +1,10 @@
+id: interviews/refine-011/workflow
+type: interview
+cycle: 11
+source_path: steering/interviews/refine-011/workflow.md
+entries:
+  - {id: IQ-011-001, question: "Q-31 — The unfixable Andon path (WI-124) now has an exact quoted journal template. The fixable path still says \"Note in the journal as significant rework.\" Should both files get a quoted template for consistency?", answer: Yes — add a quoted template to the fixable path in both files to match the style established in WI-124., domain: null, seq: 1}
+  - {id: IQ-011-002, question: Q-26 — When the smoke test infrastructure itself fails (not the app — e.g., port conflict, missing test runner), the current protocol is silent. What should happen?, answer: The executor should attempt to identify the root cause of the failure. If it is a regression (this work item caused the infra failure), attempt a careful surgical fix without expanding scope or making architectural decisions. If it is not a regression (pre-existing or environmental), pull the Andon cord., domain: null, seq: 2}
+  - {id: IQ-011-003, question: Q-27 — P-22 and the startup-failure exception assume the project has a startup command. Library projects and other non-app contexts may not have one. How should the smoke test be defined?, answer: "The smoke test concept should be generalized beyond \"startup command.\" The heuristic is: what would a reasonable person be expected to do to demo the work they just did? A startup command, an e2e test, running a build — all are appropriate in different contexts. The code-reviewer should determine the appropriate smoke test for the context.", domain: null, seq: 3}
+content_hash: "0a60405902c265ec2af6a49a6a58bc108b0c84641fe845ea2df1b61be68ef82f"
+token_count: 415

@@ -13,16 +13,20 @@ criteria:
   - resolution field documents fix
   - resolved_in cycle set to 066
 domain: workflow
-notes: |-
+notes: >-
   Update Q-082 domain question status after fixes are implemented.
 
-  Resolution: Domain-curator now uses write_artifact MCP tool for domain writes. Policy violations resolved. Migrated to canonical location.
+
+  Resolution: Domain-curator now uses write_artifact MCP tool for domain writes. Policy violations resolved. Migrated to
+  canonical location.
+
 
   File to modify:
+
   - .ideate/questions/Q-082.yaml
 resolution: null
 cycle_created: null
 cycle_modified: null
 content_hash: 31e5ec70cac81ff8734dc22ab6b19ff52b7c50cacbdbc41ccddfe7e4821ee8b1
 token_count: 156
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-350.yaml
+file_path: work-items/WI-350.yaml

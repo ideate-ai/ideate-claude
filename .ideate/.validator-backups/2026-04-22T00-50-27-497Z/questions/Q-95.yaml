@@ -1,0 +1,15 @@
+id: Q-95
+type: domain_question
+addressed_by: WI-383
+deferred_rationale: null
+description: "Should completed work items automatically transition from status: pending to status: done, or should status update require explicit action? Currently, autopilot execute phase does not update status, causing completed items to appear ready for re-execution."
+domain: workflow
+impact: ideate_get_execution_status reports pending items as ready for execution, causing autopilot to re-execute completed work. All three cycle 058 work items (WI-377, WI-378, WI-379) remained in pending status after successful completion.
+reexamination_trigger: When autopilot execution lifecycle is next modified, or when work item status semantics are discussed.
+resolution: "Autopilot execute phase now explicitly calls ideate_update_work_items({updates: [{id: work_item_id, status: 'done'}]}) after each work item passes incremental review. Status transition is explicit, not automatic."
+resolved_in: 2
+source: cycle 058 code-quality M3, gap-analysis M3, decision-log OQ2/OQ5
+status: resolved
+content_hash: 75dc2a7cb1ca5ccc2e04d118cfc26b12e10f9ed9010868ea3e0aa0f304a0c736
+token_count: 266
+file_path: .ideate/questions/Q-95.yaml

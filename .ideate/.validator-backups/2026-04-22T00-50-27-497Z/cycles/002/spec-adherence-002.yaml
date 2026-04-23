@@ -1,0 +1,32 @@
+id: spec-adherence-002
+type: cycle_summary
+title: Spec Adherence Review — Cycle 2
+cycle: 2
+reviewer: spec-reviewer
+content: |-
+  ## Principle Violation Verdict: Pass
+
+  All five work items satisfy their acceptance criteria. All guiding principles and policies are adhered to.
+
+  ## Adherence Evidence
+
+  - **GP-08**: All modified handlers write YAML first, then upsert SQLite inside `ctx.db.transaction()`. No handler inserts into SQLite before the YAML file is written.
+  - **GP-14**: All new handlers return artifact identifiers without filenames, `.yaml` extensions, or `.ideate/` paths in return values.
+  - **P-33**: `handleUpdateWorkItems` error path uses `err.code + artifact ID`. `handleArchiveCycle` error paths use `path.basename()` in error strings.
+  - **P-44**: Applied to `handleAppendJournal`, `handleWriteWorkItems`, `handleWriteArtifact`, `handleUpdateWorkItems`. Each implements Phase 1 = YAML write, Phase 2 = `db.transaction()`-wrapped SQLite upserts, cleanup on failure.
+  - **P-45**: All extension-table upserts go through db-helpers.ts typed helpers.
+
+  ## Work Item Criteria Verification
+
+  All criteria for WI-401 through WI-405 are met (verified by reading implementation).
+
+  ## Deviations
+
+  ### D1: Review manifest table missing Work Item ID and Review Path columns
+  - The WI-405 implementation notes specify 7 columns; implementation produces 5. This is a deviation from the notes, not the formal acceptance criteria. Acceptance criteria are all met.
+
+  ### N1: handleUpdateWorkItems edge mutations use raw SQL instead of db-helpers pattern
+  - Edge inserts/deletes in the transaction use `ctx.db.prepare(...)` directly rather than `insertEdge()` / `deleteEdgesBySourceId()` from db-helpers.ts. Pattern inconsistency, not a P-45 violation.
+content_hash: a2813451f1863e0c28a243a6008c3333485701ce986cf7e8647ced50e9630bd2
+token_count: 442
+file_path: .ideate/cycles/002/spec-adherence-002.yaml

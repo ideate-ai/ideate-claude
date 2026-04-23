@@ -1,0 +1,147 @@
+id: RF-overzealous-quality-gates
+type: research_finding
+topic: "Overzealous Quality Gates: Review Growth Analysis"
+status: active
+date: null
+content: |
+  # Overzealous Quality Gates: Review Growth Analysis
+  
+  ## Problem
+  
+  Each refinement cycle makes subsequent reviews longer and heavier — not because the current work is more complex, but because historical context accumulates unboundedly. After 4–5 cycles, capstone reviewers ingest 50+ incremental review files and hundreds of journal lines even when the current cycle added only 10 new work items.
+  
+  ## Root Causes
+  
+  ### 1. Incremental reviews accumulate across cycles
+  
+  `/ideate:execute` writes one incremental review file per work item to `reviews/incremental/`. These files are never removed or archived. Every subsequent `/ideate:review` reads `reviews/incremental/*.md` — all of them, from all prior cycles. The capstone reviewers (code-reviewer, spec-reviewer, gap-analyst) receive this entire historical corpus even though prior-cycle findings have already been addressed or elevated to final review findings.
+  
+  Growth rate: `O(total_work_items_ever_executed)` per review cycle.
+  
+  ### 2. Decision-log regenerated from scratch each cycle
+  
+  The journal-keeper synthesizes `reviews/final/decision-log.md` by reading the entire `journal.md` plus all incremental reviews plus all other final review files. It produces a full chronological decision log from scratch — not a delta update. Each cycle adds more decisions to synthesize, so the output grows and the synthesis work grows with it.
+  
+  Growth rate: `O(cycles × decisions_per_cycle)` per review cycle.
+  
+  ### 3. Journal grows monotonically
+  
+  `journal.md` is append-only (by design) and loaded in full by execute (Phase 2), review (Phase 2), and refine (Phase 3). After many cycles it becomes large context to load even when only a few recent entries are relevant.
+  
+  Growth rate: `O(total_work_items_ever_executed + total_review_cycles)`.
+  
+  ### 4. Capstone reviewers re-scan the full codebase
+  
+  Each capstone review spawns code-reviewer, spec-reviewer, and gap-analyst, all of which read the project source tree. As the codebase grows across cycles, so does the source code reading burden. This is arguably correct behavior (cross-cutting concerns require full context), but it compounds the above issues.
+  
+  ---
+  
+  ## Options for Resolution
+  
+  ### Option A: Scope incremental reviews to the current cycle (instruction change only)
+  
+  **How**: In `skills/review/SKILL.md` Phase 2.3, after loading `journal.md`, find the most recent `[review]` journal entry. Identify `[execute]` entries after that date to determine which work items belong to the current cycle. Load only those incremental review files. Pass only those files to capstone reviewers.
+  
+  **Pros**:
+  - No file structure changes
+  - Backward compatible with existing artifact directories
+  - Directly targets the largest growth driver
+  - Easy to reason about
+  
+  **Cons**:
+  - Relies on journal timestamps being accurate and consistently formatted
+  - If journal is malformed or missing entries, scoping could fail silently
+  - Reviewers lose visibility into historical per-item issues (though these should be reflected in the prior cycle's final reviews anyway)
+  
+  **Impact**: Reduces capstone reviewer input from `O(all_cycles × items_per_cycle)` to `O(current_cycle_items)`.
+  
+  ---
+  
+  ### Option B: Per-cycle subdirectories for incremental reviews
+  
+  **How**: Change execute to write incremental reviews to `reviews/incremental/cycle-N/NNN-name.md`. The review SKILL reads only the highest-numbered cycle directory. Resume detection in execute looks across all cycle directories.
+  
+  **Pros**:
+  - Explicit, visible structure — no inference required
+  - Easy to audit which reviews belong to which cycle
+  - Historical reviews preserved and accessible
+  
+  **Cons**:
+  - Breaking change to file structure — existing artifact directories need migration or a compatibility shim
+  - Resume detection in execute (`Glob reviews/incremental/*.md`) must be updated
+  - Refine SKILL loads `reviews/incremental/*.md` — must be updated too
+  - More moving parts
+  
+  **Impact**: Same as Option A but via structure rather than instructions.
+  
+  ---
+  
+  ### Option C: Archive incremental reviews after each capstone review
+  
+  **How**: At the end of `/ideate:review` (Phase 7 or after), move `reviews/incremental/*.md` to `reviews/incremental/archive/`. Future execute runs write fresh files to `reviews/incremental/`. Capstone reviews read only the non-archived files.
+  
+  **Pros**:
+  - No changes to execute or how reviews are written
+  - Clean separation between current and historical
+  - Simple rule: "archive = history, flat = current"
+  
+  **Cons**:
+  - Resume detection in execute reads `reviews/incremental/*.md` — archived files won't be found, so resume may re-execute already-completed items
+  - Requires updating resume detection to check archive too
+  - Destructive-feeling operation (moving files) in a skill that otherwise only reads
+  
+  **Impact**: Same as Options A/B on context volume. Resume detection complexity is the main risk.
+  
+  ---
+  
+  ### Option D: Incremental decision-log updates (journal-keeper change)
+  
+  **How**: Modify the journal-keeper prompt in Phase 4b to check if `decision-log.md` already exists. If yes, read it and append only new decisions from the current cycle rather than regenerating from scratch.
+  
+  **Pros**:
+  - Addresses the specific journal-keeper growth problem
+  - Orthogonal to Options A/B/C — can be combined with any of them
+  - Natural extension of the append-only journal philosophy
+  
+  **Cons**:
+  - Requires the journal-keeper to reason about what's "new" vs. already documented
+  - Risk of drift between the appended sections if formatting changes
+  - Decision-log structure (phases, IDs) may get awkward when appended across cycles
+  
+  **Impact**: Prevents `decision-log.md` from being O(full_history) each cycle. Complements any of the above options.
+  
+  ---
+  
+  ### Option E: Journal compaction
+  
+  **How**: After each capstone review, produce a `journal-summary.md` that compacts all prior journal entries into a brief summary. Skills read `journal-summary.md` + only the recent raw entries.
+  
+  **Pros**:
+  - Addresses the journal growth problem directly
+  - Keeps raw history available
+  
+  **Cons**:
+  - Requires deciding what "compaction" means — lossy by definition
+  - Adds another artifact to maintain
+  - Skills would need to know when to read the summary vs. the full journal
+  
+  **Impact**: Moderate reduction in context load for execute, review, and refine.
+  
+  ---
+  
+  ## Recommendation
+  
+  **Combine Option A + Option D** as the minimal, low-risk fix:
+  
+  1. Scope incremental reviews to the current cycle via journal-based filtering (instruction change to `skills/review/SKILL.md` Phase 2.3)
+  2. Make the journal-keeper append to an existing decision-log rather than regenerate it (instruction change to `skills/review/SKILL.md` Phase 4b)
+  
+  Both changes are confined to `skills/review/SKILL.md`. No file structure changes, no changes to execute or refine, no migration needed for existing artifact directories.
+  
+  Option B (per-cycle subdirectories) is the most robust long-term approach but requires coordinated changes across multiple skills and is a breaking change to the artifact format.
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: c3c85bc7a1e0c99980737d2086696a2d53a3b04a78dc06e4782bd8b97460b587
+token_count: 1857
+file_path: .ideate/research/RF-overzealous-quality-gates.yaml

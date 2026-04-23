@@ -1,0 +1,13 @@
+id: D-41
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 9
+supersedes: null
+description: "WI-123 appended two sentences to P-22's body: \"After applying the fix, the smoke test must be re-run to confirm the app starts. If it still fails, the root cause is classified as indeterminate and the Andon cord must be pulled.\" P-22 now describes the full five-step startup-failure protocol."
+rationale: D-37 (cycle 009) recorded that the re-run step was added to both skill files at execution time but was never back-propagated to P-22. Future work items consulting P-22 would be missing this requirement, risking regression of the re-run step.
+cycle_created: 1
+cycle_modified: null
+content_hash: ef9b27f3f1b45247290c384fdf0064d5b08943664049477720ea224a88a570d3
+token_count: 188
+file_path: .ideate/decisions/D-41.yaml

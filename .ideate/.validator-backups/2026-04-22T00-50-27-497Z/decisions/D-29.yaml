@@ -1,0 +1,13 @@
+id: D-29
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: "`discover_metrics()` at `scripts/report.sh:83` reads `config.get('artifact_dir')` (snake_case). All skills and the MCP server write `artifactDir` (camelCase). Auto-discovery fails for every real project. WI-114 will fix the lookup to accept both forms."
+rationale: This is the same class of bug as D-21 (the WI-095 fix). The WI-094 planning note used snake_case; the codebase convention is camelCase. Planning did not cross-reference D-21 when specifying report.sh.
+cycle_created: 1
+cycle_modified: null
+content_hash: e44cf1c2a579d5386168b7a53b57bf124fe49af88699fd9eb431306dc3f65307
+token_count: 170
+file_path: .ideate/decisions/D-29.yaml

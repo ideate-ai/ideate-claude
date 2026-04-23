@@ -30,4 +30,4 @@ content: |-
   - OQ-1, OQ-2, OQ-5, OQ-8, Q-91 all resolved.
 content_hash: 2023ecb110586e923ef5a0d8f5cc21df2bfaed772db320c2f2e2686829b95e00
 token_count: 328
-file_path: .ideate/cycles/000/code-quality.yaml
+file_path: cycles/000/code-quality.yaml

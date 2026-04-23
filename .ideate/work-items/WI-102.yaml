@@ -11,56 +11,96 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - "agents/spec-reviewer.md output format section instructs spec-reviewer to write `**Principle Violation Verdict**: Pass` or `**Principle Violation Verdict**: Fail — {N} violation(s)` as the first line of the Principle Violations section"
+  - >-
+    agents/spec-reviewer.md output format section instructs spec-reviewer to write `**Principle Violation Verdict**:
+    Pass` or `**Principle Violation Verdict**: Fail — {N} violation(s)` as the first line of the Principle Violations
+    section
   - agents/spec-reviewer.md instructs spec-reviewer to write exactly `None.` when no violations
-  - "skills/autopilot/SKILL.md convergence Condition B checks for `**Principle Violation Verdict**: Pass` first before falling back to `None.` detection"
-  - skills/autopilot/SKILL.md convergence Condition B logs an error message for unrecognized formats (treating as non-converged)
-  - "skills/autopilot/SKILL.md convergence Condition B correctly fails when `**Principle Violation Verdict**: Fail` is present"
+  - >-
+    skills/autopilot/SKILL.md convergence Condition B checks for `**Principle Violation Verdict**: Pass` first before
+    falling back to `None.` detection
+  - >-
+    skills/autopilot/SKILL.md convergence Condition B logs an error message for unrecognized formats (treating as
+    non-converged)
+  - >-
+    skills/autopilot/SKILL.md convergence Condition B correctly fails when `**Principle Violation Verdict**: Fail` is
+    present
 module: null
 domain: null
-notes: |
+notes: >
   # WI-102: Spec-reviewer verdict contract + autopilot convergence robustness
+
 
   ## Context
 
-  The autopilot convergence check (Condition B, `skills/autopilot/SKILL.md` lines 192-203) reads `spec-adherence.md` and checks whether the `## Principle Violations` section contains only "None." to determine pass/fail. The spec-reviewer has no instruction to write that exact string — it may write "No violations found." or similar, blocking convergence indefinitely. Additionally, the check logic is fragile: it relies on `### ` or `- ` line prefixes to detect violations, which could misfire.
+
+  The autopilot convergence check (Condition B, `skills/autopilot/SKILL.md` lines 192-203) reads `spec-adherence.md` and
+  checks whether the `## Principle Violations` section contains only "None." to determine pass/fail. The spec-reviewer
+  has no instruction to write that exact string — it may write "No violations found." or similar, blocking convergence
+  indefinitely. Additionally, the check logic is fragile: it relies on `### ` or `- ` line prefixes to detect
+  violations, which could misfire.
+
 
   ---
+
 
   ## Fix 1: `agents/spec-reviewer.md` — add Principle Violation Verdict line
 
-  After the existing output format instructions in `agents/spec-reviewer.md`, in the section describing the `## Principle Violations` output block, add:
+
+  After the existing output format instructions in `agents/spec-reviewer.md`, in the section describing the `##
+  Principle Violations` output block, add:
+
 
   **Current** (find the `## Principle Violations` section instruction):
+
   The spec-reviewer currently has no requirement for a specific format for the empty-violations case.
+
 
   **Add** the following instruction in the output format section (near where `## Principle Violations` is described):
 
+
   ```
+
   At the top of the `## Principle Violations` section, always write a machine-parseable verdict line:
+
 
   **Principle Violation Verdict**: Pass
 
+
   or, if violations exist:
+
 
   **Principle Violation Verdict**: Fail — {N} violation(s)
 
-  When there are no violations, write `None.` after the verdict line. Do not write "No violations found." or other variants — write exactly `None.`
+
+  When there are no violations, write `None.` after the verdict line. Do not write "No violations found." or other
+  variants — write exactly `None.`
+
   ```
+
 
   ---
 
+
   ## Fix 2: `skills/autopilot/SKILL.md` — update convergence Condition B check
 
+
   Locate the Condition B convergence check (lines ~192-203). Current logic:
+
   ```
+
   3. Matched section contains only "None." or "None" (case-insensitive, whitespace-tolerant) → passes.
+
   4. Matched section contains lines starting with `###` or `- ` → fails.
+
   ```
+
 
   Replace with:
 
+
   ```
+
   3. Check for machine-parseable verdict line first:
      - If section contains `**Principle Violation Verdict**: Pass` → passes.
      - If section contains `**Principle Violation Verdict**: Fail` → fails.
@@ -70,17 +110,28 @@ notes: |
      - Section is present but matches neither pattern → log: "spec-adherence.md Principle Violations section has unexpected format — treating as non-converged." and fail.
   ```
 
+
   ---
+
 
   ## Acceptance Criteria
 
-  1. `agents/spec-reviewer.md` output format section instructs spec-reviewer to write `**Principle Violation Verdict**: Pass` or `**Principle Violation Verdict**: Fail — {N} violation(s)` as the first line of the `## Principle Violations` section
-  2. `agents/spec-reviewer.md` instructs spec-reviewer to write exactly `None.` when no violations (not "No violations found." or other variants)
-  3. `skills/autopilot/SKILL.md` convergence Condition B checks for `**Principle Violation Verdict**: Pass` first, falls back to "None." detection, and logs an error for unrecognized formats
-  4. `skills/autopilot/SKILL.md` Condition B still correctly fails when `**Principle Violation Verdict**: Fail` is present
+
+  1. `agents/spec-reviewer.md` output format section instructs spec-reviewer to write `**Principle Violation Verdict**:
+  Pass` or `**Principle Violation Verdict**: Fail — {N} violation(s)` as the first line of the `## Principle Violations`
+  section
+
+  2. `agents/spec-reviewer.md` instructs spec-reviewer to write exactly `None.` when no violations (not "No violations
+  found." or other variants)
+
+  3. `skills/autopilot/SKILL.md` convergence Condition B checks for `**Principle Violation Verdict**: Pass` first, falls
+  back to "None." detection, and logs an error for unrecognized formats
+
+  4. `skills/autopilot/SKILL.md` Condition B still correctly fails when `**Principle Violation Verdict**: Fail` is
+  present
 cycle_created: 1
 cycle_modified: null
 content_hash: 0ec429e98c3b239135bb9fdd53da6ae23b125588ac40b69b7dc620ac5d3ada34
 token_count: 1075
-file_path: .ideate/work-items/WI-102.yaml
+file_path: work-items/WI-102.yaml
 resolution: Implemented during v3 migration

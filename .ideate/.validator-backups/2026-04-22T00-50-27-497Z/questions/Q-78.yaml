@@ -1,0 +1,14 @@
+id: Q-78
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Both significant findings from cycle 022 are in untested code. A regression or further bugs in the recursive CTE path would be invisible to the test suite.
+source: archive/cycles/022/gap-analysis.md MG1; archive/cycles/022/decision-log.md Q-78
+resolution: "tools.test.ts now has depth > 1 graph traversal test with 3-node chain at depth 3."
+resolved_in: 37
+description: The tools test suite has tests for filter mode and error cases but no test exercises the recursive CTE path (depth > 1 with `related_to`). Both bugs in that path (Q-75 cycle protection, Q-76 ambiguous column) would have been caught by a depth > 1 test.
+cycle_created: 1
+cycle_modified: null
+content_hash: "50fd25f577ab3e0a64b41c069b15cf4ad615831786fb845448735c109cf4a98d"
+token_count: 182
+file_path: .ideate/questions/Q-78.yaml

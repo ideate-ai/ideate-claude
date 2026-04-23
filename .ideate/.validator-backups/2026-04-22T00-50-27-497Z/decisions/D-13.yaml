@@ -1,0 +1,13 @@
+id: D-13
+type: domain_decision
+domain: project-boundaries
+status: settled
+cycle: 1
+supersedes: null
+description: When moving `mcp/remote-worker` to outpost, the `IDEATE_*` environment variable names were kept rather than renamed to `OUTPOST_*`.
+rationale: Renaming would require coordinated changes on both client and server and would break existing deployments; session-spawner env vars were safe to rename (fresh installations) but remote-worker env vars were not (archive/cycles/001/decision-log.md D3).
+cycle_created: 1
+cycle_modified: null
+content_hash: "61cc1bad1317efc8ed498b2e1f3309ceb5075be49a6fc6f72e5f2184abb481bf"
+token_count: 152
+file_path: .ideate/decisions/D-13.yaml

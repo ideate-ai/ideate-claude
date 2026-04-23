@@ -9,14 +9,24 @@ scope:
   - path: mcp/artifact-server/src/tools/index.ts
     op: modify
 depends:
-  - "212"
+  - '212'
 blocks: []
 criteria:
-  - "mcp/artifact-server/src/tools/metrics.ts exports a handleGetMetrics function with signature (ctx: ToolContext, args: Record<string, unknown>) => Promise<string>"
-  - "ideate_get_metrics tool accepts artifact_dir (required), scope (optional, enum: agent|work_item|cycle), and filter (optional object with cycle, work_item, agent_type, phase fields)"
-  - "Agent scope returns: per-agent-type aggregates — total tokens in/out, avg tokens, cache hit rate, finding count, finding severities breakdown, outcome counts (pass/fail/rework)"
-  - "Work item scope returns: per-work-item aggregates — first-pass acceptance boolean, rework count, total tokens across all agents for that item"
-  - "Cycle scope returns: per-cycle aggregates — convergence speed (autopilot cycles count), total findings by severity, total tokens, total cost estimate"
+  - >-
+    mcp/artifact-server/src/tools/metrics.ts exports a handleGetMetrics function with signature (ctx: ToolContext, args:
+    Record<string, unknown>) => Promise<string>
+  - >-
+    ideate_get_metrics tool accepts artifact_dir (required), scope (optional, enum: agent|work_item|cycle), and filter
+    (optional object with cycle, work_item, agent_type, phase fields)
+  - >-
+    Agent scope returns: per-agent-type aggregates — total tokens in/out, avg tokens, cache hit rate, finding count,
+    finding severities breakdown, outcome counts (pass/fail/rework)
+  - >-
+    Work item scope returns: per-work-item aggregates — first-pass acceptance boolean, rework count, total tokens across
+    all agents for that item
+  - >-
+    Cycle scope returns: per-cycle aggregates — convergence speed (autopilot cycles count), total findings by severity,
+    total tokens, total cost estimate
   - Default (no scope) returns all three aggregation levels
   - Tool definition added to TOOLS array in tools/index.ts with name ideate_get_metrics
   - handleTool switch in tools/index.ts dispatches ideate_get_metrics to handleGetMetrics
@@ -43,5 +53,5 @@ cycle_created: 1
 cycle_modified: null
 content_hash: 21a9f60ec7ee41064698dd768a1e357d4b4b06e2d406e1424832fd7bfe74a45c
 token_count: 530
-file_path: .ideate/work-items/WI-213.yaml
-resolution: "Verified complete: tools/metrics.ts exports handleGetMetrics, registered in tools/index.ts"
+file_path: work-items/WI-213.yaml
+resolution: 'Verified complete: tools/metrics.ts exports handleGetMetrics, registered in tools/index.ts'

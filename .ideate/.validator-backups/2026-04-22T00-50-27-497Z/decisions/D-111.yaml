@@ -1,0 +1,13 @@
+id: D-111
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Context assembly (2 tools), graph query (1), execution status (2), analysis (3), write (3). Seven tools from the research inventory excluded as subsumed, YAGNI, or requiring breaking changes. Per-tool exclusion rationale documented in overview.md.
+rationale: Documented per-tool in specs/plan/overview.md. Resolves Q-61 (tools.ts stub).
+cycle_created: 1
+cycle_modified: null
+content_hash: c42fe07e4575c0acb0f9c4713479a9e5909cc69c715c31db5f4a5ebecd70db09
+token_count: 138
+file_path: .ideate/decisions/D-111.yaml

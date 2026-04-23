@@ -1,0 +1,15 @@
+id: interviews/refine-027/_general
+type: interview
+cycle: 27
+source_path: steering/interviews/refine-027/_general.md
+entries:
+  - {id: IQ-027-001, question: What changes do you want to make?, answer: "Six areas: (1) Fix specs/ vs .ideate/ defect in skill validation — skills still check for markdown files. (2) Plan vs refine discussion — decided to keep separate, add init skill for existing codebases. (3) Telemetry for PPR weight tuning — research-driven metrics design for quality and cost optimization. (4) Build on first MCP startup — npm run build + gitignore dist/. (5) Reporting — cycle metrics, cost analysis, executive summaries as scripts. (6) SDLC hooks for external integrations matching Claude Code's hook API pattern (command + prompt types).", domain: null, seq: 1}
+  - {id: IQ-027-002, question: Should specs/ be retired?, answer: Yes. User will run final migration manually after confirming .ideate/ is fully functional. Skills must write through MCP tools. specs/ stays until confirmed, then one last migration + delete., domain: null, seq: 2}
+  - {id: IQ-027-003, question: Plan vs refine — merge or keep separate?, answer: "Keep separate. Plan is greenfield (no code exists). Init + refine covers existing codebases. Three entry points: plan (new project), init (existing code, no .ideate/), refine (existing .ideate/).", domain: null, seq: 3}
+  - {id: IQ-027-004, question: What are the core objectives for telemetry?, answer: "Quality > cost > speed > human intervention. \"Oneshot\" planning — plan output should be good enough that execute passes review with zero rework. First-pass acceptance rate is the key metric. Context utilization (what was provided vs what was cited) is the key PPR tuning signal.", domain: null, seq: 4}
+  - {id: IQ-027-005, question: What kind of reporting?, answer: Scripts (not skills) that generate formatted reports. Cycle quality trends, cost analysis, executive summaries. Eye candy that shows ROI. Real-time status readable via /btw during execution. The human persona should feel in control and powerful., domain: null, seq: 5}
+  - {id: IQ-027-006, question: What hook pattern?, answer: Match Claude Code's hook API — command (shell script) and prompt (LLM call) types. Agnostic hooks firing on SDLC events. Can be used for Jira tickets, Slack messages, etc. .ideate/hooks.json config., domain: null, seq: 6}
+  - {id: IQ-027-007, question: Build on first startup — rebuild frequency?, answer: Once per version. Plugin cache is per-version. Use a version marker file. Don't ship built artifacts — dist/ should be gitignored., domain: null, seq: 7}
+  - {id: IQ-027-008, question: Should the final migration be automated?, answer: No. Manual step. User runs the script, confirms, then proceeds. This is a pause point in execution., domain: null, seq: 8}
+content_hash: "9c13a673c0968bfbcb44526032629a9b00999fab8424c644235c79f0101baf08"
+token_count: 711

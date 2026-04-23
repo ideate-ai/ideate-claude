@@ -1,0 +1,29 @@
+id: WI-359
+type: work_item
+title: Resolve Q-87 and Q-89 as implemented
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - "Q-87 marked resolved_in: 66 with resolution notes"
+  - "Q-89 marked resolved_in: 66 with resolution notes"
+  - "Both questions have status: resolved"
+domain: artifact-structure
+notes: |-
+  Close out questions that are now resolved:
+
+  - Q-87 (P-33 violations in bootstrap.ts/context.ts): Fixed in cycle 066. bootstrap.ts now returns {status: 'initialized'}, context.ts removes file paths.
+
+  - Q-89 (Work item execution status): All WI-340 through WI-352 are status: done as of cycle 066.
+
+  Files to modify:
+  - .ideate/questions/Q-87.yaml
+  - .ideate/questions/Q-89.yaml
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 32a378a044547d9ddfb5b370dc9fcc934ac0c29682c07cdebc717b402d9aa2ff
+token_count: 195
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-359.yaml

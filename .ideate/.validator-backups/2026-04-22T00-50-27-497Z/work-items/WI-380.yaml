@@ -1,0 +1,72 @@
+id: WI-380
+type: work_item
+title: Sync ARCHITECTURE.md Section 5 tool descriptions with index.ts after WI-378
+status: done
+complexity: low
+scope:
+  - op: modify
+    path: ARCHITECTURE.md
+depends: []
+blocks: []
+criteria:
+  - ARCHITECTURE.md Section 5 tool descriptions match the updated descriptions in index.ts
+  - No storage implementation details (YAML, SQLite, file paths, .ideate/) appear in Section 5 tool descriptions
+  - Section 5.3 code block shows correct return value (YAML results list, not file path)
+  - All existing tests continue to pass
+domain: artifact-structure
+notes: |-
+  ## Five Tool Descriptions to Update
+
+  Section 5 (lines 343-365) contains tool descriptions that are stale after WI-378. Update each to match index.ts:
+
+  ### ideate_append_journal (line 344)
+  ```markdown
+  // Current: "append YAML journal entry + sync SQLite upsert"
+  // New: "Append entry to the project journal. Use after significant work. Returns confirmation string."
+  ```
+
+  ### ideate_write_work_items (line 346)
+  ```markdown
+  // Current: "write/create work item YAML files + sync SQLite upsert"
+  // New: "Write or update work items atomically. Use during plan/refine to define work. Returns confirmation."
+  ```
+
+  ### ideate_write_artifact (line 348)
+  ```markdown
+  // Current: "write any artifact type to .ideate/ as YAML"
+  // New: "Write an artifact to the project store. Use for findings, policies, decisions, and cycle summaries. Returns confirmation."
+  ```
+
+  ### ideate_get_config (line 358)
+  ```markdown
+  // Current: "parsed .ideate/config.json with defaults applied"
+  // New: "Parsed project config with defaults (agent_budgets, model_overrides, ppr). Use for token budget, model selection, and PPR settings. Returns JSON config object."
+  ```
+
+  ### ideate_bootstrap_project (line 362)
+  ```markdown
+  // Current: "initialize .ideate/ directory structure and config.json"
+  // New: "Create project artifact directory with config and subdirs. Use for project initialization. Returns subdirectory names."
+  ```
+
+  ## Section 5.3 Code Block (line 409)
+
+  The write tool pattern code block shows:
+  ```
+  → return confirmation with file path
+  ```
+
+  But `handleWriteWorkItems` returns `stringifyYaml(results)` where `results` is `Array<{id: string, result: string}>`. Change to:
+  ```
+  → return YAML results list with id and result
+  ```
+
+  ## Verification
+
+  Grep Section 5 for `YAML`, `SQLite`, `.ideate/`, `config.json`, `file path` — should return zero matches in tool descriptions.
+resolution: null
+cycle_created: 58
+cycle_modified: 1
+content_hash: d366a8c8afb4edb66c69bdd8b18341a5756784f59d3e0e41e83fc602af0f7f33
+token_count: 640
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-380.yaml

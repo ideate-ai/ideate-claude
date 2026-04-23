@@ -1,0 +1,41 @@
+id: WI-375
+type: work_item
+title: Update ARCHITECTURE.md for inline notes, config exports, null-signal semantics, and edge count
+status: done
+complexity: medium
+scope:
+  - path: ARCHITECTURE.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "Section 9.2: notes description says notes are stored inline in the SQLite `work_items.notes` TEXT column and returned directly — no mention of 'file is read from disk' or 'notes file'"
+  - "Line ~682: config.ts export list includes at minimum: `getConfigWithDefaults`, `writeConfig`, `readRawConfig`, `readIdeateConfig`, `findIdeateConfig`, `resolveArtifactDir`, `createIdeateDir`, `IdeateConfig`, `IDEATE_SUBDIRS`, `CONFIG_SCHEMA_VERSION`, `IdeateConfigJson` (verify full list against actual config.ts exports)"
+  - "Section 5 ideate_update_config documentation includes null-signal deletion: setting `patch.model_overrides[key]` to `null` deletes that key; empty result omits the field (sparse invariant)"
+  - Section 6 edge type count reads '13' instead of '11'
+  - Section 6 edge type table includes entries for `governed_by` and `informed_by`
+domain: artifact-structure
+notes: |-
+  Five documentation updates in ARCHITECTURE.md. Read the file fully before editing to understand current section structure.
+
+  ## Update 1: Section 9.2 — inline notes
+  Find the sentence that says 'notes file is read from disk'. Replace with 'inline text content from the `work_items.notes` TEXT column is returned directly (no file read)'.
+
+  ## Update 2: Line ~682 — config.ts exports
+  Find the table row for `mcp/artifact-server/src/config.ts`. Current value lists 4 exports. Read the actual file at `mcp/artifact-server/src/config.ts` and grep for all `export` statements to get the complete list. Replace the table cell with the complete export list.
+
+  ## Update 3: Section 5 — null-signal semantics for ideate_update_config
+  Find the `ideate_update_config` entry in Section 5's tool list. After it, add a note about null-signal deletion:
+  'When `patch.model_overrides[key]` is `null`, that key is deleted from the stored map. An empty result omits the `model_overrides` field entirely (sparse invariant).'
+
+  ## Update 4: Section 6 — edge type count
+  Change '11 edge types' to '13 edge types'. Add rows for `governed_by` and `informed_by` to the edge type table. Read `mcp/artifact-server/src/schema.ts` EDGE_TYPE_REGISTRY to get the exact source/target types for each.
+
+  ## Update 5: Stale 'file path' reference near line 585
+  Review Section 9.2 line ~585 for any mention of 'file path' in the notes description context. If it refers to notes being at a file path, update to 'inline content'. If it refers to the work item's own file_path metadata field in the nodes table, it can remain.
+resolution: null
+cycle_created: 0
+cycle_modified: 2
+content_hash: 61b0ed8c8500b842c319f6d035b35a457685a7fbbe52102f90088dd9678fcb2d
+token_count: 697
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-375.yaml

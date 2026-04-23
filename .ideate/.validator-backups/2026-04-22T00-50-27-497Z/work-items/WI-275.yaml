@@ -1,0 +1,47 @@
+id: WI-275
+type: work_item
+title: Fix write.ts — archive paths, journal cycle detection, sequence collision, path consistency
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends: []
+blocks:
+  - WI-276
+criteria:
+  - handleArchiveCycle reads work items from work-items/ not plan/work-items/
+  - handleArchiveCycle reads findings from cycles/{NNN}/findings/ not archive/incremental/
+  - handleAppendJournal does not read domains/index.md — accepts cycle_number from caller or queries SQLite max cycle_created
+  - Journal sequence uses SQLite COUNT query not fs.readdirSync to prevent concurrent collision
+  - handleWriteWorkItems stores consistent path format in both YAML file_path field and SQLite
+  - All regex patterns for current_cycle use /^current_cycle:\s*(\d+)/m multiline anchor
+  - npm run build succeeds; all existing tests pass; at least 1 new test for archive path fix
+domain: artifact-structure
+notes: |-
+  # WI-275: Fix write.ts stale paths and race conditions
+
+  ## handleArchiveCycle (S6, S7)
+  - Line 167: change `plan/work-items/` to `work-items/`
+  - Lines 143-162: change `archive/incremental/` to `cycles/{cyclePad}/findings/`
+
+  ## handleAppendJournal (S2)
+  - Lines 47-54: remove domains/index.md read. The tool already receives cycle info from the caller (skill passes cycle number). If not provided, query SQLite: `SELECT MAX(cycle_created) FROM nodes WHERE cycle_created IS NOT NULL`
+
+  ## Journal sequence collision (S1)
+  - Lines 63-66: replace `fs.readdirSync(journalDir).filter(...).length` with SQLite query: `SELECT COUNT(*) FROM journal_entries WHERE id LIKE 'J-{cycleStr}-%'`
+
+  ## Path consistency (S5)
+  - Line 458: store absolute path in YAML file_path field (matching what indexer derives)
+
+  ## Regex consistency (M2)
+  - Line 50: change `.match(/current_cycle:\s*(\d+)/)` to `.match(/^current_cycle:\s*(\d+)/m)`
+  - Line 791: same fix
+resolution: Fixed handleArchiveCycle paths, handleAppendJournal cycle detection, journal sequence collision, path consistency, regex anchoring. 1 new test added.
+cycle_created: 36
+cycle_modified: null
+content_hash: 12dc0756d0a6296c63aa85b5a5bd6e384c7bd04cada0bade106ab8f72caa557a
+token_count: 551
+file_path: .ideate/work-items/WI-275.yaml

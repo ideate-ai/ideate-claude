@@ -1,0 +1,13 @@
+id: Q-84
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Edge type weight configuration referenced types that don't exist (governed_by, informed_by); valid edge types lacked weight configuration. Fell back to weight 1.0, masking configuration errors.
+source: gap-analysis.yaml cycle 066, finding EC1
+resolution: WI-361 in cycle 068 added governed_by and informed_by to EDGE_TYPES and EDGE_TYPE_REGISTRY with weights 0.8/0.6, resolving the mismatch.
+resolved_in: 68
+description: Should PPR config edge_type_weights align with the EDGE_TYPES registry from schema.ts? If so, should mismatched types trigger a warning, or should weight config be auto-derived from the registry?
+addressed_by: WI-361
+content_hash: adfa7dff785fd8a88178002957a3d24cbea5e293e7e42a08a0c9a73e24c384e6
+token_count: 180
+file_path: .ideate/questions/Q-84.yaml

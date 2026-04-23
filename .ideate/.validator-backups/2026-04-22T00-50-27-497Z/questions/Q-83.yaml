@@ -1,0 +1,12 @@
+id: Q-83
+type: domain_question
+domain: agent-system
+status: resolved
+impact: Domain-curator can write YAML files directly to .ideate/ bypassing MCP path validation, format enforcement, and SQLite index sync. Same class of bypass that caused the researcher bug (WI-268).
+source: WI-268 implementation notes (explicit deferral); cycle 034 gap-analysis M1
+resolution: "Fixed: Write removed from domain-curator tools. Curator returns proposed updates in response; spawning skill writes via ideate_write_artifact."
+resolved_in: 38
+description: domain-curator uses Write tool directly for domain file updates rather than MCP write tools (ideate_write_artifact). Is this intentional because domain files are its primary output and it needs Write for flexibility, or should it be migrated to use ideate_write_artifact like the researcher was in WI-268? The researcher fix demonstrated that removing Write and routing through MCP prevents path errors and format bypass.
+content_hash: 0098a5a03bc2d2052960e6673e4c5ff7993b236658278e9d9c091928e52206a5
+token_count: 204
+file_path: .ideate/domain_question/Q-83.yaml

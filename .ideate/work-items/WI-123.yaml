@@ -15,40 +15,71 @@ criteria:
   - No other policies in the file are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-123: Amend P-22 to document smoke-test re-run step
+
 
   ## Context
 
-  Cycle 009 code-quality M1 and spec-adherence D1: P-22 correctly states that Andon is triggered when the root cause is indeterminate, but does not mention that the smoke test must be re-run after a surgical fix, or that a second failure is what establishes "indeterminate" status. This precision gap was introduced when the M1 fix was applied during WI-121 execution without back-propagating to the policy.
+
+  Cycle 009 code-quality M1 and spec-adherence D1: P-22 correctly states that Andon is triggered when the root cause is
+  indeterminate, but does not mention that the smoke test must be re-run after a surgical fix, or that a second failure
+  is what establishes "indeterminate" status. This precision gap was introduced when the M1 fix was applied during
+  WI-121 execution without back-propagating to the policy.
+
 
   ## Change
 
+
   **File**: `specs/domains/workflow/policies.md`
+
 
   **Location**: P-22 body (line 52). Current text:
 
+
   ```
-  When the code-reviewer emits a Critical finding titled "Startup failure after ...", `skills/execute/SKILL.md` Phase 8 and `skills/autopilot/phases/execute.md` finding-handling must immediately diagnose the root cause and apply a surgical fix if the cause is within the current work item's scope. The Andon cord is triggered only if the root cause cannot be fixed (requires changes outside the current work item, architectural changes, or the cause is indeterminate). Silent correction without diagnosis and user escalation without attempted repair are both incorrect.
+
+  When the code-reviewer emits a Critical finding titled "Startup failure after ...", `skills/execute/SKILL.md` Phase 8
+  and `skills/autopilot/phases/execute.md` finding-handling must immediately diagnose the root cause and apply a
+  surgical fix if the cause is within the current work item's scope. The Andon cord is triggered only if the root cause
+  cannot be fixed (requires changes outside the current work item, architectural changes, or the cause is
+  indeterminate). Silent correction without diagnosis and user escalation without attempted repair are both incorrect.
+
   ```
+
 
   Replace with:
 
+
   ```
-  When the code-reviewer emits a Critical finding titled "Startup failure after ...", `skills/execute/SKILL.md` Phase 8 and `skills/autopilot/phases/execute.md` finding-handling must immediately diagnose the root cause and apply a surgical fix if the cause is within the current work item's scope. After applying the fix, the smoke test must be re-run to confirm the app starts; if it still fails, the root cause is classified as indeterminate. The Andon cord is triggered only if the root cause cannot be fixed (requires changes outside the current work item, architectural changes, or the cause is indeterminate). Silent correction without diagnosis and user escalation without attempted repair are both incorrect.
+
+  When the code-reviewer emits a Critical finding titled "Startup failure after ...", `skills/execute/SKILL.md` Phase 8
+  and `skills/autopilot/phases/execute.md` finding-handling must immediately diagnose the root cause and apply a
+  surgical fix if the cause is within the current work item's scope. After applying the fix, the smoke test must be
+  re-run to confirm the app starts; if it still fails, the root cause is classified as indeterminate. The Andon cord is
+  triggered only if the root cause cannot be fixed (requires changes outside the current work item, architectural
+  changes, or the cause is indeterminate). Silent correction without diagnosis and user escalation without attempted
+  repair are both incorrect.
+
   ```
+
 
   The heading, Derived from, Established, Amended, and Status fields are unchanged.
 
+
   ## Acceptance Criteria
 
+
   1. P-22 body explicitly states that a surgical fix must be followed by a smoke-test re-run
+
   2. P-22 body explicitly states that a second smoke-test failure classifies the root cause as indeterminate
+
   3. P-22 heading and all other fields (Derived from, Established, Amended, Status) are preserved
+
   4. No other policies in the file are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 7f93658b219fe95738d27a619c60ca5a1abb1ce0a7a7bc45e851a6d5a17e2df9
 token_count: 773
-file_path: .ideate/work-items/WI-123.yaml
+file_path: work-items/WI-123.yaml
 resolution: P-22 in .ideate/policies/P-22.yaml already includes smoke-test re-run step

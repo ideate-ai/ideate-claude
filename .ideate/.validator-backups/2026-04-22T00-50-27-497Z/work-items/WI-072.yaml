@@ -1,0 +1,67 @@
+id: WI-072
+type: work_item
+title: 072-autopilot-phase-6c-agent-tool.md
+status: obsolete
+complexity: small
+scope:
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: agents/spec-reviewer.md
+    op: modify
+  - path: specs/steering/guiding-principles.md
+    op: modify
+depends: []
+blocks:
+  - "073"
+criteria:
+  - 1. [ ] `skills/autopilot/SKILL.md` Phase 6c Condition B invokes the spec-reviewer via Agent tool (not spawn_session)
+  - '2. [ ] The Agent tool invocation includes `subagent_type: "spec-reviewer"` and `model: "claude-opus-4-6"`'
+  - 3. [ ] The invocation has a fallback path when Agent tool is unavailable (graceful degradation with logged warning)
+  - 4. [ ] The spec-reviewer receives the same context that would have been passed to spawn_session (principles file path, source code path)
+  - 5. [ ] The response parsing handles the spec-reviewer output format (findings by severity)
+  - 6. [ ] If Agent tool fails or is unavailable, autopilot logs a clear error message explaining convergence check could not complete
+  - 7. [ ] Existing tests (if any) or manual verification shows autopilot can reach convergence with zero findings on a clean project
+module: null
+domain: null
+notes: |
+  # Implementation Notes: 072
+
+  The current code at `skills/autopilot/SKILL.md:494-508` spawns a principles-checker via `spawn_session`:
+
+  ```markdown
+  > If the session-spawner MCP tool is available, spawn a principles-checker:
+  > ```
+  > spawn_session({
+  >   agent_type: "spec-reviewer",
+  >   purpose: "Check if implementation adheres to guiding principles",
+  >   ...
+  > })
+  > ```
+  ```
+
+  Replace with Agent tool invocation:
+
+  ```markdown
+  > Spawn spec-reviewer via Agent tool:
+  > ```
+  > Agent({
+  >   subagent_type: "spec-reviewer",
+  >   prompt: "Review the following implementation against guiding principles...",
+  >   model: "claude-opus-4-6"
+  > })
+  > ```
+  >
+  > If Agent tool is unavailable, log error: "Agent tool unavailable — cannot complete principles adherence check for convergence."
+  ```
+
+  The spec-reviewer agent is defined at `agents/spec-reviewer.md` and expects:
+  - Input: Work items, architecture doc, module specs, guiding principles
+  - Output: Deviations from architecture, unmet acceptance criteria, principle violations
+
+  Match this contract in the autopilot Phase 6c invocation.
+cycle_created: 1
+cycle_modified: null
+content_hash: 00a35f903d66e8535d68c14a82721c21dabfc5c3cd9307de3a900adb7cc68d10
+token_count: 606
+file_path: .ideate/work-items/WI-072.yaml
+resolution: Convergence checking redesigned to use ideate_get_convergence_status MCP tool

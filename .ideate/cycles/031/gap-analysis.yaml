@@ -1,61 +1,120 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |
+content: >
   # Cycle 31 Capstone — Gap Analysis
+
 
   **Verdict:** Fail — 1 Significant (adapter divergence) + 4 Significant (doc/test gaps cascading from WI-868)
 
+
   ## Note on EC1 (Refuted)
-  Original gap-analyst draft flagged 'SQL IS NULL does not exclude empty-string addressed_by' as Critical. This is incorrect reasoning, refuted independently by both code-reviewer and spec-reviewer:
-  - WHERE `addressed_by IS NULL` is a positive-match filter. Rows where IS NULL evaluates TRUE are INCLUDED. Empty string evaluates FALSE under IS NULL, so empty-string rows are naturally EXCLUDED from the result set.
-  - The two WI-868 regression tests (seeding `''` and asserting count=1) pass because empty-string rows are correctly excluded.
+
+  Original gap-analyst draft flagged 'SQL IS NULL does not exclude empty-string addressed_by' as Critical. This is
+  incorrect reasoning, refuted independently by both code-reviewer and spec-reviewer:
+
+  - WHERE `addressed_by IS NULL` is a positive-match filter. Rows where IS NULL evaluates TRUE are INCLUDED. Empty
+  string evaluates FALSE under IS NULL, so empty-string rows are naturally EXCLUDED from the result set.
+
+  - The two WI-868 regression tests (seeding `''` and asserting count=1) pass because empty-string rows are correctly
+  excluded.
+
   - Downgraded to Invalid.
+
 
   ## Significant Findings
 
+
   ### GA-S1 (II1): Remote adapter countNodes severity path does not filter addressed_by
+
   - **File**: mcp/artifact-server/src/adapters/remote/index.ts — countNodes severity path
-  - **Gap**: Local adapter (reader.ts:804) applies `addressed_by IS NULL` in SQL. Remote adapter delegates to GraphQL nodeCounts and does not perform any client-side filtering for `group_by: 'severity'` + `type: 'finding'`. Remote `getConvergenceData` DOES filter client-side (index.ts:1291-1304) but `countNodes` does not get parallel treatment.
-  - **Consumer impact**: `ideate_get_workspace_status` calls countNodes({type:'finding', cycle:N}, 'severity'). Remote-backed deployments will report inflated (resolved-including) counts. Local vs remote divergence on the same artifact set.
+
+  - **Gap**: Local adapter (reader.ts:804) applies `addressed_by IS NULL` in SQL. Remote adapter delegates to GraphQL
+  nodeCounts and does not perform any client-side filtering for `group_by: 'severity'` + `type: 'finding'`. Remote
+  `getConvergenceData` DOES filter client-side (index.ts:1291-1304) but `countNodes` does not get parallel treatment.
+
+  - **Consumer impact**: `ideate_get_workspace_status` calls countNodes({type:'finding', cycle:N}, 'severity').
+  Remote-backed deployments will report inflated (resolved-including) counts. Local vs remote divergence on the same
+  artifact set.
+
   - **Severity**: Significant (adapter-contract divergence, observable in the workspace status view).
-  - **Fix**: Add client-side filter in remote.countNodes when group_by==='severity' && filter.type==='finding', mirroring getConvergenceData pattern.
+
+  - **Fix**: Add client-side filter in remote.countNodes when group_by==='severity' && filter.type==='finding',
+  mirroring getConvergenceData pattern.
+
 
   ### GA-S2 (MI1/CQ-M1): adapter-contract.md countNodes section missing addressed_by exclusion clause
+
   - **File**: mcp/artifact-server/docs/adapter-contract.md, countNodes section
-  - **Gap**: WI-869 documented exclusion only under getConvergenceData. WI-868 added the same behavior to countNodes severity branch but the contract doc was not updated to require this of all implementations. A new adapter implementer would correctly implement getConvergenceData (doc) but miss countNodes filtering (undocumented) — exactly how GA-S1 was introduced in the remote adapter.
+
+  - **Gap**: WI-869 documented exclusion only under getConvergenceData. WI-868 added the same behavior to countNodes
+  severity branch but the contract doc was not updated to require this of all implementations. A new adapter implementer
+  would correctly implement getConvergenceData (doc) but miss countNodes filtering (undocumented) — exactly how GA-S1
+  was introduced in the remote adapter.
+
   - **Fix**: add countNodes contract clause parallel to getConvergenceData's.
 
+
   ### GA-S3 (MI2/MI3/CQ-M2): JSDoc in adapter.ts + adapter-interface.md missing countNodes filtering contract
+
   - **Files**: mcp/artifact-server/src/adapter.ts countNodes JSDoc; docs/platform/adapter-interface.md countNodes entry.
+
   - **Gap**: Same root cause as GA-S2 but at the TypeScript-interface and platform-spec layers.
+
   - **Fix**: add @remarks line noting the filtering behavior for group_by='severity'+type='finding'.
 
+
   ### GA-S4 (IR1): No equivalence test for countNodes group_by='severity'
+
   - **File**: mcp/artifact-server/tests/adapters/equivalence-query.test.ts
-  - **Gap**: equivalence-query.test.ts covers countNodes with status/type/domain but not severity. The getConvergenceData equivalence test (line 367) checks finding counts but exercises a different code path. No equivalence test for countNodes severity would have caught GA-S1 automatically.
+
+  - **Gap**: equivalence-query.test.ts covers countNodes with status/type/domain but not severity. The
+  getConvergenceData equivalence test (line 367) checks finding counts but exercises a different code path. No
+  equivalence test for countNodes severity would have caught GA-S1 automatically.
+
   - **Fix**: add a countNodes severity equivalence test using a fixture with mixed addressed_by values.
 
+
   ### GA-S5 (MI4): No writer-side invariant test for addressed_by canonical form
+
   - **File**: mcp/artifact-server/src/__tests__/adapters/writer.test.ts
-  - **Gap**: Writer uses `?? null` which preserves empty string. The reader-side IS NULL filter makes this defensible, but no writer-level test enforces a canonical form. A future change to writer could regress this silently (store empty string as empty string, and a future reader path without IS NULL would count it as unresolved).
+
+  - **Gap**: Writer uses `?? null` which preserves empty string. The reader-side IS NULL filter makes this defensible,
+  but no writer-level test enforces a canonical form. A future change to writer could regress this silently (store empty
+  string as empty string, and a future reader path without IS NULL would count it as unresolved).
+
   - **Severity**: Significant (invariant enforcement gap; defensive).
+
   - **Fix (deferrable)**: add writer contract test OR document the invariant in adapter-contract.md.
+
 
   ## Minor Findings
 
+
   ### GA-M1 (EC2): countNodes with group_by='severity' and filter.type!='finding' lacks a test
+
   Non-finding severity aggregation correctly returns 'unknown' group but no test guards against regression.
+
   - Defer.
+
 
   ### GA-M2 (EC3): addressed_by='null' string literal — no test, adapter divergence possible
-  Remote client-side filter uses `!== null && !== undefined && !== ''` which treats 'null' string as set (resolved). Local SQL IS NULL treats it as unresolved. Divergence, but niche.
+
+  Remote client-side filter uses `!== null && !== undefined && !== ''` which treats 'null' string as set (resolved).
+  Local SQL IS NULL treats it as unresolved. Divergence, but niche.
+
   - Defer.
 
+
   ## Root-Cause Thread
-  WI-868 added behavior (countNodes addressed_by filter) that was correctly implemented in the local adapter. WI-869 documented the parallel filter in getConvergenceData but did not extend the same documentation to countNodes. The remote adapter implementer (in a prior cycle) correctly followed the then-existing contract; no cycle has updated the remote countNodes to follow the new behavior. The missing equivalence test for countNodes severity is the detection gap that let this slip through.
+
+  WI-868 added behavior (countNodes addressed_by filter) that was correctly implemented in the local adapter. WI-869
+  documented the parallel filter in getConvergenceData but did not extend the same documentation to countNodes. The
+  remote adapter implementer (in a prior cycle) correctly followed the then-existing contract; no cycle has updated the
+  remote countNodes to follow the new behavior. The missing equivalence test for countNodes severity is the detection
+  gap that let this slip through.
 content_hash: 28d4e47c1b0d7d0dee13268a60c40b7261e10547f2ee69e0e9acbb608dbc19c0
 token_count: 1342
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/031/gap-analysis.yaml
 cycle: 31
 cycle_modified: 27

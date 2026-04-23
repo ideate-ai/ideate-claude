@@ -1,0 +1,29 @@
+id: WI-358
+type: work_item
+title: Add response size hints to remaining tools
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - ideate_get_domain_state description includes response size hint
+  - ideate_get_convergence_status description includes response size hint
+  - ideate_get_project_status description includes response size hint
+  - ideate_get_execution_status description includes response size hint
+  - All tool descriptions under 50 words per P-34
+domain: artifact-structure
+notes: |-
+  Add response size expectations to tools that currently lack them per P-34.
+
+  Files to modify:
+  - mcp/artifact-server/src/tools/analysis.ts
+  - mcp/artifact-server/src/tools/execution.ts
+
+  Pattern: 'Returns JSON with {size} data.' or 'Returns object with X fields.'
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: fc838bf459ddaa96123b114a3d9d69270cc675aa1bc2eeceb4caac34a21aafe5
+token_count: 212
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-358.yaml

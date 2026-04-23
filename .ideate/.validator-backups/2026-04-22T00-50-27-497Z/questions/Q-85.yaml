@@ -1,0 +1,13 @@
+id: Q-85
+type: domain_question
+content_hash: c1796ab185861b850f9a0253b1338911c5b1c9793919f2841227347055929168
+cycle_created: 66
+deferred_rationale: 200-item limit makes pagination uncommon; adding total count would require separate COUNT query with performance cost.
+domain: artifact-structure
+file_path: .ideate/questions/Q-85.yaml
+impact: Clients cannot calculate total pages for pagination controls when result sets exceed 200 items. The 200-item limit makes this uncommon in practice.
+question: Should ideate_artifact_query return total count alongside paginated results? If so, should this be opt-in (parameter) or always included?
+reexamination_trigger: When pagination becomes common or when client UI needs page counts.
+source: gap-analysis.yaml cycle 066, finding EC2
+status: deferred
+token_count: 169

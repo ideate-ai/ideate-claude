@@ -1,0 +1,14 @@
+id: Q-71
+type: domain_question
+domain: workflow
+status: resolved
+impact: CI and local runs against stale or absent compiled scripts produce incorrect test results with no machine-readable signal. On a fresh clone, the missing-file case produces no signal whatsoever.
+source: archive/cycles/020/code-quality.md M2; archive/cycles/020/gap-analysis.md MI1; archive/cycles/020/decision-log.md Q-71
+resolution: WI-178 hardened `pretest` to exit 1 with a warning when `.js` is absent (ENOENT), exit 1 with a staleness warning when `.js` mtime is less than `.ts` mtime, and exit 0 when both files exist and `.js` is current. See D-102.
+resolved_in: 21
+description: "The `pretest` hook detects staleness and emits a warning to stderr but exits 0. A developer running `npm test` with a stale or absent compiled file sees the warning scroll past and proceeds with potentially incorrect results. Additionally, when `migrate-to-v3.js` does not exist (fresh clone before running `build:migration`), `statSync` throws and the `catch(e) {}` block swallows the error silently — no warning is emitted at all. Should `pretest` exit non-zero on staleness or absence?"
+cycle_created: 1
+cycle_modified: null
+content_hash: d1d1cbd459bff8d9af70a546b95b9ae9a734c132b7f42cacb802f5857d2687ca
+token_count: 313
+file_path: .ideate/questions/Q-71.yaml

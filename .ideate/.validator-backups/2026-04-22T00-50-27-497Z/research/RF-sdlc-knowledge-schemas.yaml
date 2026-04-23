@@ -1,0 +1,189 @@
+id: RF-sdlc-knowledge-schemas
+type: research_finding
+topic: "Research: Knowledge Representation Schemas and Ontologies for SDLC Planning Artifacts"
+status: active
+date: null
+content: |
+  # Research: Knowledge Representation Schemas and Ontologies for SDLC Planning Artifacts
+  
+  **Date**: 2026-03-23
+  **Context**: Exploring structured database (SQLite or structured files) + MCP tools as a replacement for the current markdown-file-based artifact store. Artifact types include: guiding principles, constraints, architecture docs, module specs, work items (with dependencies, file scope, acceptance criteria), interview transcripts, research findings, review findings (by severity), journal entries, domain policies, domain decisions, domain questions, and metrics.
+  
+  ---
+  
+  ## Summary
+  
+  No single existing ontology covers all ideate artifact types in a single schema. The closest match in scope is OSLC (Open Services for Lifecycle Collaboration), which provides separate domain vocabularies for change management, requirements, quality management, and architecture management that together cover most artifact types, but OSLC is RDF/linked-data-oriented and engineered for tool interoperability at enterprise scale — not for local SQLite storage. The practical patterns used by Linear, GitHub, and Jira converge on a small number of relational primitives that are directly mappable to SQLite. Temporal handling (superseded decisions, deprecated policies, question state transitions) has a well-understood bitemporal model that maps cleanly to relational tables. Progressive decomposition (architecture → modules → work items) is a parent-child relationship pattern with an additional cross-reference dimension that all major PM tools support as a separate edge table.
+  
+  ---
+  
+  ## Key Facts
+  
+  ### OSLC (Open Services for Lifecycle Collaboration)
+  
+  - OSLC Core v3.0 reached OASIS standard in October 2020. Domain specs (Change Management v3.0, Requirements Management v2.1, Quality Management v2.1, Architecture Management v3.0) are all current OASIS standards.
+  - OSLC defines RDF vocabularies and "Resource Shapes" (constraint schemas specifying property multiplicity, type, and optionality). All resource types are HTTP-addressable RDF resources.
+  - **OSLC Change Management v3.0** defines `oslc_cm:ChangeRequest` as the base work item type. Key properties: `oslc_cm:state` (enumeration: Open, InProgress, Fixed, Verified, Closed), `oslc_cm:priority` (enumeration), `oslc_cm:severity` (enumeration), `oslc_cm:affectedByDefect`, `oslc_cm:affectsPlanItem`, `oslc_cm:affectsRequirement`, `oslc_cm:relatedChangeRequest`, `oslc_cm:blocksTestExecutionRecord`. The `oslc_cm:status` property is deprecated in v3; `oslc_cm:state` with a typed enumeration is preferred.
+  - **OSLC Requirements Management v2.1** defines `oslc_rm:Requirement` (single requirement) and `oslc_rm:RequirementCollection` (grouped requirements). Relationship properties link requirements to change requests, test cases, and other requirements. This is the closest existing type to ideate's "guiding principles" and "constraints."
+  - **OSLC Architecture Management v3.0** defines two resource types: `oslc_am:Resource` (any architecture artifact — UML model, design doc, BPMN diagram) and `oslc_am:LinkType` (a locally-defined predicate for architecture links). Links are uni-directional RDF triples. No structured schema for ADRs or policy registries.
+  - **OSLC Quality Management v2.1** defines: `oslc_qm:TestPlan`, `oslc_qm:TestCase`, `oslc_qm:TestScript`, `oslc_qm:TestExecutionRecord`, `oslc_qm:TestResult`. These model test artifacts, not review findings or defect reports per se. Findings/defects are expected to be represented as `oslc_cm:ChangeRequest` resources with severity set.
+  - OSLC does not define any vocabulary for: interview transcripts, research documents, journal entries, domain policies, open/resolved questions, or cycle-based metrics. These fall outside all current OSLC domain specifications.
+  - The OSLC architecture requires HTTP endpoints and content negotiation; it is not designed for local file or SQLite storage without a compatibility layer.
+  
+  ### DOAP (Description of a Project)
+  
+  - DOAP is an RDF/OWL vocabulary for describing software projects as publishable artifacts: name, homepage, repository, license, programming language, maintainers, releases.
+  - Properties: `doap:Project`, `doap:Version`, `doap:Repository`, `doap:bug-database`, `doap:mailing-list`, `doap:developer`. No properties for work items, decisions, findings, or knowledge management.
+  - DOAP is project metadata for discovery (semantic web, registries), not for planning artifact storage. It is not relevant to ideate's schema needs.
+  
+  ### SPDX (Software Package Data Exchange)
+  
+  - SPDX v3.0.1 (December 2024) is an OWL ontology modeling software components as a Software Bill of Materials (SBOM). Serializes to JSON-LD, Turtle, RDF/XML.
+  - SPDX models: `Package`, `File`, `Snippet`, `Artifact`, `Relationship`, `License`. Relationship types include build dependencies, derived-from, contains, described-by. SPDX v3.0 added profiles for security, licensing, AI, data, and build information.
+  - SPDX is for component lineage and supply chain, not for SDLC planning artifacts. Not applicable to ideate's domain.
+  
+  ### Dublin Core and SKOS
+  
+  - Dublin Core 15 terms (title, creator, date, description, subject, etc.) are widely used as property vocabularies in combination with domain-specific types. Dublin Core has no types for work items, decisions, or findings.
+  - SKOS (Simple Knowledge Organization System) provides vocabulary for concept schemes, concept hierarchies, and semantic relationships (`broader`, `narrower`, `related`, `exactMatch`). SKOS is the appropriate vocabulary for taxonomy/classification structures — relevant to ideate's domain registry and question categorization, not to its primary artifact types.
+  - Neither Dublin Core nor SKOS alone provides a schema for SDLC planning artifacts. They function as building blocks within a custom schema.
+  
+  ### ISO/IEC/IEEE 42010:2022
+  
+  - Standard for architecture description. Core information items: Architecture Description, Stakeholder, Concern, Viewpoint, View, Model, Model Kind, Architecture Decision, Architecture Rationale.
+  - An Architecture Decision "pertains to one or more Concerns" and an architecture description "shall include rationale for each decision considered to be a key architecture decision."
+  - ISO 42010 defines nine information items for ADRs (Appendix A): decision ID, decision, status, issue/concern addressed, assumptions, constraints, positions (options considered), argument (rationale for chosen option), implications.
+  - ISO 42010 specifies what information to capture but not a machine-readable schema or serialization format. It is a conceptual model, not a database schema.
+  
+  ### MADR (Markdown Architectural Decision Records)
+  
+  - MADR 4.0.0 released 2024-09-17. The current full template fields: title, status (`proposed | rejected | accepted | deprecated | superseded by [ADR-XXXX]`), decision-drivers, considered options (each with pros/cons), decision outcome (chosen option + rationale + consequences), confirmation (how to verify the decision holds), links.
+  - Status is a freeform string that encodes both the current state and a forward pointer (`superseded by 0023`). There is no separate machine-readable supersededBy field — the status string is parsed by tooling.
+  - MADR 4.0.0 added `decision-makers` and `consulted` metadata fields.
+  - No separate timestamp field; file creation/modification time is used by tooling.
+  - adr-tools (Nat Pryce) manages ADRs in the Nygard format (title, status, context, decision, consequences). Status transitions (proposed → accepted → deprecated/superseded) are managed by shell commands that rewrite the status field and add a `Superseded by [ADR-XXXX]` link section.
+  
+  ### W3C Decision Ontology (XGR-decision-20120417)
+  
+  - A W3C Incubator Group final report (not a W3C standard). Defines an OWL ontology for decisions with classes: `Decision`, `DecisionQuestion`, `DecisionAnswer`, `DecisionOption`, `DecisionCriterion`.
+  - The ontology models the decision-making process (options, criteria, evaluation) rather than the decision as a stored artifact. It does not define status fields, supersession, or temporal transitions.
+  - Not widely adopted. The report itself notes it may be superseded.
+  
+  ### Linear
+  
+  - Linear's GraphQL schema defines `IssueRelation` with a `type` field: `blocks`, `blocked`, `related`, `duplicate`. Relation is stored as a directed edge; `blocked` is the inverse of `blocks`.
+  - Linear does not enforce DAG constraints on blocking relationships at the schema level; cycle detection is an application-level concern.
+  - Project-level dependencies (distinct from issue-level) support `blockedBy` and `blocking` fields on `Project` resources. Only end-to-start dependency type is supported at project level.
+  - Issue hierarchy: Issues have a `parent` field (nullable `Issue`) creating a tree. Depth is unrestricted in the schema but limited in practice.
+  
+  ### GitHub Issues / Projects v2
+  
+  - GitHub Sub-issues (as of 2024-2025, previously "Tasklists"): each Issue can have up to 100 sub-issues; nesting up to 8 levels deep. Stored in a `sub_issues` table with parent-child issue ID pairs plus a separate aggregation table for progress rollups.
+  - GitHub Projects v2 (`ProjectV2Item`): items are Issues, Pull Requests, or Draft Issues with attached field values. Field types: text, number, date, single-select, iteration, repository. No built-in dependency or blocking relationship field in the base ProjectV2 schema — those require custom fields or issue-level relations.
+  - GitHub does not natively model blocking relationships between issues in Projects v2; blocking is handled at the issue body/comment level or via third-party apps.
+  
+  ### Jira
+  
+  - Jira issue link model: links are typed edges with an `inward` and `outward` label (e.g., name: "Blocks", inward: "is blocked by", outward: "blocks"). Link types are configurable per Jira instance.
+  - Jira Analytics schema (Atlassian Analytics): `jira_issue_history` table with fields: issue_id, field_name, old_value, new_value, changed_at, duration_seconds. `jira_issue_cycle_time` derived table for flow metrics. `jsw_issue_sprint_history` for sprint assignment changes.
+  - Jira's issue hierarchy (Jira Software): Epic → Story → Sub-task is a three-level fixed hierarchy. Jira Premium/Advanced Roadmaps adds a configurable level above Epic. Hierarchy is stored as a parent-child relationship on the issue entity.
+  
+  ### Temporal Modeling Patterns
+  
+  - The standard model for temporal data in relational systems is bitemporal: **valid time** (when a fact is true in the modeled domain) and **transaction time** (when the fact was recorded in the system).
+  - For SDLC planning artifacts: a "decision" has a valid_from date (when it was made) and an optional valid_to date (when it was superseded). Transaction time tracks when it was written to the database (useful for auditing).
+  - The standard pattern for supersession: retain the original record with `valid_to = supersession_date` and `superseded_by = new_record_id`; create the new record with `valid_from = supersession_date`. The old record is never deleted.
+  - Policy amendment pattern: same as supersession — create a new policy record that is the amended form; the prior record gets `valid_to` and a `superseded_by` pointer.
+  - Question lifecycle: a question transitions from `open` → `resolved` (or `wont-resolve`). This is a status field update, not a supersession — the question record is mutated in place. The transition timestamp is stored separately in a state-history table for auditability.
+  
+  ### Progressive Decomposition Patterns
+  
+  - The universal pattern across Jira, Linear, GitHub, and formal WBS theory is: a single `items` or `work_items` table with a nullable `parent_id` (self-referential foreign key) for the hierarchy.
+  - Cross-level references (e.g., a work item referencing the architecture section it implements, or a module referencing its guiding principles) are stored as a separate `cross_references` or `links` table with typed edges: `(source_id, source_type, target_id, target_type, relation_type)`.
+  - Jira uses a 3-level fixed hierarchy (Epic → Story → Sub-task) plus a configurable level above. This maps to ideate's 3-level pattern: architecture → module → work item.
+  - GitHub's approach is a generic recursive parent-child on a single type, with depth limits enforced in application code, not schema constraints.
+  - The work breakdown structure (WBS) convention requires that a parent item represents 100% of the work of its children (decomposition completeness). This is a convention, not a schema constraint, in all surveyed tools.
+  
+  ---
+  
+  ## Recommendations
+  
+  **Option 1: Custom relational schema in SQLite, informed by OSLC vocabulary naming**
+  
+  Model ideate's artifact types as first-class tables. Borrow OSLC property names where they apply (e.g., `severity`, `state`, `priority` from OSLC CM) but do not implement the full RDF/resource-shape infrastructure. Use bitemporal columns (`valid_from`, `valid_to`, `superseded_by`) on decisions and policies. Use a status-history table for questions. Use a typed edge table for all cross-artifact references.
+  
+  - Pros: Full control over schema. SQLite is already used in WI-083 for embeddings (`sqlite-vec`). No serialization overhead. MCP tools can wrap SQL queries directly. Schema matches ideate's actual artifact types, not a generic ontology.
+  - Cons: Non-standard vocabulary; no interoperability with external OSLC tooling (not currently a requirement). Schema design burden falls entirely on this project.
+  - When to use: If ideate is the sole consumer of its own artifact database and no interoperability with external ALM tools is required.
+  
+  **Option 2: JSON-LD document store with OSLC-compatible types, SQLite backing**
+  
+  Store each artifact as a JSON-LD document conforming to OSLC resource shapes where applicable (ChangeRequest for work items, Requirement for guiding principles/constraints). Use SQLite as the document store with indexed fields extracted at write time.
+  
+  - Pros: Future interoperability with OSLC-compatible tools. Vocabulary is standardized and documented. The RDF graph model handles arbitrary cross-references naturally.
+  - Cons: OSLC does not cover ~40% of ideate's artifact types (journal, interview transcripts, domain questions, domain policies as distinct entities, research findings, metrics). Those types require custom extensions. JSON-LD parsing adds complexity. OSLC resource shapes impose constraints designed for HTTP-based systems. Overkill for a local tool.
+  - When to use: If integration with external OSLC-compatible ALM tools (Rational, PTC Windchill, etc.) is a future requirement.
+  
+  **Option 3: Typed markdown with YAML frontmatter + SQLite index built from frontmatter**
+  
+  Keep markdown as the canonical format for human readability. Add YAML frontmatter to each artifact file encoding structured fields (id, type, status, parent, depends-on, domain, severity, valid-from, valid-to, superseded-by). SQLite index is rebuilt from frontmatter at server startup (or on file change via chokidar, as already planned in WI-082).
+  
+  - Pros: Preserves the existing "artifacts are human-readable markdown" constraint (D-5 in ideate's own domain layer). No migration required for existing artifacts — add frontmatter incrementally. The MCP server (WI-082) already parses artifact files; adding frontmatter extraction is incremental. Querying happens against SQLite; authoring happens in markdown.
+  - Cons: Frontmatter is a second representation of structured data that must stay in sync with the markdown content. Schema evolution requires updating both the frontmatter spec and the SQLite DDL. Validation of frontmatter structure requires a schema definition layer (e.g., JSON Schema for YAML).
+  - When to use: If preserving markdown as the primary format is a hard constraint and structured querying is a secondary requirement accessed through the MCP layer.
+  
+  ---
+  
+  ## Risks
+  
+  **OSLC vocabulary mismatch**: OSLC covers change requests, requirements, test artifacts, and architecture resources. It has no types for: journal entries, interview transcripts, research findings, domain questions, domain policies, or cycle metrics. Any schema based on OSLC requires custom extensions for ~40% of ideate's artifact types. The extensions would not be standardized and would undermine the interoperability rationale for using OSLC in the first place.
+  
+  **Bitemporal complexity**: Implementing full bitemporality (valid time + transaction time) adds non-trivial query complexity. For ideate's scale (tens to hundreds of records per artifact type), the simpler pattern of `valid_from` / `valid_to` / `superseded_by` on a single time axis (valid time only) is sufficient and avoids the bitemporal query burden. Full bitemporality is warranted only if retroactive corrections to recorded facts are a requirement.
+  
+  **Schema migration burden**: A structured database introduces schema migration as an ongoing maintenance concern. Ideate's artifact-structure domain already has a `schema_version` field in `manifest.json` (D-17) and a migration script pattern (`migrate-to-domains.sh`). A SQLite schema would need a migration table and version-gated migration scripts.
+  
+  **ADR tooling ecosystem**: MADR and adr-tools are the dominant ADR formats. Neither is machine-readable beyond markdown with structured status strings. Tools that consume ADRs (e.g., `adr-log`) parse markdown text. There is no widely-adopted structured ADR interchange format. The W3C Decision Ontology is a research artifact, not adopted in practice.
+  
+  **Work item dependency cycles**: Neither OSLC, Linear, nor GitHub Projects enforce DAG constraints on dependency relationships at the schema level. Cycle detection is an application-level concern. If ideate tracks `depends-on` / `blocks` relationships in a SQLite edge table, cycle detection must be implemented explicitly (DFS or topological sort at write time or query time).
+  
+  **Option 3 sync risk**: If frontmatter-in-markdown is chosen, the same class of bug documented in D-21 and D-28/D-29 (schema field naming inconsistencies between planning documents and implementation) is a persistent risk. The frontmatter schema needs a single authoritative definition (e.g., JSON Schema file) referenced by all tooling.
+  
+  ---
+  
+  ## Sources
+  
+  - OSLC Change Management v3.0 Vocabulary: https://oslc-op.github.io/oslc-specs/specs/cm/change-mgt-vocab.html
+  - OSLC Change Management v3.0 Specification: https://docs.oasis-open-projects.org/oslc-op/cm/v3.0/change-mgt-spec.html
+  - OSLC Requirements Management v2.1 Specification: https://docs.oasis-open-projects.org/oslc-op/rm/v2.1/requirements-management-spec.html
+  - OSLC Architecture Management v3.0 Specification: https://docs.oasis-open-projects.org/oslc-op/am/v3.0/architecture-management-spec.html
+  - OSLC Quality Management v2.1 Specification: https://docs.oasis-open-projects.org/oslc-op/qm/v2.1/os/quality-management-spec.html
+  - OSLC open-services.net: https://open-services.net/
+  - DOAP RDF Schema GitHub: https://github.com/ewilderj/doap
+  - SPDX Specification v3.0.1: https://spdx.dev/wp-content/uploads/sites/31/2024/12/SPDX-3.0.1-1.pdf
+  - SPDX RDF Ontology: https://spdx.org/rdf/ontology/spdx-2-3/
+  - MADR 4.0.0: https://adr.github.io/madr/
+  - adr.github.io ADR templates: https://adr.github.io/adr-templates/
+  - W3C Decision Ontology (XGR-decision-20120417): https://www.w3.org/2005/Incubator/decision/XGR-decision-20120417/Sample_Decision_Ontology.html
+  - ISO/IEC/IEEE 42010 conceptual model: http://www.iso-architecture.org/ieee-1471/cm/
+  - Linear issue relations: https://linear.app/docs/issue-relations
+  - Linear project dependencies: https://linear.app/docs/project-dependencies
+  - Linear GraphQL schema: https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql
+  - GitHub sub-issues architecture blog: https://github.blog/engineering/architecture-optimization/introducing-sub-issues-enhancing-issue-management-on-github/
+  - GitHub Projects v2 API: https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects
+  - Jira issue linking model: https://developer.atlassian.com/cloud/jira/platform/issue-linking-model/
+  - Atlassian Analytics schema for Jira: https://support.atlassian.com/analytics/docs/schema-for-jira-software/
+  - Temporal knowledge graphs (Medium): https://medium.com/self-study-notes/temporal-knowledge-graphs-5b032671e0c7
+  - Temporal database (Wikipedia): https://en.wikipedia.org/wiki/Temporal_database
+  - Jira issue hierarchy (Titanapps): https://titanapps.io/blog/jira-issue-hierarchy
+  - WBS Wikipedia: https://en.wikipedia.org/wiki/Work_breakdown_structure
+  - ideate domain-knowledge-layer design: /Users/dan/code/ideate/specs/steering/research/domain-knowledge-layer.md
+  - ideate artifact-structure decisions: /Users/dan/code/ideate/specs/domains/artifact-structure/decisions.md
+  - ideate workflow decisions: /Users/dan/code/ideate/specs/domains/workflow/decisions.md
+  - ideate WI-082 MCP artifact server: /Users/dan/code/ideate/specs/plan/work-items-legacy/082-mcp-artifact-server.md
+  - ideate WI-083 RAG artifact retrieval: /Users/dan/code/ideate/specs/plan/work-items-legacy/083-rag-artifact-retrieval.md
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "2e0b511e0799dcb0df4aea460f3e991f1628b19a41da9b081f6f82395910f4ef"
+token_count: 5417
+file_path: .ideate/research/RF-sdlc-knowledge-schemas.yaml

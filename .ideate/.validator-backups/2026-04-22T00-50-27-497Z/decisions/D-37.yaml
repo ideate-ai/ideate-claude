@@ -1,0 +1,13 @@
+id: D-37
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: "Both skill files were extended beyond WI-121's specified replacement text to add: \"If the smoke test still fails after the fix, treat the root cause as indeterminate and route to the Andon cord.\" Surfaced as M1 in incremental review and fixed before delivery."
+rationale: Without this clause the executor had no instruction if the post-fix smoke test still failed. Behaviorally consistent with P-22's existing "cause is indeterminate" Andon trigger. P-22 was not amended to include this detail.
+cycle_created: 1
+cycle_modified: null
+content_hash: "8ab033379d3c7323fe55937f7004f19a9f06245f04345268c923f2478ef2701a"
+token_count: 176
+file_path: .ideate/decisions/D-37.yaml

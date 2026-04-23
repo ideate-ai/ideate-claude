@@ -1,0 +1,15 @@
+id: Q-07
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Andon events handled via the fallback path are invisible in the Phase 9 activity report; the cycle's Andon count will be undercounted.
+source: archive/cycles/001/decision-log.md OQ7, archive/cycles/001/summary.md Minor M4
+resolution: "Defined structured PH-{cycle}-{seq} artifact format in schema with triggered_by field creating graph edges. Updated autopilot SKILL.md and proxy-human agent to use ideate_write_artifact with type proxy_human_decision. Location: .ideate/cycles/{NNN}/proxy-human/PH-{cycle}-{seq}.yaml"
+resolved_in: 66
+addressed_by: WI-346
+description: "The fallback path at `skills/autopilot/SKILL.md:321` instructs autopilot to write a proxy-human-log entry with `[autopilot-fallback]` notation but does not specify the heading format. Phase 9 looks for `## [proxy-human] {date} — Cycle N`. Will fallback entries be found by Phase 9?"
+cycle_created: 1
+cycle_modified: null
+content_hash: 1c6cc1908f32b1ec1ed9ad86b5568839c6fa084e349223bac22828e43f332e24
+token_count: 179
+file_path: .ideate/questions/Q-07.yaml

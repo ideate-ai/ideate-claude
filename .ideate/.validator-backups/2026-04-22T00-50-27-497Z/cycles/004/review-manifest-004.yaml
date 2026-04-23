@@ -1,0 +1,27 @@
+id: review-manifest-004
+type: cycle_summary
+cycle: 4
+title: Review Manifest — Cycle 4
+content: |-
+  ## Review Manifest — Cycle 4
+
+  Full review (cycle 4, interval 3, last full review cycle 0).
+
+  | Work Item | Title | Complexity | Incremental Verdict | Files Modified |
+  |-----------|-------|------------|---------------------|----------------|
+  | WI-422 | Fix agent_type filter parameter description | low | Pass | tools/index.ts |
+  | WI-423 | Fix document_artifacts.cycle null for cycle_summary | small | Pass (1 rework) | tools/write.ts, __tests__/schema.test.ts, __tests__/tools.test.ts |
+
+  ### Summary
+  - Total work items: 2
+  - Pass: 2 (WI-422 first-pass, WI-423 after rework)
+  - Fail: 0
+
+  ### Changes This Cycle
+  1. `mcp/artifact-server/src/tools/index.ts:469` — corrected agent_type filter description from 'event_name' to 'payload.agent_type'
+  2. `mcp/artifact-server/src/tools/write.ts:777-779` — handleWriteArtifact now injects cycle into yamlObj for cycle-scoped types when cycle param provided but not in content
+  3. `mcp/artifact-server/src/__tests__/schema.test.ts` — added indexer test for document_artifacts.cycle propagation
+  4. `mcp/artifact-server/src/__tests__/tools.test.ts` — added write-path integration test + cycle assertion; 496 tests pass
+content_hash: ca7875280a5da45e1b5bf54d7ca231d5e0a0089e9fa9901fbd6f28e34aebb9e8
+token_count: 319
+file_path: .ideate/cycles/004/review-manifest-004.yaml

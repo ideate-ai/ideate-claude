@@ -1,0 +1,11 @@
+id: GP-06
+type: guiding_principle
+name: Andon Cord Interaction Model
+status: active
+description: After initial planning, user interaction should be minimal and read-only by default. The user can see status but does not need to approve routine work. User intervention is reserved for critical issues that cannot be resolved from existing steering documents — like pulling an Andon cord in lean manufacturing. Stop, flag the issue, wait for direction.
+amendment_history: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "04f0eb57ee6e3987a7f01db59800cff3b63a3ced735d88b40d99d017c8c29fb6"
+token_count: 143
+file_path: .ideate/principles/GP-06.yaml

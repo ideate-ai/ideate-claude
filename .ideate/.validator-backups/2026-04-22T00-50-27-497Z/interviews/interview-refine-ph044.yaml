@@ -1,0 +1,33 @@
+id: interview-refine-ph044
+type: interview
+phase: PH-044
+date: 2026-04-14
+refinement_mode: requirement-evolution
+trigger: PH-044 started with three success criteria defined in phase intent but no work items. Refine skill invoked to decompose.
+entries:
+  - domain: adapter-boundary
+    question: "For D4 max_nodes divergence, which semantic do you want: (a) add result-count slice to LocalAdapter, keep graph-size abort on both sides as orthogonal safety valve; (b) pure slice — remove abort entirely; (c) slice + keep abort + fix documentation?"
+    answer: (b). Pure slice semantic. Graph-size abort removed. Drop the 10k safety valve.
+    rationale: "RemoteAdapter already slices client-side; LocalAdapter missing the slice is the only real divergence. Architect survey revealed the RemoteAdapter comment claiming 'parity with LocalAdapter' was inverted — LocalAdapter never had the slice. Cleanest fix: remove abort, add slice."
+  - domain: workflow
+    question: "For Leak 7 in metrics.ts, which approach: (a) pure composition rewrite mirroring WI-786 (queryNodes + getNodes + aggregate from Node.properties); (b) add a new adapter method for metrics; (c) spike first to audit accuracy; (d) simplify scope by dropping aggregates not consumed by callers; (e) full rewrite with inline correctness pass?"
+    answer: None of those. Soft-deprecate the metrics infrastructure instead. Bad data is worse than no data. A future phase will design quality metrics from scratch.
+    rationale: "User signaled distrust in the current aggregation logic: 'a lot which isn't easily measured and i suspect it could be done better without having to emit metrics.' Fixing Leak 7 in a system slated for removal is wasted work. Soft deprecation (no-op emission, keep reader for historical data, mark tools deprecated) stops new bad data from accumulating and preserves optionality for the future rebuild phase."
+  - domain: workflow
+    question: "If soft-deprecating metrics: (a) full removal now; (b) stop emitting, keep reading; (c) remove MCP tools, keep storage; (d) mark deprecated, no-op emission, keep signatures?"
+    answer: (d) for now. Future project will rebuild quality metrics and do full removal.
+    rationale: Minimum churn, maximum signal. Future phase (PH-047-candidate) will handle hard removal as part of a rebuild, which is the natural place for that work.
+  - domain: adapter-boundary
+    question: "For D6 always_include_types case forwarding: (a) defer / dismiss; (b) investigate; (c) pre-decide to remove case conversion?"
+    answer: (a) Drop from PH-044 scope.
+    rationale: Architect survey confirmed RF-clean-interface-proposal's finding. Case conversion is one-way input-only (toGraphQLEnum applied uniformly to 14+ enum fields), GraphQL requires it, no asymmetry, no bug. Re-evaluation produced no change.
+principles_confirmed: true
+architecture_changed: false
+guiding_principle_conflicts: []
+new_horizon_candidate:
+  id: PH-047-candidate
+  name: Quality metrics rebuild
+  triggered_by: PH-044 Q2 — soft deprecation creates the need for a future replacement telemetry system.
+cycle_modified: 27
+content_hash: e0e49ccce83c605dc2a10e53029d8dca3f962da4f79cae197164f80e2ed1b18c
+token_count: 778

@@ -1,0 +1,25 @@
+id: WI-420
+type: work_item
+title: Apply .exclusive() to write.ts handlers and fix P-33 violation in index.ts
+status: done
+complexity: low
+scope:
+  - file: mcp/artifact-server/src/tools/write.ts
+    action: modify
+  - file: mcp/artifact-server/src/tools/index.ts
+    action: modify
+depends: []
+blocks: []
+criteria:
+  - handleWriteWorkItems, handleWriteArtifact, and handleUpdateWorkItems in write.ts all call upsertPhase.exclusive() not upsertPhase()
+  - The ideate_emit_metric payload parameter description in tools/index.ts contains no file paths ('metrics/') or storage engine names ('SQLite')
+  - All 492 tests pass
+  - npm run build produces no errors
+domain: artifact-structure
+notes: "# WI-420: Apply .exclusive() to write.ts handlers and fix P-33 violation in index.ts"
+resolution: null
+cycle_created: null
+cycle_modified: 1
+content_hash: 9bb00164ab0ead31c845eacec74ede764b671c39a271efbecc4c98e0d04b1bff
+token_count: 208
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-420.yaml

@@ -1,0 +1,41 @@
+id: SA-006
+type: cycle_summary
+title: Spec Adherence Review — Cycle 6
+reviewer: spec-reviewer
+verdict: Pass
+content: |-
+  ## **Principle Violation Verdict**: Pass
+
+  ## Principle Adherence
+
+  ### GP-08: Durable Knowledge Capture
+  YAML-first, SQLite-derived architecture is intact in all cycle 4-6 changes. resolveContent() reads from document_artifacts.content first and falls back to readFileSafe(row.file_path), confirming YAML files remain source of truth. The archive DELETE loop in write.ts runs against SQLite only after YAML-layer copies are verified complete. Q-114 resolution reached YAML layer via MCP.
+
+  ### GP-14: MCP Abstraction Boundary
+  No skill or agent file was modified in cycles 4-6. All code changes are within mcp/artifact-server/src/tools/. Q-114 was modified via MCP. The report scripts at scripts/ are outside the .ideate/ artifact tree and do not involve direct .ideate/ file access.
+
+  ### P-37: MCP-only .ideate/ modifications
+  The cycle 5 P-37 violation (WI-425 direct edit of CS-003.yaml) was a known forced deviation recorded in cycle 5 spec-adherence. No new P-37 violations in cycle 6. The only .ideate/ artifact modified in cycle 6 is Q-114.yaml, confirmed done via MCP.
+
+  ### P-44: Two-phase write pattern (incl. archive delete transaction)
+  write.ts:305-311 wraps the DELETE loop in ctx.db.transaction(...).exclusive(), matching the established pattern. The resolveContent function in analysis.ts is read-only and not subject to P-44.
+
+  ### P-51: Build verification before execution
+  No stale-build symptoms (P-37 violations, MCP tool failures) appear in cycle 6 artifacts. The cycle 6 review manifest notes full-mode review with 501/501 tests passing.
+
+  ## Violations Found
+
+  None.
+
+  ## Confirmed Compliant
+
+  - WI-424 (analysis.ts LEFT JOIN + fallback): Three-branch WHERE matches both the two-branch spec criterion and the extended third branch, covered by tests at tools.test.ts:581-602.
+  - WI-426 (roundtrip test): Write->convergence roundtrip test at tools.test.ts:604-624 matches WI-426 acceptance criteria exactly.
+  - WI-427 (resolveContent JSON unwrap): analysis.ts:131-144 correctly handles JSON-encoded da_content; test at tools.test.ts:626-640 verifies.
+  - WI-427 (handleArchiveCycle transaction): write.ts:305-311 wraps DELETE loop in exclusive transaction; atomicity test confirms both finding nodes removed.
+  - WI-428 (report scripts deprecated): All three scripts emit D-155 reference and exit 1 before reaching functional code.
+  - WI-428 (Q-114 closed): Q-114.yaml status is resolved with resolution field pointing to WI-428.
+  - No new P-37 violations in cycle 6 confirmed.
+content_hash: 34e7f7fbb9410beb2122a87ff540289f5913f0a7bebf52e3648b505be168c0db
+token_count: 660
+file_path: .ideate/cycles/006/SA-006.yaml

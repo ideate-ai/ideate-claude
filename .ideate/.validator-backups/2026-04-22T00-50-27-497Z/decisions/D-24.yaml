@@ -1,0 +1,13 @@
+id: D-24
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: The domain-curator agent performs an MCP semantic search against existing domain files before writing a new policy entry, to detect near-duplicate policies that should be amended rather than duplicated.
+rationale: Decided during refine-008 interview to address policy accumulation risk as the domain layer grows.
+cycle_created: 1
+cycle_modified: null
+content_hash: "75a4ddf57e4d40faeeff5ea5761a5b5f303d1136ed75fd5a15568cbf239f50f1"
+token_count: 129
+file_path: .ideate/decisions/D-24.yaml

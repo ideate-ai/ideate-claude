@@ -1,0 +1,10 @@
+id: C-09
+type: constraint
+category: design
+status: active
+description: Interface contracts before parallel decomposition. When decomposing into modules for parallel work, shared interfaces must be defined before individual modules are planned. This prevents inconsistent assumptions across independently-planned modules.
+cycle_created: 1
+cycle_modified: null
+content_hash: "6be4209e949ade6bea76687d5af91f4c5c7ec4beb28808bb52156ddce2ff3a70"
+token_count: 105
+file_path: .ideate/constraints/C-09.yaml

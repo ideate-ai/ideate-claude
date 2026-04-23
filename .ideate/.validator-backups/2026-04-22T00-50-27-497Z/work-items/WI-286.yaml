@@ -1,0 +1,59 @@
+id: WI-286
+type: work_item
+title: ideate_assemble_context MCP tool — PPR-based context assembly with token budgeting
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/context.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/index.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-283
+  - WI-285
+blocks:
+  - WI-287
+criteria:
+  - ideate_assemble_context tool registered and dispatched
+  - "Accepts: seed_ids (string[]), token_budget (number, optional — defaults from config), include_types (string[], optional — always-include artifact types), edge_type_weights (Record<string,number>, optional — overrides config defaults)"
+  - Calls computePPR with seeds and config-derived options
+  - Greedily includes artifacts by PPR score until token_budget exhausted
+  - Always includes artifacts matching include_types regardless of PPR score (architecture, principles, constraints)
+  - "Returns: assembled markdown context + metadata (artifact_ids included, total_tokens, ppr_scores for top-20)"
+  - Reads actual YAML content from file_path for each included artifact
+  - "At least 3 tests: basic assembly, token budget cutoff, always-include types override"
+  - npm run build succeeds; all tests pass
+domain: artifact-structure
+notes: |-
+  # WI-286: ideate_assemble_context
+
+  ## Tool interface
+  ```
+  ideate_assemble_context({
+    seed_ids: ['WI-275'],           // PPR seed nodes
+    token_budget: 50000,            // max tokens in assembled output
+    include_types: ['guiding_principle', 'constraint', 'architecture'],
+    edge_type_weights: { depends_on: 1.0 }  // optional overrides
+  })
+  ```
+
+  ## Implementation in context.ts
+  1. Call computePPR(drizzleDb, seed_ids, pprOptions) from ppr.ts
+  2. Query nodes table for each result: get type, file_path, token_count
+  3. Partition into always-include (matching include_types) and ranked (everything else)
+  4. Always-include artifacts go first, consuming their tokens from budget
+  5. Ranked artifacts added by PPR score until budget exhausted
+  6. For each included artifact, read YAML from file_path and extract content
+  7. Assemble into markdown with section headers per artifact type
+  8. Return assembled context + metadata
+
+  ## Relationship to existing tools
+  Does NOT replace get_work_item_context or get_context_package — those are still useful for specific lookups. ideate_assemble_context is for PPR-driven assembly when the skill wants graph-aware context.
+resolution: ideate_assemble_context tool with PPR + token budgeting. 3 tests.
+cycle_created: 37
+cycle_modified: null
+content_hash: 217cb11d239eee50eba788986b7f00583d6eeda84c384a032f91c4fa01265038
+token_count: 658
+file_path: .ideate/work-items/WI-286.yaml

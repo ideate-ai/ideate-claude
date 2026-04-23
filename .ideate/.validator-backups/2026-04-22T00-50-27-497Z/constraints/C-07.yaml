@@ -1,0 +1,10 @@
+id: C-07
+type: constraint
+category: design
+status: active
+description: Machine-verifiable acceptance criteria preferred. Work item acceptance criteria should be testable without human judgment wherever possible — test pass/fail, type checking, structural assertions, behavioral contracts. Criteria requiring subjective evaluation signal unresolved ambiguity in the spec.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5d7938aaa1200642f44cbcddfb822b8f67a65fdc2bd398319bdfda72846f5ce9"
+token_count: 117
+file_path: .ideate/constraints/C-07.yaml

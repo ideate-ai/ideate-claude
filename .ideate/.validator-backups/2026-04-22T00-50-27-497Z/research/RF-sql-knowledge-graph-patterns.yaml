@@ -1,0 +1,623 @@
+id: RF-sql-knowledge-graph-patterns
+type: research_finding
+topic: "Research: SQL Knowledge Graph Patterns for SQLite"
+status: active
+date: null
+content: |
+  # Research: SQL Knowledge Graph Patterns for SQLite
+  
+  **Date**: 2026-03-25
+  **Scope**: Established patterns for property graphs in SQL databases, production system approaches, SQLite-specific tradeoffs, recursive CTE performance, typed node design, polymorphic edge integrity, indexing best practices
+  **Prior art**: `artifact-graph-schema.md` (2026-03-23) established the typed-tables + universal-edges recommendation. This document goes deeper into the specific refactoring question: should the current 12-table schema move to a base-table + extension-table pattern?
+  
+  ---
+  
+  ## Summary
+  
+  For a knowledge graph at ideate's scale (hundreds to low-thousands of nodes, ~12 artifact types, ~10 edge types), the current "concrete table inheritance" pattern (12 separate typed tables + universal edges) is a valid and production-tested approach, but it has real costs that a base+extension ("class table inheritance") pattern would address. The research strongly favors **class table inheritance** (one `nodes` base table + per-type extension tables) as the right refactoring target for this system. This gives you a single table for edge FK integrity, universal graph queries, and type-specific columns without NULL waste -- at the cost of one JOIN per typed query, which is negligible at this scale.
+  
+  ---
+  
+  ## 1. Established Patterns for Property Graphs in SQL
+  
+  Five patterns recur across the literature and production systems. Each is evaluated against the specific requirements of an SDLC knowledge graph with typed, heterogeneous nodes.
+  
+  ### Pattern A: Single Generic Nodes Table (Document-Graph)
+  
+  **Schema**: `nodes(id, type, properties JSON)` + `edges(source_id, target_id, type, properties JSON)`
+  
+  **Production examples**: simple-graph (SQLite), LiteGraph, most "graph-in-SQL" tutorials.
+  
+  simple-graph's actual schema:
+  ```sql
+  CREATE TABLE nodes (
+      body TEXT,
+      id TEXT GENERATED ALWAYS AS (json_extract(body, '$.id')) VIRTUAL NOT NULL UNIQUE
+  );
+  CREATE TABLE edges (
+      source TEXT, target TEXT, properties TEXT,
+      UNIQUE(source, target, properties) ON CONFLICT REPLACE,
+      FOREIGN KEY(source) REFERENCES nodes(id),
+      FOREIGN KEY(target) REFERENCES nodes(id)
+  );
+  ```
+  
+  **Strengths**: Minimal schema, edge FKs point to one table, schema-free node properties, trivial "all neighbors of X" queries.
+  
+  **Weaknesses**: No column-level constraints per type. JSON extraction overhead on every filtered query (even with generated columns). Query planner cannot use type-specific statistics. At ideate's scale these weaknesses are tolerable but the loss of typed columns makes the codebase harder to reason about.
+  
+  **Verdict**: Too loose for a system with well-defined, stable artifact types.
+  
+  ### Pattern B: Concrete Table Inheritance (Current System)
+  
+  **Schema**: One table per type, each with all common + type-specific columns. Separate `edges` table with `source_type`/`target_type` discriminators but no FK integrity.
+  
+  **Production examples**: This is what ideate currently uses. Also common in ERP/CRM systems where entity types are well-known.
+  
+  **Strengths**: Each table is self-contained. No JOINs for single-type queries. Column types and NOT NULL constraints are enforceable per type. Simple inserts.
+  
+  **Weaknesses**: (1) Edges cannot have FK constraints -- `source_id` could point to any of 12 tables, so SQLite cannot enforce referential integrity. (2) "Find all artifacts by ID" requires UNION across all 12 tables. (3) "Find all neighbors of node X" requires knowing which table X lives in, or doing 12 lookups. (4) Common columns are duplicated across all tables (schema maintenance burden). (5) Adding universal metadata to all nodes requires 12 ALTER TABLE statements.
+  
+  **Verdict**: Works at small scale but the FK integrity gap and cross-type query burden are the pain points driving the refactoring question.
+  
+  ### Pattern C: Class Table Inheritance (Base + Extension)
+  
+  **Schema**: `nodes(id, type, ...common columns)` as base table. Per-type extension tables: `work_items(id REFERENCES nodes(id), title, complexity, ...)`, etc. `edges(source_id REFERENCES nodes(id), target_id REFERENCES nodes(id), edge_type, ...)`.
+  
+  **Production examples**: SQL Server Graph Tables (conceptually -- each node table IS a typed table, but edge $from_id/$to_id reference a system-managed node ID). Apache AGE (PostgreSQL) uses per-label vertex tables that share a common vertex ID scheme. Wikidata's MariaDB backend uses a Statement table (base) with Qualifier/Reference extension tables. SQLAlchemy's "joined table inheritance" strategy implements this pattern directly.
+  
+  SQL Server Graph Architecture internals:
+  - Each node table gets an implicit `$node_id` (composite of table object_id + internal bigint)
+  - Each edge table gets `$from_id` and `$to_id` referencing node IDs
+  - Edge constraints (SQL Server 2019+) restrict which node table pairs an edge type can connect
+  - The key insight: **typed node tables with a unified node identity** is exactly class table inheritance
+  
+  Apache AGE internals:
+  - Each vertex label gets its own table with columns `(id agtype, properties agtype)`
+  - The `id` is globally unique across all vertex tables
+  - Edge tables store `(id, start_id, end_id, properties)` where start_id/end_id are vertex IDs
+  - Properties stored as `agtype` (JSON-like) -- they chose flexibility over typed columns
+  
+  **Strengths**: (1) Edge FKs reference `nodes(id)` -- full referential integrity. (2) "Find any node by ID" is a single-table lookup. (3) "Find all neighbors" traverses edges then JOINs to the base nodes table. (4) Common metadata lives in one place. (5) Type-specific columns still get proper NOT NULL, CHECK constraints. (6) Adding a universal column is one ALTER TABLE on the base table.
+  
+  **Weaknesses**: (1) Fetching a fully-typed node requires JOIN between base and extension table. (2) Insert requires two statements (base + extension) in a transaction. (3) Slightly more complex ORM mapping.
+  
+  **Verdict**: Best fit for ideate's requirements. The JOIN cost is negligible for hundreds of rows. The FK integrity and universal query benefits are substantial.
+  
+  ### Pattern D: Single Table Inheritance (One Big Table)
+  
+  **Schema**: `artifacts(id, type, ...all columns from all types...)`. Columns not applicable to a given type are NULL.
+  
+  **Production examples**: Rails STI, many Django polymorphic models, GitLab's internal models (GitLab docs explicitly discourage this pattern for new code).
+  
+  **Strengths**: No JOINs ever. Simplest possible query for "all artifacts". Edge FKs trivially reference one table.
+  
+  **Weaknesses**: Massive NULL waste -- ideate has ~12 types with ~5-15 type-specific columns each, meaning 60-80% of columns would be NULL on any given row. CHECK constraints become complex conditional expressions. The table is confusing to inspect. Schema changes for one type affect all types. GitLab moved away from this pattern explicitly citing these problems.
+  
+  **Verdict**: Too wasteful and confusing for 12 types with heterogeneous properties.
+  
+  ### Pattern E: Entity-Attribute-Value (EAV)
+  
+  **Schema**: `entities(id, type)`, `attributes(entity_id, key, value)`.
+  
+  **Production examples**: Magento (e-commerce), some clinical database systems, WordPress `wp_postmeta`.
+  
+  **Strengths**: Infinitely flexible schema. No NULL waste.
+  
+  **Weaknesses**: Every attribute access requires a JOIN. Aggregate queries are extremely slow. Type safety is nonexistent. Query complexity grows combinatorially. PostgreSQL documentation explicitly warns against EAV. The cybertec-postgresql.com analysis titled "Entity-Attribute-Value (EAV) design in PostgreSQL -- don't do it!" summarizes the consensus.
+  
+  **Verdict**: Inappropriate. Ideate's artifact types are well-defined and stable.
+  
+  ---
+  
+  ## 2. What Production Systems Use
+  
+  ### SQL Server Graph Tables (2017+)
+  
+  - **Architecture**: Each entity type is a separate node table created with `AS NODE`. Each relationship type is a separate edge table created with `AS EDGE`.
+  - **Node identity**: System-managed `$node_id` combining table `object_id` + internal bigint. This is the key innovation -- a **globally-unique node identity that spans typed tables**.
+  - **Edge integrity**: Edge tables store `$from_id` and `$to_id` referencing node IDs. Edge constraints (2019+) restrict which node table pairs an edge can connect.
+  - **Query pattern**: `MATCH` clause with ASCII art syntax: `MATCH(Person1-(Likes)->Person2)`.
+  - **Relevance**: Validates the "typed tables with unified ID" approach. The fact that Microsoft built this into SQL Server confirms class table inheritance as the production pattern for property graphs in relational databases.
+  
+  ### Apache AGE (PostgreSQL Extension)
+  
+  - **Architecture**: Per-label vertex tables, per-label edge tables. Both share a common `agtype` for properties.
+  - **ID scheme**: Globally unique vertex IDs across all label tables.
+  - **Properties**: Stored as JSON-like `agtype` -- they prioritized flexibility over typed columns.
+  - **Query language**: Cypher (openCypher) alongside SQL.
+  - **Relevance**: Confirms globally-unique node IDs as essential. Their choice to use JSON properties rather than typed columns reflects a different tradeoff -- AGE is a general-purpose graph engine, not a domain-specific knowledge graph with known types.
+  
+  ### Wikidata (MariaDB + Blazegraph)
+  
+  - **Architecture**: Relational MariaDB for primary storage, Blazegraph (triplestore) for SPARQL queries. The relational schema uses typed tables (Items, Properties, Statements, Qualifiers, References) with foreign keys between them.
+  - **Query patterns**: Research shows ~80% of queries follow tree-shaped subject-to-subject and subject-to-object join patterns -- not arbitrary graph traversals.
+  - **Relevance**: Confirms that real-world knowledge graphs on SQL use typed tables with FK relationships, not generic node/edge tables. Also confirms that most queries are structured (tree-shaped), not arbitrary traversals -- matching ideate's query patterns.
+  
+  ### RDF Triple Stores on SQL (Virtuoso, Jena TDB)
+  
+  - **Architecture**: Typically a single `quads(graph, subject, predicate, object)` table with heavy indexing (SPO, POS, OSP permutation indexes).
+  - **Properties**: All data is triples -- no typed columns.
+  - **Relevance**: The triple-store pattern is essentially EAV applied to graphs. Performance at scale requires extensive indexing and query optimization. Not appropriate for ideate's use case where types are known.
+  
+  ---
+  
+  ## 3. SQLite-Specific Tradeoffs
+  
+  ### No Stored Procedures
+  
+  SQLite has no stored procedures, triggers that call procedures, or server-side logic beyond basic triggers. Implications:
+  - **Edge integrity enforcement** must happen in application code (TypeScript), not in the database.
+  - **Cascade behavior** on node deletion (cleaning up edges) must be implemented in the application or via simple `ON DELETE CASCADE` FK constraints.
+  - **Complex validation** (e.g., "edge of type `depends_on` can only connect `work_item` to `work_item`") cannot be a database-level constraint. Use `CHECK` constraints on edge_type + source_type + target_type combinations, or enforce in application code.
+  
+  SQLite does support `CREATE TRIGGER`, which can enforce some constraints:
+  ```sql
+  -- Enforce edge type constraints via trigger
+  CREATE TRIGGER validate_edge_type BEFORE INSERT ON edges
+  BEGIN
+    SELECT CASE
+      WHEN NEW.edge_type = 'depends_on'
+        AND (NEW.source_type != 'work_item' OR NEW.target_type != 'work_item')
+      THEN RAISE(ABORT, 'depends_on edges must connect work_items')
+    END;
+  END;
+  ```
+  
+  ### Limited ALTER TABLE
+  
+  SQLite's ALTER TABLE only supports `RENAME TABLE`, `RENAME COLUMN`, `ADD COLUMN`, and `DROP COLUMN` (3.35.0+). It does NOT support:
+  - Adding constraints to existing columns
+  - Changing column types
+  - Adding PRIMARY KEY or UNIQUE constraints after creation
+  
+  Implication: **Get the schema right before deploying**, or accept that schema changes require the "recreate table" dance (create new table, copy data, drop old, rename). For ideate, this is acceptable because the index.db is gitignored and can be deleted and rebuilt from YAML at any time.
+  
+  ### WAL Mode Considerations
+  
+  - WAL mode allows concurrent reads during writes -- essential for an MCP server that may serve reads while the file watcher triggers a rebuild.
+  - Single writer only -- the file watcher rebuild process is the only writer, which matches the current design.
+  - WAL file can grow unbounded if readers hold long-running read transactions. For MCP tool calls (sub-second reads), this is not a concern.
+  - The wal-index uses shared memory, so all readers must be on the same machine. This is inherently true for an MCP stdio server.
+  
+  ### JSON Support
+  
+  - `json_extract()` built-in since SQLite 3.38.0. Available in better-sqlite3 9.x+.
+  - Virtual generated columns with `json_extract` can be indexed for near-native query speed.
+  - JSON storage is plain TEXT -- no binary JSON optimization like PostgreSQL's JSONB.
+  - For ideate's scale (hundreds of rows), the TEXT-based JSON parsing overhead is unmeasurable.
+  
+  ### Foreign Key Enforcement
+  
+  SQLite FKs are OFF by default. Must execute `PRAGMA foreign_keys = ON` per connection. With better-sqlite3:
+  ```typescript
+  db.pragma('foreign_keys = ON');
+  ```
+  This is critical for the base+extension pattern -- without it, the FK from extension tables to the base `nodes` table won't be enforced.
+  
+  ---
+  
+  ## 4. Recursive CTE Performance in SQLite
+  
+  ### How It Works
+  
+  SQLite recursive CTEs use a queue-based execution model:
+  - `UNION ALL`: FIFO queue, each row processed immediately and discarded. Memory-efficient.
+  - `UNION`: Maintains full history for deduplication. Higher memory cost.
+  
+  Traversal order:
+  - Default (no ORDER BY): breadth-first (FIFO queue)
+  - `ORDER BY depth DESC`: depth-first
+  - `ORDER BY depth ASC`: explicit breadth-first
+  
+  ### Performance at Ideate's Scale
+  
+  For a graph with hundreds of nodes and edges:
+  - **Recursive CTE traversal is fast.** The performance concerns in the literature apply to graphs with millions of nodes or deep recursive chains (100+ levels). For ideate's dependency graphs (typically 5-20 levels deep, hundreds of edges), recursive CTEs complete in single-digit milliseconds.
+  - **Index on edges(source_id, edge_type) and edges(target_id, edge_type)** ensures each recursive step is an indexed lookup, not a table scan.
+  - The SQLite forum post comparing recursive CTEs to manual joins showed ~2x overhead for CTEs, but both approaches completed in seconds on graphs with thousands of nodes. At hundreds of nodes, the difference is sub-millisecond.
+  
+  ### Cycle Prevention
+  
+  SQLite has no built-in cycle detection for recursive CTEs. Three strategies:
+  
+  1. **UNION (not UNION ALL)**: Deduplicates rows, preventing infinite revisitation. Simple but wastes memory maintaining the full result set.
+  
+  2. **Path string accumulation**: Track visited nodes in a concatenated string, check with `WHERE path NOT LIKE '%' || id || '%'`. Works but is fragile (substring matching) and O(n) per check.
+  
+  3. **Application-level detection**: Run Kahn's algorithm in TypeScript before any CTE traversal. This is what ideate already does -- and it is the correct approach. Kahn's algorithm is O(V+E), runs once at rebuild time, and definitively identifies all cycle-participating nodes.
+  
+  **Recommendation**: Keep Kahn's algorithm for write-time cycle detection. Use recursive CTEs with `UNION ALL` + `LIMIT` for read-time traversal (safe because cycles were already eliminated at write time).
+  
+  ### Depth Limits
+  
+  SQLite default: 1000 recursion depth (`SQLITE_MAX_COMPOUND_SELECT`). Can be changed with `PRAGMA max_recursion_depth`. For ideate, even 100 levels deep would indicate a pathological dependency chain. A LIMIT clause on the CTE is the right safety valve.
+  
+  ---
+  
+  ## 5. Recommended Approach: Base + Extension Tables
+  
+  ### Schema Design
+  
+  ```sql
+  -- Base node table: universal identity + common metadata
+  CREATE TABLE nodes (
+      id           TEXT PRIMARY KEY,
+      type         TEXT NOT NULL,
+      cycle_created  INTEGER,
+      cycle_modified INTEGER,
+      content_hash TEXT NOT NULL,
+      token_count  INTEGER,
+      file_path    TEXT NOT NULL,
+      status       TEXT
+  );
+  CREATE INDEX idx_nodes_type ON nodes(type);
+  CREATE INDEX idx_nodes_file_path ON nodes(file_path);
+  CREATE INDEX idx_nodes_status ON nodes(type, status);
+  
+  -- Extension tables (one per artifact type)
+  CREATE TABLE work_items (
+      id         TEXT PRIMARY KEY REFERENCES nodes(id) ON DELETE CASCADE,
+      title      TEXT NOT NULL,
+      complexity TEXT,
+      scope      TEXT,   -- JSON array
+      depends    TEXT,   -- JSON array
+      blocks     TEXT,   -- JSON array
+      criteria   TEXT,   -- JSON array
+      module     TEXT,
+      domain     TEXT,
+      notes      TEXT
+  );
+  
+  CREATE TABLE findings (
+      id          TEXT PRIMARY KEY REFERENCES nodes(id) ON DELETE CASCADE,
+      severity    TEXT NOT NULL,
+      work_item   TEXT NOT NULL,
+      file_refs   TEXT,  -- JSON array
+      verdict     TEXT NOT NULL,
+      cycle       INTEGER NOT NULL,
+      reviewer    TEXT NOT NULL,
+      description TEXT,
+      suggestion  TEXT,
+      addressed_by TEXT
+  );
+  
+  -- ... (similar for domain_policies, domain_decisions, domain_questions,
+  --      guiding_principles, constraints, module_specs, research_findings,
+  --      journal_entries, metrics_events, document_artifacts)
+  
+  -- Universal edges table with FK integrity
+  CREATE TABLE edges (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_id   TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+      target_id   TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+      edge_type   TEXT NOT NULL,
+      props       TEXT,
+      UNIQUE(source_id, target_id, edge_type)
+  );
+  CREATE INDEX idx_edges_source ON edges(source_id, edge_type);
+  CREATE INDEX idx_edges_target ON edges(target_id, edge_type);
+  
+  -- Node file references with FK integrity
+  CREATE TABLE node_file_refs (
+      node_id   TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+      file_path TEXT NOT NULL,
+      PRIMARY KEY (node_id, file_path)
+  );
+  CREATE INDEX idx_file_refs_path ON node_file_refs(file_path);
+  ```
+  
+  ### Why This Pattern
+  
+  1. **Edge FK integrity**: `edges.source_id` and `edges.target_id` both reference `nodes(id)`. SQLite enforces that every edge endpoint exists. With `ON DELETE CASCADE`, deleting a node automatically cleans up its edges -- eliminating the manual cleanup code in the current `deleteStaleRows` function.
+  
+  2. **Universal graph queries**: "Find all neighbors of node X" is one query against `edges` + `nodes`, regardless of node types. No UNION across 12 tables.
+  
+  3. **Single ID lookup**: "Does node X exist?" is `SELECT 1 FROM nodes WHERE id = ?`. No scanning 12 tables.
+  
+  4. **Type-specific columns preserved**: Extension tables still have properly typed, constrained columns. `work_items.title NOT NULL` is enforced at the DB level.
+  
+  5. **Schema evolution**: Adding a universal field (e.g., `priority`) is one `ALTER TABLE nodes ADD COLUMN priority TEXT`. Adding a type-specific field is one `ALTER TABLE work_items ADD COLUMN estimation TEXT`.
+  
+  6. **ON DELETE CASCADE chain**: Deleting from `nodes` cascades to the extension table, edges, and node_file_refs. The current codebase has ~20 lines of manual cascade logic in `deleteStaleRows` that this eliminates.
+  
+  ### Query Patterns Under This Schema
+  
+  **Get a fully-typed work item:**
+  ```sql
+  SELECT n.*, w.*
+  FROM nodes n
+  JOIN work_items w ON w.id = n.id
+  WHERE n.id = 'WI-047';
+  ```
+  
+  **Get all neighbors of any node (regardless of type):**
+  ```sql
+  SELECT n2.*
+  FROM edges e
+  JOIN nodes n2 ON n2.id = e.target_id
+  WHERE e.source_id = 'WI-047';
+  ```
+  
+  **Get all artifacts in a domain:**
+  ```sql
+  -- Domain is a column on several extension tables
+  SELECT n.id, n.type, n.status
+  FROM nodes n
+  WHERE n.id IN (
+      SELECT id FROM work_items WHERE domain = 'workflow'
+      UNION ALL
+      SELECT id FROM domain_policies WHERE domain = 'workflow'
+      UNION ALL
+      SELECT id FROM domain_decisions WHERE domain = 'workflow'
+      UNION ALL
+      SELECT id FROM domain_questions WHERE domain = 'workflow'
+  );
+  ```
+  
+  **Topological traversal of dependencies:**
+  ```sql
+  WITH RECURSIVE deps(id, depth) AS (
+      SELECT 'WI-047', 0
+      UNION ALL
+      SELECT e.target_id, d.depth + 1
+      FROM deps d
+      JOIN edges e ON e.source_id = d.id AND e.edge_type = 'depends_on'
+  )
+  SELECT n.id, n.type, n.status, d.depth
+  FROM deps d
+  JOIN nodes n ON n.id = d.id
+  ORDER BY d.depth;
+  ```
+  
+  ### Insert Pattern
+  
+  Inserts require two statements in a transaction:
+  ```typescript
+  const insertNode = db.prepare(`
+      INSERT OR REPLACE INTO nodes (id, type, cycle_created, cycle_modified,
+          content_hash, token_count, file_path, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const insertWorkItem = db.prepare(`
+      INSERT OR REPLACE INTO work_items (id, title, complexity, scope,
+          depends, blocks, criteria, module, domain, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const upsertArtifact = db.transaction((node, extension) => {
+      insertNode.run(...node);
+      insertWorkItem.run(...extension);
+  });
+  ```
+  
+  With better-sqlite3's synchronous API, this is one function call wrapping two prepared statements in a transaction. Performance difference from the current single-statement insert: unmeasurable at this scale.
+  
+  ### Migration Path
+  
+  Since `index.db` is gitignored and rebuilt from YAML:
+  1. Bump `CURRENT_SCHEMA_VERSION` (triggers DB delete + rebuild on next startup)
+  2. Update `createSchema` to create the new table structure
+  3. Update `buildRow` / `upsertRow` to write to both `nodes` and extension table
+  4. Remove manual cascade logic from `deleteStaleRows` (FK CASCADE handles it)
+  5. No data migration needed -- the rebuild from YAML populates the new schema
+  
+  ---
+  
+  ## 6. Polymorphic Edge Integrity
+  
+  ### The Problem
+  
+  The current `edges` table has `source_id` and `target_id` as TEXT columns with no FK constraints. The `source_type` and `target_type` columns exist but are purely informational -- the database cannot enforce that `source_id` actually exists in the table indicated by `source_type`.
+  
+  ### The Solution (with Base Table)
+  
+  With the `nodes` base table, edges reference `nodes(id)` directly:
+  
+  ```sql
+  CREATE TABLE edges (
+      source_id TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+      target_id TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+      ...
+  );
+  ```
+  
+  This guarantees every edge endpoint exists as a node. The `edge_type` column combined with the `source_type`/`target_type` from the joined `nodes` table enables type-level validation.
+  
+  ### Edge Type Constraints
+  
+  For enforcing "depends_on edges must connect work_items to work_items", two approaches:
+  
+  **Option 1: Application-level validation (recommended)**
+  The `EDGE_TYPE_REGISTRY` in `schema.ts` already defines valid source/target types per edge type. Validate in `extractEdges()` before insert. This is the current approach and works well.
+  
+  **Option 2: SQLite triggers**
+  ```sql
+  CREATE TRIGGER validate_depends_on BEFORE INSERT ON edges
+  WHEN NEW.edge_type = 'depends_on'
+  BEGIN
+      SELECT RAISE(ABORT, 'depends_on: source must be work_item')
+      WHERE (SELECT type FROM nodes WHERE id = NEW.source_id) != 'work_item';
+      SELECT RAISE(ABORT, 'depends_on: target must be work_item')
+      WHERE (SELECT type FROM nodes WHERE id = NEW.target_id) != 'work_item';
+  END;
+  ```
+  
+  Triggers add complexity and make debugging harder. At ideate's scale, application-level validation is simpler and sufficient. The FK to `nodes(id)` handles existence; type-level constraints stay in TypeScript.
+  
+  ### Handling Dangling Edge Targets
+  
+  Some edges may reference nodes that do not yet exist in the index (e.g., a work item references `WI-099` which hasn't been parsed yet during rebuild). Two strategies:
+  
+  1. **Two-pass rebuild**: First pass inserts all nodes. Second pass inserts edges. This guarantees all targets exist before edges are created. Cost: two scans of the YAML files (or buffer nodes in memory, emit edges in second pass).
+  
+  2. **Deferred FK checks**: SQLite supports `PRAGMA defer_foreign_keys = ON` within a transaction, deferring FK validation to commit time. This allows inserting edges before their targets exist, as long as everything is consistent at COMMIT.
+  
+  **Recommendation**: Use `PRAGMA defer_foreign_keys = ON` within the rebuild transaction. This preserves the current single-pass rebuild logic while gaining FK integrity at commit time.
+  
+  ---
+  
+  ## 7. Indexing Best Practices for Graph Queries in SQLite
+  
+  ### Edge Table Indexes
+  
+  The edge table is the core of graph traversal. These indexes cover the primary access patterns:
+  
+  | Index | Covers Query |
+  |-------|-------------|
+  | `(source_id, edge_type)` | Forward traversal: "what does X depend on?" |
+  | `(target_id, edge_type)` | Reverse traversal: "what depends on X?" |
+  | `UNIQUE(source_id, target_id, edge_type)` | Deduplication + existence check |
+  
+  The UNIQUE constraint already creates an implicit B-tree index on `(source_id, target_id, edge_type)`, so a separate composite index is unnecessary (the current schema correctly omits it).
+  
+  ### Base Node Table Indexes
+  
+  | Index | Covers Query |
+  |-------|-------------|
+  | `(type)` | "All work items", "all findings" -- type-filtered scans |
+  | `(type, status)` | "All pending work items" -- the most common filtered query |
+  | `(file_path)` | "Which node corresponds to this YAML file?" -- used by rebuild |
+  | `(content_hash)` | Change detection during incremental rebuild (optional; can use file_path lookup + hash comparison instead) |
+  
+  ### Extension Table Indexes
+  
+  Keep type-specific indexes on extension tables:
+  
+  | Table | Index | Covers |
+  |-------|-------|--------|
+  | `work_items` | `(domain)` | "Work items in workflow domain" |
+  | `findings` | `(work_item, severity)` | "Critical findings for WI-047" |
+  | `domain_policies` | `(domain, status)` | "Active policies in workflow domain" -- covering index |
+  | `domain_questions` | `(domain, status)` | "Open questions in agent-system domain" |
+  
+  ### Covering Index Strategy
+  
+  For the most frequent query patterns, design indexes that include all needed columns to avoid table lookups:
+  
+  ```sql
+  -- "List all pending work items with title and complexity"
+  -- Covering index: SQLite reads only the index, never touches the table row
+  CREATE INDEX idx_wi_status_covering
+      ON work_items(id)
+      WHERE 1=1;  -- SQLite doesn't support INCLUDE, but partial indexes work
+  ```
+  
+  In practice, at ideate's scale (hundreds of rows), covering indexes provide marginal benefit. Standard B-tree indexes on the filtered columns are sufficient.
+  
+  ### Composite Index Column Ordering
+  
+  SQLite's query planner uses indexes left-to-right, stopping at the first range condition. For the edge table:
+  - `(source_id, edge_type)` is correct because most queries filter on `source_id` (equality) then `edge_type` (equality).
+  - If a query filtered on `edge_type` alone (rare), it would not use this index efficiently. A separate `(edge_type)` index would be needed, but this query pattern is uncommon enough to not warrant it.
+  
+  ---
+  
+  ## 8. Patterns from Production Knowledge Graph Implementations
+  
+  ### Wikidata's Relational Layer
+  
+  Wikidata's MariaDB schema uses a base entity table with typed extension tables for Statements, Qualifiers, and References. Key observations:
+  - ~80% of real SPARQL queries against Wikidata translate to tree-shaped SQL joins (subject-to-subject, subject-to-object). Arbitrary graph traversals are rare.
+  - The relational schema benefits from explicit FK relationships and indexed join columns.
+  - This matches ideate's query patterns, which are predominantly "get node + immediate neighbors" or "traverse dependency chain" -- both tree-shaped.
+  
+  ### RDF-in-SQL Lessons
+  
+  The RDF triple store community has extensively benchmarked SQL-based triple storage. Key findings relevant to ideate:
+  - **Vertical partitioning** (one table per predicate) outperforms a single giant triples table for selective queries. This is analogous to typed extension tables outperforming a single generic nodes table.
+  - **Property tables** (grouping frequently co-occurring properties into a single table) is the RDF equivalent of typed tables. It consistently outperforms EAV and single-table approaches for known query patterns.
+  
+  ### simple-graph (SQLite)
+  
+  The simplest production pattern: two tables, JSON properties, generated columns for ID extraction. Works well for small, schema-free graphs. Inappropriate for ideate because:
+  - No type-specific constraints
+  - All filtering requires JSON extraction
+  - No way to enforce "work items must have a title"
+  
+  ### SQL/PGQ (SQL:2023 Standard)
+  
+  The SQL:2023 standard includes SQL/PGQ (Property Graph Queries), which defines how to create graph views over relational tables and query them with pattern matching. SQLite has not implemented this yet (as of 2026), but the standard validates the "relational tables as graph storage" approach. The standard explicitly supports creating property graph views over typed relational tables -- confirming that class table inheritance is the intended relational substrate for property graphs.
+  
+  ---
+  
+  ## Tradeoff Matrix
+  
+  | Criterion | Concrete (Current) | Class Table (Proposed) | Single Table | Generic Nodes |
+  |-----------|-------------------|----------------------|-------------|--------------|
+  | Edge FK integrity | None | Full (via base table) | Full (one table) | Full (one table) |
+  | Type-specific constraints | Full | Full | Partial (CHECK) | None |
+  | Cross-type queries | 12-way UNION | Single JOIN | Direct | Direct |
+  | NULL waste | None | None | High (~70%) | N/A (JSON) |
+  | Insert complexity | 1 statement | 2 statements (txn) | 1 statement | 1 statement |
+  | Schema evolution (universal) | 12 ALTER TABLEs | 1 ALTER TABLE | 1 ALTER TABLE | 0 (JSON) |
+  | Schema evolution (type-specific) | 1 ALTER TABLE | 1 ALTER TABLE | 1 ALTER TABLE | 0 (JSON) |
+  | "Find node by ID" | 12 table scan | 1 table lookup | 1 table lookup | 1 table lookup |
+  | ORM complexity | Low | Medium | Low | Low |
+  | Query plan predictability | High | High | Medium | Low |
+  
+  ---
+  
+  ## Risks
+  
+  1. **Two-statement inserts increase rebuild time.** With better-sqlite3's synchronous prepared statements in a transaction, the overhead of two INSERT statements per node vs. one is ~microseconds per node. At 1000 nodes, this adds ~1ms total. Not a real risk.
+  
+  2. **FK enforcement during rebuild.** If edges are inserted before their target nodes exist (within the same rebuild transaction), FK constraints will fail unless `PRAGMA defer_foreign_keys = ON` is used. This is a one-line fix but must not be forgotten.
+  
+  3. **Drizzle ORM compatibility.** The current codebase uses Drizzle ORM. Drizzle supports joined/related queries across tables with foreign keys, but the class table inheritance pattern may require custom query builders rather than Drizzle's built-in relation primitives. Evaluate whether Drizzle's `relations` API handles the base+extension JOIN pattern, or if raw SQL (via `db.prepare()`) is simpler for graph traversal queries.
+  
+  4. **Schema version bump deletes and rebuilds.** The current `checkSchemaVersion` function deletes the DB file on version mismatch and rebuilds from YAML. This is the correct behavior and makes schema changes zero-risk for data integrity. The only cost is a one-time rebuild on upgrade (~100ms for hundreds of files).
+  
+  5. **`source_type` and `target_type` on edges become redundant.** With the base `nodes` table storing `type`, the edge table no longer needs `source_type`/`target_type` -- this information is available via JOIN. Keeping these columns as denormalized cache is acceptable (avoids a JOIN for type-filtered edge queries), but they must be kept in sync with `nodes.type`. Since the rebuild process writes both, consistency is guaranteed.
+  
+  ---
+  
+  ## Recommendation
+  
+  **Refactor to class table inheritance (base `nodes` table + extension tables).** The benefits -- FK integrity on edges, single-table node lookup, simplified cascade deletes, universal graph queries -- outweigh the cost of a two-statement insert pattern and one additional JOIN for typed queries.
+  
+  The migration is low-risk because `index.db` is gitignored and rebuilt from YAML. The schema change is a version bump + rebuild, not a data migration.
+  
+  Preserve the `EDGE_TYPE_REGISTRY` for application-level type validation on edges. Use `PRAGMA defer_foreign_keys = ON` during rebuild transactions. Consider keeping denormalized `source_type`/`target_type` on edges for query convenience but do not rely on them for integrity.
+  
+  ---
+  
+  ## Sources
+  
+  ### Web Sources
+  - [SQL Server Graph Architecture - Microsoft Learn](https://learn.microsoft.com/en-us/sql/relational-databases/graphs/sql-graph-architecture?view=sql-server-ver17)
+  - [SQL Server Graph Databases: Nodes, Edges & MATCH (Part 1) - Simple Talk](https://www.red-gate.com/simple-talk/databases/sql-server/t-sql-programming-sql-server/sql-server-graph-databases-part-1-introduction/)
+  - [Apache AGE - GitHub](https://github.com/apache/age)
+  - [Apache AGE FAQ](https://age.apache.org/faq/)
+  - [simple-graph SQLite schema](https://github.com/dpapathanasiou/simple-graph/blob/main/sql/schema.sql)
+  - [SQLite Recursive Common Table Expressions](https://sqlite.org/lang_with.html)
+  - [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)
+  - [SQLite JSON Functions and Operators](https://sqlite.org/json1.html)
+  - [SQLite JSON Superpower: Virtual Columns + Indexing](https://www.dbpro.app/blog/sqlite-json-virtual-columns-indexing)
+  - [Entity-Attribute-Value model - Wikipedia](https://en.wikipedia.org/wiki/Entity%E2%80%93attribute%E2%80%93value_model)
+  - [EAV design in PostgreSQL - don't do it! - Cybertec](https://www.cybertec-postgresql.com/en/entity-attribute-value-eav-design-in-postgresql-dont-do-it/)
+  - [Modeling Polymorphic Associations in a Relational Database - Hashrocket](https://hashrocket.com/blog/posts/modeling-polymorphic-associations-in-a-relational-database)
+  - [Choosing a Database Schema for Polymorphic Data - DoltHub](https://www.dolthub.com/blog/2024-06-25-polymorphic-associations/)
+  - [Table Inheritance Patterns: Single Table vs Class Table vs Concrete Table - Martin Fowler / Artem Khrenov](https://medium.com/@artemkhrenov/table-inheritance-patterns-single-table-vs-class-table-vs-concrete-table-inheritance-1aec1d978de1)
+  - [Single Table Inheritance - Martin Fowler](https://martinfowler.com/eaaCatalog/singleTableInheritance.html)
+  - [Class Table Inheritance - Martin Fowler](https://martinfowler.com/eaaCatalog/classTableInheritance.html)
+  - [Querying Wikidata: Comparing SPARQL, Relational and Graph Databases](https://aidanhogan.com/docs/wikidata-sparql-relational-graph.pdf)
+  - [How SQLite Scales Read Concurrency - Fly.io](https://fly.io/blog/sqlite-internals-wal/)
+  - [SQLite Performance Tuning - phiresky](https://phiresky.github.io/blog/2020/sqlite-performance-tuning/)
+  - [Property Graph - Wikipedia](https://en.wikipedia.org/wiki/Property_graph)
+  - [Triplestore - Wikipedia](https://en.wikipedia.org/wiki/Triplestore)
+  - [A design space for RDF data representations - VLDB Journal](https://link.springer.com/article/10.1007/s00778-021-00725-x)
+  
+  ### Codebase Sources
+  - `/Users/dan/code/ideate/mcp/artifact-server/src/schema.ts` -- current schema definition (12 typed tables + edges)
+  - `/Users/dan/code/ideate/mcp/artifact-server/src/db.ts` -- Drizzle ORM table definitions
+  - `/Users/dan/code/ideate/mcp/artifact-server/src/indexer.ts` -- rebuild pipeline, edge extraction, cascade delete logic
+  - `/Users/dan/code/ideate/specs/steering/research/artifact-graph-schema.md` -- prior research establishing typed tables + universal edges
+  - `/Users/dan/code/ideate/specs/plan/architecture.md` -- v3 architecture decisions
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "5a5d118ff6290222b77e50fb38ff3fa8307f1c757ab0b885eb8bf63013f06388"
+token_count: 9114
+file_path: .ideate/research/RF-sql-knowledge-graph-patterns.yaml

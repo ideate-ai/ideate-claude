@@ -26,20 +26,22 @@ depends: []
 blocks:
   - WI-287
 criteria:
-  - "code-reviewer.md maxTurns: 80"
-  - "spec-reviewer.md maxTurns: 100"
-  - "gap-analyst.md maxTurns: 100"
-  - "journal-keeper.md maxTurns: 60"
-  - "domain-curator.md maxTurns: 100"
-  - "decomposer.md maxTurns: 100"
-  - "architect.md maxTurns: 160"
-  - "researcher.md maxTurns: 80"
-  - "proxy-human.md maxTurns: 160"
+  - 'code-reviewer.md maxTurns: 80'
+  - 'spec-reviewer.md maxTurns: 100'
+  - 'gap-analyst.md maxTurns: 100'
+  - 'journal-keeper.md maxTurns: 60'
+  - 'domain-curator.md maxTurns: 100'
+  - 'decomposer.md maxTurns: 100'
+  - 'architect.md maxTurns: 160'
+  - 'researcher.md maxTurns: 80'
+  - 'proxy-human.md maxTurns: 160'
 domain: agent-system
-notes: Double all maxTurns values in agent frontmatter. These serve as fallback defaults when config.json agent_budgets is absent.
+notes: >-
+  Double all maxTurns values in agent frontmatter. These serve as fallback defaults when config.json agent_budgets is
+  absent.
 resolution: All 9 agent maxTurns doubled.
 cycle_created: 37
 cycle_modified: null
 content_hash: ee8d272b5f5801acfa37b1c8dfb9c82bf026beaa76527a162b80f86e28444b26
 token_count: 293
-file_path: .ideate/work-items/WI-284.yaml
+file_path: work-items/WI-284.yaml

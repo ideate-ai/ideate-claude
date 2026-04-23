@@ -1,0 +1,10 @@
+id: C-10
+type: constraint
+category: process
+status: active
+description: Front-loaded interaction. The interview phase is where the user invests time. After planning, the user should be able to step back. Execution and review proceed with minimal user input unless critical issues arise.
+cycle_created: 1
+cycle_modified: null
+content_hash: "3f2bc6b4e945e4d0aff00a3c06c17c5c963791442153516cf45dad01f0ecbf7c"
+token_count: 96
+file_path: .ideate/constraints/C-10.yaml

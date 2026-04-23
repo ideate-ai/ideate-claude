@@ -1,0 +1,68 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  ## Verdict: Pass (with minor gaps)
+
+  ## Missing Requirements from Interview
+
+  None.
+
+  ## Unhandled Edge Cases
+
+  ### GA-EC1: selectAdapter local-backend null-db guard has no test (Minor)
+
+  - Component: mcp/artifact-server/src/server.ts:74, mcp/artifact-server/src/__tests__/remote-adapter.test.ts
+  - Scenario: selectAdapter called with backend='local' (or default) but db is undefined/null. Guard at line 74 throws Error('Local backend requires db and drizzleDb'). No test covers this throw branch.
+  - Current behavior: Throw happens correctly in production. Tests only exercise remote-backend throw paths.
+  - Severity: Minor
+  - Recommendation: Address now — one-liner addition to remote-adapter.test.ts. The guard was added during WI-815 rework; should have a corresponding test.
+
+  ## Incomplete Integrations
+
+  ### GA-II1: No write→convergence roundtrip test (Significant)
+
+  - Interface: handleWriteArtifact (write.ts) → getConvergenceData → handleGetConvergenceStatus (analysis.ts)
+  - Producer: mcp/artifact-server/src/tools/write.ts
+  - Consumer: mcp/artifact-server/src/tools/analysis.ts
+  - Gap: No test writes a cycle_summary artifact (with cycle: N and body containing 'Principle Violation Verdict: Pass') via handleWriteArtifact, then calls handleGetConvergenceStatus(N) and asserts converged: true. Write path and convergence-read path are unit-tested in isolation, but DB round-trip — that document_artifacts.cycle column is correctly populated and convergence reader's WHERE clause finds it — is not verified end-to-end. Regression in either da.cycle population (on write) or WHERE clause in getConvergenceData would be silent.
+  - Severity: Significant
+  - Recommendation: Address now — gap predates cycle 4, called out in legacy cycle 004 gap analysis. Suggested work item: 'Add write→convergence roundtrip integration test.' Scope: one test, ~25 lines. Would also help validate WI-817 fix when it lands.
+
+  ## Missing Infrastructure
+
+  None.
+
+  ## Implicit Requirements
+
+  ### GA-IR1: indexFiles/removeFiles placement in adapter-contract.md inconsistent with adapter.ts ordering (Minor)
+
+  - Expectation: adapter-contract.md should mirror StorageAdapter interface structural groupings.
+  - Current state: In adapter.ts, indexFiles/removeFiles are between getMetricsEvents (~line 463) and nextId (~line 491) — query/data-access group. In adapter-contract.md they appear under 'Lifecycle Operations' alongside initialize, shutdown, archiveCycle, appendJournalEntry.
+  - Severity: Minor
+  - Recommendation: Defer — current grouping under Lifecycle is defensible (watcher-driven, infrastructure layer). No functional gap. Implementer left intentionally during WI-814.
+
+  ## Cross-cycle Tracking
+
+  - WI-817 (convergence-checker legacy artifact bug): Triaged in cycle 4 but not executed. Real bug; cycle 4 capstone unaffected (legacy file in slot 004 says Pass) but should be addressed.
+  - Cycle 3 GA-M2 (agent_type full table scan): Deferred, no new evidence in cycle 4. No new files touch agent_type filtering.
+content_hash: 080e6b847ce779c7be2c399324286080c7b308deb138f74c2c7e3407a894fa9a
+token_count: 960
+file_path: .ideate/cycles/068/gap-analysis.yaml
+verdict: Pass with minor gaps
+phase: PH-045
+scope: cycle 1 capstone
+summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+findings:
+  critical: 0
+  significant: 3
+  minor: 2
+cycle: 4
+cycle_modified: 27
+review_mode: differential
+findings_count:
+  critical: 0
+  significant: 3
+  minor: 3
+mode: differential
+start_commit: b71455540fcec06e960e3d9631814cccf65704bf

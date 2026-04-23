@@ -1,0 +1,14 @@
+id: Q-68
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Stale declaration files remain in contributors' working trees indefinitely. No correctness impact; creates noise in `git status` and may confuse IDE tooling resolving types from stale declarations rather than live source.
+source: archive/cycles/020/code-quality.md M1; archive/cycles/020/decision-log.md Q-68
+resolution: "WI-178 added a `prebuild:migration` npm lifecycle script that deletes the three stale artifact files before each `build:migration` run. Each `rmSync` is wrapped in `try/catch` for idempotency. See D-102."
+resolved_in: 21
+description: "`scripts/migrate-to-v3.d.ts`, `scripts/migrate-to-v3.d.ts.map`, and `scripts/migrate-to-v3.js.map` exist on disk from a prior `tsc` invocation that lacked `--declaration false`. Running `npm run build:migration` suppresses `.d.ts` generation on new runs and `.gitignore` entries prevent future commits, but the stale files already on disk are never removed. Should a `prebuild:migration` step using `rmSync` delete them before compilation?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "9b5ecdd216f1ce4fb5ba65cdf69ea8186d8ba1a8fc0d8a6255beb38ae90a19fd"
+token_count: 296
+file_path: .ideate/questions/Q-68.yaml

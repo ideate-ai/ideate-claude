@@ -1,0 +1,108 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary
+
+  ## Overview
+  PH-041 (Input Validation Layer) delivers a structurally sound ValidatingAdapter decorator pattern across 8 work items. The core design is correct: single validation layer, inline validation removed from LocalAdapter/RemoteAdapter/context.ts, alpha boundary reconciled to (0, 1]. One significant gap remains: convergence_threshold is the only traverse parameter not validated at the ValidatingAdapter boundary. Test coverage gaps exist for several error codes.
+
+  ## Phase Convergence
+  Phase: PH-041
+  Cycles completed in this phase: 2 / 5 (threshold)
+  Convergence status: Converging
+
+  Trend: Cycle 22 had 2 significant findings (context.ts validation duplication, alpha boundary mismatch). Both were addressed in WI-773. Cycle 23 has 1 significant finding (convergence_threshold gap) — down from 2. Test coverage gaps are new findings but minor in nature.
+
+  ## Project Progress
+
+  | Success Criterion | Status |
+  |---|---|
+  | ValidatingAdapter wraps all StorageAdapter methods | pass |
+  | Single validation layer — no inline validation in adapters | partial — nextId cycle validation intentionally retained in writer.ts |
+  | Consistent alpha boundary (0, 1] across stack | pass |
+  | Test coverage for all ValidatingAdapter error codes | partial — convergence_threshold, MISSING_EDGE_TYPE, MISSING_NODE_PROPERTIES, MISSING_CYCLE untested |
+  | P-75 compliance (no fixture length assertions) | pass |
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [gap-analyst] convergence_threshold not validated in ValidatingAdapter traverse method. All other traverse parameters (alpha, max_iterations, token_budget, max_nodes, seed_ids, always_include_types) are validated, but convergence_threshold passes through unchecked. ppr.ts defense-in-depth catches it, but the validation layer is incomplete. — relates to: PH-041 design intent, P-43
+
+  ## Minor Findings
+  - [code-reviewer] MISSING_EDGE_TYPE error code has no test coverage in putEdge or batchMutate — relates to: P-43 → carry-forward
+  - [code-reviewer] batchMutate missing MISSING_NODE_PROPERTIES and MISSING_CYCLE test cases — relates to: P-43 → carry-forward
+  - [code-reviewer] batchMutate edge validation duplicated from putEdge instead of shared helper — relates to: cross-cutting → carry-forward
+  - [code-reviewer] nextId cycle validation semantics inconsistency: nextId accepts cycle=0, other cycle checks require cycle>0 — relates to: cross-cutting → carry-forward
+  - [spec-reviewer] INVALID_ALWAYS_INCLUDE_TYPE listed in expectedCodes documentation array but code uses INVALID_NODE_TYPE — relates to: WI-773 → carry-forward
+  - [gap-analyst] Unused import of ALL_NODE_TYPES in local-adapter-validation.test.ts — relates to: code hygiene → carry-forward
+  - [gap-analyst] edge_type_weights in TraversalOptions not validated (silent-ignore semantics acceptable but inconsistent with always_include_types) — relates to: cross-cutting → carry-forward
+
+  ## Suggestions
+  None.
+
+  ## Findings Requiring User Input
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+  The review identified 1 significant finding. A targeted refinement cycle is recommended:
+
+  1. Add convergence_threshold validation to ValidatingAdapter.traverse (4-line guard, matching existing alpha/max_iterations pattern)
+  2. Add convergence_threshold test cases to validating.test.ts (2 tests: zero and negative values)
+
+  Estimated scope: 1 small work item touching 2 files (validating.ts, validating.test.ts). The minor findings (test coverage gaps for MISSING_EDGE_TYPE, MISSING_NODE_PROPERTIES, MISSING_CYCLE) can optionally be bundled into the same work item or deferred.
+content_hash: ee2ca962ebf28a751ae85f0c9d3363a603503ad28306465f5cd3aa872677a4c4
+token_count: 1626
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 23
+phase: PH-017
+phase_name: Documentation & Cleanup
+date: 2026-04-13
+scope: "9 work items (WI-754 through WI-762): test-quality fixes eliminating vacuous assertions, adding missing coverage, correcting documentation"
+overall_verdict: Pass
+reviewer_verdicts:
+  code-reviewer: Pass
+  spec-reviewer: Pass
+  gap-analyst: Pass
+critical_findings: 0
+significant_findings: 0
+minor_findings: 9
+carry_forward_gaps:
+  - id: CF1
+    title: 8 extension tables lack column-structure tests
+  - id: CF2
+    title: 4 extension tables have partial column-structure tests
+  - id: CF3
+    title: 10 of 16 extension tables lack CASCADE tests
+  - id: CF4
+    title: ALL_NODE_TYPES.length hardcoded count assertion
+acceptance_criteria_status: All machine-verifiable AC for WI-754 through WI-762 satisfied
+test_results: 1217 tests passed, 0 failures
+requires_human_review:
+  - "WI-759: Confirm WI-754.yaml acceptance criteria accurately describes sqlite_* filter approach"
+convergence_assessment: Phase converging well. All in-scope work items pass all three review perspectives. Remaining gaps are outside PH-017 scope and suitable for future phases.
+cycle_modified: 21
+project: PR-002
+verdict: Pass
+work_items_reviewed:
+  - WI-763
+  - WI-764
+  - WI-765
+  - WI-766
+  - WI-767
+work_item_titles:
+  WI-763: Add reserved keyword documentation comments to schema.ts
+  WI-764: Add column-structure tests for 8 untested extension tables
+  WI-765: Expand 4 partial column-structure tests to full coverage
+  WI-766: Add ON DELETE CASCADE tests for 10 extension tables
+  WI-767: Remove hardcoded ALL_NODE_TYPES.length count assertion
+key_findings_summary: "All findings are minor. Three clusters: (1) reserved keyword comment accuracy — constraints mislabeled as reserved, trigger quoting overstated; (2) pattern consistency — 10 extension table describe blocks omit cols.length assertion established by nodes table; projects/phases lack NOT NULL tests; (3) naming — WI-767 test name 'is readonly array' doesn't match assertions."
+carry_forward:
+  - Correct reserved keyword comments in schema.ts (M1, M2)
+  - Add cols.length assertions to 10 extension table describe blocks (N1, MI2)
+  - Add NOT NULL tests for projects and phases tables (M3, MI2)
+  - Add NOT NULL tests for interview_questions (MI3)
+  - Rename 'is readonly array' test to match assertions (M4)
+  - Add idx_nodes_type_file_path to index tests (MI1)
+convergence_trend: Zero critical, zero significant — cleanest cycle since cycle 20. Phase PH-017 is converging. Residual gaps are mechanical (column counts, NOT NULL assertions) rather than architectural.
+reviewer: coordinator

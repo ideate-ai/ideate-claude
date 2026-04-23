@@ -1,0 +1,14 @@
+id: Q-49
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Phase 2 work items planned against `architecture.md` will specify wrong paths for cycle-scoped artifacts.
+source: archive/cycles/017/spec-adherence.md (WI-155 note); archive/cycles/017/gap-analysis.md IF1; archive/cycles/017/decision-log.md OQ-8
+resolution: WI-166 (spec + doc cleanup) updated architecture.md to reflect the flat cycles/ directory structure.
+resolved_in: 18
+description: "`plan/architecture.md` still references the old nested `archive/cycles/` layout after WI-155 changed `IDEATE_SUBDIRS` to flat `cycles/`. Should the architecture document be updated?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "8c52352909331d37bd173c764be191704fd30d292a96b291bfb818ee1d44bd6f"
+token_count: 190
+file_path: .ideate/questions/Q-49.yaml

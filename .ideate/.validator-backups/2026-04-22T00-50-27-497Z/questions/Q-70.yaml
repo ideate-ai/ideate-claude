@@ -1,0 +1,14 @@
+id: Q-70
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: A regression in the mismatch path would skip WAL/SHM cleanup and database deletion, leaving the server on a mismatched schema. A regression in the version-current path would cause all post-migration startups to fail or misbehave.
+source: archive/cycles/020/gap-analysis.md EC1, IR1; archive/cycles/020/decision-log.md Q-70
+resolution: "WI-180 added two tests covering all three branches: version-mismatch (returns `false` and file deleted), version-current (returns `true`). The `checkSchemaVersion` describe block now has 3 tests. See D-104."
+resolved_in: 21
+description: WI-177 added a test for the version-0 (fresh DB) path. The version-mismatch path (`user_version` is non-zero and does not match `CURRENT_SCHEMA_VERSION`) and the version-current path (`user_version` matches `CURRENT_SCHEMA_VERSION`, returns `true`) have no tests. The version-current path is exercised on every server startup after a successful migration.
+cycle_created: 1
+cycle_modified: null
+content_hash: "08c7f2394325460e6dffbbdb17e3f2dfb97dc284a662c1a8169e857da6f69522"
+token_count: 279
+file_path: .ideate/questions/Q-70.yaml

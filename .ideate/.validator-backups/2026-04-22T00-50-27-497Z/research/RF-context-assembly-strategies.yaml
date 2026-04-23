@@ -1,0 +1,437 @@
+id: RF-context-assembly-strategies
+type: research_finding
+topic: Context Assembly Strategies for LLM-Driven SDLC Workflows
+status: active
+date: null
+content: |
+  # Context Assembly Strategies for LLM-Driven SDLC Workflows
+  
+  Research conducted: 2026-03-23
+  
+  ---
+  
+  ## Summary
+  
+  This document covers knowledge graph traversal algorithms, relevance scoring, two-stage retrieval architectures, hybrid graph+semantic systems, task-specific context requirements, adaptive learning, and index-time vs. query-time tradeoffs — all specifically framed for a structured SDLC artifact graph using a SQLite runtime index and @xenova/transformers embeddings.
+  
+  ---
+  
+  ## Question 1: Knowledge Graph Traversal Algorithms
+  
+  ### N-hop Neighborhood Expansion
+  
+  N-hop expansion starts from a seed node and includes all nodes reachable within N edges. This is the simplest traversal. For N=1, you get immediate neighbors. For N=2, neighbors of neighbors. The problem is combinatorial explosion: in a dense artifact graph where work items link to modules, policies, domains, research, and prior findings, N=2 already pulls in large subgraphs. N-hop expansion is appropriate when the graph is sparse and relationship density is low.
+  
+  Practical ceiling: N=2 with edge-type filtering (e.g., only follow `depends_on` and `governed_by` edges, skip `referenced_in`). Beyond N=2, the marginal relevance of included nodes drops sharply for SDLC artifacts because most relevant relationships are one or two hops from the seed.
+  
+  ### Personalized PageRank (PPR) from a Seed Node
+  
+  PPR is the most theoretically sound traversal method for this use case. Standard PageRank assigns global importance; PPR biases the random walk to return to seed nodes with probability `alpha` (the damping/teleportation factor, typically 0.15). The result is a score distribution over all nodes that decays with graph distance and incorporates structural importance (how many high-value nodes point to a node).
+  
+  **HippoRAG** (NeurIPS 2024) uses PPR over knowledge graphs constructed from documents, with query concepts as seeds. Key findings:
+  - PPR achieves single-step multi-hop retrieval performance comparable to iterative retrieval methods (like IRCoT), while being 10-20x cheaper and 6-13x faster.
+  - Node specificity — downweighting high-frequency nodes (analogous to IDF) — is added as a multiplicative factor on seed weights to prevent hub nodes (e.g., a policy cited by every work item) from dominating.
+  - HippoRAG 2 adds dual-node graphs (both passage-level and phrase-level nodes) and LLM-based triple filtering to increase precision.
+  
+  **For SDLC artifact graphs**: PPR from a work-item seed node naturally surfaces the module it belongs to (direct edge, high weight), the domain policies governing that module (two hops), and prior findings about those policies (three hops) — all in one computation pass. The teleportation probability controls depth: lower alpha (e.g., 0.05) allows deeper traversal; higher alpha (0.3) constrains to the near neighborhood.
+  
+  ### Spreading Activation
+  
+  Spreading activation (arXiv 2512.15922, December 2025) is a cognitive-science-inspired alternative. Seed nodes receive initial activation energy. At each step, energy propagates to neighboring nodes proportionally to edge weight and decays by a factor. Nodes accumulate activation from multiple paths. The process stops when activation falls below a threshold or after a fixed number of steps.
+  
+  Differences from PPR:
+  - PPR is a global stationary distribution; spreading activation is a local simulation.
+  - Spreading activation can model asymmetric path weighting (edge direction matters more explicitly).
+  - Activation accumulates across multiple paths, so nodes reachable by many short paths score higher than nodes reachable by one long path — this matches SDLC intuition (a policy cited by many work items is more important context than a research note cited once).
+  
+  Results: combining spreading activation with chain-of-thought retrieval yields up to 39% absolute gain in answer correctness over naive RAG on multi-hop QA benchmarks.
+  
+  ### SDLC-Specific Traversal Patterns
+  
+  The SDLC artifact graph has a natural hierarchy with directional semantics:
+  
+  ```
+  work_item
+    → depends_on: [other work_items]
+    → belongs_to: [module]
+    → governed_by: [domain_policies]
+    → informed_by: [research, interviews]
+    → has_findings: [incremental_reviews]
+  
+  module
+    → implements: [architecture_components]
+    → governed_by: [domain_policies]
+  
+  domain_policy
+    → derived_from: [guiding_principles]
+    → established_by: [decisions]
+    → has_questions: [open_questions]
+  ```
+  
+  This suggests **edge-type-weighted traversal**: follow `depends_on` with full weight for execution tasks (you need to know your dependencies' interfaces); follow `governed_by` with full weight for all tasks; follow `informed_by` with reduced weight (research is supplemental); follow `has_findings` with weight that scales with recency and severity of findings.
+  
+  Specific pattern for **execution tasks**: follow `depends_on` 1 hop, `governed_by` 1 hop, `belongs_to` 1 hop (module), then `implements` 1 more hop from module (architecture component). That is N=2 with selective edge following — equivalent to a bounded BFS with edge-type filter.
+  
+  ---
+  
+  ## Question 2: Relevance Scoring for Artifact Relationship Graphs
+  
+  ### Current State of Research
+  
+  There is no published work specifically on relevance scoring for SDLC artifact graphs. The closest analogues are:
+  1. Aider's PageRank over file dependency graphs (code-specific)
+  2. RepoHyper's GNN link predictor over repository semantic graphs (code-specific)
+  3. Apple's Context Tuning for RAG (uses numerical, categorical, and habitual usage signals)
+  4. RankRAG (NeurIPS 2024) — trains a single LLM to simultaneously rank context and generate answers
+  
+  ### Edge-Type Weighting by Task
+  
+  The fundamental insight from graph-based RAG research is that not all edges carry equal signal. For SDLC, proposed weights by task type (hand-tuned, not empirically validated for this domain):
+  
+  | Edge Type | Execution | Review | Planning |
+  |---|---|---|---|
+  | `depends_on` (work item dependencies) | 1.0 | 0.4 | 0.6 |
+  | `governed_by` (domain policies) | 0.9 | 1.0 | 0.8 |
+  | `belongs_to` (module membership) | 0.8 | 0.7 | 0.5 |
+  | `implements` (architecture component) | 0.6 | 0.8 | 0.9 |
+  | `derived_from` (guiding principles) | 0.5 | 0.7 | 0.7 |
+  | `informed_by` (research/interviews) | 0.3 | 0.3 | 0.9 |
+  | `has_findings` (review results) | 0.2 | 1.0 | 0.5 |
+  | `established_by` (decisions) | 0.4 | 0.6 | 1.0 |
+  
+  These weights are hypotheses, not empirically derived. The reasonable starting point is: policies and dependencies are always high-weight; research is high-weight only during planning; findings are high-weight only during review.
+  
+  ### Learnable Relevance Models
+  
+  **Bi-encoder models** (e.g., sentence-transformers fine-tuned on task-specific (query, relevant context) pairs) can learn which artifacts matter for which tasks. Requires labeled training data: for N work items per task type, record which context artifacts the LLM actually used (see Question 7 on adaptivity). With 50-100 labeled examples per task type, a lightweight cross-encoder can re-rank graph traversal candidates.
+  
+  **RankRAG approach**: fine-tune the generation LLM with a small fraction of ranking data mixed into its training blend. The paper shows this outperforms dedicated ranking models. Not practical unless you control model training.
+  
+  **Apple's Context Tuning**: uses LambdaMART with Reciprocal Rank Fusion (RRF) over numerical, categorical, and habitual signals. Achieves 3.5x improvement in Recall@K over semantic search alone. The habitual usage signal (which context is frequently used together) is directly applicable to the SDLC case.
+  
+  ### Hand-Tuned vs. Learned Weights
+  
+  **Hand-tuned weights are sufficient for a first implementation** because:
+  - The graph structure in SDLC is small and well-defined (not millions of nodes)
+  - Edge types are semantically explicit and stable
+  - Task types are known in advance (execute, review, plan, refine)
+  
+  Learned weights become valuable when the system has accumulated query logs showing which retrieved artifacts the LLM actually cited. The query-log infrastructure already exists in `retrieval.ts` (`logQuery()`). The gap is logging which returned chunks appeared in the LLM's output — this is the signal needed to train a reranker.
+  
+  ---
+  
+  ## Question 3: Aider Repository Map
+  
+  ### Algorithm Detail
+  
+  Source: aider.chat/2023/10/22/repomap.html and aider/repomap.py
+  
+  **Step 1 — Symbol extraction with tree-sitter**: For each source file, tree-sitter parses the AST and extracts definitions (functions, classes, methods) and references (call sites, type uses). Each (file, symbol) pair becomes a tagged node.
+  
+  **Step 2 — Graph construction**: A directed multigraph (NetworkX MultiDiGraph) is built. Edges run from files that reference a symbol to the file that defines it. Edge weight = number of references.
+  
+  **Step 3 — Personalized PageRank**: The currently-in-context files (those the user is editing or has mentioned) become seed nodes. The personalization vector assigns weight `1/len(mentioned_files)` to each mentioned file and 0 to all others. If no files are mentioned, the personalization degrades to standard global PageRank (uniform prior). After convergence, each node's rank is proportional to how much the random walk, biased toward the mentioned files, visits it.
+  
+  **Step 4 — Rank distribution to (file, symbol) pairs**: Each file's PageRank score is distributed across its outgoing edges proportionally to edge weight. This assigns a score to each specific symbol rather than just each file.
+  
+  **Step 5 — Token budget via binary search**: The target is `max_map_tokens` (default 1024). Binary search finds the maximum number of tags such that the rendered output is within 15% of the budget. Starting point is `min(max_map_tokens // 25, num_tags)` to avoid O(N) initial attempts. Convergence is O(log N).
+  
+  **Step 6 — Rendering**: Top-ranked (file, symbol) pairs are rendered as a compact listing — file names with indented symbol stubs (function signatures, class names) but not full bodies.
+  
+  ### What Gets Included vs. Excluded
+  
+  - Symbols in files with zero PageRank after personalization are excluded first
+  - Within the budget, symbols are included in descending rank order
+  - The binary search ensures the output is dense (within 15% of budget) rather than sparse
+  
+  ### Adaptation to SDLC Artifact Graphs
+  
+  The Aider approach is directly adaptable:
+  - Replace source files with artifact files
+  - Replace symbol definitions/references with explicit YAML relationship fields (`depends_on`, `governs`, etc.)
+  - Replace tree-sitter parsing with YAML/Markdown parser that extracts relationship edges
+  - Seed nodes = the starting artifact (work item, review scope, etc.)
+  - PPR identifies which artifacts are most relevant to the seed
+  - Token budget binary search trims the assembled context to fit within LLM limits
+  
+  The key difference: SDLC artifact relationships are explicit (declared in YAML fields), not inferred from code references. This makes edge extraction cheaper and more reliable than AST parsing.
+  
+  **Token budget note**: Aider uses ~4.3-6.5% of the context window for the repo map. For a 200K token context, that's 8,600-13,000 tokens for the map. For assembled SDLC context, comparable budgets are appropriate for the "scaffolding" (policies, module spec, dependencies), with additional budget reserved for the actual work item and any code the LLM needs to read.
+  
+  ---
+  
+  ## Question 4: Sourcegraph Cody's Two-Stage Retrieval
+  
+  ### Architecture
+  
+  Based on the RepoHyper paper (arXiv 2403.06095) and Sourcegraph's RecSys 2024 paper on Cody's context engine.
+  
+  **Stage 1 — High-recall retrieval (Search + Expand)**:
+  1. KNN semantic search over the Repo-level Semantic Graph (RSG) to find the K nearest neighbors of the query in embedding space
+  2. Graph expansion from the KNN results: follow edges in the RSG to include nodes that are semantically linked to the initial hits
+  3. Result: a large candidate set (potentially hundreds of nodes) that strongly biases toward recall over precision
+  
+  The RSG in RepoHyper encodes function definitions, call relationships, import dependencies, and class hierarchies as a hypergraph. For SDLC artifacts, the equivalent is the artifact dependency graph with explicit edge types.
+  
+  **Stage 2 — Precision ranking under token budget**:
+  1. GNN-based link predictor: a Graph Neural Network trained on the RSG predicts which candidate nodes are most likely to be relevant given the query context
+  2. The link predictor is trained on past code completion successes/failures as supervision signal
+  3. Output: a ranked list of ~4-6 high-precision context items
+  
+  **Ranking signals in Stage 2**:
+  - Graph structural signals: node degree (hub nodes), edge recency, path length from query
+  - Embedding similarity: cosine distance to query in dense space
+  - Contextual BM25: keyword overlap between candidate and query
+  - Combination achieves 35% reduction in top-20-chunk retrieval failure rate vs. embedding-only
+  
+  **Handling structured vs. prose**:
+  - Structured data (function signatures, type definitions) benefits more from graph expansion (edges are precise)
+  - Prose (documentation, comments) benefits more from semantic similarity
+  - Cody's system runs both in Stage 1 and lets the link predictor in Stage 2 arbitrate; the GNN has seen both types during training
+  
+  **Token budget**: Cody dynamically adjusts to 4-6 snippets with output limit of 4,000 tokens, reflecting the finding that 4-6 high-precision items outperform 20 lower-precision items in generation quality.
+  
+  ### Relevance to ideate
+  
+  The two-stage pattern is the right model for ideate's context assembly:
+  - Stage 1 (graph traversal + semantic search in parallel) = high recall
+  - Stage 2 (edge-type-weighted PPR scores + embedding similarity reranking under token budget) = precision
+  
+  The GNN link predictor requires training data that does not exist yet. A lighter substitute: a cross-encoder re-ranker using the existing embedding infrastructure, trained on query logs once sufficient data accumulates.
+  
+  ---
+  
+  ## Question 5: Hybrid Graph + Semantic Search
+  
+  ### How Hybrid Systems Combine Results
+  
+  The dominant pattern in 2024-2025 literature:
+  
+  1. **Graph traversal primary**: follow explicit edges from the seed artifact. This is deterministic, fast (SQLite adjacency list lookups), and maximally precise for well-structured relationships.
+  
+  2. **Semantic search secondary**: embed the query (task description + seed artifact content) and search the embedding index. This catches artifacts that are relevant by content but not connected by explicit edges.
+  
+  3. **Score fusion**: Reciprocal Rank Fusion (RRF) is the standard stateless combiner. `RRF(d) = Σ 1 / (k + rank_i(d))` where k=60 is the standard constant. RRF is order-agnostic and handles cases where one source returns no results gracefully.
+  
+  Alternatively: normalize each source's scores to [0,1] and combine as weighted sum (as in ideate's current `retrieval.ts`: `0.7 * semantic + 0.3 * bm25`). The current implementation already follows this pattern for semantic+BM25; extending to graph+semantic requires materializing graph traversal scores as numeric values.
+  
+  ### When to Run Each
+  
+  **Always run both**: The overhead of semantic search is constant (embedding the query, scanning the index). The overhead of graph traversal is O(edges in subgraph), which is small for bounded traversal. Running both in parallel and fusing results adds ~50-100ms latency for typical artifact graph sizes but meaningfully improves recall for:
+  - Newly written artifacts that haven't been explicitly linked yet
+  - Cross-cutting concerns (a policy that applies to a work item's domain but wasn't cited in the work item spec)
+  - Research artifacts that are relevant by content but lack explicit edges
+  
+  **Semantic-only when graph results are below threshold**: Appropriate for large or sparse graphs where traversal is expensive. Not applicable to ideate's bounded artifact graph (hundreds of artifacts, not millions).
+  
+  **Graph-only for structured lookups**: When the query is a precise structural request ("give me all policies for the workflow domain"), graph traversal alone is both sufficient and faster. The `ideate_domain_policies` tool already implements this pattern.
+  
+  ### Practical Finding
+  
+  HybridRAG (combining KG traversal + vector embeddings + BM25) consistently outperforms any single approach across structured and unstructured queries. The relative weight between graph and semantic signals should vary by artifact type: structured artifacts (YAML work items, domain decisions with explicit fields) benefit more from graph signals; prose artifacts (research notes, interview transcripts) benefit more from semantic signals.
+  
+  ---
+  
+  ## Question 6: Minimum Viable Context by Task Type
+  
+  ### Research Foundation
+  
+  The Tokenomics paper (arXiv 2601.14470, January 2026) analyzed token consumption across SDLC phases in a multi-agent system. Key finding: iterative Code Review accounts for 59.4% of total token consumption, with input tokens averaging 53.9% of all tokens — meaning context loading is the dominant cost driver.
+  
+  The "Lost in the Middle" paper (TACL 2024) establishes that LLM performance degrades by >30% when relevant information is in the middle of a long context rather than at the start or end. This has direct implications for context ordering, not just context size.
+  
+  ### Executing a Work Item
+  
+  **Minimum viable context**:
+  1. Work item spec (acceptance criteria, description, scope) — always included, always first
+  2. Dependencies' interfaces (not full implementation — just signatures/contracts) — 1 hop via `depends_on`
+  3. Module spec for the work item's module (boundaries, what belongs in this module) — 1 hop via `belongs_to`
+  4. Domain policies for the relevant domain(s) — 1-2 hops via `governed_by`
+  5. Source code index (file names + key exports) — orientation aid, not full file contents
+  
+  **What to exclude**: prior review findings (historical, not prescriptive), research notes (already distilled into policies), architecture document in full (use module + component excerpt instead), other work items' specs.
+  
+  **Diminishing-returns threshold**: the current `getWorkItemContext()` function assembles spec + module + policies + research. Research inclusion is likely past the threshold for execution — research should already be distilled into policies. The module spec and policy sections are high-value; the research section is lower-value for execution specifically.
+  
+  **Ordering**: put the work item spec first and policies last (both positions benefit from the primacy/recency effect). Module spec in the middle.
+  
+  ### Reviewing Completed Work
+  
+  **Minimum viable context**:
+  1. Acceptance criteria from the work item spec (what was supposed to be built) — always first
+  2. What changed (the diff or incremental review summary) — always second
+  3. Architecture constraints relevant to the changed files — from `architecture.md` component sections
+  4. Domain policies for the affected domains — high weight
+  5. Prior findings about the same files/patterns (from `archive/incremental/`) — only recent cycle(s), not all history
+  
+  **What to exclude**: dependencies' full specs, research notes, unrelated work items, module specs for other modules, full architecture document.
+  
+  **Diminishing returns**: loading more than the latest 1-2 cycles of findings for the same files adds noise. The domain layer already distills history — policies.md is the compressed representation.
+  
+  ### Planning Changes (Refine)
+  
+  **Minimum viable context**:
+  1. Current state summary (latest cycle's summary.md) — always first
+  2. All domain policies + all open questions — this IS the distilled current state
+  3. Prior decisions relevant to the scope of change — from decisions.md, scoped to affected domains
+  4. Research relevant to the proposed change direction — high weight during planning, unlike execution
+  5. Original architecture and guiding principles — for alignment checking
+  
+  **What to exclude**: incremental reviews (already distilled into domain decisions), work items from prior cycles (historical), interview transcripts from prior cycles (distilled into domain decisions).
+  
+  **The domain layer is the minimum viable context for planning**: as designed, refine loads `archive/cycles/{latest}/summary.md + domains/*/policies.md + domains/*/questions.md`. This is empirically well-founded based on the research.
+  
+  ### Summary Table
+  
+  | Task | Primary context | Secondary | Exclude |
+  |---|---|---|---|
+  | Execute work item | Spec + dependencies' interfaces + module spec + domain policies | Source code index | Research notes, full architecture, prior findings |
+  | Review completed work | Acceptance criteria + diff/changes + architecture constraints + domain policies | Recent findings (1-2 cycles) | All history, other work items, research |
+  | Plan changes (refine) | Latest cycle summary + all domain policies + open questions | Research relevant to change direction | Incremental reviews, prior work items, old interview transcripts |
+  | Full audit | All domain policies + questions + latest summary | Source code index | Full incremental review history (domain layer replaces this) |
+  
+  ---
+  
+  ## Question 7: Adaptive Context Assembly
+  
+  ### The Core Mechanism
+  
+  The query log (`query-log.jsonl`) already captures which artifacts were returned for each query. The missing signal is: which returned artifacts did the LLM actually use in its output?
+  
+  **Two approaches to capture the usage signal**:
+  
+  **Approach A — Output citation parsing**: Instruct agents to cite artifact paths when they reference a policy, finding, or decision. Parse the agent's output for citations matching known artifact paths. A cited artifact was used; an uncited artifact may not have been. This is low-noise but requires agent prompt engineering to produce consistent citations.
+  
+  **Approach B — Output text overlap**: For each returned artifact chunk, compute token overlap with the agent's output. Chunks with >10% overlap were likely used; chunks with 0% overlap were not. This is noisier (an agent may apply a policy without quoting it) but requires no prompt changes.
+  
+  **Approach C — LLM-as-judge scoring** (RankRAG paper pattern): After a completed task, prompt an evaluation LLM with (task, context assembled, output produced) and ask it to score which context items were necessary, sufficient, or irrelevant. Expensive per task but produces clean labels for training a reranker.
+  
+  ### What to Learn
+  
+  Given usage signal, the adaptation targets are:
+  1. **Edge-type weights by task type**: if `informed_by` (research) edges are never used during execution tasks but frequently used during planning, lower their weight for execution traversal.
+  2. **Artifact-type boosts**: if `domain_policy` chunks are consistently cited across all task types (which they likely are), maintain or increase their fixed boost.
+  3. **Recency decay**: if findings from more than 2 cycles ago are never cited in reviews, apply a time-decay factor that reduces their weight after N cycles.
+  4. **Domain-specific patterns**: some domains may have tighter policy coupling to work items than others; weights should be per-domain, not global.
+  
+  ### Practical Implementation Path
+  
+  The existing `query-log.jsonl` is the right data store. Add a `used_chunks` field alongside `results`. With ~100 logged tasks per task type:
+  - Compute mean retrieval rank of used vs. unused chunks per edge type
+  - Use this to calibrate edge-type weights
+  - This is a single offline computation (no online learning required initially)
+  
+  No machine learning is required for this first stage — it is a statistical analysis of logs. A lightweight gradient-boosted model (XGBoost or similar) can be added once the log has sufficient volume (500+ tasks).
+  
+  ---
+  
+  ## Question 8: Index Time vs. Query Time
+  
+  ### What Should Be Pre-Computed at Index Time
+  
+  **Always pre-compute**:
+  1. **Embeddings**: embedding generation is slow (50-200ms per chunk with `all-MiniLM-L6-v2`). The current system correctly pre-computes and stores in SQLite with content-hash-based invalidation.
+  2. **Adjacency lists**: for each artifact node, store outgoing and incoming edges by type. This is O(1) lookup at query time vs. O(edges) traversal.
+  3. **Artifact type classification**: the current `classifyArtifactType()` function in `chunker.ts` does this correctly at index time.
+  4. **Domain membership**: the current `extractDomain()` function does this correctly.
+  
+  **Pre-compute for common query patterns**:
+  5. **Transitive closure of `depends_on` chains**: for each work item, pre-compute all transitive dependencies. This is O(N²) worst case but SDLC dependency chains are shallow (typically depth 2-3). Store as a materialized column or separate table.
+  6. **"Context packages" for the three primary task types**: pre-assemble the base context package (architecture + principles + constraints + source index) since it is shared across all tasks. The current `getContextPackage()` with LRU cache does this correctly — the LRU cache is the right mechanism.
+  
+  **Do not pre-compute**:
+  7. **Full PPR distributions**: PPR requires knowing the seed node, which is query-time. However, if the graph is small (<500 nodes), PPR convergence takes <10ms in SQLite and can be done at query time.
+  8. **Semantic search results**: depend on the query string, must be query-time.
+  9. **Task-type-specific context packages per work item**: too many combinations (N work items × 3 task types × domain variations). Assemble at query time with cached building blocks.
+  
+  ### LazyGraphRAG Pattern
+  
+  Microsoft's LazyGraphRAG (November 2024) shows that deferring LLM-based graph construction until query time achieves comparable quality to pre-built graphs at 0.1% of the index cost and 700x lower query cost for global queries. The key insight: for small, structured graphs (like SDLC artifact graphs), graph construction overhead is negligible and full pre-computation is not necessary.
+  
+  For ideate, this means: pre-compute embeddings and adjacency lists; defer everything else to query time. The watcher-based incremental re-indexing in `watcher.ts` is the right model — index updates are O(changed files), not O(full corpus).
+  
+  ### Schema Extensions for Graph Support
+  
+  The current schema (`chunks` table with `artifact_type`, `domain` columns) lacks explicit relationship storage. To support graph traversal, add:
+  
+  ```sql
+  CREATE TABLE relationships (
+    source_id TEXT NOT NULL,       -- chunk id or artifact id
+    target_id TEXT NOT NULL,
+    edge_type TEXT NOT NULL,       -- depends_on, governed_by, belongs_to, etc.
+    weight REAL NOT NULL DEFAULT 1.0,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (source_id, target_id, edge_type)
+  );
+  CREATE INDEX idx_rel_source ON relationships(source_id, edge_type);
+  CREATE INDEX idx_rel_target ON relationships(target_id, edge_type);
+  ```
+  
+  Relationships are extracted from YAML fields (`depends_on`, `domain`, `module`) at index time and stored here. This enables O(1) adjacency lookups and enables PPR over the full artifact graph at query time.
+  
+  ---
+  
+  ## Current State of ideate's MCP Server (Relevant to This Design)
+  
+  From reading the source code:
+  
+  **What exists**:
+  - Embedding index in SQLite with cosine similarity search (`embeddings.ts`)
+  - Hybrid BM25 + semantic scoring with 0.7/0.3 weighting (`retrieval.ts`)
+  - Principle/constraint type boost (+0.1 for similarity > 0.3)
+  - Query logging to `query-log.jsonl` with per-chunk scores
+  - LRU cache (50MB) with file-change invalidation via watcher
+  - Pre-assembled `getWorkItemContext()` and `getContextPackage()` tools
+  - Artifact type classification and domain extraction at index time
+  
+  **What is missing for graph-based assembly**:
+  - No `relationships` table — explicit edges between artifacts are not stored
+  - No PPR or spreading activation traversal
+  - No edge-type weighting by task type
+  - `getWorkItemContext()` loads all domain policies when no explicit domain is found (over-inclusive fallback)
+  - Research loading in `getWorkItemContext()` truncates at 1000 lines but loads all research files — not domain-scoped
+  - No usage tracking signal (only query logging, not output citation parsing)
+  - No adaptive weight adjustment mechanism
+  
+  **The query log is the critical gap**: the infrastructure logs which chunks were returned but not which were used. Adding a `used_chunk_ids` field to the log entries (to be written after task completion) is the minimal change needed to enable adaptive weighting.
+  
+  ---
+  
+  ## Key Tradeoffs Summary
+  
+  | Design decision | Option A | Option B | Current in ideate |
+  |---|---|---|---|
+  | Graph traversal algorithm | PPR (theoretically optimal, single pass) | N-hop BFS with edge-type filter (simpler, predictable) | None — no graph traversal |
+  | Relevance scoring | Hand-tuned edge weights by task type | Learned bi-encoder from query logs | Flat semantic+BM25 hybrid |
+  | Two-stage retrieval | Graph primary → semantic fallback | Both in parallel → RRF fusion | Semantic primary only |
+  | Context adaptation | Offline log analysis (batch) | Online feedback (requires infrastructure) | None |
+  | Index vs. query time | Pre-compute adjacency lists, defer PPR | Pre-compute full context packages per work item | Pre-compute embeddings, LRU cache for packages |
+  | Research inclusion | Planning only, excluded from execution | Always included with recency decay | Always included (potentially over-inclusive) |
+  
+  ---
+  
+  ## Sources
+  
+  - [Aider: Building a better repository map with tree-sitter](https://aider.chat/2023/10/22/repomap.html)
+  - [Aider: Repository map documentation](https://aider.chat/docs/repomap.html)
+  - [Aider Repository Mapping System (DeepWiki)](https://deepwiki.com/Aider-AI/aider/4.1-repository-mapping)
+  - [HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models (NeurIPS 2024)](https://arxiv.org/abs/2405.14831)
+  - [HippoRAG GitHub](https://github.com/OSU-NLP-Group/HippoRAG)
+  - [Leveraging Spreading Activation for Improved Document Retrieval in Knowledge-Graph-Based RAG Systems (arXiv 2512.15922)](https://arxiv.org/abs/2512.15922)
+  - [RepoHyper: Search-Expand-Refine on Semantic Graphs for Repository-Level Code Completion (arXiv 2403.06095)](https://arxiv.org/abs/2403.06095)
+  - [AI-assisted Coding with Cody: Lessons from Context Retrieval and Evaluation (RecSys 2024)](https://arxiv.org/html/2408.05344v1)
+  - [RankRAG: Unifying Context Ranking with Retrieval-Augmented Generation in LLMs (NeurIPS 2024)](https://arxiv.org/abs/2407.02485)
+  - [LazyGraphRAG: Setting a new standard for quality and cost — Microsoft Research](https://www.microsoft.com/en-us/research/blog/lazygraphrag-setting-a-new-standard-for-quality-and-cost/)
+  - [Context Tuning for Retrieval Augmented Generation — Apple Machine Learning Research / EACL 2024](https://machinelearning.apple.com/research/context-tuning-retrieval)
+  - [Lost in the Middle: How Language Models Use Long Contexts (TACL 2024)](https://arxiv.org/abs/2307.03172)
+  - [Tokenomics: Quantifying Where Tokens Are Used in Agentic Software Engineering (arXiv 2601.14470)](https://arxiv.org/abs/2601.14470)
+  - [Graph Retrieval-Augmented Generation: A Survey (ACM TOIS)](https://dl.acm.org/doi/10.1145/3777378)
+  - [ReMindRAG: Low-Cost LLM-Guided Knowledge Graph Traversal for Efficient RAG (arXiv 2510.13193)](https://arxiv.org/abs/2510.13193)
+  - ideate source files read: `/Users/dan/code/ideate/mcp/artifact-server/src/retrieval.ts`, `embeddings.ts`, `chunker.ts`, `indexer.ts`, `tools.ts`
+  - ideate research file read: `/Users/dan/code/ideate/specs/steering/research/domain-knowledge-layer.md`
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: b739bcaa3638e9252fd27e9447d1d8395366f1ae4200e83fc70af5f8dae1994e
+token_count: 8050
+file_path: .ideate/research/RF-context-assembly-strategies.yaml

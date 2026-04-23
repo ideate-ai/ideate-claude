@@ -1,0 +1,71 @@
+id: summary
+type: cycle_summary
+content: |
+  # Cycle 77 Capstone — PH-053 Integrity, first pass
+
+  ## Scope
+  WI-890/891/892/893 landed all four Critical fixes from the 2026-04-17 full-audit. Test suite: 1531 → 1563 (+32 tests).
+
+  ## Verdicts
+  - code-reviewer: Fail (1 Significant: TS compile error in ppr.ts)
+  - spec-reviewer: Pass; Principle Adherence: Pass
+  - gap-analyst: Fail (4 Significant: anti-pattern recurs in 2 more functions; shutdown guard asymmetric)
+
+  ## Convergence
+  Not converged. Condition A fails (5 Significant); Condition B passes (principle adherence).
+
+  ## Significant findings requiring follow-up
+  - [code S1] ppr.ts:173 TS2345: CONTAINMENT_EDGE_TYPES.has(string) needs EdgeType. tsc --noEmit fails.
+  - [gap EC1] writer.ts:733-735 patchNode has fs.readFileSync inside SQLite transaction.
+  - [gap EC2] writer.ts:1119,1127 batchMutate has fs.readFileSync inside SQLite transaction.
+  - [gap II1] LocalWriterAdapter missing assertNotShutDown() guards (asymmetric with RemoteAdapter).
+  - [gap IR1] No tests for LocalAdapter post-shutdown behavior (correlated with II1).
+
+  ## Minor findings
+  console.error vs log.error in writer.ts; dead findingsDir variable; test mock type cast; 3 RemoteAdapter no-op methods missing shutdown guard; v5→6 stub does not DROP metrics_events table.
+
+  ## Systemic pattern observation
+  Both WI-890 and WI-891 delivered the letter of their specs but not the full spirit: the underlying anti-patterns recur in other functions that the WI specs did not enumerate. Future phases should include an anti-pattern sweep step when fixing class-of-bug issues.
+
+  ## Proposed refinement (cycle 78)
+  Two bundled WIs:
+  - WI-894: TS hygiene sweep — fix ppr.ts type error, add tsc --noEmit to pretest, fix writer.ts console.error → log.error, remove findingsDir dead variable, fix test mock cast, add shutdown guards to 3 remote no-op methods.
+  - WI-895: LocalWriterAdapter integrity completion — move fs ops out of transactions in patchNode + batchMutate (mirror WI-890); add _isShutDown + assertNotShutDown() to LocalWriterAdapter with cascade from LocalAdapter.shutdown(); add regression tests for both the anti-pattern and post-shutdown behavior.
+content_hash: 78f4fa8325b36f413f946718a6f720316e152bd571ec74f9b717a3b51377be6b
+token_count: 929
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 77
+mode: proxy-verified
+proxy_decision: PHD-033-01
+verdict: Pass
+convergence_achieved: true
+condition_a: true
+condition_b: true
+principle_verdict: Pass
+scope: full-audit
+summary: "Cycle 34 capstone skipped per proxy-human decision PHD-033-01 (circuit-breaker Andon). WI-875 closed F-CYCLE-33-S1 mechanically. Verification method: grep for old phrasing returns zero matches across mcp/artifact-server/ and docs/platform/; npm test passes 1481/0/345. PH-049 success criteria met. PR-002 complete."
+findings_addressed:
+  - id: F-CYCLE-33-S1
+    addressed_by: WI-875
+    verification: grep-zero + 1481/0/345 test pass
+  - id: F-CYCLE-33-MI1
+    addressed_by: WI-875
+    verification: subsumed by S1 fix
+  - id: F-CYCLE-33-M1
+    addressed_by: WI-875
+    verification: remote/index.ts:1140 JSDoc updated in same WI
+findings_deferred:
+  - id: F-CYCLE-33-M2
+    severity: minor
+    disposition: accepted as post-phase cleanup; getToolUsage stub + metrics_event removal bundled from WI-863/WI-867; confirm in a future phase that this is intentional and split commit if needed
+  - id: F-CYCLE-33-M3
+    severity: minor
+    disposition: hygiene; no action required unless future tooling auto-sorts adapter-contract.md Version History by date
+tests_run: true
+tests_passed: 1481
+tests_failed: 0
+tests_skipped: 345
+cycle_modified: 27
+phase: PH-050
+project: PR-001
+date: "20260417"

@@ -9,32 +9,50 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - The review skill spawns the journal-keeper AFTER the other three reviewers (code-reviewer, spec-reviewer, gap-analyst) complete — not in parallel with them
-  - "Phase 3 is restructured: first spawn three reviewers in parallel, then after all three complete, spawn journal-keeper with access to all three final review files"
-  - The journal-keeper prompt includes the paths to the completed review files and instructs it to read them for cross-referencing
-  - "Phase 4 is updated to reflect the two-stage collection: first three reviewers, then journal-keeper"
+  - >-
+    The review skill spawns the journal-keeper AFTER the other three reviewers (code-reviewer, spec-reviewer,
+    gap-analyst) complete — not in parallel with them
+  - >-
+    Phase 3 is restructured: first spawn three reviewers in parallel, then after all three complete, spawn
+    journal-keeper with access to all three final review files
+  - >-
+    The journal-keeper prompt includes the paths to the completed review files and instructs it to read them for
+    cross-referencing
+  - 'Phase 4 is updated to reflect the two-stage collection: first three reviewers, then journal-keeper'
 module: null
 domain: null
-notes: |
+notes: >
   # Implementation Notes: 019
+
 
   Restructure Phase 3 into two sub-phases:
 
+
   **Phase 3a: Spawn Three Reviewers (parallel)**
+
   - code-reviewer
+
   - spec-reviewer
+
   - gap-analyst
+
 
   Wait for all three to complete. Write their outputs to `reviews/final/`.
 
-  **Phase 3b: Spawn Journal-Keeper (sequential)**
-  - journal-keeper receives all context it had before PLUS the three completed review files
-  - The prompt explicitly references `reviews/final/code-quality.md`, `reviews/final/spec-adherence.md`, `reviews/final/gap-analysis.md`
 
-  Update Phase 4 to reflect that three files are written first, then the fourth. The synthesis (Phase 5) still waits for all four.
+  **Phase 3b: Spawn Journal-Keeper (sequential)**
+
+  - journal-keeper receives all context it had before PLUS the three completed review files
+
+  - The prompt explicitly references `reviews/final/code-quality.md`, `reviews/final/spec-adherence.md`,
+  `reviews/final/gap-analysis.md`
+
+
+  Update Phase 4 to reflect that three files are written first, then the fourth. The synthesis (Phase 5) still waits for
+  all four.
 cycle_created: 1
 cycle_modified: null
 content_hash: 112036f217068234ddbf85ed1a563f9e8e3d83a0782b5d59c28d6a577156b23d
 token_count: 384
-file_path: .ideate/work-items/WI-019.yaml
+file_path: work-items/WI-019.yaml
 resolution: Implemented during v3 migration

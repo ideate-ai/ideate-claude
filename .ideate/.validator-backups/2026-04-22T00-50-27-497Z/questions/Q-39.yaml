@@ -1,0 +1,14 @@
+id: Q-39
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: "A malformed YAML file causes its node to disappear from the index silently. Operators see `files_updated: 0` and cannot tell whether the rebuild succeeded or all files errored."
+source: archive/cycles/016/gap-analysis.md G3; archive/cycles/016/decision-log.md Q2
+resolution: WI-152 added `files_failed` and `parse_errors` to `RebuildStats`.
+resolved_in: 17
+description: "`rebuildIndex` silently continues on YAML parse failure and returns no `files_failed` or `parse_errors` field in `RebuildStats`. Callers (including the watcher callback) cannot distinguish \"nothing changed\" from \"all files failed to parse.\" Should a `files_failed` counter be added?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "30d439f05270402c39ddbef6199dadb3a47feb3ddac923c00be98d7b2a14c989"
+token_count: 211
+file_path: .ideate/questions/Q-39.yaml

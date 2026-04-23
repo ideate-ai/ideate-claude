@@ -1,0 +1,21 @@
+id: WI-280
+type: work_item
+title: Fix proxy-human.md — route decisions through MCP
+status: done
+complexity: low
+scope:
+  - path: agents/proxy-human.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - proxy-human.md does not instruct direct Write to .ideate/ files
+  - Decision log entries use ideate_append_journal or ideate_write_artifact
+domain: agent-system
+notes: Replace direct Write to proxy-human-log.yaml with ideate_append_journal call.
+resolution: Replaced direct proxy-human-log.yaml write with ideate_append_journal call.
+cycle_created: 36
+cycle_modified: null
+content_hash: 0f1aac263838d0fb59d03b8f19d5152e5c9ba48d1bcbbf0d9c98d90b1dd6c1b5
+token_count: 144
+file_path: .ideate/work-items/WI-280.yaml

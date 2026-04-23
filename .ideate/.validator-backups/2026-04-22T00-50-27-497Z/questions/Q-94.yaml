@@ -1,0 +1,12 @@
+id: Q-94
+type: domain_question
+addressed_by: null
+description: Should ideate_artifact_query validate type parameters against known artifact types and return an error for unknown types rather than silently returning empty results?
+domain: artifact-structure
+impact: Silent empty results from type mismatches are indistinguishable from legitimate empty-set queries. The refine skill used type 'journal' (instead of 'journal_entry') and received zero results without any error, causing it to operate without project history for an unknown number of cycles.
+resolution: WI-393 added type validation test coverage. The existing validation in query.ts (lines 688-692) rejects unknown types and lists valid types in the error message. The 'journal' vs 'journal_entry' confusion is now caught at runtime with a descriptive error.
+resolved_in: 3
+source: full-audit-20260328 II2
+content_hash: 8827d90178ab20735fd0db97cb43740c89aaac474443dc42b7bac2a653755bea
+token_count: 217
+file_path: .ideate/questions/Q-94.yaml

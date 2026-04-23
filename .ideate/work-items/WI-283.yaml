@@ -12,13 +12,17 @@ depends: []
 blocks:
   - WI-286
 criteria:
-  - "ppr.ts exports a computePPR function accepting: drizzleDb, seedNodeIds, options (alpha, maxIterations, convergenceThreshold, edgeTypeWeights)"
-  - "Function returns Array<{nodeId: string, score: number}> sorted by score descending"
+  - >-
+    ppr.ts exports a computePPR function accepting: drizzleDb, seedNodeIds, options (alpha, maxIterations,
+    convergenceThreshold, edgeTypeWeights)
+  - 'Function returns Array<{nodeId: string, score: number}> sorted by score descending'
   - Default alpha=0.15, maxIterations=50, convergenceThreshold=1e-6
-  - "Node specificity (IDF-like): nodes with high in-degree get score dampened by log(totalNodes/inDegree)"
-  - "Edge type weights configurable — defaults: depends_on=1.0, governed_by=0.8, informed_by=0.6, references=0.4, blocks=0.3"
+  - 'Node specificity (IDF-like): nodes with high in-degree get score dampened by log(totalNodes/inDegree)'
+  - >-
+    Edge type weights configurable — defaults: depends_on=1.0, governed_by=0.8, informed_by=0.6, references=0.4,
+    blocks=0.3
   - Converges when max score change between iterations < convergenceThreshold
-  - "At least 5 tests: single seed, multiple seeds, convergence, edge type weighting, node specificity dampening"
+  - 'At least 5 tests: single seed, multiple seeds, convergence, edge type weighting, node specificity dampening'
   - npm run build succeeds; all tests pass
 domain: artifact-structure
 notes: |-
@@ -66,4 +70,4 @@ cycle_created: 37
 cycle_modified: null
 content_hash: 257dbd5122be81777458b6066fdebdf4c50eae801b91093f5010eb6788d9078f
 token_count: 636
-file_path: .ideate/work-items/WI-283.yaml
+file_path: work-items/WI-283.yaml

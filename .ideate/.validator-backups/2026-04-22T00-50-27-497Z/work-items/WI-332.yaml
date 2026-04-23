@@ -1,0 +1,36 @@
+id: WI-332
+type: work_item
+title: Fix server.ts minor findings from cycle 062 review
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/server.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - routeToolCall wraps handleBootstrapDormant call in try/catch and returns isError on failure
+  - Dead branch removed from handleBootstrapDormant — uses process.cwd() directly
+  - initServer wraps rebuildIndex in try/catch that closes newDb before re-throwing
+  - npm run build succeeds
+  - npm run test passes
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  Three surgical fixes in server.ts:
+
+  1. **routeToolCall try/catch** (review finding code-quality M1, server.ts:174-181):
+     Wrap `handleBootstrapDormant(state, args)` call inside routeToolCall in try/catch. On catch, return `{ content: [{type: 'text', text: 'Error: ' + message}], isError: true }`.
+
+  2. **Dead branch removal** (review finding code-quality M3, server.ts:118):
+     Replace `const projectRoot = state.ideateDir ? path.dirname(state.ideateDir) : process.cwd();` with `const projectRoot = process.cwd();` since handleBootstrapDormant is only reachable when !state.ctx, and ideateDir and ctx are always set together.
+
+  3. **DB handle leak** (review finding gap-analysis M1):
+     In initServer, wrap `rebuildIndex(newDb, newDrizzle, dir)` in try/catch. On catch, call `newDb.close()` then re-throw.
+resolution: "Three fixes applied: (1) routeToolCall try/catch around bootstrap, (2) dead branch removed in handleBootstrapDormant, (3) DB handle leak guard in initServer. Build clean, 338 tests pass."
+cycle_created: null
+cycle_modified: null
+content_hash: 8d1a5fb373834fea1031726378a62518c09f60e183828e50b6d054f17d7466fd
+token_count: 411
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-332.yaml

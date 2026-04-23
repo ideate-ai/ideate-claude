@@ -1,0 +1,63 @@
+id: gap-analysis
+type: cycle_summary
+reviewer: gap-analyst
+content: |-
+  **Verdict**: Pass (with minor reservations)
+
+  **Summary**: WI-871 and WI-872 delivered their stated goals. Significant doc drift surfaced in adapter-method-specs.md (pre-existing, outside cycle 32's scope). Several bookkeeping and finding-closure gaps remain. Neither blocks PH-049 success criteria.
+
+  ---
+
+  **Critical Findings**: None.
+
+  ---
+
+  **Significant Findings**:
+
+  ### GA-S1: adapter-method-specs.md RemoteAdapter countNodes description is stale post-WI-871
+
+  - **File**: docs/platform/adapter-method-specs.md:~740
+  - **Gap**: Line still says 'Sends nodeCounts(filter, groupBy) query'. WI-871 introduced a code-path split: for group_by==='severity' && filter.type==='finding', the remote adapter now uses artifactQuery with client-side post-filtering via _countFindingsBySeverity. The spec doc does not reflect the condition-branch.
+  - **Impact**: A developer reading adapter-method-specs.md will produce an incorrect re-implementation.
+  - **Recommendation**: Add a two-paragraph note in Section 15 'Current RemoteAdapter behavior' describing the severity+finding special path. Outside WI-872's explicit scope; defer to next cycle.
+
+  ---
+
+  **Minor Findings**:
+
+  ### GA-M1: adapter-contract.md test coverage list omits equivalence-query.test.ts
+
+  - File: docs/adapter-contract.md:~734. Test coverage list shows adapter-equivalence.test.ts but not equivalence-query.test.ts where WI-871's new test lives.
+
+  ### GA-M2: adapter.ts getConvergenceData JSDoc inconsistent with countNodes JSDoc
+
+  - Duplicates code-review S3.
+
+  ### GA-M3: adapter-interface.md countNodes filter clause omits 'non-undefined'
+
+  - Minor; runtime-equivalent.
+
+  ### GA-M4: Cycle 31 findings F-CYCLE-31-S1..S4 lack addressed_by field
+
+  - Duplicates spec-review SA-M3. Backfill in next cycle's close-out.
+
+  ### GA-M5: first:10000 cap in _countFindingsBySeverity and sibling methods undocumented
+
+  - Silent truncation at 10000 findings; no pagination fallback. Undocumented in contract. Minor for ideate's scale; would be significant at platform scale.
+
+  ---
+
+  **Project/Phase Progress Assessment**:
+
+  Cycle 32 closes cycle 31's countNodes-path divergence (F-CYCLE-31-S1, S4) and the related doc/contract drift (S2, S3, MI1). WI-871's _countFindingsBySeverity is correct and end-to-end tested with the null/non-empty/empty-string triad.
+
+  PH-049 success criteria status:
+  1. architecture-overview.md documents tool_usage telemetry — met (WI-867, earlier cycle).
+  2. ideate_get_convergence_status no longer returns condition_b:false — met for the countNodes severity path; code-review S1 identifies a residual bug in the parallel getConvergenceData path that could cause condition_a:false for findings with addressed_by="".
+
+  If cycle 33 fixes code-review S1 (getConvergenceData empty-string handling), PH-049 can be marked complete and PR-002 evaluated for overall completion. The minor bookkeeping items (M1-M5) are non-blocking.
+content_hash: 17bfb615ef07834ffac596014da1923b70591c4815ea510463bc7ac02e91a11c
+token_count: 795
+file_path: .ideate/cycles/068/gap-analysis.yaml
+cycle: 32
+cycle_modified: 27

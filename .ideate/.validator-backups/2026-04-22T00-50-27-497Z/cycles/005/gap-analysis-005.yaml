@@ -1,0 +1,26 @@
+id: gap-analysis-005
+type: cycle_summary
+title: Gap Analysis — Cycle 5
+reviewer: gap-analyst
+content: |-
+  ## Significant Gaps
+
+  ### Gap 1: handleGetConvergenceStatus does not query findings table
+  - **Interface**: ideate_get_convergence_status vs. findings extension table
+  - **Issue**: `handleGetConvergenceStatus` parses finding counts from cycle_summary prose bullet-list sections, not from the SQLite findings table. Findings written via handleWriteArtifact populate the findings table correctly but are invisible to convergence checking.
+  - **Impact**: Whether autopilot converges is decided by what the author wrote in the cycle_summary markdown, not by the indexed findings. A mislabeled finding in prose can cause false convergence or false non-convergence.
+  - **Severity**: Significant
+  - **Recommendation**: Add a secondary signal path to handleGetConvergenceStatus that counts rows directly from the findings table. Use the higher of prose-parsed and table count.
+
+  ## Minor Gaps
+
+  ### Gap 2: interview/interview_question share the same path template without collision enforcement
+  - **Issue**: Both types route to `interviews/{id}.yaml`. Matching ids cause silent overwrites. In practice, id prefixes (IQ-* vs. refine-*) prevent collision.
+  - **Severity**: Minor. Defer.
+
+  ### Gap 3: Rollback tests cover only 2 of 13+ dispatch branches
+  - **Issue**: Rollback tests exist for domain_policy, cycle_summary, finding, interview_question. All other dispatch branches (domain_decision, domain_question, proxy_human_decision, guiding_principle, constraint, module_spec, research_finding, document type variants) have no rollback coverage.
+  - **Severity**: Minor. A parameterized rollback test covering all types would address this systematically.
+content_hash: b1ac463e32e13784ca5c5bad14d8e518765724cb642ac7a64fc4e0c7116e694e
+token_count: 441
+file_path: .ideate/cycles/005/gap-analysis-005.yaml

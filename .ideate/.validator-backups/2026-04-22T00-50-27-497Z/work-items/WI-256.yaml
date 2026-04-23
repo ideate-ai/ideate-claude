@@ -1,0 +1,19 @@
+id: WI-256
+type: work_item
+title: ""
+status: done
+complexity: null
+scope: []
+depends: []
+blocks: []
+criteria: []
+domain: artifact-structure
+notes: "# WI-256: "
+resolution:
+  findings_count: 0
+  verdict: pass
+cycle_created: 28
+cycle_modified: null
+content_hash: f6c6880128102986baf987c1920ddfadb0e2bea9bf5990a5380b794bec0cde38
+token_count: 61
+file_path: .ideate/work-items/WI-256.yaml

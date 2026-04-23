@@ -1,0 +1,21 @@
+id: interview-refine-022
+type: interview
+cycle: 22
+entries:
+  - q: What direction do you want this cycle to go — Input Validation Layer, PPR Divergence Investigation, or open domain questions?
+    a: Open questions.
+    domain: null
+  - q: "The open question list was audited against the current codebase. Most questions (Q-117, Q-118, Q-124, Q-131–Q-137) are already resolved in code — the questions are stale. Three items remain genuinely unresolved: (1) Q-130 the ValidationError constructor still has a heuristic that silently degrades misuse to VALIDATION_ERROR; (2) Q-120 has two live testing gaps — nextId INVALID_NODE_TYPE for unsupported types and deprecated/superseded policy exclusion from getDomainState; (3) the stale-question backlog should be closed. Do you want to address all three?"
+    a: Yes, all three.
+    domain: adapter-equivalence
+  - q: "For the ValidationError redesign: the heuristic second-arg inference (starts with INVALID_, ends with _ERROR, equals TRANSACTION_FAILED → treat as code, else treat as field name) is still in adapter.ts:582–591. All current ~85 call sites happen to pass correct codes, but a future misuse would silently produce VALIDATION_ERROR instead of the intended code. The redesign removes the heuristic and simplifies the constructor to (message, code, details?). This is a medium-size mechanical refactor. Confirmed?"
+    a: Yes. Consistency and poka-yoke are important.
+    domain: adapter-equivalence
+  - q: "Scope boundary: is there anything from the recent indexer work (WI-719–732 era) you want to leave untouched?"
+    a: (Not answered explicitly — entire mcp/artifact-server is in scope.)
+    domain: null
+  - q: Guiding principles check — do the existing principles still apply for this cycle?
+    a: (Confirmed implicitly — no changes requested.)
+    domain: null
+content_hash: c960ea43fd480957ca15c586882e7af22e6abff1969716222dad384b99314e46
+token_count: 457

@@ -1,0 +1,13 @@
+id: D-114
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: A `ToolContext` interface (`{ db, drizzleDb, ideateDir }`) is created once at startup and passed to every `handleTool` call. No global state for database connections or directory paths.
+rationale: Avoids global state; enables clean testing with per-test contexts.
+cycle_created: 1
+cycle_modified: null
+content_hash: b44d5d45887b678887be6267e7aaa0ad3c36a2e2408b5510b97058643ff6cee6
+token_count: 120
+file_path: .ideate/decisions/D-114.yaml

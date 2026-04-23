@@ -1,0 +1,46 @@
+id: WI-409
+type: work_item
+title: Add finding/metrics_event/interview_question extension branches in handleWriteArtifact
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/db-helpers.ts
+    op: read
+depends: []
+blocks: []
+criteria:
+  - handleWriteArtifact has an else-if branch for type === 'finding' that calls upsertFinding with all FindingRow fields extracted from content (id, severity, work_item, verdict, cycle, reviewer, description, suggestion, addressed_by)
+  - handleWriteArtifact has an else-if branch for type === 'metrics_event' that calls upsertMetricsEvent with MetricsEventRow fields
+  - handleWriteArtifact has an else-if branch for type === 'interview_question' that calls upsertInterviewQuestion with InterviewQuestionRow fields
+  - All three types remain in TYPE_TO_EXTENSION_TABLE in db.ts (no removals)
+  - All existing tests still pass (npm test)
+domain: artifact-structure
+notes: |-
+  C1 from cycle 3 code-quality review: the finding type has no extension branch, so writing a finding artifact never populates the findings extension table. This breaks handleGetConvergenceStatus (which queries findings for critical counts) and handleGetReviewManifest.
+
+  S1 from cycle 3 code-quality review: same gap for metrics_event and interview_question.
+
+  P-46 (new policy from cycle 3): every type registered in TYPE_TO_EXTENSION_TABLE must have a dispatch branch in handleWriteArtifact.
+
+  Implementation: in the transaction block of handleWriteArtifact (write.ts), after the existing else-if chains, add:
+
+    else if (type === 'finding') {
+      const { id, severity, work_item, verdict, cycle, reviewer, description, suggestion, addressed_by } = content as FindingRow;
+      upsertFinding(ctx.drizzleDb, { id: artifactId, severity, work_item, verdict, cycle, reviewer, description, suggestion, addressed_by });
+    }
+    else if (type === 'metrics_event') {
+      upsertMetricsEvent(ctx.drizzleDb, { id: artifactId, ...content });
+    }
+    else if (type === 'interview_question') {
+      upsertInterviewQuestion(ctx.drizzleDb, { id: artifactId, ...content });
+    }
+
+  Import FindingRow, MetricsEventRow, InterviewQuestionRow from schema.ts and upsertFinding, upsertMetricsEvent, upsertInterviewQuestion from db-helpers.ts if not already imported.
+resolution: Added finding, metrics_event, and interview_question extension branches in handleWriteArtifact transaction dispatch. Added corresponding type/upsert imports from db-helpers.ts.
+cycle_created: 4
+cycle_modified: 3
+content_hash: 8097d47d5884c994d4fdcda6f0b212030e35b4794a0985fafc809cdacfcb342c
+token_count: 644
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-409.yaml

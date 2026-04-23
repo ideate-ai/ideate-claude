@@ -1,0 +1,94 @@
+id: RF-session-multiplexing
+type: research_finding
+topic: Session Multiplexing for Claude Code
+status: active
+date: "2026-03-08"
+content: |
+  # Session Multiplexing for Claude Code
+  
+  Research compiled: 2026-03-08
+  
+  ## Summary
+  
+  Six approaches assessed for multiplexing Claude Code sessions. The Agent SDK provides the strongest foundation for programmatic recursive orchestration. MCP-server-as-tool uniquely enables agent-driven recursion. Shell-based `claude --print` is simplest for fan-out parallelism.
+  
+  ## Claude CLI Headless Capabilities
+  
+  ```bash
+  claude --print "prompt"                          # Single-shot headless execution
+  claude --print --output-format json "prompt"     # Structured JSON output
+  echo "prompt" | claude --print                   # Piped input
+  claude --print --resume <session-id> "followup"  # Resume session
+  claude --print --permission-mode acceptEdits     # Unattended permissions
+  claude --print --allowedTools "Read,Edit,Bash"   # Tool control
+  claude --print --max-turns 20 "prompt"           # Bound agentic loops
+  claude --print --cwd /path/to/project "prompt"   # Working directory
+  ```
+  
+  ## Approaches Compared
+  
+  | Approach | Feasibility | Complexity | Recursive Depth | Best For |
+  |----------|-------------|------------|-----------------|----------|
+  | Shell/CLI (`--print`) | High | Low | Script-managed | Simple fan-out, CI/CD |
+  | tmux | Low | High | Script-managed | Visual monitoring only |
+  | Agent SDK (`query()`) | High | Moderate | Unlimited | Full recursive orchestration |
+  | MCP Server tool | High | Moderate | Agent-decided | Self-directed recursion |
+  | Hooks | Moderate | High | Limited | Quality gates, triggers |
+  | Agent Teams | Moderate | Low | 1 level | Collaborative parallel |
+  
+  ## Recommended Approaches
+  
+  ### Primary: Agent SDK Orchestrator
+  Standalone TypeScript/Python program using SDK's `query()` for recursive decomposition. Full programmatic control, structured results, session management with resume.
+  
+  ```typescript
+  async function recursiveDecompose(spec: string, depth: number) {
+    if (depth >= MAX_DEPTH) return executeLeaf(spec);
+    const subSpecs = await decompose(spec);
+    return Promise.all(subSpecs.map(sub => recursiveDecompose(sub, depth + 1)));
+  }
+  ```
+  
+  ### Secondary: MCP Server for In-Session Recursion
+  Expose `spawn_session` tool that lets Claude recursively invoke itself:
+  
+  ```python
+  @server.tool("spawn_session")
+  async def spawn_session(prompt: str, working_dir: str, max_turns: int = 20):
+      result = subprocess.run(
+          ["claude", "--print", "--permission-mode", "acceptEdits",
+           "--max-turns", str(max_turns), "--output-format", "json",
+           "--cwd", working_dir, prompt],
+          capture_output=True, text=True, timeout=600
+      )
+      return {"output": result.stdout, "exit_code": result.returncode}
+  ```
+  
+  Only approach that gives Claude itself the ability to decide on recursion at runtime.
+  
+  ### Complement: Shell Scripts
+  `claude --print` in helper scripts for independent fan-out tasks.
+  
+  ### Avoid
+  - tmux (fragile terminal scraping, `--print` makes it unnecessary)
+  - Hooks-only (too constrained for primary orchestration)
+  
+  ## Critical Risks
+  
+  - **Token cost amplification**: Multiplies with recursive depth. Hard budget limits essential.
+  - **Fork bomb via MCP**: Unbounded recursion. Enforce max_depth, max_concurrent, timeout.
+  - **Context overflow**: Child outputs consume parent window. Summarize before returning.
+  - **Parallel file conflicts**: Worktree isolation or file partitioning required.
+  - **API rate limiting**: Concurrency limiter needed.
+  
+  ## Sources
+  
+  - /Users/dan/code/ideate/specs/steering/claude-code-plugin-development.md
+  - Claude Code CLI documentation (--print, --output-format json, --resume)
+  - Claude Agent SDK API (query(), session management)
+sources: []
+cycle_created: 1
+cycle_modified: null
+content_hash: "02136550d6d2b006c025daaa2a5e784dd7175ac568a9c0a59168a96cc7eea5d9"
+token_count: 998
+file_path: .ideate/research/RF-session-multiplexing.yaml

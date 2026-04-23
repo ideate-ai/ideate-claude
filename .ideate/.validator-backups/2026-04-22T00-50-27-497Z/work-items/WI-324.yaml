@@ -1,0 +1,55 @@
+id: WI-324
+type: work_item
+title: "Qualify agent name references in skill files with ideate: prefix"
+status: done
+complexity: small
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+  - path: skills/refine/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/init/SKILL.md
+    op: modify
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "All agent spawn instructions in skill files use ideate: prefix (e.g., ideate:researcher not researcher)"
+  - "Explicit subagent_type values use ideate: prefix (e.g., subagent_type: ideate:proxy-human)"
+  - "Agent spec headers use ideate: prefix (e.g., **Agent**: ideate:code-reviewer)"
+  - "Bold agent name headers used as spawn targets use ideate: prefix"
+  - Data labels in metrics documentation and artifact content fields remain as short names (not prefixed)
+  - No unqualified agent spawn references remain (verified via grep)
+domain: agent-system
+notes: |-
+  ## Implementation
+
+  Update all agent spawn references in skill files to use the `ideate:` prefix that Claude Code registers for plugin agents.
+
+  Two categories of references:
+  1. **Spawn references** (MUST change): backtick names in spawn instructions, **Agent**: headers, bold agent name headers, subagent_type values
+  2. **Data labels** (do NOT change): agent_type in metric payloads, reviewer field in artifact content, agent names in config.agent_budgets references
+
+  ### Files and changes
+  - `skills/plan/SKILL.md`: researcher, architect, decomposer
+  - `skills/refine/SKILL.md`: architect, researcher, decomposer
+  - `skills/review/SKILL.md`: code-reviewer, spec-reviewer, gap-analyst, journal-keeper, domain-curator
+  - `skills/execute/SKILL.md`: code-reviewer
+  - `skills/init/SKILL.md`: architect
+  - `skills/autopilot/phases/execute.md`: code-reviewer, proxy-human (including explicit subagent_type)
+  - `skills/autopilot/phases/review.md`: code-reviewer, spec-reviewer, gap-analyst, journal-keeper, domain-curator
+resolution: Implemented in this conversation. All 8 skill files updated.
+cycle_created: null
+cycle_modified: null
+content_hash: fa2041a23720b7eb6f0103c32aa1dca63d596e673f584f6e150c63c4ca3ef2b4
+token_count: 567
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-324.yaml

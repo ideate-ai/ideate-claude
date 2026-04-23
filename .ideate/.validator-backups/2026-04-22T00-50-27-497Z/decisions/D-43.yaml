@@ -1,0 +1,13 @@
+id: D-43
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 1
+supersedes: null
+description: WI-125 updated `skills/review/SKILL.md` Phase 4a to state "Use the Agent tool to spawn subagents. If the outpost MCP server is configured, `spawn_session` may be used as an alternative." The error-handling section was also updated to key on Agent tool availability rather than spawn_session unavailability.
+rationale: After the outpost/ideate split, spawning via spawn_session as primary creates visible tool-not-found errors on non-outpost installations. Agent tool is the standard mechanism on all installations; spawn_session is an optional enhancement. Q-3 was the last remaining skill file with the inverted ordering.
+cycle_created: 1
+cycle_modified: null
+content_hash: "106e6fa9df56e6fe1f5664aa3a663f9592185c99db286ce8e2f52b7ed026f15b"
+token_count: 207
+file_path: .ideate/decisions/D-43.yaml

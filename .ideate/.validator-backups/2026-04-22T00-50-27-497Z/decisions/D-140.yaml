@@ -1,0 +1,12 @@
+id: D-140
+type: domain_decision
+title: finding type extension branch omitted from WI-406 scope — unintentional gap
+decision: WI-406 addressed document types and research_finding but did not include a finding branch in handleWriteArtifact. The gap was identified in cycle 1 gap-analysis (Gap 2) but was not carried into WI-406 acceptance criteria.
+rationale: WI-406 scope was defined by the critical-path fixes blocking handleGetConvergenceStatus. The finding type gap was tracked but not prioritized into that work item.
+source: cycle 3 decision-log D-E02; code-quality C1
+domain: artifact-structure
+status: settled
+cycle: 3
+content_hash: 5fbbff260a56dc1872cc120f614934d227203f9697da6f455103ede657ea26e3
+token_count: 156
+file_path: .ideate/decisions/D-140.yaml

@@ -1,0 +1,12 @@
+id: P-37
+type: domain_policy
+cycle_created: 67
+derived_from:
+  - GP-8 (Durable Knowledge Capture)
+  - P-33 (MCP Abstraction Boundary)
+description: "All .ideate/ artifact modifications must use MCP tools (ideate_write_artifact, ideate_update_work_items, ideate_write_work_items). Direct file edits bypass SQLite indexing and violate P-33. Exceptions: reading artifacts via Read tool is permitted; editing non-artifact files (journal.md, CLAUDE.md) outside .ideate/ is permitted."
+domain: artifact-structure
+status: active
+content_hash: 5cc4f3e1e784265b8b74948ddb2fafc14a89c88a0ed86a3cc75c7cafafff3cef
+token_count: 130
+file_path: .ideate/policies/P-37.yaml

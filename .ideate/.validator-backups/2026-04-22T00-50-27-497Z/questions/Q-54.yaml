@@ -1,0 +1,14 @@
+id: Q-54
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Quadratic wall-clock time during batch writes. With 100+ artifacts, each rebuild touches hundreds of files. Execution skill and migration script both write many files in bursts.
+source: archive/cycles/018/code-quality.md S1; archive/cycles/018/decision-log.md OQ2
+resolution: WI-170 added a 500ms trailing debounce via `debounceTimers` map and `clearTimeout`/`setTimeout` in `ArtifactWatcher.onEvent()`. Configurable via `debounceMs` constructor param. See D-84.
+resolved_in: 19
+description: Each chokidar `change` event triggers a full `rebuildIndex()`. When multiple files are written in rapid succession (e.g., during migration or skill execution writing 10+ artifacts), each write fires a separate event. Should a trailing debounce (e.g., 500ms) be added to the watcher callback to coalesce burst writes into a single rebuild?
+cycle_created: 1
+cycle_modified: null
+content_hash: ba3b2cf0fe557b18e0a11deb9f6ba8e99c0b78081ff1b880281011702d5a9a67
+token_count: 255
+file_path: .ideate/questions/Q-54.yaml

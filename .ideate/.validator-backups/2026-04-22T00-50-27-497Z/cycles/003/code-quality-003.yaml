@@ -1,0 +1,47 @@
+id: code-quality-003
+type: cycle_summary
+title: Code Quality Review — Cycle 3
+cycle: 3
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  One critical finding (finding type missing extension row), two significant findings, three minor.
+
+  ## Critical Findings
+
+  ### C1: `finding` type produces no `findings` extension row, breaking `handleGetProjectStatus`
+  - **File**: `mcp/artifact-server/src/tools/write.ts:824–939`
+  - **Issue**: `handleWriteArtifact` has no branch for `type === "finding"`. YAML is written and a `nodes` row is inserted, but `upsertFinding` is never called. `TYPE_TO_EXTENSION_TABLE` maps `finding` → `findings`, but the dispatch chain has no `finding` branch. `handleGetProjectStatus` queries `SELECT severity, COUNT(*) FROM findings WHERE cycle = ?` directly — any finding written via `handleWriteArtifact` produces zero rows there. `handleGetReviewManifest` queries the `findings` table; incremental verdicts are permanently invisible.
+  - **Suggested fix**: Add `else if (type === "finding")` branch calling `upsertFinding(ctx.drizzleDb, findingRow)` with fields from `content`. Import `FindingRow` and `upsertFinding` from `db-helpers.ts`.
+
+  ## Significant Findings
+
+  ### S1: `metrics_event` and `interview_question` silently drop extension data
+  - **File**: `mcp/artifact-server/src/tools/write.ts:824–939`
+  - **Issue**: Both types are in `TYPE_TO_EXTENSION_TABLE`, pass the P-42 validation gate, but have no `upsertPhase` branch. Writing either type produces only a `nodes` row. `handleGetMetrics` queries `metrics_events JOIN nodes`; results will be empty for anything written via `handleWriteArtifact`.
+  - **Suggested fix**: Add branches for both types, or remove them from `TYPE_TO_EXTENSION_TABLE` if only written via JSONL/interview paths.
+
+  ### S2: `module_spec` extension-table assertion is conditionally guarded
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts:2117`
+  - **Issue**: `if (tableExists)` guard wraps the assertion. Table always exists in test environment; the else path (skip) is dead code. A schema regression removing `module_specs` would not be caught.
+  - **Suggested fix**: Remove the conditional; assert unconditionally.
+
+  ## Minor Findings
+
+  ### M1: Journal sequence COUNT vulnerable to DB-rebuild undercount
+  - **File**: `mcp/artifact-server/src/tools/write.ts:97–101`
+  - **Issue**: COUNT from `nodes` table. After a DB wipe and rebuild, COUNT may undercount relative to YAML files on disk, potentially producing a duplicate filename.
+
+  ### M2: Rollback tests do not verify failure at extension-table insert specifically
+  - **File**: `mcp/artifact-server/src/__tests__/write-transaction.test.ts`
+  - **Issue**: `makeFailingDrizzleCtx` throws on the first `insert` call (`upsertNode`), not the second (extension table). The cleanup behavior when the extension insert fails (but node insert succeeds) is not tested.
+
+  ### M3: FK constraints disabled during entire `handleWriteWorkItems` upsert phase
+  - **File**: `mcp/artifact-server/src/tools/write.ts:569`
+  - **Issue**: `PRAGMA foreign_keys = OFF` held across the Phase 2 upsert transaction, not just the DAG validation phase. Orphaned edge rows targeting non-existent nodes can be committed silently.
+
+  ## Test Count: 459 passed (15 files)
+content_hash: 3941bb4f69c7d0c322ae90792ca7cf8e097f3decab632ac7ef67031b29425651
+token_count: 822
+file_path: .ideate/cycles/003/code-quality-003.yaml

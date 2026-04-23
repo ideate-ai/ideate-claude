@@ -1,0 +1,35 @@
+id: WI-352
+type: work_item
+title: Update documentation for MCP tool changes
+status: done
+complexity: small
+scope: []
+depends:
+  - WI-340
+  - WI-341
+  - WI-342
+  - WI-343
+  - WI-344
+  - WI-346
+blocks: []
+criteria:
+  - ARCHITECTURE.md updated with new tool descriptions
+  - README.md updated if needed
+  - CLAUDE.md updated if needed
+  - All cross-references valid
+domain: project-boundaries
+notes: |-
+  Update documentation to reflect MCP tool changes.
+
+  Files to review:
+  - ARCHITECTURE.md (Section 5: MCP Artifact Server)
+  - README.md (tool descriptions if any)
+  - CLAUDE.md (plugin manifest description)
+
+  Note: Only update documentation that references the changed tools. No need for comprehensive rewrite.
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: 52a06f5882b7ac1fc94c93fce1cdec6dbdb719b928dba3daed41af0c107ce554
+token_count: 193
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-352.yaml

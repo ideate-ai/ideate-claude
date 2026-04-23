@@ -1,0 +1,35 @@
+id: CQ-002
+type: cycle_summary
+title: Code Quality Review — Cycle 2
+reviewer: code-reviewer
+verdict: Pass
+content: |-
+  ## Verdict: Pass
+
+  All 492 tests pass. Prior S1 (finding_severities object corruption) is confirmed resolved. All ToolContext imports migrated. createIdeateDir test now iterates IDEATE_SUBDIRS dynamically.
+
+  ## Significant Findings
+
+  ### S1: work_item and phase LIKE filters produce false positives
+  - **File**: `mcp/artifact-server/src/tools/metrics.ts:238–244`
+  - **Issue**: Both filters use `%{value}%` against raw JSON payload text. A filter for `work_item: "WI-1"` matches WI-10, WI-100, WI-1-suffix. `phase: "execute"` matches any payload containing the substring anywhere.
+  - **Impact**: handleGetMetrics returns too many rows; aggregations are incorrect.
+  - **Suggested fix**: Use `json_extract(me.payload, '$.work_item') = ?` and `json_extract(me.payload, '$.phase') = ?` instead of LIKE, or add dedicated columns.
+
+  ### S2: agent_type filter maps to event_name — semantics undocumented
+  - **File**: `mcp/artifact-server/src/tools/metrics.ts:232–234`, `tools/index.ts:469`
+  - **Issue**: `filter.agent_type` maps to `me.event_name` internally. No enforcement that event_name equals agent type. Callers get zero results if convention not followed.
+  - **Suggested fix**: Add `agent_type` column to `metrics_events` and populate at emit time, or document the convention explicitly.
+
+  ## Minor Findings
+
+  ### M1: LIKE special characters not escaped
+  - **File**: `metrics.ts:239,244` — `%` and `_` in filter values not escaped before LIKE.
+
+  ### M2: metrics.test.ts work_item filter boundary not tested
+  - **File**: `metrics.test.ts:414–423` — test uses WI-200 as non-match; does not expose WI-1/WI-10 false positive.
+
+  ### M3: Extra blank line in config.ts:197
+content_hash: 7ac1fb2bc7e8172c696df25501f7412357d68709df8fb9a11ff808ed277a324c
+token_count: 450
+file_path: .ideate/cycles/002/CQ-002.yaml

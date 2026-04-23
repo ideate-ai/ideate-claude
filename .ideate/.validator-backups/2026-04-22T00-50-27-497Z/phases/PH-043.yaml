@@ -1,0 +1,21 @@
+id: PH-043
+type: phase
+project_id: PR-002
+name: RemoteAdapter Critical Leak Remediation
+status: complete
+phase_type: implementation
+success_criteria: RemoteAdapter no longer crashes for context assembly or execution-status tool handlers. ideate_assemble_context honors token_budget for all artifact types including always-included ones. All three fixes land behind the StorageAdapter interface with no new LocalContextAdapter casts or raw ctx.db usage in tool handlers.
+intent: "Close the three P0 issues that make RemoteAdapter effectively non-functional and make ideate_assemble_context unusable at workspace scale: (1) context.ts LocalContextAdapter cast, (2) execution.ts raw SQL, (3) always_include_types budget violation. Scope deliberately excludes P1+ items from RF-clean-interface-proposal — those follow in a subsequent phase."
+work_items:
+  - WI-785
+  - WI-786
+  - WI-787
+steering: "Every fix must preserve adapter-agnostic behavior — LocalAdapter and RemoteAdapter must produce equivalent results within the limits documented in D5 (edge-loading scope). Prefer composition over new adapter methods (Option B from RF-clean-interface-proposal) unless composition is materially more complex than the added method. No new abstraction leaks: no ctx.db.prepare() in tool handlers, no casts to concrete adapter classes."
+inputs:
+  - RF-clean-interface-proposal
+  - RF-abstraction-boundary-audit
+  - RF-ppr-divergence-catalog
+cycle_modified: 27
+content_hash: 4954e782b2d3fbd7aa60f3c869a1494410b1526a847854749613a6e378c4a511
+token_count: 390
+project: PR-002

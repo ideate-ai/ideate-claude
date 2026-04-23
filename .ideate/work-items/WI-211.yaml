@@ -7,13 +7,17 @@ scope:
   - path: agents/architect.md
     op: modify
 depends:
-  - "209"
+  - '209'
 blocks: []
 criteria:
   - 'agents/architect.md contains a "# Mode: Init" section (in addition to existing Analyze and Design modes)'
-  - "Init mode is described as a lightweight version of Analyze: same codebase survey checklist but with additional output focused on domain identification"
+  - >-
+    Init mode is described as a lightweight version of Analyze: same codebase survey checklist but with additional
+    output focused on domain identification
   - Init mode output includes a "## Suggested Domains" section listing candidate domain names with one-line descriptions
-  - Init mode output includes a "## Suggested Guiding Principles" section listing 3-5 principles inferred from the codebase patterns
+  - >-
+    Init mode output includes a "## Suggested Guiding Principles" section listing 3-5 principles inferred from the
+    codebase patterns
   - Init mode does NOT produce architecture doc, module specs, or interface contracts
   - Existing Analyze and Design mode sections are unchanged
 module: null
@@ -35,5 +39,5 @@ cycle_created: 1
 cycle_modified: null
 content_hash: f2d9826e296e88da92c88983b115f3fd4eed89b22a392b925a61787f8af90f9f
 token_count: 379
-file_path: .ideate/work-items/WI-211.yaml
-resolution: "Verified complete: agents/architect.md has Mode: Init section with domains/principles output"
+file_path: work-items/WI-211.yaml
+resolution: 'Verified complete: agents/architect.md has Mode: Init section with domains/principles output'

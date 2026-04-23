@@ -1,0 +1,22 @@
+id: PH-041
+type: phase
+name: Input Validation Layer
+description: Centralized input validation via ValidatingAdapter decorator — single source of truth for all StorageAdapter input validation, replacing duplicated inline validation in LocalAdapter and RemoteAdapter
+phase_type: implementation
+status: complete
+started_date: 2026-04-12
+work_items:
+  - WI-768
+  - WI-769
+  - WI-770
+  - WI-771
+  - WI-772
+  - WI-773
+  - WI-774
+  - WI-775
+success_criteria: All StorageAdapter input validation is handled by ValidatingAdapter. No inline validation remains duplicated between validating.ts and inner adapters. Test suite covers all validation error code paths.
+cycle_modified: 27
+content_hash: 35b5c7b939ac2c4969317bff6f8f56fb8a14e0397651e3cfae3971a16262cff8
+token_count: 228
+intent: Centralize all input validation in a ValidatingAdapter decorator so adapters receive only pre-validated inputs
+completed_date: 2026-04-13

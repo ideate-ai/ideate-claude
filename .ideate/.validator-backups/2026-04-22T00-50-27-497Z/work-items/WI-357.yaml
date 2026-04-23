@@ -1,0 +1,27 @@
+id: WI-357
+type: work_item
+title: Add total_count to paginated query responses
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - ideate_artifact_query returns total_count alongside results array
+  - total_count reflects total matching items regardless of limit/offset
+  - Response format documented in tool description
+domain: artifact-structure
+notes: |-
+  Add total_count field to handleArtifactQuery response so clients can render pagination controls.
+
+  Files to modify:
+  - mcp/artifact-server/src/tools/query.ts
+  - mcp/artifact-server/src/__tests__/tools.test.ts (add tests for pagination)
+
+  Implementation: Execute a count query before the paginated select.
+resolution: null
+cycle_created: null
+cycle_modified: null
+content_hash: a613c7bbe7f228235cfb7b045d511ec0b89ed08116fd92fec3c18a4a587c585e
+token_count: 188
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-357.yaml

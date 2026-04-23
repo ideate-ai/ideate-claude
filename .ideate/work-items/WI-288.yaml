@@ -20,10 +20,12 @@ criteria:
   - autopilot/phases/execute.md updated with matching PPR context assembly
   - Worker prompts receive PPR-assembled context instead of manual context digest
 domain: workflow
-notes: Replace manual context digest in Phase 4.5 with ideate_assemble_context call. Keep get_work_item_context for work item spec/module/policies. PPR replaces only the broader context digest.
+notes: >-
+  Replace manual context digest in Phase 4.5 with ideate_assemble_context call. Keep get_work_item_context for work item
+  spec/module/policies. PPR replaces only the broader context digest.
 resolution: PPR wired into execute/SKILL.md Phase 4.5 and autopilot/phases/execute.md with fallback.
 cycle_created: 38
 cycle_modified: null
 content_hash: 3c8f2f9dff2c906dec925e20afa76c3f64b36f9e093565bf83257e7129d52694
 token_count: 282
-file_path: .ideate/work-items/WI-288.yaml
+file_path: work-items/WI-288.yaml

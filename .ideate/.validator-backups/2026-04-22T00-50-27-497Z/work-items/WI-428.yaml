@@ -1,0 +1,31 @@
+id: WI-428
+type: work_item
+title: Remediate report scripts broken by metrics.jsonl deprecation
+status: done
+complexity: small
+scope:
+  - path: scripts/report-executive.sh
+    op: modify
+  - path: scripts/report-cycle.sh
+    op: modify
+  - path: scripts/report-cost.sh
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - scripts/report-executive.sh, scripts/report-cycle.sh, scripts/report-cost.sh do not silently produce empty output
+  - Each script either outputs correct metrics data from new source or exits non-zero with clear deprecation message
+  - Q-114 domain question closed as resolved
+domain: workflow
+notes: |-
+  Addresses GA MR1/II2 from cycle 5 gap-analysis. D-155 formally deprecated metrics.jsonl. Q-114 is the open domain question tracking this.
+
+  Simplest safe approach: add explicit deprecation message and exit 1 to each script, stating metrics are now available through the ideate_get_metrics MCP tool. If updating to read new format: metrics/*.yaml files are written by handleEmitMetric — check the payload field names from the YAML schema.
+
+  Do not attempt to silently adapt to the new format if it requires significant shell scripting complexity — a clear deprecation message is preferable to a broken adapter.
+resolution: null
+cycle_created: 5
+cycle_modified: 5
+content_hash: 0959877cba4c6e62b631b9b0df493a20338add851595cffe37a8e986b3e7c3e5
+token_count: 322
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-428.yaml

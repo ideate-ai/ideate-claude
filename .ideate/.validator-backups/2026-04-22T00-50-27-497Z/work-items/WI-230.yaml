@@ -1,0 +1,20 @@
+id: WI-230
+type: work_item
+title: "RAG embedding engine + storage"
+status: obsolete
+complexity: high
+scope:
+  - {path: mcp/artifact-server/src/embeddings.ts, op: create}
+depends: []
+blocks: []
+criteria:
+  - embeddings.ts exports EmbeddingEngine class
+module: null
+domain: artifact-structure
+resolution: "Superseded by v3 PPR-based graph queries — deterministic graph traversal is faster and more precise than semantic search for this corpus size"
+notes: null
+cycle_created: 28
+cycle_modified: null
+content_hash: ""
+token_count: 0
+file_path: .ideate/work-items/WI-230.yaml

@@ -1,0 +1,21 @@
+id: WI-279
+type: work_item
+title: Fix plan/SKILL.md spawn_session phrasing
+status: done
+complexity: low
+scope:
+  - path: skills/plan/SKILL.md
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - No 'check tool list' phrasing for spawn_session in plan/SKILL.md
+  - spawn_session described as optional external MCP server alternative
+domain: workflow
+notes: "Line 163: rephrase to describe spawn_session as optional external alternative."
+resolution: Rephrased spawn_session as optional external MCP server alternative.
+cycle_created: 36
+cycle_modified: null
+content_hash: 12e29078cac3852dbe7dadd2e9e3617f1d44d42a6703ff8c51aea8e80366b10c
+token_count: 139
+file_path: .ideate/work-items/WI-279.yaml

@@ -1,0 +1,38 @@
+id: decision-log-005
+type: cycle_summary
+title: Decision Log — Cycle 5
+reviewer: journal-keeper
+content: |-
+  ## Key Decisions
+
+  ### D5-E01: metrics_event inline append to metrics.jsonl (not handleEmitMetric)
+  Implementation inlines fs.appendFileSync to metrics.jsonl and returns early. No SQLite write. metrics_event added to EXCLUDED_TYPES in P-46 test.
+
+  ### D5-E02: interview_question routes to interviews/{id}.yaml
+  New case in resolveArtifactPath. Indexer covers this path via recursive glob.
+
+  ### D5-E03: P-46 coverage test now dynamically references TYPE_TO_EXTENSION_TABLE
+  Coverage test uses Object.keys(dbSchema.TYPE_TO_EXTENSION_TABLE); cases array coverage is now self-enforcing.
+
+  ### D5-E04: Rollback tests added for finding and interview_question; metrics_event omitted
+  No SQLite writes for metrics_event (redirect returns early), so no two-phase rollback to test.
+
+  ## Open Questions After Cycle 5
+
+  - **Q-111**: P-44 exclusive-transaction amendment — still open
+  - **Q-113**: document_artifacts.cycle precedence — still open
+  - **OQ4-04**: finding.cycle ?? 0 fallback trap — still open
+  - **OQ4-05**: dedicated handler P-46 compliance unverified — still open
+
+  ## New Issues
+
+  - C1/C2 from code-quality: metrics_event inline redirect to metrics.jsonl produces data invisible to handleGetMetrics (which queries SQLite only). The fix introduced a new form of silent data loss.
+  - Gap 1 from gap-analysis: handleGetConvergenceStatus parses findings from prose, not the findings SQLite table. Structural limitation independent of cycle 5 changes.
+
+  ## Cross-References
+
+  - Cycle 4 S1/S2 (wrong path routing) → Cycle 5 D5-E01/D5-E02: Interview_question fixed correctly. metrics_event fix introduced new correctness issue (C1).
+  - Cycle 4 spec D1 (static array) → Cycle 5 D5-E03: P-46 coverage test now dynamic.
+content_hash: fb4e6c05693fc33edbc32a68d0bb61aec98dcf8e56666ac3a7d590507aec8a3d
+token_count: 461
+file_path: .ideate/cycles/005/decision-log-005.yaml

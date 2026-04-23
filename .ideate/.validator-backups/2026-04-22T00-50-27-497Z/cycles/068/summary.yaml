@@ -1,0 +1,39 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary — Cycle 068
+
+  ## Overview
+  Cycle 068 delivered model_overrides config support, two new edge types (governed_by, informed_by) in EDGE_TYPE_REGISTRY, the ideate_update_config MCP tool, model_overrides clauses in six skill files, and the /ideate:settings skill. The implementation is largely correct and all 416 tests pass. Two significant defects prevent the cycle from closing: the settings skill's 'Clear model override' feature is silently non-functional due to a merge strategy design gap, and an active policy (P-17) is in direct conflict with the new write path.
+
+  ## Significant Findings
+  - [code-reviewer] handleUpdateConfig cannot delete keys from model_overrides — the key-level merge spreads rawStored first, re-injecting any key absent from the patch. Settings skill 'Clear model override' silently fails; key persists in config.json — relates to: WI-364
+  - [code-reviewer] Writing model_overrides: {} violates sparse write invariant — when stored config has overrides and patch supplies {}, an empty object is written rather than the key being absent — relates to: WI-362
+  - [gap-analyst] handleUpdateConfig cannot delete keys — same root cause as code-reviewer S1, identified from the settings skill usage angle: no key deletion mechanism exists, making Clear model override a non-functional UI element — relates to: WI-364
+  - [gap-analyst] skills/autopilot/SKILL.md Phase 0 missing model_overrides clause — WI-363 updated 6 skill files but omitted the autopilot coordinator; proxy-human spawned by the coordinator will not honor model_overrides — relates to: WI-363
+  - [spec-reviewer] P-17 violation — P-17 states config.json is updated only by migration scripts; ideate_update_config writes config.json at any time; P-17.amended is null — relates to: P-17, cross-cutting
+
+  ## Minor Findings
+  - [code-reviewer] No test for key deletion from model_overrides in handleUpdateConfig test suite — relates to: WI-362
+  - [gap-analyst] Plugin version not bumped after adding /ideate:settings skill and ideate_update_config tool — P-16 violation — relates to: cross-cutting
+  - [spec-reviewer] name: frontmatter key in skills/settings/SKILL.md has no precedent in other SKILL.md files — relates to: WI-364
+  - [spec-reviewer] WI-361 acceptance criteria text uses valid_sources/valid_targets but implementation uses source_types/target_types — relates to: WI-361
+
+  ## Findings Requiring User Input
+  - P-17 conflict with ideate_update_config: P-17 says config.json is written only by migration scripts. The settings skill and ideate_update_config tool are a deliberate new write path. P-17 must be amended or superseded. Decision needed: is runtime config mutation via MCP the intended design, replacing the migration-only guard? Existing context does not resolve this because P-17 was written before the settings skill was conceived.
+
+  ## Proposed Refinement Plan
+  Three Significant findings require a refinement cycle before the cycle can close.
+
+  1. Fix handleUpdateConfig key deletion (code-reviewer S1+S2, gap-analyst EC1): Change model_overrides merge in tools/config.ts to replace-all semantics when patch.model_overrides is provided. Strip empty objects after merge. Add deletion test. Update settings skill if merge semantics change affects the clear flow documentation.
+
+  2. Add model_overrides clause to skills/autopilot/SKILL.md Phase 0 (gap-analyst II1): One-line addition mirroring the pattern in all other skills.
+
+  3. Amend P-17 (spec-reviewer): After user confirms intent, amend P-17 to carve out ideate_update_config as a sanctioned write path for runtime config mutation via the settings skill.
+
+  Minor items to bundle: plugin version bump (MI1), remove name: frontmatter key from settings skill (N1).
+
+  Estimated scope: 3-4 small work items. No architecture changes required.
+content_hash: 6faaf6b3bc7e8ab4d9930059590e9acb4721c2cbdfe3fa442a88a210686986a7
+token_count: 970
+file_path: .ideate/cycles/068/summary.yaml

@@ -1,0 +1,14 @@
+id: P-21
+type: domain_policy
+domain: workflow
+status: active
+derived_from:
+  - D-31 (Full review revealed cross-item spec inconsistency); D-28 (report.sh nested vs flat severity path)
+established: cycle 004
+amended: null
+description: When two or more work items share a data contract (one defines a schema, another reads it), the planning note for the consumer must explicitly cite the producer work item's schema definition by file and section. Relying on parallel but independently-worded schema descriptions across planning notes risks contradictory assumptions that incremental reviewers cannot detect.
+cycle_created: 1
+cycle_modified: null
+content_hash: fb0d8777a8c748ab213b31c5157f79dcd7079c7f87ccf6a0a8200f289341c33f
+token_count: 177
+file_path: .ideate/policies/P-21.yaml

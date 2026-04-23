@@ -1,0 +1,12 @@
+id: D-143
+type: domain_decision
+domain: artifact-structure
+title: ToolContext extracted to types.ts — migration incomplete across tool files
+decision: ToolContext type definition was extracted from tools/index.ts to src/types.ts to break the circular dependency chain. metrics.ts now imports from ../types.js. The remaining 8 tool files (analysis.ts, write.ts, execution.ts, query.ts, context.ts, bootstrap.ts, events.ts, config.ts, autopilot-state.ts) still import from ./index.js and must be migrated in a follow-up cycle.
+rationale: Circular imports are masked at runtime because ToolContext is type-only and erased by TypeScript. Any future runtime-value import through this chain can produce undefined. Completing the migration is cleanup, not a blocking defect.
+source: cycle 1 code-quality S2; spec-adherence N1; decision-log D7
+cycle: 1
+status: settled
+content_hash: aedd77ca371e46eff26d9bd73648fcfde8b56a613c30b9c332135743ceeeeeb6
+token_count: 215
+file_path: .ideate/decisions/D-143.yaml

@@ -1,0 +1,14 @@
+id: Q-53
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: Silent data loss during indexing when ID collisions occur. The collision is invisible to MCP tool consumers.
+source: archive/cycles/016/gap-analysis.md G4; archive/cycles/017/decision-log.md OQ-12
+resolution: D-117 (cycle 022) established type-prefixed IDs (WI-, F-, P-, D-, Q-, GP-, C-) as a required format. The v7 schema's class table inheritance uses a single PK namespace; type prefixes prevent collisions by construction.
+resolved_in: 22
+description: Manually-assigned IDs in YAML files could collide across artifact types. The upsert pattern silently overwrites duplicate IDs with no error. Should a cross-type duplicate ID check be added to the rebuild pipeline, or should global ID uniqueness be documented as a convention?
+cycle_created: 1
+cycle_modified: null
+content_hash: "5addbf81e5d6dc0536580eeb65e35ebecbee2866edea4c6b34513ec36c472bc1"
+token_count: 231
+file_path: .ideate/questions/Q-53.yaml

@@ -1,0 +1,24 @@
+id: gap-analysis-006
+type: cycle_summary
+title: Gap Analysis — Cycle 6
+reviewer: gap-analyst
+content: |-
+  ## Significant Gaps
+
+  ### Gap 1: handleGetConvergenceStatus counts findings from prose, not SQLite findings table
+  - **Issue**: `handleGetConvergenceStatus` parses markdown bullet points in cycle_summary prose to count findings. `handleGetProjectStatus` correctly queries the findings SQLite table. If a cycle_summary omits bullet-list sections, convergence reports zero findings even when the findings table has critical entries.
+  - **Severity**: Significant
+  - **Recommendation**: Add secondary lookup against findings table; use higher of prose-parsed and table count.
+
+  ### Gap 2: Two parallel metrics write paths with no documented relationship
+  - **Issue**: `handleEmitMetric` appends to metrics.jsonl; `handleWriteArtifact` type=metrics_event writes YAML + SQLite. `handleGetMetrics` reads only SQLite. Agents using handleEmitMetric accumulate data that handleGetMetrics never returns.
+  - **Severity**: Significant
+  - **Recommendation**: Deprecate or document `handleEmitMetric` as a standalone log path not feeding handleGetMetrics. OR update handleGetMetrics to also scan metrics.jsonl.
+
+  ## Minor Gaps
+
+  ### Gap 3: metrics/ directory absent from IDEATE_SUBDIRS in config.ts
+  - **Severity**: Minor. `ensureDir` compensates at runtime; only affects enumeration-based tooling.
+content_hash: 7e405bf21288ec07da72139a9ec490d34f86443e3d97378abf23537af2bcc15a
+token_count: 350
+file_path: .ideate/cycles/006/gap-analysis-006.yaml

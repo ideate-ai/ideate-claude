@@ -1,0 +1,22 @@
+id: decision-log-006
+type: cycle_summary
+title: Decision Log — Cycle 6
+reviewer: journal-keeper
+content: |-
+  ## Key Decision: metrics_event writes YAML to metrics/ (not metrics.jsonl)
+  WI-412 removed the WI-411 early-return redirect and restored the standard two-phase path for metrics_event. Route: metrics/{id}.yaml (indexer-scanned). This aligns metrics_event with all other extension-table types.
+
+  ## Convergence Trajectory
+  Cycles 1-6 have steadily reduced the critical/significant finding count: 3 critical in cycle 1 → 1 significant in cycle 6 (S1 finding_severities). Core write-path invariants (P-44, P-45, P-46) now consistently enforced for all 24 registered types.
+
+  ## Deferred Items
+  - **II1**: handleGetConvergenceStatus prose-parsing vs SQLite findings — significant pre-existing design issue, deferred
+  - **II2**: handleEmitMetric/handleWriteArtifact parallel metrics paths — design documentation needed, deferred
+  - **Q-111, Q-113**: Still open, require policy amendments not code fixes
+
+  ## Open Question Status
+  - Q-111 (P-44 exclusive-transaction amendment): Open
+  - Q-113 (document_artifacts.cycle precedence): Open
+content_hash: f9a0297cb9a6c2c45b5b6e2a03ea28c995539f9f05cd78f606bef3c566a179f2
+token_count: 287
+file_path: .ideate/cycles/006/decision-log-006.yaml

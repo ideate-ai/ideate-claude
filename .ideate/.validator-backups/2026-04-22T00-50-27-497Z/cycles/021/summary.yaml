@@ -1,0 +1,65 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary — Cycle 21
+
+  ## Overview
+  Cycle 21 (PH-040) addressed four audit corrections: CONFIG_SCHEMA_VERSION constant fixed (4→5), putNodeForJournal restructured for P-44 compliance, domain_index investigated and confirmed fully implemented, and stale test descriptions/counts corrected. All four work items completed and all 1179 tests pass. Two significant test coverage gaps were identified by the gap-analyst: a stale extension table count in schema.test.ts and the Phase 2 rollback path in putNodeForJournal remaining untested.
+
+  ## Phase Convergence
+  Phase: PH-040 (Audit Corrections)
+  Cycles completed in this phase: 1 / 5 (threshold)
+  Convergence status: First cycle in phase — no trend data
+
+  Trend: First cycle in PH-040. No critical findings. Two significant findings are test coverage gaps, not functional correctness failures. The underlying code is correct per all three reviewers.
+
+  ## Project Progress
+
+  | Success Criterion | Status |
+  |---|---|
+  | CONFIG_SCHEMA_VERSION matches CURRENT_SCHEMA_VERSION | Pass |
+  | v4→v5 migration runs on schema_version=4 installations | Pass |
+  | P-74 invariant enforced by test | Pass |
+  | putNodeForJournal P-44 compliant (YAML write outside tx) | Pass |
+  | Phase 2 rollback (fs.writeFileSync failure) tested | Not started |
+  | Phase 3 rollback (SQLite failure) tested | Pass |
+  | domain_index NodeType fully implemented | Pass |
+  | ALL_NODE_TYPES count assertion correct (.toBe(28)) | Pass |
+  | schema.test.ts extension table count correct (.toBe(16)) | Not started |
+  | All 1179 tests passing | Pass |
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [gap-analyst] **S1**: schema.test.ts extension table count asserts `.toBe(15)` but `proxy_human_decisions` makes it 16. The table exists in `createSchema` and `db.ts` but is absent from the test array. False coverage assurance. → **route to current phase** (src/__tests__/schema.test.ts)
+  - [gap-analyst] **S2**: Phase 2 failure path in `putNodeForJournal` (writer.ts:1639-1648) has zero test coverage. No test simulates `fs.writeFileSync` throwing. The cleanup path — which must delete the Phase 1 placeholder row — is the durability core of P-44 compliance and is entirely untested. → **route to current phase** (src/__tests__/write-transaction.test.ts, src/adapters/local/writer.ts)
+
+  ## Minor Findings
+  - [gap-analyst] **M1**: migrations.test.ts — error path untested (migration.migrate() throws → result.errors populated, loop stops). → carry-forward
+  - [gap-analyst] **M2**: migrations.test.ts — multi-migration chain (v3→v4→v5) untested. Chain logic at migrations.ts:141 is non-trivial. → carry-forward
+  - [gap-analyst] **M3**: migrations.test.ts — no-registry-entry silent version bump untested. Reachable if CONFIG_SCHEMA_VERSION is bumped without adding a Migration entry. → carry-forward
+  - [gap-analyst] **M4**: metrics.ts test-only fallback lacks P-44 cleanup on SQLite transaction failure. Marked test-only; no production risk. → carry-forward
+  - [code-reviewer] **M1**: Migration filter uses `toVersion <= targetVersion` instead of `fromVersion < targetVersion`. Semantically equivalent for current linear registry but fragile for future forked entries. → carry-forward
+  - [code-reviewer] **M2**: Phase-3 cleanup failure in putNodeForJournal silently swallowed. Orphan placeholder rows can accumulate without any log signal. → carry-forward
+  - [spec-reviewer] **M1**: Phase 2 YAML-write-failure rollback lacks automated test (informational, same concern as gap-analyst S2). → carry-forward
+  - [spec-reviewer] **M2**: WI-750 fixed a file (always-include-types-validation.test.ts) not listed in its acceptance criteria. Change is within scope and correct. Informational only.
+
+  ## Findings Requiring User Input
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+  The review identified 0 critical and 2 significant findings. A refinement cycle is recommended to address them.
+
+  **S1 (schema.test.ts stale count)**: 2-line fix — add `"proxy_human_decisions"` to the extension tables array, update assertion to `.toBe(16)`. File: src/__tests__/schema.test.ts.
+
+  **S2 (Phase 2 rollback untested)**: Add test that spies on `fs.writeFileSync` to throw mid-Phase-2, then asserts: (a) error propagates, (b) no placeholder row remains in SQLite, (c) no YAML file on disk. File: src/__tests__/write-transaction.test.ts.
+
+  Both items are small and could be addressed in a single targeted work item. M1-M3 (migrations.test.ts gaps) are natural companions and could be bundled into the same refinement as minor extensions.
+
+  The underlying code is correct. These are test coverage gaps, not functional failures.
+content_hash: 532f49321056d16e4736a2b6c29ba1a0149991b1b1784dd6f12bfd01fa89a5ef
+token_count: 1232
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 21
+cycle_modified: 20

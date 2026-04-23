@@ -39,9 +39,11 @@ notes: |-
 
   Check both skills/ and agents/ directories.
   Do NOT modify .ideate/ artifacts (historical references are acceptable).
-resolution: "5 cross-references updated: execute/SKILL.md, autopilot/SKILL.md, refine/SKILL.md (2 refs), agents/researcher.md. grep confirms zero ideate:plan in skills/ and agents/."
+resolution: >-
+  5 cross-references updated: execute/SKILL.md, autopilot/SKILL.md, refine/SKILL.md (2 refs), agents/researcher.md. grep
+  confirms zero ideate:plan in skills/ and agents/.
 cycle_created: null
 cycle_modified: null
 content_hash: 248dec9aebaa07dd7a93fd1523bb617dcdae631aec73b811aa8c668168ffc7f0
 token_count: 355
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-338.yaml
+file_path: work-items/WI-338.yaml

@@ -1,0 +1,35 @@
+id: spec-adherence-004
+type: cycle_summary
+cycle: 4
+reviewer: spec-reviewer
+content: |-
+  ## Verdict: Pass
+
+  **Principle Violation Verdict**: Pass
+
+  ## Principle Adherence Evidence
+
+  - **GP-08**: The cycle 4 fix at write.ts:777-779 injects `cycle` into yamlObj before Phase 1 YAML serialization. The indexer reads doc.cycle from the YAML for document_artifacts rows. A rebuild from the written YAML file produces document_artifacts.cycle equal to the top-level cycle parameter. tools.test.ts:2153 explicitly verifies the three-way invariant: live write, YAML file, and rebuild all agree.
+  - **GP-14**: No direct filesystem access or storage detail visible in any tool description or inputSchema. TOOLS array references only artifact designations.
+  - **P-33**: All 22 tool descriptions and parameter descriptions checked. No occurrences of sqlite, yaml, .yaml, .json, index.db, .ideate, directory, file path, or storage engine names in any description string.
+  - **P-34**: All 22 tool-level descriptions within 50-word limit. Longest is ideate_update_config at 25 words.
+  - **P-44**: handleWriteArtifact: YAML write at line 815, SQLite .exclusive() at line 1005. handleWriteWorkItems: YAML loop, SQLite .exclusive() at line 647. handleUpdateWorkItems: YAML loop, SQLite .exclusive() at line 1224. handleAppendJournal: both YAML write and SQLite upsert inside same .exclusive() transaction (line 152).
+
+  ## Principle Violations
+
+  None.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  None.
+
+  ## Minor Findings
+
+  None.
+content_hash: 7e09d30b2a5d40584661bc7cb43d6d1bcf0a30c2e046974223cc87c7b07d24d1
+token_count: 385
+file_path: .ideate/cycles/004/spec-adherence-004.yaml

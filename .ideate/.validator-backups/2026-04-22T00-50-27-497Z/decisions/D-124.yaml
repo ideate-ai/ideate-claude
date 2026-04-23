@@ -1,0 +1,12 @@
+id: D-124
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle_created: 0
+description: handleGetWorkItemContext in context.ts passes the notes DB column value (inline text) to fs.readFileSync, treating it as a file path. This always throws ENOENT, discarding implementation notes. The column value must be read as inline content, not a path.
+rationale: "EC1 from full audit. The notes field was migrated from a file-path reference to inline SQLite storage when work items moved to YAML format. The readFileSync call was not updated. Impact is high: workers executing work items have never received implementation notes."
+source: full-audit-20260328 EC1
+supersedes: null
+content_hash: c5305ab02e53fb42867ba375e2683f2d22b8ae349163beb992f387cd08ee7657
+token_count: 172
+file_path: .ideate/decisions/D-124.yaml

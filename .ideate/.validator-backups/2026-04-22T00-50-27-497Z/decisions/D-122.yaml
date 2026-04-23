@@ -1,0 +1,10 @@
+id: D-122
+type: domain_decision
+domain: agent-system
+cycle_created: 2
+status: settled
+description: "Source code tool registration (tools/index.ts) is the authoritative ground truth for MCP tool names. Derived documentation — marketplace manifests, deferred-tools lists, cached tool inventories — is not authoritative and must not be used to assert whether a tool name is correct."
+rationale: "Cycle 2 Andon event: autopilot claimed split tool names (ideate_get_autopilot_state, ideate_update_autopilot_state) were valid based on a deferred-tools list populated from the v3.3.0 marketplace manifest. Proxy-human investigated tools/index.ts directly and confirmed only ideate_manage_autopilot_state is registered. The WI-367 incremental reviewer false determination had the same root cause — reliance on a derived source rather than the registration source."
+source: "cycle 2 decision-log D9, D4; proxy-human Andon resolution (cycle 2)"
+supersedes: null
+file_path: .ideate/decisions/D-122.yaml

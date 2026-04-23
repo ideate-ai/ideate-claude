@@ -1,0 +1,77 @@
+id: WI-411
+type: work_item
+title: Fix metrics_event/interview_question path routing and complete WI-409 test coverage
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/write-transaction.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "handleWriteArtifact redirects type === 'metrics_event' to handleEmitMetric (passing { payload: content }), following the same redirect pattern as work_item and journal_entry"
+  - resolveArtifactPath has a case for 'interview_question' routing to path.join(ideateDir, 'interviews', id + '.yaml')
+  - The P-46 completeness test block imports TYPE_TO_EXTENSION_TABLE from db.ts and includes a test that verifies the static cases array covers all registry keys (i.e., asserts that the set of types in cases matches Object.keys(TYPE_TO_EXTENSION_TABLE) minus excluded types)
+  - "The P-46 test cases for 'finding', 'metrics_event', and 'interview_question' assert at least one NOT NULL field value beyond row existence: finding asserts severity/work_item/verdict/cycle/reviewer; metrics_event asserts event_name; interview_question asserts interview_id/question/answer/seq"
+  - write-transaction.test.ts has rollback test cases for 'finding', 'metrics_event', and 'interview_question' using the existing makeFailingDrizzleCtx harness, verifying YAML cleanup and zero extension rows on SQLite failure
+  - All tests pass (npm test)
+domain: artifact-structure
+notes: |-
+  Addresses all significant findings from cycle 4 review:
+
+  ## S1/S2/Gap1: Path routing for metrics_event and interview_question
+
+  metrics_event fix: Add to the redirect block at the top of handleWriteArtifact (before P-42 gate), alongside work_item and journal_entry:
+  ```typescript
+  if (type === 'metrics_event') {
+    return handleEmitMetric(ctx, { payload: content });
+  }
+  ```
+  This aligns with the established metrics write path (handleEmitMetric writes to metrics.jsonl). Do NOT remove metrics_event from TYPE_TO_EXTENSION_TABLE — the indexer uses it when scanning existing YAML metrics files.
+
+  interview_question fix: Add a case in resolveArtifactPath switch:
+  ```typescript
+  case 'interview_question':
+    return path.join(ideateDir, 'interviews', `${id}.yaml`);
+  ```
+  The indexer glob-scans all .yaml files in ideateDir recursively, so files in interviews/ will be indexed. The indexer's buildExtensionRow already handles interview_question type via TYPE_TO_EXTENSION_TABLE.
+
+  ## S3/Spec D1: P-46 test improvements
+
+  In the P-46 describe block in tools.test.ts:
+  1. Add TYPE_TO_EXTENSION_TABLE import from db.ts
+  2. Add a standalone test that verifies the cases array covers all registry keys:
+  ```typescript
+  it('cases array covers all TYPE_TO_EXTENSION_TABLE types (except redirected)', () => {
+    const excluded = new Set(['work_item', 'journal_entry', 'metrics_event']); // metrics_event now redirects
+    const expectedTypes = Object.keys(dbSchema.TYPE_TO_EXTENSION_TABLE).filter(t => !excluded.has(t));
+    const coveredTypes = cases.map(c => c.type);
+    for (const t of expectedTypes) {
+      expect(coveredTypes).toContain(t);
+    }
+  });
+  ```
+  3. Extend assertions in the it.each loop for finding, metrics_event (now removed from it.each since it redirects), interview_question:
+  - For finding: after expect(row).toBeTruthy(), add assertions on severity, work_item, verdict, cycle, reviewer
+  - For interview_question: after expect(row).toBeTruthy(), add assertions on interview_id, question, answer, seq
+  - Remove metrics_event from the cases array (since it now redirects, no extension row is created by handleWriteArtifact)
+
+  ## II2/Gap2: Rollback tests for 3 new types
+
+  In write-transaction.test.ts, add rollback test cases using the existing makeFailingDrizzleCtx pattern:
+  - finding: create cycles/NNN/findings/ dir, call handleWriteArtifact with failing Drizzle ctx, assert YAML was cleaned up and findings table has 0 rows
+  - interview_question: create interviews/ dir, call with failing ctx, assert cleanup
+  - metrics_event: with redirect to handleEmitMetric this may not need a rollback test (handleEmitMetric doesn't use SQLite); confirm and skip if not applicable
+
+  ## Note on metrics_event removal from cases array
+  After the redirect fix, calling handleWriteArtifact with type='metrics_event' will invoke handleEmitMetric instead, which writes to metrics.jsonl and returns without creating a SQLite extension row. The P-46 cases array should remove the metrics_event entry, and the registry coverage test should add 'metrics_event' to the excluded set.
+resolution: "Fixed metrics_event path (inline append to metrics.jsonl + early return, no SQLite writes). Added interview_question case in resolveArtifactPath routing to interviews/. Removed dead metrics_event dispatch branch and its unused imports. Updated P-46 test: removed metrics_event from cases (now redirected), added checkFields assertions for finding and interview_question, added TYPE_TO_EXTENSION_TABLE coverage verification test. Added rollback tests for finding and interview_question in write-transaction.test.ts. 484 tests pass."
+cycle_created: 5
+cycle_modified: 3
+content_hash: 8b5304eca726c702344b80d12f6452283677e7de0f3358899189059ad31a48ed
+token_count: 1319
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-411.yaml

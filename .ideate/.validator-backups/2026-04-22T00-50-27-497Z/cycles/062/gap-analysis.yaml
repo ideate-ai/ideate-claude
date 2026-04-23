@@ -1,0 +1,40 @@
+id: gap-analysis
+type: cycle_summary
+cycle: 62
+reviewer: gap-analyst
+content: |-
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+
+  ### S1: Plugin cache plugin.json and marketplace.json still report version 3.2.0
+  - Interface: Plugin version declared in cache vs working copy
+  - Gap: Cache plugin.json says 3.2.0 despite 3.2.1 changes being present. The version signal is absent from the cache. Users installing from cached 3.2.0 path will not pick up bug fixes if Claude Code uses version to invalidate cache.
+  - Severity: Significant
+  - Recommendation: Update cache plugin.json and marketplace.json to 3.2.1, or create a 3.2.1 cache directory.
+
+  ## Minor Findings
+
+  ### M1: DB handle leak when rebuildIndex throws during initServer
+  - server.ts: openDatabase succeeds, rebuildIndex throws, newDb handle open but unreferenced.
+  - Low impact (one leaked handle per failed init). Fix: try/catch around rebuildIndex with newDb.close().
+
+  ### M2: No test for initServer partial failure (rebuildIndex throws, openDatabase succeeds)
+  - WI-325 test covers openDatabase failure but not rebuildIndex failure. State invariant holds by inspection.
+
+  ### M3: No test for ideate_bootstrap_project when server already initialized
+  - routeToolCall delegates to handleToolFn when ctx is non-null, but this path not explicitly tested.
+
+  ### M4: MCP server self-reports version 0.1.0 instead of 3.2.1
+  - index.ts line 37 hardcodes version: '0.1.0'. Informational only, no functional impact.
+
+  ### M5: Plugin cache .claude-plugin files not synced
+  - Cache plugin.json and marketplace.json still say 3.2.0.
+
+  ## Missing Infrastructure
+  - No unhandled rejection handler (pre-existing, not introduced by cycle 062)
+  - No automated tests for start.sh (deferred per WI-326)
+content_hash: 7eec9d36cb5931578ad3c4acc8f409427a5d6669c3366ffaa3ac7638fd030c23
+token_count: 445
+file_path: .ideate/cycles/062/gap-analysis.yaml

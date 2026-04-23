@@ -1,51 +1,91 @@
 id: gap-analysis
 type: cycle_summary
 reviewer: gap-analyst
-content: |-
+content: >-
   ## Verdict: Pass
+
 
   ## Critical Gaps
 
+
   None.
+
 
   ## Significant Gaps
 
+
   None.
+
 
   ## Minor Gaps
 
+
   ### MN1: Deferred items SR-M1 and GA-IR1 have no backlog entry
+
   - **Component**: work-items / questions backlog
-  - **Gap**: SR-M1 (test directory split — `src/__tests__/adapters/` vs `tests/adapters/`, with `local-getMetricsEvents.test.ts` invisible to adapter-contract.md test inventory) and GA-IR1 (indexFiles/removeFiles placement in adapter-contract.md) were both marked "deferred" in the cycle 5 review manifest. Neither has a pending work item nor a domain question to carry them forward. They exist only in cycle artifact prose.
+
+  - **Gap**: SR-M1 (test directory split — `src/__tests__/adapters/` vs `tests/adapters/`, with
+  `local-getMetricsEvents.test.ts` invisible to adapter-contract.md test inventory) and GA-IR1 (indexFiles/removeFiles
+  placement in adapter-contract.md) were both marked "deferred" in the cycle 5 review manifest. Neither has a pending
+  work item nor a domain question to carry them forward. They exist only in cycle artifact prose.
+
   - **Severity**: Minor
-  - **Recommendation**: Defer — both items are Minor findings with no functional impact. However, a domain question or pending WI should be created for each so they survive into future cycle planning and are not silently lost when cycle 4/5 review artifacts are no longer in active rotation.
+
+  - **Recommendation**: Defer — both items are Minor findings with no functional impact. However, a domain question or
+  pending WI should be created for each so they survive into future cycle planning and are not silently lost when cycle
+  4/5 review artifacts are no longer in active rotation.
+
 
   ### MN2: WI-820 test uses `undefined` while sibling tests use `null as any`
+
   - **Component**: `mcp/artifact-server/src/__tests__/remote-adapter.test.ts`
-  - **Gap**: The new WI-820 test calls `selectAdapter(ideateDir, undefined, undefined)` while every other call to `selectAdapter` in the same file passes `null as any`. Cosmetic divergence noted as M1 in the incremental review but not resolved.
+
+  - **Gap**: The new WI-820 test calls `selectAdapter(ideateDir, undefined, undefined)` while every other call to
+  `selectAdapter` in the same file passes `null as any`. Cosmetic divergence noted as M1 in the incremental review but
+  not resolved.
+
   - **Severity**: Minor
+
   - **Recommendation**: Defer — cosmetic inconsistency with no functional impact. Can be unified in a future chore pass.
+
 
   ## Deferred Items Status
 
-  SR-M1 and GA-IR1 are confirmed deferred in the cycle 5 review-manifest. They do **not** exist as pending work items or open domain questions. This is the root concern in MN1 above.
+
+  SR-M1 and GA-IR1 are confirmed deferred in the cycle 5 review-manifest. They do **not** exist as pending work items or
+  open domain questions. This is the root concern in MN1 above.
+
 
   ## Coverage Assessment
 
+
   All five cycle-4 findings claimed as addressed by cycle 5 are confirmed addressed:
 
-  - **SR-S1** (WI-818): architecture-overview.md §3.3 line 361 distinguishes filter-mode (5 cols) from graph-mode (7 cols). Verified.
-  - **GA-II1** (WI-819 Part 1): Write→convergence roundtrip test present at `tools.test.ts:877`, with all required assertions. Fully exercised.
-  - **CR-M1** (WI-819 Part 2): Three `noAdapterCtx` blocks at `tools.test.ts:612-636` now omit `db`/`drizzleDb`. Confirmed consistent.
-  - **GA-EC1** (WI-820): selectAdapter local-backend null-db guard test present at `remote-adapter.test.ts:121`. Confirmed.
-  - **CR-M2** (WI-822): adapter-contract.md `getMetricsEvents` section accurately describes two round-trips with TypeScript-side filtering. No remaining "single round-trip" or "stub" language. Confirmed.
+
+  - **SR-S1** (WI-818): architecture-overview.md §3.3 line 361 distinguishes filter-mode (5 cols) from graph-mode (7
+  cols). Verified.
+
+  - **GA-II1** (WI-819 Part 1): Write→convergence roundtrip test present at `tools.test.ts:877`, with all required
+  assertions. Fully exercised.
+
+  - **CR-M1** (WI-819 Part 2): Three `noAdapterCtx` blocks at `tools.test.ts:612-636` now omit `db`/`drizzleDb`.
+  Confirmed consistent.
+
+  - **GA-EC1** (WI-820): selectAdapter local-backend null-db guard test present at `remote-adapter.test.ts:121`.
+  Confirmed.
+
+  - **CR-M2** (WI-822): adapter-contract.md `getMetricsEvents` section accurately describes two round-trips with
+  TypeScript-side filtering. No remaining "single round-trip" or "stub" language. Confirmed.
 content_hash: 1a5a54bc77fa1580028d28ba9c1a55d1d435ded991349700071ef81a4907c71d
 token_count: 843
-file_path: .ideate/cycles/068/gap-analysis.yaml
+file_path: cycles/005/gap-analysis.yaml
 verdict: Pass with minor gaps
 phase: PH-045
 scope: cycle 1 capstone
-summary: "Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps. WI-797/799/801/802/798 ACs all met as written."
+summary: >-
+  Two untracked Significant gaps: query.ts ctx.db fallback (S1, also flagged by code-reviewer and spec-reviewer) and
+  metrics.ts Leak 7 in handleGetMetrics (S2, completely untracked). Plus 4 minor hardening / documentation gaps.
+  WI-797/799/801/802/798 ACs all met as written.
 findings:
   critical: 0
   significant: 3

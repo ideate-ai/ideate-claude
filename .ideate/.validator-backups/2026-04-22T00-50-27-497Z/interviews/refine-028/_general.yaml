@@ -1,0 +1,15 @@
+id: interviews/refine-028/_general
+type: interview
+cycle: 28
+source_path: steering/interviews/refine-028/_general.md
+entries:
+  - {id: IQ-028-001, question: "What is driving this refinement?", answer: "Requirement evolution. Audited all 51 pre-v3 pending work items (WI-017 through WI-131). Found 40 already done, 8 obsolete, 3 still valid. Need a way to mark items as obsolete — the system has no terminal status for 'no longer needed'. Also want to address the 3 still-valid items and a migration script bug.", domain: null, seq: 1}
+  - {id: IQ-028-002, question: "Do guiding principles still apply?", answer: "Yes, all 13 principles unchanged.", domain: null, seq: 2}
+  - {id: IQ-028-003, question: "How should obsolete be represented?", answer: "Option B: new status value 'obsolete' on the work item YAML plus an optional 'resolution' field explaining why. Obsolete is a terminal state — it means the work is no longer needed but was not completed by this item's execution. May have been accomplished by another item coincidentally or simply no longer relevant.", domain: null, seq: 3}
+  - {id: IQ-028-004, question: "Should obsolete items satisfy dependencies?", answer: "Yes. Obsolete is terminal like done. Items depending on an obsolete item are unblocked.", domain: null, seq: 4}
+  - {id: IQ-028-005, question: "Bulk update mechanism — write full YAML or partial updates?", answer: "New ideate_update_work_items MCP tool for partial field updates. Never update YAML directly. The tool reads existing YAML, merges specified fields, writes back.", domain: null, seq: 5}
+  - {id: IQ-028-006, question: "Migration script empty domain warning behavior?", answer: "Info-level log ('Skipping empty domain: X') instead of WARNING. Empty domain directories are a valid v2 state.", domain: null, seq: 6}
+  - {id: IQ-028-007, question: "Include the 3 still-valid items?", answer: "Yes, all: WI-070 (README gaps — worked example, interview structure, etc.), WI-083 (RAG-based artifact retrieval), WI-131 (custom model docs in README).", domain: null, seq: 7}
+  - {id: IQ-028-008, question: "Changes to ideate should go through refinement cycle?", answer: "Yes. Added to CLAUDE.md — changes must go through /ideate:refine then /ideate:execute, not direct code edits.", domain: null, seq: 8}
+content_hash: ""
+token_count: 0

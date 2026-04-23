@@ -2,13 +2,21 @@ id: Q-20
 type: domain_question
 domain: artifact-structure
 status: resolved
-impact: autopilot-produced cycle directories are not self-contained — the review manifest lives only in `archive/incremental/`. This creates confusion when inspecting cycle directories and may break consumers that expect the manifest at the cycle level.
+impact: >-
+  autopilot-produced cycle directories are not self-contained — the review manifest lives only in
+  `archive/incremental/`. This creates confusion when inspecting cycle directories and may break consumers that expect
+  the manifest at the cycle level.
 source: archive/cycles/003/code-quality.md M2; archive/cycles/003/decision-log.md OQ3
-resolution: v3 architecture stores findings under .ideate/cycles/{NNN}/findings/. Both autopilot and standalone review write to the same location. The manifest location divergence no longer applies.
+resolution: >-
+  v3 architecture stores findings under .ideate/cycles/{NNN}/findings/. Both autopilot and standalone review write to
+  the same location. The manifest location divergence no longer applies.
 resolved_in: 27
-description: autopilot writes review-manifest.md to `archive/incremental/review-manifest.md`; standalone review writes to `archive/cycles/{N}/review-manifest.md`. Should autopilot copy the manifest to the cycle directory after reviewers complete so cycle directories are self-contained, or should the location difference be explicitly documented?
+description: >-
+  autopilot writes review-manifest.md to `archive/incremental/review-manifest.md`; standalone review writes to
+  `archive/cycles/{N}/review-manifest.md`. Should autopilot copy the manifest to the cycle directory after reviewers
+  complete so cycle directories are self-contained, or should the location difference be explicitly documented?
 cycle_created: 1
 cycle_modified: null
 content_hash: caa0cac079e67479e0d67b59022e8337eedc4d1b243bef07f3ba9aa66ea4ee54
 token_count: 266
-file_path: .ideate/questions/Q-20.yaml
+file_path: questions/Q-20.yaml

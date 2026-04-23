@@ -1,0 +1,13 @@
+id: D-06
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 1
+supersedes: null
+description: Projects with fewer than 5 logical components skip the `plan/modules/*.md` layer and decompose directly from architecture to work items; the module layer is required when components have non-trivial interfaces between them.
+rationale: Constraint C-8 (Progressive Decomposition) requires the tool to detect scale and skip intermediate levels when unnecessary to avoid overhead on small projects.
+cycle_created: 1
+cycle_modified: null
+content_hash: "02afa3a3df605287b8b59a5f50efcb2aae003b4ce392662821aa14e2254a03e7"
+token_count: 152
+file_path: .ideate/decisions/D-06.yaml

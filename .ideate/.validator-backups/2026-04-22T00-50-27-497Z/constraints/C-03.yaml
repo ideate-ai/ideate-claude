@@ -1,0 +1,10 @@
+id: C-03
+type: constraint
+category: technology
+status: active
+description: Agent teams as preferred execution mode. Design for agent teams with shared task lists as the default, with batched subagents as fallback. Sequential mode available for small projects or constrained environments.
+cycle_created: 1
+cycle_modified: null
+content_hash: "5ac8865e5d5c2b2b4994311e1bbb2d194c0893e589110313e23717b2c12e5ab7"
+token_count: 97
+file_path: .ideate/constraints/C-03.yaml

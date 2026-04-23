@@ -1,0 +1,32 @@
+id: WI-326
+type: work_item
+title: Research LLM prompt testing frameworks for skill/agent validation
+status: done
+complexity: small
+scope: []
+depends: []
+blocks: []
+criteria:
+  - Research artifact written via ideate_write_artifact with findings on available frameworks
+  - Evaluation of which approaches are suitable for testing ideate's markdown-based agents and skills
+  - Recommendation on whether to pursue LLM-in-the-loop evaluation, static analysis, or both
+  - Assessment of cost/complexity tradeoffs for each approach
+domain: agent-system
+notes: |-
+  ## Context
+
+  Ideate's agents and skills are markdown files with instructions. A bug was discovered where agent name references used short names ('researcher') instead of qualified names ('ideate:researcher'), causing runtime failures. This was not caught by any existing test.
+
+  Research should investigate:
+  1. Prompt testing frameworks (promptfoo, deepeval, etc.)
+  2. Static analysis / linting for prompt files
+  3. Deterministic checks (regex, AST-like parsing of markdown instructions)
+  4. Cost/benefit of LLM evaluation vs. deterministic validation
+
+  Researcher agent is already spawned and running in background.
+resolution: "Research complete. Recommendation: deterministic static analysis in vitest as primary approach (zero cost, catches the bug class). Promptfoo as secondary option for behavioral testing only if static checks prove insufficient."
+cycle_created: null
+cycle_modified: null
+content_hash: ec5160b8605ce507ddd382be586200d0a8ef3ff9255489d22db6d0d7a93e4a90
+token_count: 366
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-326.yaml

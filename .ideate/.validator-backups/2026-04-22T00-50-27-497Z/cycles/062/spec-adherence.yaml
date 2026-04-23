@@ -1,0 +1,33 @@
+id: spec-adherence
+type: cycle_summary
+cycle: 62
+reviewer: spec-reviewer
+content: |-
+  ## Principle Violation Verdict: Pass
+
+  No guiding principle violations detected.
+
+  ## Principle Adherence Evidence
+  - GP-08 (Durable Knowledge Capture): Dormant mode maintains MCP server as mandatory interface. routeToolCall intercepts all calls before ctx check.
+  - GP-14 (MCP Abstraction Boundary): All skill files interact with artifacts exclusively through MCP tool calls. No direct .ideate/ access.
+  - GP-02 (Minimal Inference): Implementation follows spec notes precisely. No subjective design decisions during execution.
+  - GP-05 (Continuous Review): Per-item incremental review present. WI-325 depends on WI-323.
+  - C-01 (Plugin format): Plugin structure maintained at 3.2.1.
+  - C-02 (File-based coordination): All state through .ideate/ and SQLite index.
+
+  ## Architecture Deviations
+
+  ### D1: server.ts created but not in any work item scope
+  - WI-323 scopes only index.ts. WI-325 scopes dormant.test.ts and index.ts. server.ts was created as undocumented scope expansion.
+  - Resolution note in WI-325 acknowledges deviation. Architecturally sound but scope tracking inaccurate.
+
+  ## Naming/Pattern Inconsistencies
+
+  ### N1: Plugin cache directory still named 3.2.0 after version bump to 3.2.1
+  - Cache directory is 3.2.0 with plugin.json saying 3.2.0. Working copy says 3.2.1.
+
+  ## Unmet Acceptance Criteria
+  - WI-327: Plugin cache plugin.json/marketplace.json still report 3.2.0, not 3.2.1.
+content_hash: 5c33639cbd5e55af36d8e4d60edc8ef94541fddaab71dc0ea6b06b8eed4256d8
+token_count: 376
+file_path: .ideate/cycles/062/spec-adherence.yaml

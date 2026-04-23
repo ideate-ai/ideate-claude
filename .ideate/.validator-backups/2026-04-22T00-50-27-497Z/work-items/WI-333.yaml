@@ -1,0 +1,41 @@
+id: WI-333
+type: work_item
+title: Fix dormant test minor findings and add missing test cases
+status: done
+complexity: small
+scope:
+  - path: mcp/artifact-server/src/__tests__/dormant.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+depends:
+  - WI-332
+blocks: []
+criteria:
+  - Tests that call initServer also call artifactWatcher.unwatch or close in cleanup
+  - "New test: initServer partial failure (rebuildIndex throws after openDatabase succeeds) — state remains null"
+  - "New test: routeToolCall delegates bootstrap to handleToolFn when ctx is non-null"
+  - MCP server version in index.ts reads from package.json or uses a constant matching current version, not hardcoded 0.1.0
+  - npm run test passes with all new and existing tests
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  1. **Unwatch in tests** (review finding code-quality M2):
+     Import `artifactWatcher` from `../watcher.js`. In tests that call `initServer` (directly or via bootstrap), add cleanup in finally blocks or afterEach.
+
+  2. **New test: rebuildIndex failure** (review finding gap-analysis M2):
+     Create a test where .ideate/ exists (so openDatabase succeeds) but the directory contains a malformed YAML file that causes rebuildIndex to throw. Assert state remains null. Alternative: mock rebuildIndex to throw.
+
+  3. **New test: initialized bootstrap delegation** (review finding gap-analysis M3):
+     Create a state with non-null ctx (initialize via handleBootstrapDormant first). Call routeToolCall with ideate_bootstrap_project. Assert stubHandleTool was called (delegation occurred, not handleBootstrapDormant).
+
+  4. **Version string** (review finding gap-analysis M4):
+     In index.ts line 37, replace hardcoded `version: '0.1.0'` with a version read from package.json or a build-time constant. Simplest: `import { createRequire } from 'module'; const require = createRequire(import.meta.url); const pkg = require('../package.json'); ... version: pkg.version`.
+     Or simpler: just hardcode '3.2.1' to match package.json. Less elegant but no import needed.
+resolution: "4 changes: (1) artifactWatcher.close() in afterEach for test cleanup, (2) new test for rebuildIndex failure path, (3) new test for bootstrap-when-initialized delegation, (4) version string reads from package.json. 340 tests pass."
+cycle_created: null
+cycle_modified: null
+content_hash: 25fdcb440161e3b42673a5b6db4b07d45fbe9b1fa09f1167a5c7e9ec798abf47
+token_count: 595
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-333.yaml

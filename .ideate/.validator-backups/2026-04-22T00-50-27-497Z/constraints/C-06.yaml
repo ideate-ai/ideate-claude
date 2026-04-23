@@ -1,0 +1,10 @@
+id: C-06
+type: constraint
+category: design
+status: active
+description: Non-overlapping work item scope. Two work items that touch the same file must be sequenced via dependency ordering or the scope must be split. This is required for parallel execution correctness.
+cycle_created: 1
+cycle_modified: null
+content_hash: b251cf4f6ffedb7a2e0fba2e176d7bfb4b2878b280429dc4392393535a19210a
+token_count: 91
+file_path: .ideate/constraints/C-06.yaml

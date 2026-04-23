@@ -1,0 +1,68 @@
+id: WI-377
+type: work_item
+title: Fix pre-existing TypeScript type errors blocking tsc --noEmit
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/__tests__/metrics.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/config.test.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/config.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - npx tsc --noEmit in mcp/artifact-server passes with zero errors
+  - metrics.test.ts:259 — insertMetricsEvent options.firstPassAccepted type accepts null without TS error
+  - config.test.ts:584,603,618,635 — null-signal casts use Record<string, string | null> (or equivalent) without TS error
+  - tools/config.ts:190,191 — rawStored/merged casts use double-cast through unknown without TS error
+  - All existing tests continue to pass
+domain: agent-system
+notes: |-
+  ## Fixes Required
+
+  ### 1. metrics.test.ts:259
+  The `insertMetricsEvent` helper function signature has `firstPassAccepted?: number` but line 259 passes `null`. Fix: change the type to `firstPassAccepted?: number | null` in the options interface.
+
+  ```typescript
+  // Before:
+  firstPassAccepted?: number;
+  // After:
+  firstPassAccepted?: number | null;
+  ```
+
+  ### 2. config.test.ts:584,603,618,635
+  These tests exercise the null-signal deletion behavior for `model_overrides`. They cast `{ architect: null }` as `Record<string, string>` which TypeScript rejects because `null` is not assignable to `string`.
+
+  Fix: change the cast type to `Record<string, string | null>`:
+
+  ```typescript
+  // Before:
+  pattern: { model_overrides: { architect: null } as Record<string, string> }
+  // After:
+  patch: { model_overrides: { architect: null } as Record<string, string | null> }
+  ```
+
+  Apply this same fix at lines 603, 618, and 635.
+
+  ### 3. tools/config.ts:190,191
+  Casting `rawStored` and `merged` (typed as `IdeateConfigJson`) directly to `Record<string, unknown>` fails because `IdeateConfigJson` lacks an index signature. Fix: double-cast through `unknown`:
+
+  ```typescript
+  // Before:
+  const beforeVal = JSON.stringify((rawStored as Record<string, unknown>)[key]);
+  const afterVal = JSON.stringify((merged as Record<string, unknown>)[key]);
+  // After:
+  const beforeVal = JSON.stringify((rawStored as unknown as Record<string, unknown>)[key]);
+  const afterVal = JSON.stringify((merged as unknown as Record<string, unknown>)[key]);
+  ```
+
+  ## Verification
+  Run `npx tsc --noEmit` in `mcp/artifact-server` — must exit 0. Run `npm test` — all tests must pass.
+resolution: null
+cycle_created: 58
+cycle_modified: 58
+content_hash: 38648a1f29ef71c6ee1d788453cff42f512584e22ed85a0e306a2b4abb54b236
+token_count: 646
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-377.yaml

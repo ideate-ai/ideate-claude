@@ -1,0 +1,100 @@
+id: summary
+type: cycle_summary
+content: |-
+  # Review Summary
+
+  ## Overview
+  Cycle 25 implemented WI-778 (edge_type_weights validation), closing the last unvalidated TraversalOptions field. The work item itself passed all acceptance criteria. However, the capstone review identified a pre-existing correctness gap: NaN bypasses validation guards on alpha and convergence_threshold (added in cycle 24 WI-776), producing silently corrupted PPR results.
+
+  ## Phase Convergence
+  Phase: PH-041 (Input Validation Layer)
+  Cycles completed in this phase: 4 / 5 (threshold)
+  Convergence status: Stalled
+
+  Trend: Significant findings 5 → 1 → 0 → 1. The cycle 25 finding is a retroactive gap in WI-776 (cycle 24), not a regression in WI-778. The phase was converging but the NaN guard gap prevents closure.
+
+  ## Project Progress
+  | Success Criterion | Status |
+  |---|---|
+  | All StorageAdapter input validation handled by ValidatingAdapter | partial — NaN/Infinity bypass on alpha and convergence_threshold |
+  | Test suite covers all validation error code paths | partial — NaN/Infinity tests missing for alpha and convergence_threshold |
+  | Defense-in-depth guards in ppr.ts preserved | pass |
+  | Single validation layer architecture enforced | pass |
+
+  ## Significant Findings
+  - [code-reviewer] S1: NaN and Infinity bypass alpha and convergence_threshold validation guards in validating.ts and ppr.ts. IEEE-754 comparisons with NaN return false; Infinity satisfies convergence_threshold > 0. Fix: add Number.isFinite() guards. — relates to: WI-776, PH-041 validation completeness
+  - [gap-analyst] EC1: Same NaN bypass confirmed independently. Notes inconsistency: edge_type_weights uses Number.isFinite() but alpha and convergence_threshold do not. — relates to: WI-776, cross-field consistency
+  - [gap-analyst] II1: No integration-level test file for edge_type_weights validation. Prior fields (always_include_types, seed_ids) each have dedicated integration test files in tests/adapters/. — relates to: WI-778, P-43
+
+  ## Minor Findings
+  - [code-reviewer] M1: No test for Infinity value in edge_type_weights (implementation correctly rejects via Number.isFinite but untested) — relates to: WI-778, P-02 → carry-forward
+  - [code-reviewer] M2: adapter-contract.test.ts has no edge_type_weights validation coverage — relates to: cross-cutting → carry-forward
+  - [code-reviewer] M3: remote-adapter-validation.test.ts has no edge_type_weights coverage — relates to: cross-cutting → carry-forward
+  - [gap-analyst] EC2: queryGraph does not validate type_filter (NodeType field) — relates to: PH-041 scope boundary → carry-forward
+  - [gap-analyst] II2: putEdge missing test for MISSING_EDGE_TYPE error code — relates to: P-02 → carry-forward
+  - [gap-analyst] IR1: queryNodes does not validate NodeFilter.type — relates to: PH-041 scope boundary → carry-forward
+
+  ## Findings Requiring User Input
+  - Is PH-041 complete despite the NaN bypass, or should a targeted fix (WI-779: Number.isFinite guards on alpha and convergence_threshold) be completed before phase closure? The NaN issue originates in WI-776 (cycle 24) and was not caught by that cycle's review. Two reviewers independently flagged it.
+
+  ## Proposed Refinement Plan
+  A refinement cycle is recommended to address the 1 significant finding (NaN/Infinity bypass) before PH-041 closure:
+  1. WI-779: Add Number.isFinite() guards to alpha and convergence_threshold in validating.ts (lines 297 and 330) and ppr.ts defense-in-depth (lines 110 and 128). Add NaN and Infinity test cases for both fields. Estimated complexity: small.
+  2. Optionally bundle the integration test gap (II1) and Infinity test (M1) into WI-779 or a separate WI-780.
+
+  The minor findings (M2, M3, EC2, II2, IR1) can carry forward to a future phase as they represent broader test coverage and filter validation work outside PH-041's core scope.
+content_hash: 0dca58cfdcfea8b6610c433c49a6613cff213f2e96b7312b876c675e2ddff9be
+token_count: 1662
+file_path: .ideate/cycles/068/summary.yaml
+cycle: 25
+phase: PH-017
+phase_name: Documentation & Cleanup
+date: 2026-04-13
+scope: "9 work items (WI-754 through WI-762): test-quality fixes eliminating vacuous assertions, adding missing coverage, correcting documentation"
+overall_verdict: Pass
+reviewer_verdicts:
+  code-reviewer: Pass
+  spec-reviewer: Pass
+  gap-analyst: Pass
+critical_findings: 0
+significant_findings: 0
+minor_findings: 9
+carry_forward_gaps:
+  - id: CF1
+    title: 8 extension tables lack column-structure tests
+  - id: CF2
+    title: 4 extension tables have partial column-structure tests
+  - id: CF3
+    title: 10 of 16 extension tables lack CASCADE tests
+  - id: CF4
+    title: ALL_NODE_TYPES.length hardcoded count assertion
+acceptance_criteria_status: All machine-verifiable AC for WI-754 through WI-762 satisfied
+test_results: 1217 tests passed, 0 failures
+requires_human_review:
+  - "WI-759: Confirm WI-754.yaml acceptance criteria accurately describes sqlite_* filter approach"
+convergence_assessment: Phase converging well. All in-scope work items pass all three review perspectives. Remaining gaps are outside PH-017 scope and suitable for future phases.
+cycle_modified: 23
+project: PR-002
+verdict: Pass
+work_items_reviewed:
+  - WI-763
+  - WI-764
+  - WI-765
+  - WI-766
+  - WI-767
+work_item_titles:
+  WI-763: Add reserved keyword documentation comments to schema.ts
+  WI-764: Add column-structure tests for 8 untested extension tables
+  WI-765: Expand 4 partial column-structure tests to full coverage
+  WI-766: Add ON DELETE CASCADE tests for 10 extension tables
+  WI-767: Remove hardcoded ALL_NODE_TYPES.length count assertion
+key_findings_summary: "All findings are minor. Three clusters: (1) reserved keyword comment accuracy — constraints mislabeled as reserved, trigger quoting overstated; (2) pattern consistency — 10 extension table describe blocks omit cols.length assertion established by nodes table; projects/phases lack NOT NULL tests; (3) naming — WI-767 test name 'is readonly array' doesn't match assertions."
+carry_forward:
+  - Correct reserved keyword comments in schema.ts (M1, M2)
+  - Add cols.length assertions to 10 extension table describe blocks (N1, MI2)
+  - Add NOT NULL tests for projects and phases tables (M3, MI2)
+  - Add NOT NULL tests for interview_questions (MI3)
+  - Rename 'is readonly array' test to match assertions (M4)
+  - Add idx_nodes_type_file_path to index tests (MI1)
+convergence_trend: Zero critical, zero significant — cleanest cycle since cycle 20. Phase PH-017 is converging. Residual gaps are mechanical (column counts, NOT NULL assertions) rather than architectural.
+reviewer: coordinator

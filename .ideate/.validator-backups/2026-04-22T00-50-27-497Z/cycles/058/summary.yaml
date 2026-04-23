@@ -1,0 +1,45 @@
+id: summary
+type: cycle_summary
+cycle: 58
+content: |-
+  # Review Summary — Cycle 058
+
+  ## Overview
+  Cycle 040 executed 6 work items: MCP deferred startup, incremental watcher, phantom item cleanup, version sync, doc fixes, and migration script fixes. All 303 tests pass. One significant code bug found (watcher sends non-YAML files to indexFiles). Several acceptance criteria gaps identified in test coverage and documentation.
+
+  ## Critical Findings
+  None.
+
+  ## Significant Findings
+  - [code-reviewer] Watcher passes non-YAML files (config.json, metrics.jsonl) to indexFiles, causing spurious parse failures. Regression from rebuildIndex which filters to .yaml/.yml. — relates to: WI-302
+  - [gap-analyst] ARCHITECTURE.md startup sequence stale after WI-301 — Sections 2 and 4 still show rebuildIndex before server.connect. Actual code now connects first. — relates to: WI-305 scope gap
+  - [gap-analyst] No unit tests for indexFiles and removeFiles in indexer.test.ts — WI-302 acceptance criterion. Only indirect coverage via watcher.test.ts. — relates to: WI-302
+  - [gap-analyst] No startup-order test for WI-301 — WI notes specify testing that server connects before rebuildIndex. readiness-gate.test.ts covers the gate but not the actual startup order. — relates to: WI-301
+
+  ## Minor Findings
+  - [code-reviewer] pretest script warns on stale .js but does not compile — criterion says 'compiles' — relates to: WI-172
+  - [code-reviewer] 11 pre-existing question files (.ideate/questions/Q-03 etc.) have backtick parse errors — outside WI-303 scope — relates to: cross-cutting
+  - [code-reviewer] indexFiles has no .yaml/.yml type guard, inconsistent with rebuildIndex — relates to: WI-302
+  - [gap-analyst] ARCHITECTURE.md Section 4 says watcher calls rebuildIndex — no longer true after WI-302 — relates to: WI-302
+  - [gap-analyst] WI-304 resolution field is null instead of containing Q-075/Q-076 note — relates to: WI-304
+  - [gap-analyst] Q-75 and Q-76 files now exist in .ideate/questions/ — contradicts WI-304 rationale — relates to: WI-303/WI-304
+  - [spec-reviewer] readiness gate tests placed in readiness-gate.test.ts not indexer.test.ts — relates to: WI-301
+  - [spec-reviewer] WI-302 indexer.test.ts scope entry not modified — relates to: WI-302
+  - [spec-reviewer] validate-specs.sh annotated but still shows misleading runtime error — relates to: WI-305
+
+  ## Suggestions
+  None.
+
+  ## Findings Requiring User Input
+  None — all findings can be resolved from existing context.
+
+  ## Proposed Refinement Plan
+  The significant findings are mechanical fixes that can be addressed in a small refinement cycle:
+  1. Add .yaml/.yml filter in watcher event handler (fixes S1 from code-reviewer and M3)
+  2. Update ARCHITECTURE.md startup sequence and watcher description (fixes S2 and M4 from gap-analyst)
+  3. Add indexFiles/removeFiles unit tests to indexer.test.ts (fixes S3 from gap-analyst)
+  4. Fix 11 pre-existing question files with backtick parse errors (fixes M2 from code-reviewer)
+  Estimated: 3-4 work items, low-medium complexity.
+content_hash: 1ad934f994bd13428008125ef064167f6a9c5a5ac233f557294c6d01e64e4476
+token_count: 767
+file_path: .ideate/cycles/058/summary.yaml

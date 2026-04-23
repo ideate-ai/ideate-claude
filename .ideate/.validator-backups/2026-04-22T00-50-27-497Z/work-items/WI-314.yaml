@@ -1,0 +1,34 @@
+id: WI-314
+type: work_item
+title: Rewrite execute/SKILL.md — remove all .ideate/ path references and direct I/O
+status: done
+complexity: low
+scope:
+  - path: skills/execute/SKILL.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain
+  - No .yaml filename references
+  - Findings written via ideate_write_artifact not direct path
+  - Metrics writes use ideate_emit_metric
+  - No references to .ideate/principles/ or .ideate/constraints/ paths — use 'via MCP tools'
+  - YAML schema description removed — work item format described by field names only
+domain: workflow
+notes: |-
+  # WI-314: Execute skill MCP abstraction rewrite
+
+  ## Changes
+  - Remove .ideate/cycles/{NNN}/findings/ path references — use ideate_write_artifact({type: 'finding'})
+  - Remove metrics.jsonl schema and direct write — use ideate_emit_metric
+  - Remove .ideate/principles/ and .ideate/constraints/ path references
+  - Remove YAML field format description for work items
+  - Change 'Write the review result to .ideate/...' to 'Write the finding via ideate_write_artifact'
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: f4d270ffcb4ced2d1016bd4fca7b00ce6b939422fd62a16f5a8de97eb4aba313
+token_count: 287
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-314.yaml

@@ -1,0 +1,47 @@
+id: WI-214
+type: work_item
+title: Skill telemetry instrumentation for extended metrics
+status: done
+complexity: medium
+scope:
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/execute.md
+    op: modify
+  - path: skills/autopilot/phases/review.md
+    op: modify
+depends:
+  - "212"
+blocks: []
+criteria:
+  - execute/SKILL.md Metrics Instrumentation schema adds outcome field (pass if incremental review passes, fail if critical finding, rework if significant finding fixed)
+  - execute/SKILL.md Metrics Instrumentation schema adds finding_count and finding_severities fields after incremental review completes
+  - execute/SKILL.md Metrics Instrumentation schema adds first_pass_accepted boolean (true if incremental review verdict is Pass with no rework)
+  - execute/SKILL.md Metrics Instrumentation schema adds rework_count (number of fix-and-re-review cycles for the work item)
+  - review/SKILL.md Metrics Instrumentation schema adds finding_count and finding_severities fields for each reviewer agent spawn
+  - autopilot/SKILL.md or autopilot/phases/execute.md Metrics Instrumentation schema adds the same outcome, finding_count, finding_severities, first_pass_accepted, rework_count fields as execute/SKILL.md
+  - autopilot/phases/review.md Metrics Instrumentation schema adds finding_count and finding_severities for each reviewer spawn
+  - autopilot/SKILL.md convergence summary metrics entry includes convergence_cycles (number of autopilot loops), cycle_total_tokens, cycle_total_cost_estimate
+  - All added fields are documented as optional in the schema comments (null if not available)
+  - Existing metrics fields are preserved — no breaking changes to the agent-spawn schema
+module: null
+domain: null
+notes: |
+  # WI-214: Skill Telemetry Instrumentation for Extended Metrics
+
+  ## Changes per skill
+
+  ### execute/SKILL.md
+  In the Metrics Instrumentation section, extend the agent-spawn JSON schema:
+
+  After the existing fields, add:
+cycle_created: 1
+cycle_modified: null
+content_hash: 3ece44bf66513b6d23593b7df92bfb3b03f635b1d4092cae7d8b91c18aad91c4
+token_count: 539
+file_path: .ideate/work-items/WI-214.yaml
+resolution: "Verified complete: all skill files contain extended telemetry fields"

@@ -1,0 +1,37 @@
+id: WI-390
+type: work_item
+title: Update P-41 policy to match implementation whitelist
+status: done
+complexity: small
+scope:
+  - op: modify
+    path: .ideate/policies/P-41.yaml
+depends: []
+blocks: []
+criteria:
+  - P-41.yaml documentation matches actual STATIC_STATE_PROPERTIES and CYCLE_COMMIT_PROPERTY_PATTERN in autopilot-state.ts
+  - No discrepancies between policy documentation and implementation
+domain: workflow
+notes: |-
+  # WI-390: Update P-41 policy to match implementation whitelist
+
+  ## Context
+  Cycle 002 review found that P-41 policy document uses regex alternation syntax in example but implementation uses exact match pattern.
+
+  ## Findings Addressed
+  - Significant: P-41 policy whitelist does not match implementation pattern
+
+  ## Implementation Notes
+  1. Read autopilot-state.ts STATIC_STATE_PROPERTIES and CYCLE_COMMIT_PROPERTY_PATTERN
+  2. Update P-41.yaml to accurately document the actual whitelist
+  3. Ensure documentation examples match the implementation
+
+  ## Acceptance Criteria
+  - P-41.yaml documentation matches actual implementation
+  - No discrepancies between policy and code
+resolution: null
+cycle_created: 2
+cycle_modified: 1
+content_hash: 2dc82f27ec3d62c2a295d4d90074327846677a79f00778a4968e3ffe33c904d7
+token_count: 292
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-390.yaml

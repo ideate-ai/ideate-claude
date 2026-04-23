@@ -4,10 +4,16 @@ domain: artifact-structure
 status: settled
 cycle: 1
 supersedes: null
-description: "`runMigration` processes `code-quality.md`, `spec-adherence.md`, and `gap-analysis.md` from archive cycle directories. It does not process `decision-log.md`, `summary.md`, `review-manifest.md`, or `archive/incremental/` files. It also omits plan artifacts (architecture, overview, execution-strategy, modules, guiding-principles, constraints, research) and interview files entirely. The WI-146 notes spec required all of these as migration steps 7-12."
-rationale: "`runMigration` was implemented against the WI-157 notes spec without checking the WI-146 parent spec for completeness. The WI-157 spec defined only three file-to-reviewer mappings."
+description: >-
+  `runMigration` processes `code-quality.md`, `spec-adherence.md`, and `gap-analysis.md` from archive cycle directories.
+  It does not process `decision-log.md`, `summary.md`, `review-manifest.md`, or `archive/incremental/` files. It also
+  omits plan artifacts (architecture, overview, execution-strategy, modules, guiding-principles, constraints, research)
+  and interview files entirely. The WI-146 notes spec required all of these as migration steps 7-12.
+rationale: >-
+  `runMigration` was implemented against the WI-157 notes spec without checking the WI-146 parent spec for completeness.
+  The WI-157 spec defined only three file-to-reviewer mappings.
 cycle_created: 1
 cycle_modified: null
-content_hash: "961d159735c6f16a81ac76915b337eeb2d49aaa89e448d3b86ab56cf3097e42f"
+content_hash: 961d159735c6f16a81ac76915b337eeb2d49aaa89e448d3b86ab56cf3097e42f
 token_count: 215
-file_path: .ideate/decisions/D-66.yaml
+file_path: decisions/D-66.yaml

@@ -1,0 +1,117 @@
+id: decision-log
+type: cycle_summary
+scope: full-audit-20260328
+reviewer: journal-keeper
+content: |-
+  # Full Audit Decision Log — 2026-03-28
+
+  ## Decision Log
+
+  ### DL-01: Inline notes storage model (EC1)
+  The `handleGetWorkItemContext` handler in `context.ts:301-323` calls `fs.readFileSync(workItemRow.notes, 'utf8')`, treating the `notes` DB column value as a file path. Notes are stored inline in the database column (not as separate files). This has caused every work item execution to proceed without implementation notes — the workers received a 'Notes file not found' error. This is the most severe finding in the audit.
+
+  **Cross-reference**: CR1 — This root cause is also documented as a gap in `ARCHITECTURE.md` Section 9.2, which still describes the stale file-based notes model ('notes file is read from disk').
+
+  ### DL-02: Three-way deferral signal inconsistency (S2)
+  `execute.md:213` checks for uppercase `DEFER` as the proxy-human deferral signal. `agents/proxy-human.md:90` writes `DEFERRED` (uppercase). `schema.ts:308` defines the authoritative set as lowercase `"approved" | "deferred" | "escalated"`. The schema is the canonical source. Neither execute.md nor proxy-human.md agree with it or with each other. Autopilot has never correctly detected proxy-human deferrals.
+
+  **Cross-reference**: CR2 — D-122 establishes source code as authoritative for tool names; the same principle applies here: schema.ts is authoritative for status enumerations.
+
+  ### DL-03: Domain-curator write protocol contradiction (II1)
+  `skills/autopilot/phases/review.md:248-256` instructs the domain-curator agent to call `ideate_write_artifact` directly. `agents/domain-curator.md` explicitly states the agent should return structured content for the skill orchestrator to parse and write — the agent does not have Write tools. The standalone review skill correctly implements parse-and-write. The autopilot review phase does not. Any domain artifacts from autopilot cycles are silently lost.
+
+  **Cross-reference**: CR3 — The domain-curator agent definition is the authoritative source for its write protocol.
+
+  ### DL-04: Refine skill uses wrong journal artifact type (II2)
+  `skills/refine/SKILL.md:70` calls `ideate_artifact_query({type: "journal"})`. The correct type string is `"journal_entry"`. This silently returns zero results — the refine skill has always operated without project history context.
+
+  ### DL-05: P-33 violation in handleAssembleContext error path (S1/EC2)
+  `context.ts:959` renders `row.file_path` in the error fallback: `*Content not available for \`${row.file_path}\`*`. This exposes internal storage paths. P-33 (MCP abstraction boundary) requires all responses to use artifact identity (id + type), not internal paths.
+
+  **Cross-reference**: CR4 — Same P-33 policy violated in tool descriptions at index.ts:586, :662, :244.
+
+  ### DL-06: P-33 violations in tool descriptions (P1)
+  Three tool descriptions in `tools/index.ts` reference internal `.ideate/` paths:
+  - Line 586: `ideate_bootstrap_project` — 'Create .ideate/ directory with config.json'
+  - Line 662: `ideate_update_config` — 'Update .ideate/config.json settings'
+  - Line 244: `ideate_append_journal` — 'Append entry to journal.md'
+  Tool descriptions are surfaced to agents as tool documentation. These violate P-33.
+
+  ### DL-07: ARCHITECTURE.md Section 9.2 describes stale notes model (D1)
+  Section 9.2 documents 'notes file is read from disk' — the file-based notes model that was replaced by inline DB storage. This is the documentation gap that correlates with EC1.
+
+  ### DL-08: ARCHITECTURE.md Section 9.3 specifies unimplemented feature (D2)
+  Section 9.3 specifies a 'Full Document Paths' section for the context package. No such section is emitted by `ideate_get_context_package`. Either the spec was never implemented or was removed without updating the architecture document.
+
+  ### DL-09: ARCHITECTURE.md Section 5 missing null-signal deletion semantics (MI1)
+  Section 5 describes `ideate_update_config` as performing 'deep-merge'. The null-signal deletion semantics (patch key set to null → delete from stored map) are not documented. These were implemented and validated in cycle 1.
+
+  ### DL-10: ARCHITECTURE.md config.ts export count mismatch (MI1)
+  Line 682 lists 4 exports for config.ts; the file has 11 exported symbols. The architecture document has not been updated to reflect config.ts additions from recent cycles.
+
+  ### DL-11: Edge type registry count discrepancy (MI1)
+  Architecture Section 6 states 11 edge types; `schema.ts:EDGE_TYPE_REGISTRY` contains 13 entries (`governed_by` and `informed_by` added). Open question OQ-5 confirmed resolved — the registry now has the correct 13 types.
+
+  ### DL-12: Cycle 1 findings resolution confirmed (historical)
+  Cycle 1 addressed: null-signal deletion for model_overrides (config.ts), autopilot state split naming (skills/autopilot/SKILL.md), settings skill change record format, settings skill null-signal for reset. All confirmed resolved in this audit.
+
+  ### DL-13: Cycle 2 findings resolution confirmed (historical)
+  Cycle 2 completed with 0 critical / 0 significant findings. The SKILL.md split-name fix (WI-369) was confirmed applied: all 9 autopilot state references use `ideate_manage_autopilot_state({action: ...})`. Convergence achieved.
+
+  ### DL-14: PPR edge types OQ-5 confirmed resolved
+  OQ-5 (governed_by and informed_by missing from EDGE_TYPE_REGISTRY) confirmed resolved. Both edge types are present in `schema.ts`. Closed.
+
+  ### DL-15: Deferred-tools list vs source registration divergence (D-122)
+  The marketplace manifest v3.3.0 still exposes `ideate_get_autopilot_state` / `ideate_update_autopilot_state` as separate tools. Local source registration (`tools/index.ts`) has only `ideate_manage_autopilot_state`. D-122 establishes source code as authoritative; P-38 establishes the policy for agents verifying tool names. The manifest discrepancy is a known stale artifact.
+
+  ### DL-16: migrate-brrr-to-autopilot.sh references stale split tool names (Q-92)
+  Lines 68-69 of `scripts/migrate-brrr-to-autopilot.sh` reference `ideate_get_autopilot_state` and `ideate_update_autopilot_state`. Deferred (Q-92) — script is historical, applies only to a narrow migration window, no active projects affected.
+
+  ---
+
+  ## Open Questions
+
+  **OQ-A**: Should `handleGetWorkItemContext` also handle the case where `workItemRow.notes` is null or empty — returning an empty string or omitting the notes section entirely?
+
+  **OQ-B**: Should the fix for EC1 (inline notes) be accompanied by a migration check to detect any work items whose notes column still contains a legacy file path (a string starting with `/`)?
+
+  **OQ-C**: For the deferral signal fix (S2): should the standard be the schema lowercase `"deferred"` or should proxy-human.md be updated to match? The schema is authoritative, so lowercase `"deferred"` should propagate to execute.md and proxy-human.md. Confirm direction.
+
+  **OQ-D**: For II1 (domain-curator write protocol in autopilot phases/review.md): should the fix be to update the phase document to return content + have autopilot parse-and-write, or should a different approach be used for autopilot's domain curation step?
+
+  **OQ-E**: Does `ideate_get_context_package` need a 'Full Document Paths' section (ARCHITECTURE.md 9.3)? If not, should the architecture document be updated to remove that spec, or implemented?
+
+  **OQ-F**: Should ARCHITECTURE.md be updated as part of the next refinement cycle, or is it deferred to a dedicated documentation work item?
+
+  **OQ-G**: The `ideate_bootstrap_project` tool description (P-33 violation) — should tool descriptions be audited for P-33 compliance as a policy check item in future reviews?
+
+  **OQ-H**: Is there a test covering the inline notes path in `handleGetWorkItemContext`? If not, should one be added as part of the EC1 fix work item?
+
+  **OQ-I**: `metrics.test.ts:55` uses `'metric_event'` instead of `'metrics_event'` in the `insertNode` helper. Minor test bug. Should be fixed in the same refinement cycle.
+
+  **OQ-J**: The `ideate_update_autopilot_state` tool name still appears in the deferred-tools list (ToolSearch returns it). The local server only registers `ideate_manage_autopilot_state`. Should the marketplace manifest be updated to reflect the unified tool, or is this acceptable given the self-hosted nature?
+
+  **OQ-K**: Are there other skill documents (beyond refine/SKILL.md) that call `ideate_artifact_query({type: "journal"})` instead of `{type: "journal_entry"}`? An audit of all skill documents for stale artifact type strings should be part of the refinement scope.
+
+  **OQ-L**: The domain-curator agent definition says it returns structured content. Is the return format documented (YAML schema, field names)? Autopilot phases/review.md needs to know what to parse.
+
+  **OQ-M**: `handleAssembleContext` (context.ts) error fallback at line 959 exposes `row.file_path`. Should all error fallbacks in context.ts be audited for P-33 compliance simultaneously with the EC1/S1 fix?
+
+  **OQ-N**: Is `ideate_archive_cycle` ever called? The tool is registered but no skill document was found that invokes it. Is it dead code or invoked by a path not covered in this audit?
+
+  **OQ-O**: With convergence achieved in 2 cycles (5 work items), the next refinement cycle will be the first post-convergence refinement. The execution strategy, guiding principles, and constraints should be reviewed for continued applicability before new work items are decomposed.
+
+  ---
+
+  ## Cross-References
+
+  **CR1**: EC1 (context.ts:301-323 readFileSync bug) ↔ DL-07 (ARCHITECTURE.md 9.2 stale docs). Root cause and documentation gap are co-located in the same conceptual area; fix and doc update should be bundled.
+
+  **CR2**: DL-02 (S2 deferral signal mismatch) ↔ D-122 (source code authoritativeness). Same principle: canonical definitions in source (schema.ts status enum) override derived documentation (skill docs, agent docs).
+
+  **CR3**: DL-03 (II1 domain-curator write protocol) ↔ DL-12 (cycle 1 findings). The parse-and-write pattern was implemented correctly in the standalone review skill but was not propagated to autopilot phases/review.md when that document was written.
+
+  **CR4**: DL-05 (context.ts:959 P-33 violation) ↔ DL-06 (P-33 violations in tool descriptions). Both are P-33 policy violations. Should be fixed in the same work item or adjacent work items with a shared P-33 audit pass.
+content_hash: 6d098a5539cd2935451f438c1fca534e7c0b416875349586d6b30661506b9a5b
+token_count: 2623
+file_path: .ideate/cycles/000/decision-log.yaml

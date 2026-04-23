@@ -1,0 +1,47 @@
+id: WI-338
+type: work_item
+title: Update cross-references from /ideate:plan to /ideate:init in all skills
+status: done
+complexity: small
+scope:
+  - path: skills/refine/SKILL.md
+    op: modify
+  - path: skills/execute/SKILL.md
+    op: modify
+  - path: skills/review/SKILL.md
+    op: modify
+  - path: skills/autopilot/SKILL.md
+    op: modify
+  - path: skills/autopilot/phases/refine.md
+    op: modify
+  - path: skills/autopilot/phases/reporting.md
+    op: modify
+  - path: agents/architect.md
+    op: modify
+  - path: agents/decomposer.md
+    op: modify
+  - path: agents/researcher.md
+    op: modify
+depends:
+  - WI-337
+blocks: []
+criteria:
+  - grep -r 'ideate:plan' skills/ agents/ returns no matches
+  - All references to /ideate:plan replaced with /ideate:init
+  - Context is preserved (e.g., 'plan produced by ideate:plan' becomes 'plan produced by ideate:init')
+domain: workflow
+notes: |-
+  ## Implementation
+
+  Mechanical replacement in all skill and agent files:
+  - `/ideate:plan` -> `/ideate:init`
+  - `ideate:plan` -> `ideate:init` (without leading slash, in prose)
+
+  Check both skills/ and agents/ directories.
+  Do NOT modify .ideate/ artifacts (historical references are acceptable).
+resolution: "5 cross-references updated: execute/SKILL.md, autopilot/SKILL.md, refine/SKILL.md (2 refs), agents/researcher.md. grep confirms zero ideate:plan in skills/ and agents/."
+cycle_created: null
+cycle_modified: null
+content_hash: 248dec9aebaa07dd7a93fd1523bb617dcdae631aec73b811aa8c668168ffc7f0
+token_count: 355
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-338.yaml

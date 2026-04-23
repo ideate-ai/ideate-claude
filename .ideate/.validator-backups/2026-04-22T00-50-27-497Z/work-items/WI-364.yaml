@@ -1,0 +1,147 @@
+id: WI-364
+type: work_item
+title: Create /ideate:settings skill
+status: done
+complexity: large
+scope:
+  - path: skills/settings/SKILL.md
+    op: create
+depends:
+  - WI-362
+  - WI-363
+blocks: []
+criteria:
+  - "Skill file exists at skills/settings/SKILL.md with disable-model-invocation: true and user-invocable: true"
+  - "Main menu has three options: Agent Settings, PPR Weights, Exit"
+  - Agent Settings shows a table with current and default for both maxTurns and model for all 9 agents
+  - Model (current) shows override from config.model_overrides if set, otherwise indicates no override
+  - User can edit maxTurns or model for any agent; change calls ideate_update_config and confirms result
+  - User can clear a model override (remove the key from model_overrides)
+  - PPR section shows all algorithm params (alpha, max_iterations, convergence_threshold, default_token_budget) with current/default
+  - PPR edge type weights shown only for types defined in EDGE_TYPE_REGISTRY — no arbitrary string input
+  - Each PPR change calls ideate_update_config with the relevant ppr patch and confirms result
+  - "Exit shows a session summary of all changes made (key: old → new), then exits"
+  - If argument passed (e.g. agents, ppr), skill navigates directly to that section
+  - No file paths appear in any output (P-33)
+domain: workflow
+notes: |-
+  Create `skills/settings/SKILL.md` — a conversational settings menu for ideate configuration.
+
+  ## Frontmatter
+
+  ```yaml
+  name: ideate:settings
+  description: Interactive settings menu for ideate configuration — agent budgets, model overrides, and PPR weights.
+  argument-hint: "[agents|ppr]"
+  disable-model-invocation: true
+  user-invocable: true
+  ```
+
+  ## Phase 0: Load config
+
+  Call `ideate_get_config()`. Store as `{config}`. Track a `{changes}` list (empty) to accumulate session changes for the exit summary.
+
+  The default reference values (for display) are the hardcoded `DEFAULT_AGENT_BUDGETS` and `DEFAULT_PPR_CONFIG` constants — include them inline in the skill so no separate lookup is needed:
+
+  Agent defaults: architect=160, code-reviewer=80, decomposer=100, domain-curator=100, gap-analyst=100, journal-keeper=60, proxy-human=160, researcher=80, spec-reviewer=100. All default to sonnet model (domain-curator defaults to opus).
+
+  PPR defaults: alpha=0.15, max_iterations=50, convergence_threshold=0.000001, default_token_budget=50000.
+  Edge weight defaults: depends_on=1.0, governed_by=0.8, informed_by=0.6, references=0.4, blocks=0.3.
+
+  If an argument was provided, jump directly: `agents` → Phase 2a, `ppr` → Phase 2b.
+
+  ## Phase 1: Main menu
+
+  ```
+  ideate settings
+
+  1. Agent Settings   — maxTurns and model per agent
+  2. PPR Weights      — algorithm parameters and edge type weights
+  3. Exit
+
+  Enter a number:
+  ```
+
+  ## Phase 2a: Agent Settings
+
+  Present a numbered table of all 9 agents:
+
+  | #  | Agent         | maxTurns | (default) | Model override | (default) |
+  |----|--------------|----------|-----------|----------------|-----------|
+  | 1  | architect     | 160      | 160       | —              | sonnet    |
+  ...
+
+  "Model override" column: show the value from `config.model_overrides[agent]` if set, otherwise `—` (no override — agent uses its frontmatter default).
+
+  User enters a number to select an agent. Show:
+
+  ```
+  architect
+    maxTurns : 160  (default: 160)
+    model    : —    (default: sonnet — no override set)
+
+  1. Edit maxTurns
+  2. Set model override
+  3. Clear model override
+  4. Back to agent list
+  ```
+
+  For "Edit maxTurns": prompt for new value, validate (positive integer), call `ideate_update_config({ agent_budgets: { architect: newValue } })`, add to `{changes}`, confirm, return to this agent's submenu.
+
+  For "Set model override": prompt for model string, validate (non-empty), call `ideate_update_config({ model_overrides: { architect: modelString } })`, add to `{changes}`, confirm, return to submenu.
+
+  For "Clear model override": if no override is set, say so and return. Otherwise call `ideate_update_config` with the agent key removed from model_overrides (by setting the full model_overrides object without that key), add to `{changes}`, confirm.
+
+  "Back" returns to the agent list. After agent list, offer `B` to go back to main menu.
+
+  ## Phase 2b: PPR Weights
+
+  Present:
+
+  ```
+  PPR Configuration
+
+  Algorithm parameters:
+    1. alpha                : 0.15   (default: 0.15)
+    2. max_iterations       : 50     (default: 50)
+    3. convergence_threshold: 0.000001 (default: 0.000001)
+    4. default_token_budget : 50000  (default: 50000)
+
+  Edge type weights:
+    5. depends_on  : 1.0  (default: 1.0)
+    6. governed_by : 0.8  (default: 0.8)
+    7. informed_by : 0.6  (default: 0.6)
+    8. references  : 0.4  (default: 0.4)
+    9. blocks      : 0.3  (default: 0.3)
+
+  B. Back to main menu
+  ```
+
+  User selects a number. Prompt for new value. Validate. Call `ideate_update_config` with the appropriate nested patch:
+  - Items 1-4: `{ ppr: { alpha: v } }` etc.
+  - Items 5-9: `{ ppr: { edge_type_weights: { depends_on: v } } }` etc.
+
+  Add to `{changes}`. Confirm. Return to PPR menu.
+
+  Do not accept arbitrary edge type key input — only the 5 registered types listed above.
+
+  ## Phase 3: Exit
+
+  If `{changes}` is non-empty, show:
+  ```
+  Session changes:
+    architect.maxTurns: 160 → 200
+    ppr.alpha: 0.15 → 0.10
+  ```
+
+  If no changes were made, say "No changes made." Then exit.
+
+  ## Error handling
+
+  If `ideate_update_config` returns an error, show the error message and return to the menu without recording a change. Do not retry silently.
+resolution: null
+cycle_created: 68
+cycle_modified: null
+content_hash: eb33243a6a7ccf0b23f49f52d3712d98b089a89c41dfd9f5901ee18a07953612
+token_count: 1414
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-364.yaml

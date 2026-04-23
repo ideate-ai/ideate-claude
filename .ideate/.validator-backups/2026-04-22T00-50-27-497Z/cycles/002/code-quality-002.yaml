@@ -1,0 +1,50 @@
+id: code-quality-002
+type: cycle_summary
+title: Code Quality Review — Cycle 2
+cycle: 2
+reviewer: code-reviewer
+content: |-
+  ## Verdict: Fail
+
+  Two significant findings. All 453 tests pass.
+
+  ## Critical Findings
+
+  None.
+
+  ## Significant Findings
+
+  ### S1: handleAppendJournal sequence number collision under concurrent use
+  - **File**: `mcp/artifact-server/src/tools/write.ts:84-91`
+  - **Issue**: Sequence number derived from `SELECT COUNT(*) FROM nodes WHERE type='journal_entry' AND cycle_created=?`. Two concurrent calls before either commits read the same count and produce the same ID (e.g., `J-003-000`). Second `writeFileSync` silently overwrites first YAML; second `upsertNode` overwrites same PK. Silent data loss.
+  - **Suggested fix**: Move COUNT query inside the transaction, or use `MAX(id)` for resilience.
+
+  ### S2: handleGetReviewManifest has no test for critical-severity Fail verdict
+  - **File**: `mcp/artifact-server/src/__tests__/execution.test.ts`
+  - **Issue**: Tests cover None, Pass (minor findings), Fail (significant), cycle filtering, max-cycle default — but no test for `critical` severity in `deriveVerdict`. The critical branch is dead from a test perspective.
+  - **Suggested fix**: Add test inserting a critical finding and asserting Fail verdict.
+
+  ## Minor Findings
+
+  ### M1: Phase 3b cascade not tested with extension row present
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts`
+  - **Issue**: SQLite cleanup test inserts nodes row but no findings extension row; ON DELETE CASCADE is never exercised.
+
+  ### M2: archive path fix test finding has no work_item field
+  - **File**: `mcp/artifact-server/src/__tests__/tools.test.ts`
+  - **Issue**: Finding YAML at line 713 has no `work_item` field; work item archival is not exercised by that test.
+
+  ### M3: Phase 3b SQLite errors not surfaced in return value
+  - **File**: `mcp/artifact-server/src/tools/write.ts:292-296`
+  - **Issue**: DELETE failures are logged but function still returns success string.
+
+  ### M4: handleAppendJournal cleanup logs absolute path
+  - **File**: `mcp/artifact-server/src/tools/write.ts:143,147`
+  - **Issue**: Console.error uses full `yamlFilePath` instead of `path.basename(yamlFilePath)` as in peer handlers.
+
+  ### M5: handleGetProjectStatus silently returns zero findings when cycleNumber is null
+  - **File**: `mcp/artifact-server/src/tools/analysis.ts:351`
+  - **Issue**: When `cycleNumber` is null, finding counts show 0 with no indication that cycle resolution failed.
+content_hash: 1b69da6e3bf18337bed2d0ed9d44d417f37c4468ff0ab4053a3541c8fc9bd693
+token_count: 630
+file_path: .ideate/cycles/002/code-quality-002.yaml

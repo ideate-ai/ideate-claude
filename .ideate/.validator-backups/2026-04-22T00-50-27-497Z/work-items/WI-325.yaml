@@ -1,0 +1,49 @@
+id: WI-325
+type: work_item
+title: Add test coverage for MCP dormant mode startup
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/__tests__/dormant.test.ts
+    op: create
+  - path: mcp/artifact-server/src/index.ts
+    op: modify
+depends:
+  - WI-323
+blocks: []
+criteria:
+  - "Test: server initializes with ctx=null when .ideate/ does not exist (dormant mode)"
+  - "Test: ideate_bootstrap_project in dormant mode creates .ideate/ and triggers initServer()"
+  - "Test: ideate_get_project_status in dormant mode returns {status: 'not_initialized'}"
+  - "Test: non-dormant tools return isError with helpful message when server is dormant"
+  - "Test: after bootstrap in dormant mode, all tools function normally"
+  - "Test: initServer() failure during bootstrap does not leave server in half-initialized state"
+  - All existing tests continue to pass
+  - npm run test passes with no failures
+domain: artifact-structure
+notes: |-
+  ## Implementation
+
+  Create `dormant.test.ts` in the existing test directory. Scope reduced: dormant mode behavior only. Prompt/skill body testing deferred to a future cycle using LLM behavioral tests (promptfoo or similar).
+
+  ### Test cases
+  1. `openDatabase()` — verify it creates DB, sets pragmas, handles schema version check
+  2. `initServer()` — verify it sets ctx, rebuilds index, starts watcher
+  3. `handleBootstrapDormant()` — verify it creates .ideate/, calls initServer, returns correct JSON
+  4. Request handler dormant guard — verify non-safe tools get isError response
+  5. Request handler dormant bootstrap — verify bootstrap works and subsequent tools work
+  6. `initServer()` failure — verify module state stays null if openDatabase throws
+
+  ### Out of scope (deferred)
+  - Skill body parsing for agent name validation
+  - LLM behavioral tests for prompt correctness
+  - Frontmatter-based agent dependency declaration
+
+  ### Existing patterns
+  Follow the pattern in `tools.test.ts` which creates a temp .ideate/ directory, opens a DB, and tests tools directly. For dormant tests, skip the .ideate/ creation step.
+resolution: Created server.ts (extracted testable logic from index.ts), dormant.test.ts (12 tests), and routeToolCall function. All 338 tests pass.
+cycle_created: null
+cycle_modified: null
+content_hash: 8cecba1cfb535ffa17bbcddc79330d911880a43c1d40510ee18de46a47ffa5e0
+token_count: 568
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-325.yaml

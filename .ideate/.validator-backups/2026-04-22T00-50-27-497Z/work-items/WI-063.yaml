@@ -1,0 +1,29 @@
+id: WI-063
+type: work_item
+title: Create domain-curator agent
+status: done
+complexity: medium
+scope:
+  - {path: agents/domain-curator.md, op: create}
+depends: []
+blocks:
+  - "068"
+criteria:
+  - "`agents/domain-curator.md` exists with valid frontmatter (name, description, tools, model, background, maxTurns)"
+  - Agent defines Phase 1 (load existing domain state), Phase 2 (read review output), Phase 3 (classify by domain), Phase 4 (update domain files), Phase 5 (handle new domains), Phase 6 (update index.md), Phase 7 (report)
+  - Policy-grade threshold defined (actionable, durable, future-applicable, non-obvious)
+  - Conflict handling defined (no silent overwrites; flag as provisional + add question)
+  - Global sequential ID scheme documented (D-N, P-N, Q-N across all domains)
+  - Rules section prohibits duplication between domain files and archive
+module: null
+domain: null
+notes: |
+  # Implementation Notes: 063
+  
+  The curator is an opus-class agent (complex synthesis). Tools: Read, Write, Glob. It reads completed review output files + existing domain files + guiding-principles.md. It does not re-process prior cycles — each run is incremental (delta only).
+resolution: "agents/domain-curator.md exists with the specified structure."
+cycle_created: 1
+cycle_modified: null
+content_hash: e0cdcda018728202d2fa88f8c205112c7c7b6a6617758aa2fb11d2dc2dd78350
+token_count: 317
+file_path: .ideate/work-items/WI-063.yaml

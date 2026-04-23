@@ -1,0 +1,12 @@
+id: F-003-001
+type: finding
+severity: significant
+work_item: WI-421
+verdict: Fail
+cycle: 3
+reviewer: code-reviewer
+description: agent_type filter description in tools/index.ts:469 says 'Include only events with this event_name (agent type).' but the implementation uses json_extract(me.payload, '$.agent_type') = ? — matching payload.agent_type, not event_name. Callers following the description will supply wrong data and receive empty results silently.
+suggestion: "Change description to: 'Include only events whose payload.agent_type field equals this value.'"
+content_hash: 90ff9b7b37ceafe70d0208d3760faae6d89b5edba6f7c7f0acb20a8cf14401b0
+token_count: 141
+file_path: .ideate/cycles/003/findings/F-003-001.yaml

@@ -1,0 +1,14 @@
+id: Q-42
+type: domain_question
+domain: artifact-structure
+status: resolved
+impact: The SQL identifier-injection safety goal of D-063/WI-154 is not fully achieved for the delete path. The "no string interpolation" guarantee that Phase 2 security relies on does not hold for deletes.
+source: archive/cycles/017/code-quality.md S1; archive/cycles/017/spec-adherence.md (WI-154 unmet criteria); archive/cycles/017/gap-analysis.md II1; archive/cycles/017/decision-log.md OQ-1
+resolution: WI-160 converted `deleteStaleRows` to Drizzle. The function now uses Drizzle's `notInArray()` and typed table references instead of raw SQL string interpolation.
+resolved_in: 18
+description: "`deleteStaleRows` (indexer.ts:396-417) uses raw SQL with string-interpolated table names, violating two WI-154 acceptance criteria. Phase 2 write tools trigger stale-row deletion after each write. Should this conversion gate Phase 2?"
+cycle_created: 1
+cycle_modified: null
+content_hash: "7eba99ee2c65f8d95cd43385e41a4b47ecb53c453464cfea980b30aeece381b8"
+token_count: 254
+file_path: .ideate/questions/Q-42.yaml

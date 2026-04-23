@@ -1,0 +1,13 @@
+id: P-34
+type: domain_policy
+amended: null
+cycle_created: 65
+derived_from:
+  - GP-8 (Durable Knowledge Capture); MCP tool design best practices
+description: MCP tool descriptions must be surgical — every word costs tokens on every request. Keep descriptions under 50 words. Specify when to use the tool and what response size to expect. Avoid redundant phrasing and implementation details that belong in code comments, not tool descriptions.
+domain: artifact-structure
+established: cycle 065
+status: active
+content_hash: 4f2deb752fb9780be93afba18f5d891f901e503d1ae5a8e0727454a52d9300cc
+token_count: 126
+file_path: .ideate/policies/P-34.yaml

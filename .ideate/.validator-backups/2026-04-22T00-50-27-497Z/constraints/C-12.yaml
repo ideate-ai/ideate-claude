@@ -1,0 +1,10 @@
+id: C-12
+type: constraint
+category: process
+status: active
+description: Andon cord for critical issues only. During execution, the user is not asked for routine decisions. The system flags issues to the user only when guiding principles cannot resolve them. Flagged issues can be batched.
+cycle_created: 1
+cycle_modified: null
+content_hash: fdafd2a5a9c443cb82e68bc862f21dcbbcfedea1415a2b531e9d13cf9b3edd15
+token_count: 97
+file_path: .ideate/constraints/C-12.yaml

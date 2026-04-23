@@ -16,9 +16,9 @@ depends:
   - WI-320
 blocks: []
 criteria:
-  - "plan/SKILL.md uses type: 'architecture' not type: 'module' for architecture artifacts"
-  - "plan/SKILL.md uses type: 'overview' not type: 'module' for overview artifacts"
-  - "plan/SKILL.md uses type: 'execution_strategy' not type: 'module' for execution strategy artifacts"
+  - 'plan/SKILL.md uses type: ''architecture'' not type: ''module'' for architecture artifacts'
+  - 'plan/SKILL.md uses type: ''overview'' not type: ''module'' for overview artifacts'
+  - 'plan/SKILL.md uses type: ''execution_strategy'' not type: ''module'' for execution strategy artifacts'
   - init/SKILL.md domain_index content does not contain internal directory paths
   - domain-curator.md domain_index content does not contain internal directory paths
   - autopilot/SKILL.md does not reference .ideate.json
@@ -46,4 +46,4 @@ cycle_created: 61
 cycle_modified: null
 content_hash: ec9b4e5cec90a0fa20aeeaf4358c527bbbccd38bf183ba125d91466c1952110c
 token_count: 374
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-322.yaml
+file_path: work-items/WI-322.yaml

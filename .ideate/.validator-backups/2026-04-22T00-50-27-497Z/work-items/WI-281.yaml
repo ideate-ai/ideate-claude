@@ -1,0 +1,21 @@
+id: WI-281
+type: work_item
+title: Add plan/ and steering/ to createIdeateDir IDEATE_SUBDIRS
+status: done
+complexity: low
+scope:
+  - path: mcp/artifact-server/src/config.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - IDEATE_SUBDIRS includes 'plan' and 'steering'
+  - npm run build succeeds; config.test.ts passes
+domain: artifact-structure
+notes: Add 'plan' and 'steering' to IDEATE_SUBDIRS array in config.ts.
+resolution: Added plan and steering to IDEATE_SUBDIRS in config.ts.
+cycle_created: 36
+cycle_modified: null
+content_hash: f9f79f16ddaa04d9403df45cd904f21dd40ca0e4df9b6e343cc69921f9bb409b
+token_count: 131
+file_path: .ideate/work-items/WI-281.yaml

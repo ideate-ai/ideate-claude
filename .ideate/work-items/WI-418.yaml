@@ -34,9 +34,12 @@ criteria:
   - npm run build produces no errors
   - All 492 tests pass
 domain: artifact-structure
-notes: |-
-  WI-415 extracted ToolContext to src/types.ts and migrated only metrics.ts. Eight other tool files still import from './index.js':
+notes: >-
+  WI-415 extracted ToolContext to src/types.ts and migrated only metrics.ts. Eight other tool files still import from
+  './index.js':
+
   analysis.ts, write.ts, execution.ts, query.ts, context.ts, bootstrap.ts, events.ts, config.ts, autopilot-state.ts
+
 
   For each file, change:
     import { ToolContext } from './index.js'
@@ -49,10 +52,11 @@ notes: |-
     import type { ToolContext } from '../types.js'
 
   tools/index.ts already re-exports ToolContext from '../types.js' — do not remove this.
+
   This is a mechanical change. Build and test to verify no regressions.
 resolution: null
 cycle_created: null
 cycle_modified: 1
 content_hash: 008ba8e1bb64805da0b2bc31c2acbea4fda28e9de7bb48bc6666cce0acd3fdf5
 token_count: 510
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-418.yaml
+file_path: work-items/WI-418.yaml

@@ -1,0 +1,10 @@
+id: interviews/refine-011/_general
+type: interview
+cycle: 11
+source_path: steering/interviews/refine-011/_general.md
+entries:
+  - {id: IQ-011-001, question: If surgical diagnosis reveals the root cause requires changes outside the current work item's scope, should that escalate to Andon at that point, or should the executor still attempt a fix regardless?, answer: "The Andon should be if we cannot fix the cause of the defect.
+
+**Decision**: Startup failure → diagnose root cause → attempt surgical fix → Andon only if unfixable (scope change required, cause indeterminate, or fix not achievable within the work item).", domain: null, seq: 1}
+content_hash: "453b653c39f611b033aa88fec4cf87580c056a345b3d3bfec1cbbf166499aabf"
+token_count: 165

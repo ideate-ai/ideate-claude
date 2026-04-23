@@ -11,13 +11,13 @@ scope:
 depends: []
 blocks: []
 criteria:
-  - description: "'plan' added to subdirectories array in setup script"
+  - description: '''plan'' added to subdirectories array in setup script'
     verification_method: file_read
 domain: artifact-structure
-notes: "# WI-234: Add plan directory to setup script"
+notes: '# WI-234: Add plan directory to setup script'
 resolution: null
 cycle_created: null
 cycle_modified: null
 content_hash: a9e8bfcafa0082fbaa32a25c7d217ff8766965b026c645663d776734711abdf2
 token_count: 117
-file_path: .ideate/work-items/WI-234.yaml
+file_path: work-items/WI-234.yaml

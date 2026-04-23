@@ -1,5 +1,5 @@
 id: spec-adherence
-type: spec-adherence
+type: review_output
 findings: []
 overall_verdict: PASS
 principle_verdicts:
@@ -27,7 +27,9 @@ principle_verdicts:
   GP-14:
     evidence: All changes through MCP abstraction boundary
     verdict: satisfied
-summary: Cycle 3 implementation adhered to all guiding principles and constraints. Both work items WI-389 and WI-390 completed successfully with all acceptance criteria met.
+summary: >-
+  Cycle 3 implementation adhered to all guiding principles and constraints. Both work items WI-389 and WI-390 completed
+  successfully with all acceptance criteria met.
 content_hash: 14436e33a2afd69dbc26f54ee5be8269a4dbe7e19f1db6535d05ad5d94fd5391
 token_count: 252
-file_path: .ideate/spec-adherence/spec-adherence.yaml
+file_path: spec-adherence/spec-adherence.yaml

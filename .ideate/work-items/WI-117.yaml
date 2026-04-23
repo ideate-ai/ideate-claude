@@ -8,10 +8,10 @@ scope:
     op: modify
 depends: []
 blocks:
-  - "118"
-  - "119"
+  - '118'
+  - '119'
 criteria:
-  - "agents/code-reviewer.md contains a ### 6. Dynamic Testing section"
+  - 'agents/code-reviewer.md contains a ### 6. Dynamic Testing section'
   - The section describes testing model discovery (README, package.json, Makefile, pyproject.toml, CI config)
   - The section distinguishes incremental scope (smoke test + targeted tests) from comprehensive scope (full test suite)
   - Startup failure is explicitly identified as a Critical finding in incremental scope guidance
@@ -19,90 +19,145 @@ criteria:
   - No other sections in code-reviewer.md are modified
 module: null
 domain: null
-notes: |
+notes: >
   # WI-117: Dynamic testing guidance in code-reviewer agent
+
 
   ## Context
 
-  `agents/code-reviewer.md` already has the Bash tool and a single-line note at "How to Review" step 7: "If Bash is available, run linters, type checkers, or test suites if configured." This is too vague to produce reliable behavior.
+
+  `agents/code-reviewer.md` already has the Bash tool and a single-line note at "How to Review" step 7: "If Bash is
+  available, run linters, type checkers, or test suites if configured." This is too vague to produce reliable behavior.
+
 
   Two structured gaps:
+
   1. No guidance on how to discover the project's testing model (what commands exist, how to find them).
-  2. No distinction between incremental review scope (light dynamic check) and comprehensive review scope (full test suite), so the reviewer can't calibrate what to run.
+
+  2. No distinction between incremental review scope (light dynamic check) and comprehensive review scope (full test
+  suite), so the reviewer can't calibrate what to run.
+
 
   This work item adds a "Dynamic Testing" section to the agent definition.
 
+
   ## Changes
+
 
   **File**: `agents/code-reviewer.md`
 
+
   ### Change 1 — Expand "Test Coverage" checklist item (Section 5)
 
-  The existing "Test Coverage" section at lines 59–64 asks only static questions (are there tests, do they cover edge cases, etc.). Add a closing instruction:
 
-  > If Bash is available and tests are discoverable (see Dynamic Testing section), run them at the scope appropriate for this review type.
+  The existing "Test Coverage" section at lines 59–64 asks only static questions (are there tests, do they cover edge
+  cases, etc.). Add a closing instruction:
+
+
+  > If Bash is available and tests are discoverable (see Dynamic Testing section), run them at the scope appropriate for
+  this review type.
+
 
   ### Change 2 — Add "Dynamic Testing" section after "Test Coverage"
 
+
   Insert a new `### 6. Dynamic Testing` section after the existing `### 5. Test Coverage` section.
+
 
   Content:
 
+
   ```markdown
+
   ### 6. Dynamic Testing
+
 
   Use the Bash tool to perform dynamic checks. The scope depends on the review type.
 
+
   **Step 1 — Discover the project's testing model:**
 
+
   Before running anything, identify what commands are available. Check in order:
+
   1. `README.md` or `README.rst` — look for "test", "run", "start", "development" sections
+
   2. `package.json` → `scripts` block — note `test`, `start`, `dev`, `build` keys
+
   3. `Makefile` — look for `test`, `run`, `start`, `build`, `check` targets
+
   4. `pyproject.toml` or `pytest.ini` — test runner config
+
   5. `.github/workflows/*.yml` — CI pipeline often has the canonical test command
+
   6. `Dockerfile` or `docker-compose.yml` — startup command reveals how the app runs
+
 
   If no test runner is discoverable, note this in findings and skip dynamic testing.
 
+
   **Step 2 — Incremental review scope (single work item):**
+
 
   1. Smoke test: verify the project still builds or starts after the work item's changes.
      - For compiled languages: run the build command and check for errors.
      - For interpreted languages: attempt to import the main module or start the app in dry-run mode.
      - For CLIs: run `--help` or `--version` as a startup proxy.
-  2. Run tests targeted to the changed files: find and run tests whose file names or import paths correspond to the modified source files.
-  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title "Startup failure after [work item name]" and treat it as scope-changing — this is an Andon-level issue.
+  2. Run tests targeted to the changed files: find and run tests whose file names or import paths correspond to the
+  modified source files.
+
+  3. **If the smoke test fails (the project cannot build or start), report this as a Critical finding** with title
+  "Startup failure after [work item name]" and treat it as scope-changing — this is an Andon-level issue.
+
 
   **Step 3 — Comprehensive review scope (full project):**
 
+
   1. Run the full test suite using the discovered test command.
+
   2. Report failures:
      - Test failures that break core functionality → Critical finding.
      - Test failures scoped to specific features → Significant finding.
      - Flaky or environment-specific test failures (with evidence of pre-existing flakiness) → Minor finding with note.
-  3. If the test suite does not exist or cannot be run (missing deps, env vars, external services), note this as a Minor finding: "Test suite not runnable in review environment — {reason}."
+  3. If the test suite does not exist or cannot be run (missing deps, env vars, external services), note this as a Minor
+  finding: "Test suite not runnable in review environment — {reason}."
+
   ```
+
 
   ### Change 3 — Update "How to Review" step 7
 
+
   Replace the existing step 7:
+
   > 7. If Bash is available, run linters, type checkers, or test suites if configured.
 
+
   With:
-  > 7. If Bash is available, run linters and type checkers. Then follow the Dynamic Testing section to perform the dynamic checks appropriate for this review type.
+
+  > 7. If Bash is available, run linters and type checkers. Then follow the Dynamic Testing section to perform the
+  dynamic checks appropriate for this review type.
+
 
   ## Acceptance Criteria
 
+
   1. `agents/code-reviewer.md` contains a `### 6. Dynamic Testing` section
-  2. The section describes how to discover the project's testing model (README, package.json, Makefile, pyproject.toml, CI config)
-  3. The section distinguishes incremental scope (smoke test + targeted tests) from comprehensive scope (full test suite)
+
+  2. The section describes how to discover the project's testing model (README, package.json, Makefile, pyproject.toml,
+  CI config)
+
+  3. The section distinguishes incremental scope (smoke test + targeted tests) from comprehensive scope (full test
+  suite)
+
   4. Startup failure is explicitly identified as a Critical finding in the incremental scope guidance
+
   5. "How to Review" step 7 references the Dynamic Testing section
+
   6. No other sections in code-reviewer.md are modified
 cycle_created: 1
 cycle_modified: null
 content_hash: 04afd8fdd629e1250be22d56b07cbd719de3135be93a4bf21f87fe3410270a3e
 token_count: 1310
-file_path: .ideate/work-items/WI-117.yaml
+file_path: work-items/WI-117.yaml
 resolution: Implemented during v3 migration

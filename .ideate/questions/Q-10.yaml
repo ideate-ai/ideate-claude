@@ -2,13 +2,18 @@ id: Q-10
 type: domain_question
 domain: project-boundaries
 status: resolved
-impact: autopilot is undiscoverable via plugin metadata; users evaluating ideate from the marketplace listing cannot see the autonomous loop capability.
+impact: >-
+  autopilot is undiscoverable via plugin metadata; users evaluating ideate from the marketplace listing cannot see the
+  autonomous loop capability.
 source: archive/cycles/001/gap-analysis.md R2, archive/cycles/001/decision-log.md OQ9
-resolution: "autopilot is now prominently documented in README.md. manifest.json removed in v3."
+resolution: autopilot is now prominently documented in README.md. manifest.json removed in v3.
 resolved_in: 37
-description: Both manifest files describe ideate as "plan, execute, review, refine" — autopilot is not listed despite being ideate's primary differentiator after the outpost split. Should "autopilot (autonomous SDLC loop)" be added to the description fields?
+description: >-
+  Both manifest files describe ideate as "plan, execute, review, refine" — autopilot is not listed despite being
+  ideate's primary differentiator after the outpost split. Should "autopilot (autonomous SDLC loop)" be added to the
+  description fields?
 cycle_created: 1
 cycle_modified: null
-content_hash: "0bc8f67a134faaa24dcbba8d4a18d79b47f5dcdd9726400b7b80abebf03d7109"
+content_hash: 0bc8f67a134faaa24dcbba8d4a18d79b47f5dcdd9726400b7b80abebf03d7109
 token_count: 174
-file_path: .ideate/questions/Q-10.yaml
+file_path: questions/Q-10.yaml

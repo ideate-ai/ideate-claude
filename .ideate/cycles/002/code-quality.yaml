@@ -1,59 +1,112 @@
 id: code-quality
 type: cycle_summary
 reviewer: code-reviewer
-content: |-
+content: >-
   ## Verdict: Fail
 
-  Three work items achieved their core objective — zero live `ctx.db`/`ctx.drizzleDb` references remain in the three production files, `getAdapter(ctx)` is consistently enforced, and `handleGetMetrics` now routes through the adapter — but two significant issues require remediation.
+
+  Three work items achieved their core objective — zero live `ctx.db`/`ctx.drizzleDb` references remain in the three
+  production files, `getAdapter(ctx)` is consistently enforced, and `handleGetMetrics` now routes through the adapter —
+  but two significant issues require remediation.
+
 
   ## Critical Findings
 
+
   None.
+
 
   ## Significant Findings
 
+
   ### S1: handleArtifactQuery queryNodes path permanently emits empty 'Domain' and 'Cycle' table columns
 
+
   - **File**: mcp/artifact-server/src/tools/query.ts:221-232
-  - **Issue**: tableRows constructed in the non-graph branch (lines 221-228) always passes empty strings for the Domain and Cycle positions, yet the header passed to markdownTable on line 231 declares those as 'Domain' and 'Cycle'. The old SQL path (deleted by WI-804) joined against extension tables and could populate these. The adapter's QueryResult returns NodeMeta, which contains cycle_created but it is not wired into the row. Domain is not in NodeMeta at all.
-  - **Impact**: Agents querying type=work_item see Domain and Cycle columns that are permanently blank. The Cycle column could be populated (n.node.cycle_created) but is not.
-  - **Suggested fix**: Either populate cycle_created in the row (String(n.node.cycle_created ?? '')) and drop Domain (architecturally unavailable from NodeMeta), or remove both columns from the header and row arrays.
+
+  - **Issue**: tableRows constructed in the non-graph branch (lines 221-228) always passes empty strings for the Domain
+  and Cycle positions, yet the header passed to markdownTable on line 231 declares those as 'Domain' and 'Cycle'. The
+  old SQL path (deleted by WI-804) joined against extension tables and could populate these. The adapter's QueryResult
+  returns NodeMeta, which contains cycle_created but it is not wired into the row. Domain is not in NodeMeta at all.
+
+  - **Impact**: Agents querying type=work_item see Domain and Cycle columns that are permanently blank. The Cycle column
+  could be populated (n.node.cycle_created) but is not.
+
+  - **Suggested fix**: Either populate cycle_created in the row (String(n.node.cycle_created ?? '')) and drop Domain
+  (architecturally unavailable from NodeMeta), or remove both columns from the header and row arrays.
+
 
   ### S2: handleGetMetrics issues N+1 SQL queries per metrics event via getNodes
 
+
   - **File**: mcp/artifact-server/src/tools/metrics.ts:527-540
-  - **Issue**: handleGetMetrics calls adapter.queryNodes({type: 'metrics_event'}, 100_000, 0) to get IDs, then calls adapter.getNodes(nodeIds). LocalAdapter.getNodes performs a batched IN query for the nodes table (efficient), but then calls fetchExtensionProperties(db, id, type) — which executes SELECT * FROM metrics_events WHERE id = ? — individually for each node. With METRICS_FETCH_LIMIT = 100_000, a production instance with N metrics events issues N individual SQLite round-trips during a single handleGetMetrics call.
-  - **Impact**: For any project with more than a few hundred metrics events, handleGetMetrics will be visibly slow. The N+1 pattern is a quadratic-cost operation hidden behind a comment.
-  - **Suggested fix**: Either (a) add a getMetricsEvents(filter) method to the adapter contract so LocalAdapter can express this as a single JOIN query, or (b) lower METRICS_FETCH_LIMIT to a practical cap (e.g. 10,000). Option A is the correct architectural fix.
+
+  - **Issue**: handleGetMetrics calls adapter.queryNodes({type: 'metrics_event'}, 100_000, 0) to get IDs, then calls
+  adapter.getNodes(nodeIds). LocalAdapter.getNodes performs a batched IN query for the nodes table (efficient), but then
+  calls fetchExtensionProperties(db, id, type) — which executes SELECT * FROM metrics_events WHERE id = ? — individually
+  for each node. With METRICS_FETCH_LIMIT = 100_000, a production instance with N metrics events issues N individual
+  SQLite round-trips during a single handleGetMetrics call.
+
+  - **Impact**: For any project with more than a few hundred metrics events, handleGetMetrics will be visibly slow. The
+  N+1 pattern is a quadratic-cost operation hidden behind a comment.
+
+  - **Suggested fix**: Either (a) add a getMetricsEvents(filter) method to the adapter contract so LocalAdapter can
+  express this as a single JOIN query, or (b) lower METRICS_FETCH_LIMIT to a practical cap (e.g. 10,000). Option A is
+  the correct architectural fix.
+
 
   ## Minor Findings
 
+
   ### M1: Dead accumulator total_total_tokens and dead local variable totalTokens in aggregateByAgent
+
   - **File**: mcp/artifact-server/src/tools/metrics.ts:201,225,238,253
+
   - **Suggested fix**: Delete total_total_tokens from the accumulator and totalTokens local variable.
 
+
   ### M2: Vacuous test makes no assertion
+
   - **File**: mcp/artifact-server/src/__tests__/metrics.test.ts:205-211
+
   - **Suggested fix**: Either delete the test or add a meaningful assertion (assert metrics.jsonl is not created).
 
+
   ### M3: Misleading 'Cycle' column header in queryNodes path never asserted by tests
+
   - **File**: mcp/artifact-server/src/__tests__/tools.test.ts:469-518
-  - **Suggested fix**: Add a test that seeds a work item with a known domain and asserts the output row contains that domain value.
+
+  - **Suggested fix**: Add a test that seeds a work item with a known domain and asserts the output row contains that
+  domain value.
+
 
   ## Unmet Acceptance Criteria
 
-  - WI-804, criterion 6: invariant 2 (all data access through the adapter) is violated by the fact that queryNodes returns NodeMeta + summary only, yet the output table renders columns whose data cannot come from NodeMeta. The handler reconstructs missing data as empty strings rather than routing through the adapter. This is the runtime consequence of S1.
+
+  - WI-804, criterion 6: invariant 2 (all data access through the adapter) is violated by the fact that queryNodes
+  returns NodeMeta + summary only, yet the output table renders columns whose data cannot come from NodeMeta. The
+  handler reconstructs missing data as empty strings rather than routing through the adapter. This is the runtime
+  consequence of S1.
+
 
   ## Requires Human Review
 
-  - WI-805, criterion 3: With RemoteAdapter active, handleGetMetrics returns metrics from the remote backend. Tests use a mock adapter and cannot verify actual RemoteAdapter behavior. A human must confirm RemoteAdapter's queryNodes and getNodes for metrics_event nodes populates Node.properties with the expected fields. Approval authority: platform engineer with RemoteAdapter access.
+
+  - WI-805, criterion 3: With RemoteAdapter active, handleGetMetrics returns metrics from the remote backend. Tests use
+  a mock adapter and cannot verify actual RemoteAdapter behavior. A human must confirm RemoteAdapter's queryNodes and
+  getNodes for metrics_event nodes populates Node.properties with the expected fields. Approval authority: platform
+  engineer with RemoteAdapter access.
 content_hash: 38cf847dc3b01749c1af8e7c5ff9afc54c47348057e2819628b4e4803dcf45b3
 token_count: 2352
-file_path: .ideate/cycles/068/code-quality.yaml
+file_path: cycles/002/code-quality.yaml
 verdict: Fail
 phase: PH-045
-scope: "cycle 1 capstone (5 done WIs: WI-797, WI-799, WI-800, WI-801, WI-802)"
-summary: "Cycle achieves its primary goals (clean adapter paths in write.ts and analysis.ts, convergence false-positive fix, PPR key normalization, doc cross-references). WI-800 commit claim is overstated: handleArtifactQuery in query.ts still has a live ctx.db fallback (S1). Adapter-guard pattern is inconsistent across the three modified handlers (S2). Doc sync gaps in ppr-alignment-research.md (M1)."
+scope: 'cycle 1 capstone (5 done WIs: WI-797, WI-799, WI-800, WI-801, WI-802)'
+summary: >-
+  Cycle achieves its primary goals (clean adapter paths in write.ts and analysis.ts, convergence false-positive fix, PPR
+  key normalization, doc cross-references). WI-800 commit claim is overstated: handleArtifactQuery in query.ts still has
+  a live ctx.db fallback (S1). Adapter-guard pattern is inconsistent across the three modified handlers (S2). Doc sync
+  gaps in ppr-alignment-research.md (M1).
 findings:
   critical: []
   significant:
@@ -61,16 +114,29 @@ findings:
       title: handleArtifactQuery ctx.db fallback path not removed — contradicts WI-800 commit claim
       file: mcp/artifact-server/src/tools/query.ts
       line: 799
-      detail: The else branch at line 799 calls runFilterMode/runGraphMode which make six ctx.db.prepare(...) calls (348, 357, 384, 570, 577, 619). The 'Test-only fallback path' comment at lines 243/371 is inaccurate — these are production handler code, unreachable only because ctx.adapter is always set. WI-800 commit claim 'No conditional ctx.db / drizzleDb fallback branches remain in tools/write.ts, tools/analysis.ts, or tools/query.ts' is false. Leaks 8-12 are not closed. WI-803 currently scoped only to context.ts.
-      fix: Remove runFilterMode, runGraphMode, buildSummaryMap, and the fallback else block (lines 799-869); replace with the same throw-on-missing-adapter pattern used in handleGetNextId. Update WI-803 scope OR create a new WI.
+      detail: >-
+        The else branch at line 799 calls runFilterMode/runGraphMode which make six ctx.db.prepare(...) calls (348, 357,
+        384, 570, 577, 619). The 'Test-only fallback path' comment at lines 243/371 is inaccurate — these are production
+        handler code, unreachable only because ctx.adapter is always set. WI-800 commit claim 'No conditional ctx.db /
+        drizzleDb fallback branches remain in tools/write.ts, tools/analysis.ts, or tools/query.ts' is false. Leaks 8-12
+        are not closed. WI-803 currently scoped only to context.ts.
+      fix: >-
+        Remove runFilterMode, runGraphMode, buildSummaryMap, and the fallback else block (lines 799-869); replace with
+        the same throw-on-missing-adapter pattern used in handleGetNextId. Update WI-803 scope OR create a new WI.
     - id: S2
       title: Adapter-guard pattern inconsistency across three modified handlers
       files:
         - mcp/artifact-server/src/tools/write.ts:13
         - mcp/artifact-server/src/tools/analysis.ts:107
         - mcp/artifact-server/src/tools/query.ts:43
-      detail: write.ts uses a shared getAdapter(ctx) helper. analysis.ts uses 5 inline if (!ctx.adapter) guards. query.ts uses one inline guard for handleGetNextId, none for handleArtifactQuery. Error messages also diverge (write/analysis/query say 'the server and all tests must provide an adapter', context.ts says 'the server always provides an adapter').
-      fix: Extract a shared getAdapter() helper to tools/shared.ts, or at minimum mirror the write.ts pattern in analysis.ts and query.ts. Standardize the error message text.
+      detail: >-
+        write.ts uses a shared getAdapter(ctx) helper. analysis.ts uses 5 inline if (!ctx.adapter) guards. query.ts uses
+        one inline guard for handleGetNextId, none for handleArtifactQuery. Error messages also diverge
+        (write/analysis/query say 'the server and all tests must provide an adapter', context.ts says 'the server always
+        provides an adapter').
+      fix: >-
+        Extract a shared getAdapter() helper to tools/shared.ts, or at minimum mirror the write.ts pattern in
+        analysis.ts and query.ts. Standardize the error message text.
   minor:
     - id: M1
       title: ppr-alignment-research.md Section 1.3 + Edge Type Weights section show stale UPPER_SNAKE_CASE keys after WI-799
@@ -78,34 +144,50 @@ findings:
       lines:
         - 49
         - 244
-      detail: WI-802 only updated Appendix B (line 263). Section 1.3 code block (49-53) and the 'Edge Type Weights' section (241-248) still show old UPPER_SNAKE format and claim 'Both implementations use identical edge type weights' — false after WI-799.
-      fix: Update Section 1.3 snippet to depends_on/governed_by/etc. Note in 'Edge Type Weights' that local uses lower_snake_case and the normalizeEdgeType bridge was removed in WI-799.
+      detail: >-
+        WI-802 only updated Appendix B (line 263). Section 1.3 code block (49-53) and the 'Edge Type Weights' section
+        (241-248) still show old UPPER_SNAKE format and claim 'Both implementations use identical edge type weights' —
+        false after WI-799.
+      fix: >-
+        Update Section 1.3 snippet to depends_on/governed_by/etc. Note in 'Edge Type Weights' that local uses
+        lower_snake_case and the normalizeEdgeType bridge was removed in WI-799.
     - id: M2
-      title: "'Test-only fallback path' comment is inaccurate"
+      title: '''Test-only fallback path'' comment is inaccurate'
       file: mcp/artifact-server/src/tools/query.ts
       lines:
         - 243
         - 371
-      detail: Comments call runFilterMode/runGraphMode 'test-only' but they are production handler code — tests after WI-800 always supply ctx.adapter and never reach them.
-      fix: If retained pending remediation, change comment to 'Dead fallback path — ctx.adapter is always set; scheduled for removal in <WI-id>.'
+      detail: >-
+        Comments call runFilterMode/runGraphMode 'test-only' but they are production handler code — tests after WI-800
+        always supply ctx.adapter and never reach them.
+      fix: >-
+        If retained pending remediation, change comment to 'Dead fallback path — ctx.adapter is always set; scheduled
+        for removal in <WI-id>.'
     - id: M3
       title: WI-801 cross-reference placement scoped only to write path
       file: docs/platform/architecture-overview.md
       line: 142
-      detail: RemoteAdapter is used for all paths (context, query, analysis, write); the schema note is only in Section 2.4 'Remote Mode — Write Path'. Readers entering at Section 2.1 or 2.3 won't see it.
+      detail: >-
+        RemoteAdapter is used for all paths (context, query, analysis, write); the schema note is only in Section 2.4
+        'Remote Mode — Write Path'. Readers entering at Section 2.1 or 2.3 won't see it.
       fix: Move to Section 2.0 or add to Section 2.1 as the first RemoteAdapter mention.
   unmet_acceptance_criteria:
     - work_item: WI-800
-      criterion: "AC2 (Leaks 8-12): All ctx.db fallback paths removed from tools/query.ts"
+      criterion: 'AC2 (Leaks 8-12): All ctx.db fallback paths removed from tools/query.ts'
       detail: handleArtifactQuery retains a complete ctx.db fallback branch at line 799. Only handleGetNextId was cleaned.
   human_review_items:
     - id: HR1
       title: WI-797 regression test adequacy at adapter level
-      detail: Two regression tests cover the spec-adherence.yaml priority fix via file-path fallback. Confirm priority logic in reader.ts:956-972 also applies when both legacy SA-NNN and canonical summary.yaml are present in document_artifacts table.
+      detail: >-
+        Two regression tests cover the spec-adherence.yaml priority fix via file-path fallback. Confirm priority logic
+        in reader.ts:956-972 also applies when both legacy SA-NNN and canonical summary.yaml are present in
+        document_artifacts table.
       approver: cycle lead / code reviewer
     - id: HR2
       title: WI-802 scope boundary
-      detail: WI-802 was scoped to Appendix B / D-210 / WI-789. M1 (Section 1.3 + Edge Type Weights stale content) is broader. Decide whether to fold into WI-803 or create new WI.
+      detail: >-
+        WI-802 was scoped to Appendix B / D-210 / WI-789. M1 (Section 1.3 + Edge Type Weights stale content) is broader.
+        Decide whether to fold into WI-803 or create new WI.
       approver: cycle lead
   dynamic_testing:
     pnpm_test: 1390 passed / 332 skipped (per code-reviewer baseline check)

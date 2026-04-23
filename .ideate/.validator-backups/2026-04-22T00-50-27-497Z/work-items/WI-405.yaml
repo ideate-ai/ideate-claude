@@ -1,0 +1,41 @@
+id: WI-405
+type: work_item
+title: Fix handleGetReviewManifest and handleGetProjectStatus to query SQLite instead of pre-v3 paths
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/execution.ts
+    op: modify
+  - path: mcp/artifact-server/src/tools/analysis.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/execution.test.ts
+    op: modify
+depends: []
+blocks: []
+criteria:
+  - "ideate_get_review_manifest({cycle_number: N}) returns work items scoped to cycle N with correct incremental review verdicts from cycles/N/findings/ data in SQLite"
+  - ideate_get_review_manifest() with no argument returns work items for the most recent cycle with correct verdicts
+  - ideate_get_project_status finding counts (critical, significant, minor) reflect actual finding counts from cycle_summary artifacts in SQLite, not hardcoded zeros
+  - The Incremental Verdict column in the review manifest is populated correctly for finding artifacts stored under cycles/{NNN}/findings/
+  - All 440+ tests pass
+domain: artifact-structure
+notes: |-
+  Two stale pre-v3 code paths to fix:
+
+  **handleGetReviewManifest (execution.ts / Q-103)**:
+  Current handler scans archive/incremental/*.md (pre-v3 path, non-existent in v3). cycle_number parameter is ignored (marked 'reserved for future use'). Incremental verdict column always shows 'None'.
+
+  Fix: query the SQLite nodes table for finding-type artifacts. For each finding, join to the work_item field to populate the incremental verdict column. Filter by cycle if cycle_number is provided. The finding nodes store `cycle`, `work_item`, `verdict` fields (or equivalent from the YAML content).
+
+  See the existing schema in db.ts (findings table) for available columns. The review manifest table format is: | # | Title | File Scope | Incremental Verdict | Findings (C/S/M) | Work Item ID | Review Path |
+
+  **handleGetProjectStatus (analysis.ts / Q-104)**:
+  Current code at line 358 reads archive/cycles/{cyclePad}/summary.md (pre-v3 archive path). Current cycles store summaries as cycle_summary YAML artifacts indexed in SQLite under cycles/{NNN}/. This path never exists so finding counts are always 0.
+
+  Fix: query the SQLite nodes table for cycle_summary artifacts with the target cycle number. Parse the content field for critical/significant/minor counts from the code-quality and gap-analysis artifacts. The convergence status tool (handleGetConvergenceStatus) already does this correctly and can serve as a reference implementation.
+resolution: Fixed handleGetReviewManifest to query findings table by cycle (replacing pre-v3 archive/incremental scan). Fixed handleGetProjectStatus to query findings table directly with GROUP BY severity (replacing pre-v3 archive/cycles summary path). Added execution.test.ts tests and tools.test.ts finding count test. 447 tests pass.
+cycle_created: 1
+cycle_modified: 1
+content_hash: 748d85388c7010164e89fe451bc91a7fd26f5a24dd1b4399c1153924ed8d44f6
+token_count: 721
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-405.yaml

@@ -4,45 +4,71 @@ title: Document metrics.jsonl in artifact-conventions.md
 status: obsolete
 complexity: low
 scope:
-  - {path: specs/artifact-conventions.md, op: modify}
+  - path: specs/artifact-conventions.md
+    op: modify
 depends: []
 blocks: []
 criteria:
-  - "`metrics.jsonl` appears in the directory tree listing in artifact-conventions.md"
-  - "A schema section for `metrics.jsonl` exists documenting: purpose, agent-spawn event field list (referencing WI-092 fields), quality_summary event schema (referencing WI-093 structure), best-effort write semantics, and that report.sh is the consumer"
-  - "quality_summary nested structure (`findings.by_severity.{critical,significant,minor}`) is documented"
+  - '`metrics.jsonl` appears in the directory tree listing in artifact-conventions.md'
+  - >-
+    A schema section for `metrics.jsonl` exists documenting: purpose, agent-spawn event field list (referencing WI-092
+    fields), quality_summary event schema (referencing WI-093 structure), best-effort write semantics, and that
+    report.sh is the consumer
+  - quality_summary nested structure (`findings.by_severity.{critical,significant,minor}`) is documented
 module: null
 domain: null
-notes: |
+notes: >
   # WI-096: Document metrics.jsonl in artifact-conventions.md
-  
+
+
   ## Context
-  
-  `metrics.jsonl` is written by all five ideate skills and is the sole data source for `scripts/report.sh`. It is not currently listed in the `specs/artifact-conventions.md` directory tree, and there is no schema section for it. Identified as gap G-S1 in cycle 004 capstone review.
-  
+
+
+  `metrics.jsonl` is written by all five ideate skills and is the sole data source for `scripts/report.sh`. It is not
+  currently listed in the `specs/artifact-conventions.md` directory tree, and there is no schema section for it.
+  Identified as gap G-S1 in cycle 004 capstone review.
+
+
   ## Changes to specs/artifact-conventions.md
-  
+
+
   ### 1. Directory tree entry
-  
-  The directory structure listing (near the top of the file) should include `metrics.jsonl`. Add it after `journal.md` in the root of the artifact directory tree:
-  
+
+
+  The directory structure listing (near the top of the file) should include `metrics.jsonl`. Add it after `journal.md`
+  in the root of the artifact directory tree:
+
+
   ```
+
   ├── manifest.json
+
   ├── journal.md
+
   ├── metrics.jsonl
+
   ```
-  
+
+
   ### 2. New schema section
-  
-  Add a new section for `metrics.jsonl` following the same format as other artifact sections (Purpose, Format, Semantics, Phases). Place it adjacent to the `journal.md` section.
-  
+
+
+  Add a new section for `metrics.jsonl` following the same format as other artifact sections (Purpose, Format,
+  Semantics, Phases). Place it adjacent to the `journal.md` section.
+
+
   Content to add:
-  
+
+
   ```markdown
+
   #### `metrics.jsonl`
-  - **Purpose**: Append-only telemetry log recording one entry per agent spawn across all skills, plus quality_summary events emitted by the review skill after each cycle
+
+  - **Purpose**: Append-only telemetry log recording one entry per agent spawn across all skills, plus quality_summary
+  events emitted by the review skill after each cycle
+
   - **Format**: One JSON object per line. Two event types:
-  
+
     **Agent spawn entry** (written by all skills after each Agent tool call):
     ```json
     {
@@ -63,7 +89,7 @@ notes: |
       "mcp_tools_called": ["<tool-name>", ...]
     }
     ```
-  
+
     **Quality summary event** (written by review skill at end of each review cycle, Phase 7.6):
     ```json
     {
@@ -96,18 +122,25 @@ notes: |
       "andon_events": <N>
     }
     ```
-  
-  - **Semantics**: Best-effort write — skills append entries but continue without interruption if writing fails. Token fields (`input_tokens`, `output_tokens`, etc.) are null when not available from agent metadata. `mcp_tools_called` is an empty array when no MCP tools were used.
+
+  - **Semantics**: Best-effort write — skills append entries but continue without interruption if writing fails. Token
+  fields (`input_tokens`, `output_tokens`, etc.) are null when not available from agent metadata. `mcp_tools_called` is
+  an empty array when no MCP tools were used.
+
   - **Consumer**: `scripts/report.sh` reads this file to generate markdown metrics reports.
+
   - **Phases**: plan (write), execute (write), review (write), refine (write), autopilot (write)
+
   ```
-  
+
+
   ## Placement
-  
+
+
   The `metrics.jsonl` section should follow the `journal.md` section and precede the `archive/` sections.
-resolution: "specs/artifact-conventions.md no longer exists. Documentation migrated to .ideate/ structure."
+resolution: specs/artifact-conventions.md no longer exists. Documentation migrated to .ideate/ structure.
 cycle_created: 1
 cycle_modified: null
 content_hash: a9918829ae858f96143089a27589f910fef6091fa159b1e01fb037965aba15d6
 token_count: 1072
-file_path: .ideate/work-items/WI-096.yaml
+file_path: work-items/WI-096.yaml

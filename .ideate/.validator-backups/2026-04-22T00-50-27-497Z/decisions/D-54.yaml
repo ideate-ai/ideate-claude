@@ -1,0 +1,13 @@
+id: D-54
+type: domain_decision
+domain: artifact-structure
+status: settled
+cycle: 17
+supersedes: null
+description: "`work_item` was added to `belongs_to_domain.source_types` during WI-148 execution after the incremental reviewer found no edges produced for work items with a `domain` field. The fix was applied to the implementation but `specs/plan/notes/148.md` was not updated and remains stale."
+rationale: The omission was a gap in the original spec; fixing it at execution time was correct. Spec note staleness is deferred to the next cycle.
+cycle_created: 1
+cycle_modified: null
+content_hash: cf78e962c4869424fad67decb76d4d4512e38b3c8192d9477f2f65d1548c1202
+token_count: 161
+file_path: .ideate/decisions/D-54.yaml

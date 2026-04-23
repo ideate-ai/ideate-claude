@@ -1,0 +1,138 @@
+id: WI-146
+type: work_item
+title: "Migration script: specs/ markdown to .ideate/ YAML"
+status: done
+complexity: large
+scope:
+  - path: scripts/migrate-to-v3.sh
+    op: create
+  - path: scripts/migrate-to-v3.ts
+    op: create
+depends:
+  - "143"
+  - "144"
+blocks: []
+criteria:
+  - scripts/migrate-to-v3.sh accepts source and target directory arguments
+  - Script converts guiding-principles.md to individual YAML files in .ideate/principles/ (one per principle, GP-NN.yaml)
+  - Script converts constraints.md to individual YAML files in .ideate/constraints/ (one per constraint, C-NN.yaml)
+  - Script converts work-items.yaml entries to individual YAML files in .ideate/work-items/ (WI-NNN.yaml), merging implementation notes from plan/notes/
+  - Script converts domains/*/policies.md to individual YAML files in .ideate/policies/ (P-NN.yaml with domain field)
+  - Script converts domains/*/decisions.md to individual YAML files in .ideate/decisions/ (D-NN.yaml with domain field)
+  - Script converts domains/*/questions.md to individual YAML files in .ideate/questions/ (Q-NN.yaml with domain field)
+  - Script converts steering/research/*.md to YAML files in .ideate/research/
+  - Script converts archive/cycles/{NNN}/*.md to YAML files in .ideate/archive/cycles/{NNN}/
+  - Script converts journal.md to .ideate/journal.yaml
+  - Script copies metrics.jsonl to .ideate/metrics.jsonl
+  - "Script creates .ideate/config.json with schema_version: 2"
+  - Script supports --dry-run flag that reports what would be migrated without writing
+  - "Script reports migration statistics: files converted, files skipped, errors encountered"
+  - All migrated YAML files include required common fields (id, type, status)
+module: null
+domain: null
+notes: |
+  # WI-146: Migration script — specs/ markdown to .ideate/ YAML
+
+  ## Script design
+
+  TypeScript script using the artifact server's schema types from WI-144. Run with `tsx`. This allows direct import of schema.ts interfaces for output validation.
+
+  ## Migration steps
+
+  ### 1. Guiding principles (steering/guiding-principles.md → .ideate/principles/)
+  - Parse numbered sections (`## N. Principle Name`)
+  - Extract: id (GP-NN), name, description, status (active/amended/deprecated from markers)
+  - Extract amendment history from `> _Changed/Amended/Deprecated_ ...` blockquotes
+  - Write one YAML file per principle
+
+  ### 2. Constraints (steering/constraints.md → .ideate/constraints/)
+  - Parse numbered sections under category headers (Technology, Design, Process, Scope)
+  - Extract: id (C-NN), category (from parent header), description
+  - Write one YAML file per constraint
+
+  ### 3. Work items (plan/work-items.yaml → .ideate/work-items/)
+  - Already structured YAML — transform each entry to individual files
+  - Merge implementation notes from plan/notes/{id}.md into the `notes` field
+  - Map fields to new schema: title, complexity, scope, depends, blocks, criteria
+  - Add common fields: type=work_item, cycle_created (infer from context or default to 1), status
+  - Write one YAML file per work item (WI-NNN.yaml)
+
+  ### 4. Domain policies (domains/*/policies.md → .ideate/policies/)
+  - Parse `## P-NN:` sections
+  - Extract domain from parent directory name
+  - Extract: id, domain, status, derived_from, established, amended, description
+  - Write one YAML file per policy
+
+  ### 5. Domain decisions (domains/*/decisions.md → .ideate/decisions/)
+  - Parse `## D-NN:` sections
+  - Extract domain from parent directory name
+  - Extract: id, domain, status, cycle, supersedes, description, rationale
+  - Write one YAML file per decision
+
+  ### 6. Domain questions (domains/*/questions.md → .ideate/questions/)
+  - Parse `## Q-NN:` sections
+  - Extract domain from parent directory name
+  - Extract: id, domain, status, impact, source, resolution, resolved_in, description
+  - Write one YAML file per question
+
+  ### 7. Research (steering/research/*.md → .ideate/research/)
+  - Extract: topic (from title), date
+  - Store full research content in a `content` YAML field
+  - Write one YAML file per research document (RF-slug.yaml)
+
+  ### 8. Archive cycles (archive/cycles/{NNN}/*.md → .ideate/archive/cycles/{NNN}/)
+  - Convert each review file to YAML
+  - Preserve cycle number in directory structure
+  - Extract findings with severity levels where structured sections exist
+
+  ### 9. Journal (journal.md → .ideate/journal.yaml)
+  - Parse `## [{phase}] {date} — {title}` sections
+  - Convert to YAML entries array
+
+  ### 10. Architecture, overview, execution strategy, modules
+  - Convert each to YAML in .ideate/ root or .ideate/modules/
+
+  ### 11. Interviews (steering/interviews/ → .ideate/interviews/)
+  - Convert each interview file to YAML
+
+  ### 12. Metrics (metrics.jsonl → .ideate/metrics.jsonl)
+  - Copy as-is
+
+  ### 13. Config
+  - Create .ideate/config.json with schema_version: 2
+
+  ## Command-line interface
+
+  ```
+  scripts/migrate-to-v3.sh <source-specs-dir> <target-ideate-dir> [--dry-run] [--force]
+  ```
+
+  Shell wrapper that invokes `tsx scripts/migrate-to-v3.ts`.
+
+  ## Dry-run mode
+
+  `--dry-run` prints what would be created without writing:
+  ```
+  [DRY RUN] Would create .ideate/principles/GP-01.yaml (from steering/guiding-principles.md §1)
+  [DRY RUN] Would create .ideate/work-items/WI-003.yaml (from plan/work-items.yaml "003")
+  ...
+  Summary: 245 files would be created, 0 errors
+  ```
+
+  ## Error handling
+
+  - If a markdown section cannot be parsed, log a warning and skip it. Report at the end.
+  - If the target directory already exists, abort unless --force is passed.
+  - Validate output files have all required common fields (id, type, status).
+
+  ## Notes
+
+  - The migration script does NOT delete the source `specs/` directory. That is a manual step after verification.
+  - The domains/index.md metadata (current_cycle, domain registry) migrates to .ideate/config.json or a separate domains.yaml.
+  - The manifest.json content is superseded by config.json schema_version: 2.
+cycle_created: 1
+cycle_modified: null
+content_hash: a5cf548ddb8c62608072f71a471d395407870770a7c0bee134f50da3e436aad5
+token_count: 1527
+file_path: .ideate/work-items/WI-146.yaml
+resolution: "Verified complete: migrate-to-v3.ts covers all migration steps with dry-run support"

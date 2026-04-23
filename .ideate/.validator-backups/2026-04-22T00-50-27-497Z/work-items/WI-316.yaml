@@ -1,0 +1,36 @@
+id: WI-316
+type: work_item
+title: Rewrite refine/SKILL.md — remove all .ideate/ path references and direct I/O
+status: done
+complexity: medium
+scope:
+  - path: skills/refine/SKILL.md
+    op: modify
+depends:
+  - WI-311
+blocks: []
+criteria:
+  - No .ideate/ path references remain
+  - No .yaml filename references
+  - MCP query descriptions do not leak internal paths (e.g. 'retrieves .ideate/plan/overview.yaml')
+  - Glob for next WI number replaced with ideate_get_next_id
+  - Metrics writes use ideate_emit_metric
+  - Principle amendment described by field names without referencing .yaml files
+domain: workflow
+notes: |-
+  # WI-316: Refine skill MCP abstraction rewrite
+
+  ## Changes
+  - Remove all path references from MCP query descriptions (e.g. change 'retrieves .ideate/plan/overview.yaml' to 'retrieves the project overview')
+  - Remove .ideate/cycles/{NNN}/summary.yaml path — use ideate_artifact_query
+  - Remove .ideate/cycles/ existence check — use ideate_get_project_status
+  - Remove .ideate/research/ path references
+  - Remove glob for next WI number — use ideate_get_next_id
+  - Remove metrics.jsonl direct write — use ideate_emit_metric
+  - Remove .ideate/principles/ and .ideate/constraints/ path references
+resolution: null
+cycle_created: 60
+cycle_modified: null
+content_hash: be17df6b1fc1ab344dfd22d5d7bd533d4f9e097d76a674fa25c7eed3e003e4bd
+token_count: 320
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-316.yaml

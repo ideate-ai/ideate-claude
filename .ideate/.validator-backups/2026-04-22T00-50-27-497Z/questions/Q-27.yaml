@@ -1,0 +1,14 @@
+id: Q-27
+type: domain_question
+domain: workflow
+status: resolved
+impact: Library projects receive no benefit from the startup-failure quality floor. If ideate is used for a library project, the entire P-22 enforcement path is inert. Whether this is acceptable depends on how broadly the dynamic testing quality floor is intended to apply.
+source: archive/cycles/008/gap-analysis.md Deferred EC2; archive/cycles/007/gap-analysis.md
+resolution: WI-126 replaced the startup-specific smoke test in `agents/code-reviewer.md` with a context-appropriate demo heuristic covering library builds, CLI invocations, e2e tests, and config/doc validation. P-22 updated to reference "context-appropriate smoke test."
+resolved_in: 11
+description: P-22 and the startup-failure exception assume the project has a startup command that can fail. Library projects (npm packages, Python libraries, CLI tools invoked differently) may not have a meaningful "startup" step. Should the dynamic testing flow define an alternative quality floor for projects without a startup command, or is the exception simply not triggered and the general finding-routing rules apply?
+cycle_created: 1
+cycle_modified: null
+content_hash: "75c5c1620eeda01f3d2c2672bf881de061b6f5543631343a6be7b26826926f29"
+token_count: 313
+file_path: .ideate/questions/Q-27.yaml

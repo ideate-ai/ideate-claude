@@ -1,6 +1,6 @@
 id: WI-369
 type: work_item
-title: "Fix autopilot SKILL.md: replace split tool names with ideate_manage_autopilot_state"
+title: 'Fix autopilot SKILL.md: replace split tool names with ideate_manage_autopilot_state'
 status: done
 complexity: low
 scope:
@@ -10,25 +10,37 @@ depends: []
 blocks: []
 criteria:
   - 'All occurrences of ideate_get_autopilot_state() replaced with ideate_manage_autopilot_state({action: "get"})'
-  - 'All occurrences of ideate_update_autopilot_state({state:...}) replaced with ideate_manage_autopilot_state({action: "update", state:...})'
-  - "Self-check at bottom of file reads: 'autopilot-state access uses ideate_manage_autopilot_state exclusively'"
+  - >-
+    All occurrences of ideate_update_autopilot_state({state:...}) replaced with ideate_manage_autopilot_state({action:
+    "update", state:...})
+  - 'Self-check at bottom of file reads: ''autopilot-state access uses ideate_manage_autopilot_state exclusively'''
   - No other changes to the file
   - Phase 0 model_overrides clause (added in WI-367) is preserved exactly
   - grep -c ideate_get_autopilot_state skills/autopilot/SKILL.md returns 0
   - grep -c ideate_update_autopilot_state skills/autopilot/SKILL.md returns 0
   - grep -c ideate_manage_autopilot_state skills/autopilot/SKILL.md returns 9 (matching prior pre-WI-367 count)
 domain: artifact-structure
-notes: |-
+notes: >-
   ## Context
 
-  In cycle 066 (WI-343), the autopilot state tools were consolidated from get + update into a single ideate_manage_autopilot_state tool (action: 'get' | 'update'). The phase sub-documents (execute.md, review.md, reporting.md) and ARCHITECTURE.md were updated at that time. skills/autopilot/SKILL.md was not updated.
 
-  In cycle 069 (WI-367), the worker introduced renames FROM ideate_manage_autopilot_state TO the split names, and the incremental reviewer incorrectly validated this, forcing rework to revert. The revert restored the split names, leaving SKILL.md inconsistent with the actual MCP registration.
+  In cycle 066 (WI-343), the autopilot state tools were consolidated from get + update into a single
+  ideate_manage_autopilot_state tool (action: 'get' | 'update'). The phase sub-documents (execute.md, review.md,
+  reporting.md) and ARCHITECTURE.md were updated at that time. skills/autopilot/SKILL.md was not updated.
+
+
+  In cycle 069 (WI-367), the worker introduced renames FROM ideate_manage_autopilot_state TO the split names, and the
+  incremental reviewer incorrectly validated this, forcing rework to revert. The revert restored the split names,
+  leaving SKILL.md inconsistent with the actual MCP registration.
+
 
   The actual registered MCP tool (confirmed in tools/index.ts:633): ideate_manage_autopilot_state
+
   Not registered: ideate_get_autopilot_state, ideate_update_autopilot_state
 
+
   ## Fix locations in skills/autopilot/SKILL.md
+
 
   Phase 4 (~line 77):
     WRONG: Call `ideate_get_autopilot_state()` to check for an existing session.
@@ -68,14 +80,21 @@ notes: |-
 
   ## Verification
 
+
   After changes:
+
   - grep for ideate_get_autopilot_state → 0 results
+
   - grep for ideate_update_autopilot_state → 0 results
+
   - grep for ideate_manage_autopilot_state → should find ~9 occurrences
+
   - Phase 0 model_overrides line (added in WI-367) must still be present
-resolution: All 9 split tool name occurrences replaced with ideate_manage_autopilot_state. Self-check updated. Phase 0 model_overrides preserved.
+resolution: >-
+  All 9 split tool name occurrences replaced with ideate_manage_autopilot_state. Self-check updated. Phase 0
+  model_overrides preserved.
 cycle_created: 69
 cycle_modified: 68
 content_hash: 1c48d8a593b8a32c4d17a7e273586a6d886fdf812cfe4a1b3552a89d6ff1cdd0
 token_count: 1094
-file_path: /Users/dan/code/ideate/.ideate/work-items/WI-369.yaml
+file_path: work-items/WI-369.yaml

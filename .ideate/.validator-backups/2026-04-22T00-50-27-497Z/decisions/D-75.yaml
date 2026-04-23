@@ -1,0 +1,13 @@
+id: D-75
+type: domain_decision
+domain: workflow
+status: settled
+cycle: 17
+supersedes: null
+description: "Cycle 017 reproduced the D-31 pattern at larger scale: 10 incremental Pass verdicts against 3 capstone Fail verdicts on the same work items. The `deleteStaleRows` omission (WI-154) was missed by the incremental reviewer and independently caught by all three capstone reviewers. The migration completeness gaps (WI-157 vs WI-146) were similarly invisible to the per-item reviewer who lacked the parent spec context."
+rationale: "This is the same structural limitation identified in D-31/cycle 004: incremental reviewers operate on a single work item in isolation and cannot detect when a work item's notes spec is incomplete relative to its parent feature spec or when an acceptance criterion is unmet in code sections outside the work item's primary diff."
+cycle_created: 1
+cycle_modified: null
+content_hash: a6b9e075e9e8bb278119fcd69b2b254665bde5a93970e1cc6241be6b180819fb
+token_count: 240
+file_path: .ideate/decisions/D-75.yaml

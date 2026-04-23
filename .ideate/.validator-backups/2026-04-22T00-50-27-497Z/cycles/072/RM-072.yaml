@@ -1,0 +1,16 @@
+id: RM-072
+type: review_manifest
+title: Review Manifest — Cycle 7 (written to cycle 72)
+cycle_number: 7
+review_mode: full
+work_items_reviewed:
+  - WI-429
+  - WI-430
+reviewers:
+  - code-reviewer
+  - spec-reviewer
+  - gap-analyst
+notes: Cycle 72 used for review artifacts to avoid contamination from pre-existing finding data in cycles 007 and prior cycle directories that conflict with autopilot internal cycle numbering.
+content_hash: 367e502ca3dc9dcb0926a7a80c958607a632f8fa306cf76daada99a6f6aa2a11
+token_count: 105
+file_path: .ideate/cycles/072/RM-072.yaml

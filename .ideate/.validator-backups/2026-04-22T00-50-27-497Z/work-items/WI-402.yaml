@@ -1,0 +1,43 @@
+id: WI-402
+type: work_item
+title: "Fix handleArchiveCycle: SQLite cleanup after archival and work item filename matching"
+status: done
+complexity: medium
+scope:
+  - path: mcp/artifact-server/src/tools/write.ts
+    op: modify
+  - path: mcp/artifact-server/src/__tests__/tools.test.ts
+    op: modify
+depends:
+  - WI-401
+blocks:
+  - WI-403
+criteria:
+  - After handleArchiveCycle completes successfully, the SQLite nodes table has no entries with file_path values pointing to the source (pre-archive) locations of moved findings
+  - Work item YAML files are co-archived with their findings when handleArchiveCycle runs
+  - handleArchiveCycle correctly identifies work items for a cycle by reading the work_item field from finding YAML content, not by parsing the finding filename for a numeric prefix
+  - All 440+ tests pass
+domain: artifact-structure
+notes: |-
+  Two distinct bugs to fix:
+
+  **Bug 1 — Work item filename matching (gap-analyst Gap 7 / Q-102)**:
+  The archive handler at write.ts extracts a numeric prefix from finding filenames (e.g., F-001-001.yaml → prefix '001') and matches it to work items. Current findings are named F-{cycle}-{seq}.yaml (e.g., F-058-001.yaml), so the extracted prefix is the cycle number, not a WI number.
+
+  Fix: instead of parsing filenames, read the YAML content of each finding file and use the `work_item` field (or equivalent) to identify which work item should be co-archived.
+
+  **Bug 2 — Stale SQLite file_path entries (gap-analyst Gap 1 / Q-101)**:
+  After the copy-verify-delete sequence, SQLite nodes still hold file_path values pointing to the deleted source locations. These cause all subsequent queries for those findings to silently return empty content.
+
+  Fix: after successful archival (all files verified and originals deleted), update or delete the SQLite nodes for the archived findings. Options:
+  (a) Call db.prepare('DELETE FROM nodes WHERE file_path = ?') for each archived finding
+  (b) Update file_path to the new archive location
+  Option (a) is simpler — archived artifacts can be re-indexed by rebuildIndex if needed.
+
+  Note: handleArchiveCycle does not currently use the Drizzle transaction pattern (P-44) — that is addressed by WI-403. This WI focuses only on the two functional bugs above.
+resolution: Fixed work item identification to read work_item YAML field instead of regex on filename. Added Phase 3b SQLite cleanup (DELETE FROM nodes WHERE file_path = ?) for archived finding files. Fixed stale happy-path test and added comprehensive archival assertions. 449 tests pass.
+cycle_created: 1
+cycle_modified: 1
+content_hash: 5fd114440ec179d07e1aee555586961807589f51d347611bd9eaf50752b448fa
+token_count: 646
+file_path: /Users/dan/code/ideate/.ideate/work-items/WI-402.yaml

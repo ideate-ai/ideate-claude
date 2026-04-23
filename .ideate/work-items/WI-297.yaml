@@ -15,10 +15,12 @@ criteria:
   - handleAssembleContext listed in context.ts source file row
   - config.ts row added to source file table
 domain: artifact-structure
-notes: "Three fixes: (1) Section 5 heading 15→17, (2) Plugin structure diagram specs/→.ideate/, (3) Section 9.4 file reference correction. Also add handleAssembleContext to context.ts row and config.ts to source table."
-resolution: "ARCHITECTURE.md: 17 tools, .ideate/ in diagram, context.ts/config.ts rows updated."
+notes: >-
+  Three fixes: (1) Section 5 heading 15→17, (2) Plugin structure diagram specs/→.ideate/, (3) Section 9.4 file reference
+  correction. Also add handleAssembleContext to context.ts row and config.ts to source table.
+resolution: 'ARCHITECTURE.md: 17 tools, .ideate/ in diagram, context.ts/config.ts rows updated.'
 cycle_created: 39
 cycle_modified: null
 content_hash: e327c12a8ffdbfd1c411b80f53614215cd4813308844f0cac7e6d8d90401fa9d
 token_count: 232
-file_path: .ideate/work-items/WI-297.yaml
+file_path: work-items/WI-297.yaml

@@ -1,0 +1,12 @@
+id: D-141
+type: domain_decision
+title: finding type gap classified critical — autopilot convergence unreliable until fixed
+decision: The missing finding dispatch branch in handleWriteArtifact means handleGetProjectStatus returns zero finding counts for any cycle, and handleGetReviewManifest cannot surface incremental verdicts. Autopilot convergence checks are unreliable.
+rationale: handleGetProjectStatus queries SELECT severity, COUNT(*) FROM findings WHERE cycle = ?. With no extension rows written, all findings are invisible. This directly impacts autopilot's ability to detect unresolved critical findings.
+source: cycle 3 code-quality C1; gap-analysis Gap 1; decision-log D-R01
+domain: artifact-structure
+status: settled
+cycle: 3
+content_hash: 7a3c7acda3142c447dd69568e11f734919b70a2672213a2357d1852eef80f205
+token_count: 184
+file_path: .ideate/decisions/D-141.yaml
