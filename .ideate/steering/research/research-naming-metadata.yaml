@@ -1,8 +1,0 @@
-id: research-naming-metadata
-type: research
-topic: Phase/project descriptive metadata and naming UX
-date: 2026-03-31
-summary: "Project schema has no name field; phase schema has no name column (YAML title field exists but is silently dropped during indexing). Refine skill references active_project.name which returns undefined — pre-existing bug. Proposed: add name and description columns to both projects and phases tables, bump schema version to 4 (triggers harmless DB rebuild). Auto-suggest names inline during refine/init (sonnet, no separate model call). Retroactive naming via future /ideate:project skill. Backfill existing artifacts from YAML title/intent fields during migration."
-findings: "Schema gap confirmed: no name field on projects, no name/description columns on phases despite skills referencing them. Init writes title to YAML but indexer drops it. Specific schema changes documented for TypeScript interfaces, Drizzle tables, indexer, write handlers. Summary expressions in query tool and workspace status need COALESCE fallbacks."
-content_hash: 108ac01c02dc9cea5401c5e2f105580d61c606521e2add51208d5f270a234dde
-token_count: 264

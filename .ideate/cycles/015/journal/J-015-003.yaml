@@ -1,9 +1,0 @@
-id: J-015-003
-type: journal_entry
-phase: autopilot
-date: "2026-03-21"
-cycle_created: 15
-title: "Cycle 3 — Work item 099: Fix stale archive path in three agent definitions"
-content: "Status: complete"
-content_hash: "64c6aaf2398ecbcd829bec5a0ea2d83e01a58a283b035619fa169d05ee52bd8b"
-token_count: 52

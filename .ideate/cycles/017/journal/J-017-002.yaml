@@ -1,9 +1,0 @@
-id: J-017-002
-type: journal_entry
-phase: autopilot
-date: "2026-03-21"
-cycle_created: 17
-title: "Cycle 1 — Work item 101: Fix residual documentation inconsistencies"
-content: "Status: complete"
-content_hash: "6c9a29e1372caee7118cf5bbf950bdd1098766d7c9f9843dc572f80a99f26e85"
-token_count: 50

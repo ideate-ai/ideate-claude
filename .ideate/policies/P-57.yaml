@@ -1,9 +1,0 @@
-id: P-57
-type: domain_policy
-amends: null
-domain: artifact-structure
-established: 2026-04-04
-rationale: BELONGS_TO_DOMAIN edge type is listed as active in neo4j-schema.md Section 4.2 but deprecated in Section 9. Complexity enum has 5 values in GraphQL but 3 in schema/code. These contradictions cause implementation confusion and migration failures.
-text: Each edge type, node type, property, and enum used in Neo4j must have exactly one authoritative definition. Schema documents, GraphQL SDL, TypeScript interfaces, and adapter implementations must reference this single definition. Contradictions between schema sections or between schema and code are not permitted and must be resolved before implementation.
-content_hash: 364804e8e92cff298fce2b910d83c4b5856dd295d7422c67cdcd7aced6524686
-token_count: 178

@@ -1,9 +1,0 @@
-id: D-165
-type: domain_decision
-amends: D-162
-domain: project-boundaries
-established: 2026-04-04
-rationale: GraphQL schema defines archiveCycle mutation and architecture overview references it, but StorageAdapter interface lacks the method. This creates an interface gap that prevents adapter implementations from supporting full cycle lifecycle operations. See existing D-162 which noted this gap provisionally.
-text: The StorageAdapter interface must include the archiveCycle method to match the GraphQL schema mutation and support the archive workflow. The method signature should align with the existing archive cycle implementation requirements.
-content_hash: 1d5338d5c7e0cac7ccd3543b511f0d819aae9ccfcac41b4d5805cac3c7631fd7
-token_count: 162

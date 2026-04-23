@@ -1,9 +1,0 @@
-id: J-005-011
-type: journal_entry
-phase: execute
-date: "2026-03-11"
-cycle_created: 5
-title: "Work item 048: Fix plugin.json Version"
-content: "Status: complete"
-content_hash: f49b3ce5414ed6b4775be4522e1f1096f2ca2efb59cd2405973f69e2b007225e
-token_count: 43

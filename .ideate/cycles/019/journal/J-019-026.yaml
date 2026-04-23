@@ -1,9 +1,0 @@
-id: J-019-026
-type: journal_entry
-phase: autopilot
-date: "2026-03-22"
-cycle_created: 19
-title: "Cycle 5 — Work item 115: Add metrics.jsonl to artifact-conventions.md"
-content: "Status: complete (no changes needed — already correct)"
-content_hash: ba64758a342f3369247244eec5eecfef6c3e1c78f028a3308bd15535d2b85110
-token_count: 60

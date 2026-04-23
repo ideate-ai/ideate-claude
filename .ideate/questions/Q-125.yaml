@@ -1,9 +1,0 @@
-id: Q-125
-type: domain_question
-domain: workflow
-title: Skills directories contain only .gitkeep files; no user-invocable workflows exist yet
-body: Skills directories contain only .gitkeep files; no user-invocable workflows exist yet.
-status: closed
-resolution: Skills directories now contain SKILL.md files for all 10 user-invocable skills (plan, execute, review, refine, autopilot, project, triage, status, settings, init). The original condition no longer holds. Closed via full-audit 2026-04-09.
-content_hash: d05ff9c586dd28a8a326fdea62c4027e91216f2bef7b28214c869ea8595eff9f
-token_count: 125

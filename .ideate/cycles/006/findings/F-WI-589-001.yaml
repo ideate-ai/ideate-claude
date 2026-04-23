@@ -1,9 +1,0 @@
-id: F-WI-589-001
-type: finding
-cycle: 6
-work_item: WI-589
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "2 significant, 4 minor findings. S1: test:equivalence script did not tear down containers on wait-for-healthy failure due to && chain. Fixed by restructuring with semicolons and conditional. S2: wait-for-healthy.sh treated services without healthchecks as permanently non-healthy. Fixed by counting running services without healthchecks as healthy. M1: npm install corrupting host node_modules — fixed with named volume for node_modules. M2: Missing explicit networks block — added test-net. M3: Timeout argument not validated — added integer check. M4: Floating Neo4j tag — pinned to 5.26.0-community."
-content_hash: 75a687c5863573a32d784b1cb4867e96f6d98ddfad003570cd151de8544773dc
-token_count: 183

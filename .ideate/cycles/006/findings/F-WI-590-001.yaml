@@ -1,9 +1,0 @@
-id: F-WI-590-001
-type: finding
-cycle: 6
-work_item: WI-590
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "2 significant findings. S1: FIXTURE-README.md omitted 4 edges (D-01/D-02/Q-01 belongs_to_domain, WI-001 blocks WI-002). Added to Known Edges Summary table. S2: GP-01 note incorrectly claimed derived_from edges from WI files and governed_by from WI-003 (which has governed_by: []). Corrected to: governed_by from WI-001 and WI-002, derived_from from P-01."
-content_hash: 4604a2a9008db08f9d601a86a63fbab620cf4ef3633509cde4648822a9d6f8cf
-token_count: 121

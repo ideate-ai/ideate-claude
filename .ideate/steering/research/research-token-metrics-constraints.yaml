@@ -1,8 +1,0 @@
-id: research-token-metrics-constraints
-type: research
-topic: Token metrics design constraints for ideate
-date: 2026-03-31
-summary: "JSONL transcripts at ~/.claude/projects/ contain per-message token data but output_tokens are severely undercounted (streaming placeholder bug, issue #22686). Thinking tokens excluded entirely. Agent tool returns no subagent token metadata. Three options proposed: (1) SubagentStop hook + JSONL parsing (highest accuracy, most complex), (2) JSONL post-processing at cycle boundary (simpler, batch mode), (3) Wall-clock-only with token stubs (ships immediately, no token data). ccusage npm package confirmed as reference implementation with same data quality limitations."
-findings: "Token data exists in JSONL but is unreliable for output_tokens. Input tokens and cache tokens are more reliable. ~/.claude.json is config-only. SubagentStop hook provides agent_transcript_path but no token summary. Claude Code has open feature requests (#22625, #10164, #10388) for per-subagent token tracking with no timeline. Recommended: Option 3 (wall-clock baseline) now + Option 1 (hook-based) as enhancement when data quality improves."
-content_hash: 6ff42556e2c3915b800cf39f9bec5aac271876bb37a0c1f6ca58aaf24fb75ade
-token_count: 289

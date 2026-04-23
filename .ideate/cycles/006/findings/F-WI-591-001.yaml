@@ -1,9 +1,0 @@
-id: F-WI-591-001
-type: finding
-cycle: 6
-work_item: WI-591
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "2 significant, 3 minor findings. S1: assertEdgesEquivalent compared edge properties without normalization — fixed by stripping properties and comparing only (source_id, target_id, edge_type). S2: assertQueryResultEquivalent did not strip graph context fields (edge_type, direction, depth) — fixed by destructuring them out. M2: Added pre-flight check for missing fixture directory. M3: Replaced execSync with execFileSync for migration CLI call to avoid shell interpolation."
-content_hash: f31b2d5cc105277c948f3843db46196e12ba80825e94a6925593f621169fea27
-token_count: 151

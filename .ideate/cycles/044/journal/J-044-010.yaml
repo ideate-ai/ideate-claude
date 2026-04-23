@@ -1,9 +1,0 @@
-id: J-044-010
-type: journal_entry
-phase: execute
-date: "2026-03-24"
-cycle_created: 44
-title: "Andon cord resolution: unregistered archive types"
-content: "Decision: Formally define decision_log, cycle_summary, and review_manifest as first-class schema types with strictly defined DDL, Drizzle tables, TypeScript interfaces, and buildRow cases. No generic blob table. Migration should only produce types that the indexer can store. Follow-up via /ideate:refine."
-content_hash: dd605d1162c2c525a9df8015fdb4e58253b69f5cface143e0dd9a7503b41d03b
-token_count: 119

@@ -1,9 +1,0 @@
-id: P-52
-type: domain_policy
-domain: workflow
-status: active
-description: "When an MCP tool call fails during skill execution, the skill must report the failure and stop processing. Skills must NOT fall back to reading, writing, grepping, or globbing .ideate/ files directly. A tool failure signals a defect in the tool layer (to be fixed via refinement), not a permission to bypass the MCP abstraction boundary (GP-14). Triggered by: PH-013 context retrieval incident where ideate_assemble_context failure led to direct .ideate/ file reads."
-established: cycle 008
-derived_from: GP-14
-content_hash: fac9f871b889e49ef56538916fc1a0d31fdff9c264e92162e2366472d0dcd14d
-token_count: 146

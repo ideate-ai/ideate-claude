@@ -1,9 +1,0 @@
-id: J-019-015
-type: journal_entry
-phase: autopilot
-date: "2026-03-22"
-cycle_created: 19
-title: "Cycle 3 — Work item 111: Fix stale reviews/incremental/ path in spec-reviewer/gap-analyst/journal-keeper"
-content: "Status: complete (no changes needed — already correct)"
-content_hash: aebf249eb8b663ced05ae86df5d9c06615de962dd61872b9385b1e4b38716cfb
-token_count: 69

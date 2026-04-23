@@ -1,9 +1,0 @@
-id: J-019-025
-type: journal_entry
-phase: autopilot
-date: "2026-03-22"
-cycle_created: 19
-title: "Cycle 5 — Work item 114: Fix report.sh — nested severity path and camelCase key"
-content: "Status: complete (no changes needed — already correct)"
-content_hash: dcb73583361772d3ff66d3867ee370e01941ac58e4de422f3e612cd2726d92fd
-token_count: 63

@@ -1,9 +1,0 @@
-id: J-049-005
-type: journal_entry
-phase: execute
-date: "2026-03-24"
-cycle_created: 49
-title: "Work item 177: Add checkSchemaVersion version-0 path test"
-content: "Status: complete"
-content_hash: c9ccbf480c0f1c0d77f3dd2641acfb55c5d18d400690d54f658d4f218becbf8e
-token_count: 48

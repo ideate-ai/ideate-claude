@@ -1,9 +1,0 @@
-id: F-WI-593-001
-type: finding
-cycle: 6
-work_item: WI-593
-reviewer: code-reviewer
-verdict: Pass
-findings_summary: "1 minor finding: sortByKey lambda duplicated across 5 countNodes test bodies. Fixed by hoisting to module-level constant."
-content_hash: dd41494f7cfe49b347f3c263678774c92c1bd4b02b6416dc711923b92b479d60
-token_count: 59

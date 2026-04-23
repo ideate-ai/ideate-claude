@@ -1,8 +1,0 @@
-id: research-skill-context-cost
-type: research
-topic: Skill context cost and loading behavior in Claude Code
-date: 2026-03-31
-summary: Skills load full SKILL.md into context at invocation. Before invocation, only 250-char description present. disable-model-invocation removes even that. Documentation recommends <500 lines per skill. Supporting files in skill directory are lazy-loaded (read on demand). Autopilot already uses this pattern (222-line main + 4 phase files).
-findings: "Key facts: (1) Before invocation, only description (max 250 chars truncated) in context. Total description budget is 1% of context window. (2) At invocation, full SKILL.md injected and stays in conversation history. (3) No lazy loading for main file; supporting files are read on demand. (4) disable-model-invocation: true removes description from context entirely — skill invisible until user types it. (5) context: fork isolates skill content from parent conversation. (6) Current ideate skills range 206-917 lines. init is largest at ~12k tokens. (7) Accumulated multi-skill invocations can consume 25k+ tokens before work context. Recommendations: keep main SKILL.md under 500 lines, use supporting files for conditional/reference sections, use disable-model-invocation for user-triggered-only skills."
-content_hash: 732ace01e38f2367c887571bc699d68f7a4675006fbf82f8d99f02a21f730748
-token_count: 322

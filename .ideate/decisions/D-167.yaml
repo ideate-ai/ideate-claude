@@ -1,9 +1,0 @@
-id: D-167
-type: domain_decision
-amends: Q-123
-domain: artifact-structure
-established: 2026-04-04
-rationale: Current mismatch causes validation failures during migration. GraphQL SDL has 5 values; codebase uses 3. Related to existing Q-123.
-text: The WorkItemComplexity enum must have consistent values across GraphQL SDL, Neo4j schema, TypeScript types, and runtime code. Either add LOW and HIGH to schema/code or remove them from GraphQL SDL. Decision deferred pending user input on whether 3-value (SMALL/MEDIUM/LARGE) or 5-value (LOW/SMALL/MEDIUM/LARGE/HIGH) scale is preferred.
-content_hash: 9b6f5fadc08a6bbeffc4d8055a595bbb2936bf205984df09f98ddc1dba70de42
-token_count: 145

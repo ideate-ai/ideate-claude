@@ -1,9 +1,0 @@
-id: D-172
-type: domain_decision
-amends: null
-domain: artifact-structure
-established: 2026-04-04
-rationale: Transformer test failures indicate content_hash non-determinism, which undermines the core assumption that content_hash represents content identity. Change detection depends on stable hashes.
-text: The content_hash generation in artifact transformers must be deterministic - the same input must always produce the same hash. Non-determinism in hash generation breaks change detection and causes spurious updates.
-content_hash: 22aa3c0875ae3724cc7ca612f03be49b99ac357d88314d418e4f5b2eb7d6e358
-token_count: 130

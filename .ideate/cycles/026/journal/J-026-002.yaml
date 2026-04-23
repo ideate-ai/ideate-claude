@@ -1,9 +1,0 @@
-id: J-026-002
-type: journal_entry
-phase: execute
-date: "2026-03-22"
-cycle_created: 26
-title: "Work item 122: Fix code-reviewer agent startup-failure description"
-content: "Status: complete"
-content_hash: be9cc0d49e881138f3538dbc1b5a49ac0697386bfe155bc671a54c0f860389bc
-token_count: 51

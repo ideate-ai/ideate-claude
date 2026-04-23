@@ -1,9 +1,0 @@
-id: Q-001
-type: domain_question
-context: "WI-650 identified PPR divergence that was deferred for fix. The findings need persistent documentation so that future workers understand the divergence exists and can address it when priorities allow. Options include: gap-analysis.yaml as a deferred gap, PPR documentation in the spec, a dedicated divergence tracking file, or as a known-issue entry."
-impact: Without clear documentation location, PPR divergence knowledge may be lost, leading to repeated analysis or unexpected behavior.
-question: What is the appropriate location and format for documenting PPR divergence findings from WI-650?
-reexamination_trigger: When PPR documentation strategy is revised or when WI-650 is revisited.
-status: open
-content_hash: e0a9233c5b459b07a87c907505e0289d29462bfa26a74d63d52f6e28d4ff6ccd
-token_count: 186

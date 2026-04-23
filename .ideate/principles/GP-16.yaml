@@ -1,8 +1,0 @@
-id: GP-16
-type: guiding_principle
-name: Frictionless Install and Update
-description: Plugin installation and updates must be seamless. When the underlying data model changes (SQLite schema, YAML artifact structure, config format), the system must automatically detect the version mismatch and migrate existing data to the new format without user intervention. Schema versions are tracked in config.json. Migration scripts must be idempotent and preserve all existing data. Users must never encounter a broken state because they updated the plugin without running a manual migration step.
-status: active
-cycle_created: 6
-content_hash: 645bbef9d411f2b859a83719252ab96a98f288bc9133bf202b54890cc58f6ed5
-token_count: 155

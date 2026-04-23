@@ -1,9 +1,0 @@
-id: full-audit-20260331-summary
-type: cycle_summary
-content: |-
-  # Full Audit Summary — 2026-03-31
-
-  2 critical + 1 significant findings identified and resolved in-audit. dist/ rebuilt. Missed skill docs (autopilot phases + init) fixed. ARCHITECTURE.md schema version updated. 3 minor carry-forward items. Phase ready for transition.
-cycle: 9
-content_hash: abd84de649a0d9476681c2f37470e1f2873265a45e4a3d2e665d13fbef722872
-token_count: 86

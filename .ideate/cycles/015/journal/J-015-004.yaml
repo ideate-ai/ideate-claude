@@ -1,9 +1,0 @@
-id: J-015-004
-type: journal_entry
-phase: autopilot
-date: "2026-03-21"
-cycle_created: 15
-title: "Cycle 3 — Work item 100: Fix documentation cluster and README discoverability"
-content: "Status: complete"
-content_hash: "65e40b0eecd76a166780ad2860afba0d8fd230deb7e8998c38442ffadae7cfa0"
-token_count: 53

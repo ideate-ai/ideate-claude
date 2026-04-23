@@ -1,8 +1,0 @@
-id: P-001
-type: domain_policy
-cycle_created: 1
-description: "Work items implementing input validation must not be accepted as complete if validation logic remains partially implemented. Partial validation includes: console.error used instead of proper error throwing for failure cases, missing validation for edge cases (empty arrays, null values), or validation that accepts invalid input silently. Technical debt from incomplete validation must be tracked with explicit completion criteria and timeline."
-rationale: WI-646 was accepted as complete despite console.error being used in writer.ts for transaction failures instead of throwing validated errors. This creates a pattern where validation is 'good enough' but not actually complete, leading to inconsistent error handling.
-status: active
-content_hash: bcf8e3e87eea1ac0214e2b92139a347aacd04cd68e272c59db46d43b5062b138
-token_count: 199

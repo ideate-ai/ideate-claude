@@ -1,7 +1,0 @@
-id: decision-log
-type: cycle_summary
-reviewer: journal-keeper
-content: "Cycle 6 decision log with 20 decisions (D-6-01 through D-6-22), 9 open questions (OQ-01 through OQ-09), and 4 cross-references (CR1: BELONGS_TO_DOMAIN contradiction across all specs, CR2: Cycle node diagram vs definition gap, CR3: archiveCycle interface gap vs GraphQL contract, CR4: WorkItemComplexity scale inconsistency). Full content persisted in journal-keeper output."
-cycle: 6
-content_hash: 385a717823428b1f0266d96a77cadc06c72cd737b03faf0abbde30ea3907c17c
-token_count: 114

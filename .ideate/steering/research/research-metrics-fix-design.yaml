@@ -1,8 +1,0 @@
-id: research-metrics-fix-design
-type: research
-topic: Metrics aggregation bug fix design
-date: 2026-03-31
-summary: "Three interconnected bugs across four code locations. aggregateByAgent groups by event_name (always unknown) instead of agent_type. handleEmitMetric stores payload.payload (nested sub-object, always null) instead of the flat payload. Same bug in indexer and write handler. Recommended Option 1: store computed JSON payload with queryable fields, extract agent_type from payload in aggregation, set event_name to agent_type as fallback. No schema migration needed. All 28 existing events recoverable via re-index. Skill docs need to remove broken token/turns extraction instructions and replace with null + future hook note."
-findings: "Four files need changes: metrics.ts (emission + aggregation), indexer.ts (buildRow), write.ts (write handler). Tests mask bugs by bypassing handleEmitMetric. quality_summary events are the only type setting event_name explicitly. Skill doc updates needed across execute, review, refine, autopilot to remove broken usage extraction instructions."
-content_hash: 6c37982b6b6ab35693a889a4d9de5e90f6b95dfb03e90eef3bdbb4412a0d359d
-token_count: 274

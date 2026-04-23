@@ -1,9 +1,0 @@
-id: D-170
-type: domain_decision
-amends: null
-domain: project-boundaries
-established: 2026-04-04
-rationale: Current RemoteAdapter has no retry logic, making it vulnerable to transient network failures. In production environments, brief network interruptions should not cause operation failures.
-text: RemoteAdapter must implement configurable retry logic with exponential backoff for transient network failures. Retry policy should be configurable (max retries, base delay, max delay) and apply to all network-dependent operations.
-content_hash: d8962b66e5379031acd097a6380309a2231d6d470c3dde53421b2f55d4285c17
-token_count: 132

@@ -1,9 +1,0 @@
-id: J-028-004
-type: journal_entry
-phase: execute
-date: "2026-03-22"
-cycle_created: 28
-title: "Work item 127: Add quoted template to fixable-path journal note"
-content: "Status: complete"
-content_hash: e70237f4513558817d96c336bb613a8ff78d3f566627d51f29aa9879aceb6faf
-token_count: 50

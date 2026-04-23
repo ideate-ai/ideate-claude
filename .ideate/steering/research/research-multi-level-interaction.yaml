@@ -1,8 +1,0 @@
-id: research-multi-level-interaction
-type: research
-topic: Multi-level interaction model for workspace/project/phase/cycle
-date: 2026-03-31
-summary: "Designed conceptual model for interacting with ideate at all hierarchy levels. Proposed 3 new skills (project, triage, status), work item type taxonomy (feature/bug/spike/maintenance/chore), phase lifecycle state machine (pending/active/completed/abandoned), and stakeholder-appropriate views. Recommended phased rollout: triage+status first, then project skill."
-findings: "Current hierarchy has data models for all levels but interaction surfaces only via SDLC loop. Projects and phases can only be created inside init/refine. No lightweight intake for bugs/maintenance. Proposed Option C (hybrid): /ideate:project for entity management, /ideate:triage for lightweight intake, /ideate:status for read-only views. 10 total skills. Work item types route differently through execution and review. Phase lifecycle needs explicit state machine with carry-forward rules for incomplete work."
-content_hash: 28e4cd7b5f4fce12590deea9e4ece7e21fafe1bd4a648b829a960a239276040f
-token_count: 259

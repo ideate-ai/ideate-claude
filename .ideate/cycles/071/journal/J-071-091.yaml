@@ -1,9 +1,0 @@
-id: J-071-091
-type: journal_entry
-phase: execute
-date: 2026-03-31
-cycle_created: 71
-title: work-item-complete
-content: "## [execute] 2026-03-31 — Work item WI-507: Update skill docs: rename
-  tool reference and add GP-14 guardrail\\nStatus: complete\\nAll 6 skill files
-  updated. Tool references renamed, GP-14 guardrail added to each."

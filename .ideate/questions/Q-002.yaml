@@ -1,9 +1,0 @@
-id: Q-002
-type: domain_question
-context: D-173 accepted WI-646 as incomplete technical debt, relying on incremental reviews to catch issues. However, console.error in transaction failure paths creates inconsistent error handling that may mask real problems. This question tracks when this debt should be paid down and what completion criteria apply.
-impact: Unaddressed technical debt accumulates; transaction failures may be handled inconsistently or logged to console instead of propagating correctly.
-question: What is the timeline and criteria for completing WI-646 to replace console.error with proper error throwing in writer.ts transaction failures?
-reexamination_trigger: Before next release candidate, or when transaction error handling is next modified.
-status: open
-content_hash: daea37eecd449ecc9d16f7e13bb8e4f2ad975c52e730990a6c09ea979fe5b954
-token_count: 194

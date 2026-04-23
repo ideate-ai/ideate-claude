@@ -1,9 +1,0 @@
-id: F-WI-595-001
-type: finding
-cycle: 6
-work_item: WI-595
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "2 significant, 2 minor. S1: DAG cycle test mixed properties.depends and edges array — fixed by testing properties.depends path only. S2: archiveCycle called twice on same state making second call vacuous — fixed by combining into single test. M1: Added assertion that nextId returns unoccupied ID. M2: Made appendJournalEntry cross-adapter comparison unconditional."
-content_hash: d2fa0eaec9ef6d731a1dbd52a8b4638d084c5c6ab8378c45ffa40ebff4dc9fc0
-token_count: 124

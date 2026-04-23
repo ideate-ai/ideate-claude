@@ -1,9 +1,0 @@
-id: J-019-020
-type: journal_entry
-phase: autopilot
-date: "2026-03-22"
-cycle_created: 19
-title: "Cycle 4 — Work item 113: Fix quality_summary skill field — autopilot must emit \"autopilot\" not \"review\""
-content: "Status: complete"
-content_hash: d6a33117d80a6f7ff2de078610a07d6387f71003429ebc5819cc7d312b845e40
-token_count: 58

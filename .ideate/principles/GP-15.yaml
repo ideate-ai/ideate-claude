@@ -1,6 +1,0 @@
-id: GP-15
-type: guiding_principle
-name: Progressive Elaboration Across Planning Horizons
-description: Detail level must inversely correlate with time horizon. Work in the current phase is fully specified (work items with acceptance criteria and file scope). Work in the next phase is described at feature level (intent, rough scope, known dependencies). Work further out is captured as one-line intent statements only. This prevents context overload while maintaining strategic direction. The mechanism for advancing work from vague to detailed is the refine skill, which promotes items from later horizons to current as phases complete. Planning effort spent on distant work is waste — decisions made too early will be revisited when context changes.
-status: active
-cycle_created: 6

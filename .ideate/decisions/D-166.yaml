@@ -1,9 +1,0 @@
-id: D-166
-type: domain_decision
-amends: null
-domain: project-boundaries
-established: 2026-04-04
-rationale: LocalAdapter currently lacks archiveCycle implementation, creating a functional gap. When running in local mode, cycle archival is not possible, breaking the workflow abstraction that should work regardless of storage backend.
-text: LocalAdapter must implement the archiveCycle method to support local-only storage scenarios. Implementation should handle the SQLite cleanup operations currently in handleArchiveCycle, with proper transaction boundaries to ensure atomicity.
-content_hash: 35c76b39be736bdc8f4910bccc8d6e21002bc8b852114fd90de59ba5c8399b27
-token_count: 145

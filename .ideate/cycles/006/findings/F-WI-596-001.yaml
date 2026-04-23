@@ -1,9 +1,0 @@
-id: F-WI-596-001
-type: finding
-cycle: 6
-work_item: WI-596
-reviewer: code-reviewer
-verdict: Pass
-findings_summary: "3 minor findings. M1: Added comment clarifying putNode accepts cycle_created in properties. M2: Added toBeNull() assertion for absent status test. M3: T-13 convergence branch tautology noted (not fixed — acceptable for future-proofing)."
-content_hash: bf4682638f62d907b53ea6b2b1ca912ccde6733757ab53dcd865f0f35fd0d20e
-token_count: 88

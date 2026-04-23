@@ -1,9 +1,0 @@
-id: D-168
-type: domain_decision
-amends: Q-122
-domain: artifact-structure
-established: 2026-04-04
-rationale: Phantom nodes in schema diagrams mislead implementors about the actual data model. A referenced node type without definition creates uncertainty about whether it should exist in the graph.
-text: The Cycle node shown in neo4j-schema.md Section 2.1 diagram must either have a complete node definition (properties, labels, relationships) added to the schema, or be removed from the diagram if it represents a conceptual rather than concrete node type.
-content_hash: dea506f8e5fb5344ec02ad8a4eee4c692d73deb1f4a6feeaefa54d8974444e48
-token_count: 139

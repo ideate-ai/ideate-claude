@@ -1,8 +1,0 @@
-id: J-071-223
-type: journal_entry
-phase: autopilot
-date: 2026-04-04
-cycle_created: 71
-title: review-scope
-content: "Cycle 17: differential diff failed — falling back to full review.
-  Reason: start and end commits are identical (cb564e38)."

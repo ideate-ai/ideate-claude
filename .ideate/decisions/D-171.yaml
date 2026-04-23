@@ -1,9 +1,0 @@
-id: D-171
-type: domain_decision
-amends: null
-domain: workflow
-established: 2026-04-04
-rationale: PPR algorithm currently has no maximum node limit, creating potential for resource exhaustion on large project graphs. This is a reliability and safety concern for production use.
-text: The PPR (Personalized PageRank) context assembly algorithm must implement a configurable maximum node limit to prevent unbounded memory usage on large graphs. When the limit is exceeded, the algorithm should either truncate or return an error rather than consuming unbounded resources.
-content_hash: 256c58911cc42ed48bd871f64eb699a26465ca46a7efe02a0631a38b7b1eb34a
-token_count: 142

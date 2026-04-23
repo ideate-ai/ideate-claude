@@ -1,9 +1,0 @@
-id: P-56
-type: domain_policy
-amends: null
-domain: project-boundaries
-established: 2026-04-04
-rationale: 16 equivalence test failures indicate LocalAdapter and RemoteAdapter diverge significantly in queryNodes filtering, queryGraph traversal, and PPR behavior. This undermines the storage abstraction boundary (P-14) and risks different behavior when switching between local and remote storage.
-text: All StorageAdapter implementations (LocalAdapter, RemoteAdapter, and future adapters) must produce identical behavior for the same inputs. Query results, graph traversals, filtering, and edge traversal semantics must match within the bounds of adapter-appropriate divergence (e.g. async vs sync). Equivalence tests must pass before adapter implementations are considered complete.
-content_hash: e9363f422ba9e11fe4be37883d51df001e6fada4e2e6cdaf3b8cc6431d3c0e2a
-token_count: 195

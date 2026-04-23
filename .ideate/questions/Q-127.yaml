@@ -1,8 +1,0 @@
-id: Q-127
-type: domain_question
-domain: project-boundaries
-impact: Without transaction boundaries, system could enter inconsistent state where some cycle data is archived but index entries remain, causing data integrity issues.
-opened: 2026-04-04
-question: Should the archiveCycle SQLite DELETE operations be wrapped in a transaction to ensure atomic cleanup? Currently, interrupted cleanup could leave partially archived cycle data.
-content_hash: 1327894b18041256ebd9f61fa868c31ed77bb196f5a8b54f84c188d919901e5f
-token_count: 108

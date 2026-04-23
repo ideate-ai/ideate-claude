@@ -1,9 +1,0 @@
-id: J-005-012
-type: journal_entry
-phase: execute
-date: "2026-03-11"
-cycle_created: 5
-title: "Work item 049: Fix Remote Worker Lifespan Coroutine Shutdown"
-content: "Status: complete"
-content_hash: fd2af3c20c4bd96b9d6025b03133c707685ac189b6a35ecd6d53317d41cc820c
-token_count: 49

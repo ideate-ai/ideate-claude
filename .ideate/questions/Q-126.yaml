@@ -1,8 +1,0 @@
-id: Q-126
-type: domain_question
-domain: workflow
-impact: Users currently have no functional reporting for metrics data. Decision affects maintenance burden and user experience.
-opened: 2026-04-04
-question: "Three reporting scripts (scripts/report.sh and related) were broken by metrics.jsonl deprecation. Options: (a) update scripts to use ideate_get_metrics MCP tool, (b) migrate to YAML-based reporting with new schema, (c) deprecate scripts and document as non-functional, (d) restore metrics.jsonl alongside new YAML format."
-content_hash: e102f8e8c60ecad697f42053348cecf83b703defd352d761d572a3d771c56e7a
-token_count: 132

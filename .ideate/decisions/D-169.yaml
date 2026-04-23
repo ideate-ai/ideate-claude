@@ -1,9 +1,0 @@
-id: D-169
-type: domain_decision
-amends: Q-121
-domain: artifact-structure
-established: 2026-04-04
-rationale: Edge type registry cannot have conflicting status. Implementation tools need clarity on whether to support this edge type.
-text: The BELONGS_TO_DOMAIN edge type must be either fully deprecated (removed from active sections, GraphQL EdgeType, and adapter-interface EdgeType) or restored as active (removed from deprecation section). Current status is contradictory between schema sections.
-content_hash: f003c0b880d9e5ebe4d67d4f40caedc028759b99e5d2adc5cde66b6c11387a45
-token_count: 124

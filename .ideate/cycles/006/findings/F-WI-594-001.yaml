@@ -1,9 +1,0 @@
-id: F-WI-594-001
-type: finding
-cycle: 6
-work_item: WI-594
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "1 significant, 1 minor. S1: sortedRankedNodes tie-break threshold used Number.EPSILON instead of PPR_TOLERANCE, causing false failures when scores differ within tolerance but outside EPSILON. Fixed by parameterizing tolerance. M1: Redundant standalone PPR tolerance test noted but not removed."
-content_hash: 154d18544b43898cdaf6ffbc9324aec7e7f72c16d700733257b826b0652a30ef
-token_count: 106

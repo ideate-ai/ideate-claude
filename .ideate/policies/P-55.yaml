@@ -1,9 +1,0 @@
-id: P-55
-type: domain_policy
-amends: null
-domain: project-boundaries
-established: 2026-04-04
-rationale: Hardcoded Neo4j password fallback found in ideate-server creates a security vulnerability. Credentials in source code are exposed to anyone with repository access and cannot be rotated without code changes.
-text: Production code must not contain hardcoded credentials, passwords, API keys, or secrets. All credentials must be sourced from environment variables, configuration files outside version control, or secure secret management systems. This applies to database connections, external service authentication, and any security-sensitive configuration.
-content_hash: ca7b7a885415110e9192c1c6ea2f7d02e17c52de133bc7992a814f653737a498
-token_count: 165

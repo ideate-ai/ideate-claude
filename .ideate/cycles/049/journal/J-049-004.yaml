@@ -1,9 +1,0 @@
-id: J-049-004
-type: journal_entry
-phase: execute
-date: "2026-03-24"
-cycle_created: 49
-title: "Work item 176: Update db.ts row in architecture.md source code index"
-content: "Status: complete"
-content_hash: c4c50ec988e34b3dc82649ddfa28f97004702c1765c0b4aa77777f2ad86ad972
-token_count: 51

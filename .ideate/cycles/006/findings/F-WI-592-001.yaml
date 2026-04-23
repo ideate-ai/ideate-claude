@@ -1,9 +1,0 @@
-id: F-WI-592-001
-type: finding
-cycle: 6
-work_item: WI-592
-reviewer: code-reviewer
-verdict: Pass (after rework)
-findings_summary: "1 critical (out of scope — writer.ts v5 columns), 3 significant (S1: patchNode wrong field fixed, S2: readNodeContent cross-adapter comparison added, S3: adapter.ts EdgeType out of scope), 2 minor. S1 and S2 fixed in test file. C1 and S3 are pre-existing adapter code issues outside this WI's scope."
-content_hash: ec0a4f4299a21619503a341c84ec801d54d7387802ee9f7d2d93ad742e55ea92
-token_count: 107

@@ -1,8 +1,0 @@
-id: P-002
-type: domain_policy
-cycle_created: 1
-description: "Any validation logic added to the codebase must be accompanied by automated tests that verify both valid and invalid inputs. Tests must cover: boundary conditions (empty arrays, zero values, maximum values), type mismatches, and error message correctness. Tests should be added in the same work item as the validation implementation; deferring tests to a follow-up item is only acceptable with an explicit tracking question."
-rationale: Missing LocalAdapter validation tests were identified as a significant gap in Cycle 1. Validation without tests creates a regression risk and makes it difficult to verify that validation rules work as intended across refactors.
-status: active
-content_hash: c6047fa1c2eb80b25469fc1b5dea0bf2ae85c4c631a1b303bf33e34f57121cef
-token_count: 185

@@ -1,9 +1,0 @@
-id: decision-log
-type: cycle_summary
-reviewer: journal-keeper
-scope: full-audit
-date: "20260408"
-content: "See full decision log and open questions from journal-keeper output. Key decisions: D-PH039-05 addressed_by derivation outside registry; D-PH039-06 relates_to as post-upsert pass; D-PH039-08 belongs_to_cycle Phase 4 without schema registration (oversight); D-PH039-11 comma-split guard applied broader than spec. Key cross-refs: CR1 belongs_to_cycle schema gap (S1+D1 same root); CR2 incremental path gaps (M1+EC1+EC2+IR1 all connected); CR3 over-broad normalization guard."
-cycle: 19
-content_hash: 5757e61fcfaa176f6209071fc499275f365e02eeb996d203626c1d76f6145041
-token_count: 148
