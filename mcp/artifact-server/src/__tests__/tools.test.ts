@@ -3733,7 +3733,7 @@ describe("integration: append_journal → artifact_query sync", () => {
 // ---------------------------------------------------------------------------
 
 describe("handleBootstrapWorkspace", () => {
-  it("creates .ideate/ directory structure with config.json", async () => {
+  it("creates .ideate.json at project root and artifact directory structure", async () => {
     // Use a fresh temp dir as the project root (not the existing artifactDir)
     const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ideate-bootstrap-test-"));
     const bootstrapIdeateDir = path.join(projectRoot, ".ideate");
@@ -3748,14 +3748,18 @@ describe("handleBootstrapWorkspace", () => {
     expect(parsed.subdirectories).toContain("work-items");
     expect(parsed.subdirectories).toContain("plan");
 
-    // Verify config.json exists with correct content
-    const configPath = path.join(bootstrapIdeateDir, "config.json");
-    expect(fs.existsSync(configPath)).toBe(true);
-    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    // Verify .ideate.json exists at project root with correct schema_version
+    const ideateJsonPath = path.join(projectRoot, ".ideate.json");
+    expect(fs.existsSync(ideateJsonPath)).toBe(true);
+    const config = JSON.parse(fs.readFileSync(ideateJsonPath, "utf8"));
     expect(config.schema_version).toBe(CONFIG_SCHEMA_VERSION);
     expect(config.project_name).toBe("test-project");
 
-    // Verify subdirectories exist
+    // Verify config.json does NOT exist inside the artifact directory (AC2)
+    const legacyConfigPath = path.join(bootstrapIdeateDir, "config.json");
+    expect(fs.existsSync(legacyConfigPath)).toBe(false);
+
+    // Verify artifact subdirectories exist
     expect(fs.existsSync(path.join(bootstrapIdeateDir, "work-items"))).toBe(true);
     expect(fs.existsSync(path.join(bootstrapIdeateDir, "cycles"))).toBe(true);
 

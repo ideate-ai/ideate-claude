@@ -752,12 +752,42 @@ export class ValidationError extends StorageAdapterError {
 // Adapter factory
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Scope types — (org_id, codebase_id) identity model
+// ---------------------------------------------------------------------------
+
+/**
+ * Artifact scope: the (org_id, codebase_id) pair that uniquely identifies a
+ * tenant/codebase combination. Mirrors the remote adapter's multi-tenant model
+ * for local SQLite storage.
+ *
+ * The reserved sentinel codebase_id='*' opts into cross-codebase reads in the
+ * local adapter.
+ */
+export interface ArtifactScope {
+  org_id: string;
+  codebase_id: string;
+}
+
+/**
+ * Reserved sentinel value for codebase_id that opts into cross-codebase reads.
+ * When a read method receives a scope with this value, it returns artifacts
+ * from all codebases within the org.
+ */
+export const CROSS_CODEBASE_SENTINEL = "*";
+
 export interface AdapterConfig {
   backend: "local" | "remote";
   /** Local-mode configuration. */
   local?: {
     /** Root path for artifact storage. */
     artifact_dir: string;
+    /**
+     * Default scope (org_id, codebase_id) resolved at startup.
+     * Used by LocalAdapter read methods when no explicit scope is passed.
+     * Resolved via resolveDefaultScope() in default-scope-resolver.ts.
+     */
+    default_scope?: ArtifactScope;
   };
   /** Remote-mode configuration. */
   remote?: {

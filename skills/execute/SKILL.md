@@ -28,7 +28,7 @@ Also hold `{config}.spawn_mode` — either `"subagent"` (default) or `"teammate"
 
 # Phase 1: Locate Artifact Directory
 
-Call `ideate_get_workspace_status()` to identify the **project root**. The MCP server locates the project root automatically. If the user provided a path argument, pass it as a hint.
+Call `ideate_get_workspace_status()` to identify the **project root**. The MCP server locates the project root by walking up the directory tree to find `.ideate.json` at the project root, reading its `artifact_directory` field, and validating that the artifact tree exists at that resolved path. If the user provided a path argument, pass it as a hint.
 
 If the MCP server cannot find a project, stop and report the error. Do not proceed without a valid project.
 

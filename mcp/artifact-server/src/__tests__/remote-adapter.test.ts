@@ -28,8 +28,10 @@ function makeTempIdeateDir(config: object): string {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ideate-remote-test-"));
   const ideateDir = path.join(tmpRoot, ".ideate");
   fs.mkdirSync(ideateDir, { recursive: true });
+  // Write config to <project-root>/.ideate.json (new canonical location).
+  // selectAdapter reads via readRawConfig(ideateDir) which looks at <parent>/.ideate.json.
   fs.writeFileSync(
-    path.join(ideateDir, "config.json"),
+    path.join(tmpRoot, ".ideate.json"),
     JSON.stringify(config, null, 2),
     "utf8"
   );
@@ -97,7 +99,7 @@ describe("selectAdapter — remote backend wiring", () => {
       expect(() =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectAdapter(ideateDir, null as any, null as any)
-      ).toThrow("Remote backend requires 'remote.endpoint' in config.json");
+      ).toThrow("Remote backend requires 'remote.endpoint' in .ideate.json");
     } finally {
       fs.rmSync(path.dirname(ideateDir), { recursive: true, force: true });
     }
@@ -114,7 +116,7 @@ describe("selectAdapter — remote backend wiring", () => {
       expect(() =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectAdapter(ideateDir, null as any, null as any)
-      ).toThrow("Remote backend requires 'remote.endpoint' in config.json");
+      ).toThrow("Remote backend requires 'remote.endpoint' in .ideate.json");
     } finally {
       fs.rmSync(path.dirname(ideateDir), { recursive: true, force: true });
     }
@@ -176,8 +178,9 @@ describeLive("RemoteAdapter — live server at localhost:4000", () => {
     tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ideate-remote-live-"));
     ideateDir = path.join(tmpRoot, ".ideate");
     fs.mkdirSync(ideateDir, { recursive: true });
+    // Write config to <project-root>/.ideate.json (new canonical location).
     fs.writeFileSync(
-      path.join(ideateDir, "config.json"),
+      path.join(tmpRoot, ".ideate.json"),
       JSON.stringify(
         {
           schema_version: 4,

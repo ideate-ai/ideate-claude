@@ -193,27 +193,28 @@ Skills access artifacts exclusively through MCP tools. Direct file reads by skil
 
 ## Artifact Directory Structure
 
-All artifacts live in `.ideate/` in the project root:
+All artifacts live in `.ideate/` in the project root (configuration is in `.ideate.json` at the project root, NOT inside `.ideate/`):
 
 ```
-.ideate/
-├── config.json
-├── projects/
-├── phases/
-├── plan/
-├── work-items/
-├── principles/
-├── constraints/
-├── policies/
-├── decisions/
-├── questions/
-├── cycles/
-├── interviews/
-├── research/
-├── modules/
-├── steering/
-├── domains/
-└── metrics/
+<project-root>/
+├── .ideate.json           # config pointer (schema_version 9)
+└── .ideate/               # artifact tree (default; overridable via artifact_directory)
+    ├── projects/
+    ├── phases/
+    ├── plan/
+    ├── work-items/
+    ├── principles/
+    ├── constraints/
+    ├── policies/
+    ├── decisions/
+    ├── questions/
+    ├── cycles/
+    ├── interviews/
+    ├── research/
+    ├── modules/
+    ├── steering/
+    ├── domains/
+    └── metrics/
 ```
 
 `cycles/` is immutable once written. `policies/`, `decisions/`, and `questions/` are maintained by the domain-curator agent after each review cycle.
@@ -274,13 +275,32 @@ The ideate artifact server must be configured as an MCP server in your Claude Co
 
 The `start.sh` wrapper handles auto-install and auto-build on first run. No manual build step is required.
 
-### Agent budgets (`config.json`)
+### Project configuration file (`.ideate.json`)
 
-Skills read agent turn budgets from `.ideate/config.json` at startup. The `agent_budgets` key maps agent names to maxTurns values:
+All ideate configuration lives in a single JSON file at the project root:
+
+```
+<project-root>/.ideate.json
+```
+
+Minimal example:
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 9,
+  "artifact_directory": ".ideate"
+}
+```
+
+`schema_version` is required (must be `9`). `artifact_directory` is the path to the artifact tree, relative to `.ideate.json`'s containing directory (or an absolute path); defaults to `".ideate"` when absent. All other fields are optional.
+
+### Agent budgets (`.ideate.json`)
+
+Skills read agent turn budgets from `.ideate.json` at startup. The `agent_budgets` key maps agent names to maxTurns values:
+
+```json
+{
+  "schema_version": 9,
   "agent_budgets": {
     "code-reviewer": 80,
     "spec-reviewer": 100,
@@ -295,9 +315,9 @@ Skills read agent turn budgets from `.ideate/config.json` at startup. The `agent
 }
 ```
 
-Skills fall back to each agent's frontmatter `maxTurns` default if `agent_budgets` is absent or does not include a given agent type. Override individual budgets by editing `config.json` directly.
+Skills fall back to each agent's frontmatter `maxTurns` default if `agent_budgets` is absent or does not include a given agent type. Override individual budgets by editing `.ideate.json` directly.
 
-### Model overrides (`config.json`)
+### Model overrides (`.ideate.json`)
 
 The `model_overrides` key maps agent names to model strings, overriding the default model tier for that agent. Skills read `model_overrides` at startup and pass the value as the `model` parameter when spawning matching agents.
 
@@ -305,7 +325,7 @@ Set a key to `null` to remove a previously stored override (null-as-deletion sem
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 9,
   "model_overrides": {
     "architect": "claude-opus-4-5",
     "code-reviewer": "claude-sonnet-4-6"
@@ -313,7 +333,7 @@ Set a key to `null` to remove a previously stored override (null-as-deletion sem
 }
 ```
 
-### Other config.json options
+### Other `.ideate.json` options
 
 `default_appetite` — maximum number of phases budgeted for a project. Used by `/ideate:init` when creating a new project. Default: `6`.
 
@@ -321,13 +341,14 @@ Set a key to `null` to remove a previously stored override (null-as-deletion sem
 
 `spawn_mode` — how agents are launched. Valid values: `"subagent"` (default) or `"teammate"`.
 
-### Complete config.json example
+### Complete `.ideate.json` example
 
 All keys with their defaults:
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 9,
+  "artifact_directory": ".ideate",
   "agent_budgets": {
     "code-reviewer": 80,
     "spec-reviewer": 100,
@@ -359,9 +380,9 @@ All keys with their defaults:
 }
 ```
 
-### PPR configuration (`config.json`)
+### PPR configuration (`.ideate.json`)
 
-The `ppr` key in `config.json` controls the Personalized PageRank context assembly used by `ideate_assemble_context`:
+The `ppr` key in `.ideate.json` controls the Personalized PageRank context assembly used by `ideate_assemble_context`:
 
 ```json
 {

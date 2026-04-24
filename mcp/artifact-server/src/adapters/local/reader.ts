@@ -291,7 +291,8 @@ export class LocalReaderAdapter {
   async queryNodes(
     filter: NodeFilter,
     limit: number,
-    offset: number
+    offset: number,
+    scope?: { org_id: string; codebase_id: string }
   ): Promise<QueryResult> {
     if (!Number.isInteger(limit) || limit < 0) {
       throw new ValidationError("Limit must be a non-negative integer", "INVALID_LIMIT", { limit });
@@ -302,6 +303,14 @@ export class LocalReaderAdapter {
     const type = filter.type as string | undefined;
     const whereClauses: string[] = [];
     const params: (string | number)[] = [];
+
+    // Scope predicate: filter by org_id + codebase_id when v4 columns are active
+    if (scope) {
+      whereClauses.push("n.org_id = ?");
+      params.push(scope.org_id);
+      whereClauses.push("n.codebase_id = ?");
+      params.push(scope.codebase_id);
+    }
 
     if (type) {
       whereClauses.push("n.type = ?");
@@ -637,10 +646,19 @@ export class LocalReaderAdapter {
 
   async countNodes(
     filter: NodeFilter,
-    group_by: "status" | "type" | "domain" | "severity"
+    group_by: "status" | "type" | "domain" | "severity",
+    scope?: { org_id: string; codebase_id: string }
   ): Promise<Array<{ key: string; count: number }>> {
     const whereClauses: string[] = [];
     const params: (string | number)[] = [];
+
+    // Scope predicate: filter by org_id + codebase_id when v4 columns are active
+    if (scope) {
+      whereClauses.push("n.org_id = ?");
+      params.push(scope.org_id);
+      whereClauses.push("n.codebase_id = ?");
+      params.push(scope.codebase_id);
+    }
 
     if (filter.type) {
       whereClauses.push("n.type = ?");
@@ -726,7 +744,8 @@ export class LocalReaderAdapter {
   // -----------------------------------------------------------------------
 
   async getDomainState(
-    domains?: string[]
+    domains?: string[],
+    scope?: { org_id: string; codebase_id: string }
   ): Promise<
     Map<
       string,
@@ -737,12 +756,18 @@ export class LocalReaderAdapter {
       }
     >
   > {
+    // Build optional scope clause for joining against nodes
+    const scopeClause = scope
+      ? `AND n.org_id = '${scope.org_id.replace(/'/g, "''")}' AND n.codebase_id = '${scope.codebase_id.replace(/'/g, "''")}'`
+      : "";
+
     const allPolicies = this.db
       .prepare(
         `SELECT dp.id, dp.domain, dp.description, n.status
          FROM domain_policies dp
          JOIN nodes n ON n.id = dp.id
          WHERE (n.status IS NULL OR (n.status != 'deprecated' AND n.status != 'superseded'))
+         ${scopeClause}
          ORDER BY dp.domain, dp.id`
       )
       .all() as Array<{ id: string; domain: string; description: string | null; status: string | null }>;
@@ -752,6 +777,8 @@ export class LocalReaderAdapter {
         `SELECT dd.id, dd.domain, dd.description, n.status
          FROM domain_decisions dd
          JOIN nodes n ON n.id = dd.id
+         WHERE 1=1
+         ${scopeClause}
          ORDER BY dd.domain, dd.id`
       )
       .all() as Array<{ id: string; domain: string; description: string | null; status: string | null }>;
@@ -762,6 +789,7 @@ export class LocalReaderAdapter {
          FROM domain_questions dq
          JOIN nodes n ON n.id = dq.id
          WHERE n.status = 'open'
+         ${scopeClause}
          ORDER BY dq.domain, dq.id`
       )
       .all() as Array<{ id: string; domain: string; description: string | null; status: string | null }>;
@@ -807,7 +835,7 @@ export class LocalReaderAdapter {
   // getConvergenceData — mirrors handleGetConvergenceStatus in tools/analysis.ts
   // -----------------------------------------------------------------------
 
-  async getConvergenceData(cycle: number): Promise<{
+  async getConvergenceData(cycle: number, scope?: { org_id: string; codebase_id: string }): Promise<{
     findings_by_severity: Record<string, number>;
     cycle_summary_content: string | null;
   }> {
@@ -823,12 +851,17 @@ export class LocalReaderAdapter {
     // the finding (treat it as resolved) and warn about the stale SQLite row.
     // If the YAML file cannot be read or parsed, we fall back to the SQLite value
     // (count the finding as open) and warn — convergence must remain callable.
+    const scopeClause = scope
+      ? `AND n.org_id = '${scope.org_id.replace(/'/g, "''")}' AND n.codebase_id = '${scope.codebase_id.replace(/'/g, "''")}'`
+      : "";
+
     const candidateRows = this.db
       .prepare(
         `SELECT f.id, f.severity, n.file_path
          FROM findings f
          JOIN nodes n ON f.id = n.id
-         WHERE f.cycle = ? AND f.addressed_by IS NULL`
+         WHERE f.cycle = ? AND f.addressed_by IS NULL
+         ${scopeClause}`
       )
       .all(cycle) as Array<{ id: string; severity: string; file_path: string }>;
 
@@ -885,7 +918,8 @@ export class LocalReaderAdapter {
              da.cycle = ?
              OR (da.id IS NULL AND n.file_path LIKE ?)
              OR (da.id IS NOT NULL AND da.cycle IS NULL AND n.file_path LIKE ?)
-           )`
+           )
+         ${scopeClause}`
       )
       .all(cycle, likePattern, likePattern) as RawRow[];
 

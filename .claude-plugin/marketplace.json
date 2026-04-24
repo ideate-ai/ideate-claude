@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Ideate plugin marketplace - SDLC workflow tools for Claude Code",
-    "version": "3.10.0"
+    "version": "3.11.0"
   },
   "plugins": [
     {
       "name": "ideate",
       "source": "./",
       "description": "Structured SDLC workflow: plan, execute, review, refine, autopilot. Takes rough ideas to production-ready specs through iterative interview, continuous validation, and autonomous convergence loop.",
-      "version": "3.10.0"
+      "version": "3.11.0"
     }
   ]
 }

@@ -45,7 +45,7 @@ function indexNames(db: Database.Database, table: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// nodes table — 8 columns
+// nodes table — 10 columns (including v4 scoping columns org_id, codebase_id)
 // ---------------------------------------------------------------------------
 
 describe("createSchema — nodes table", () => {
@@ -55,7 +55,7 @@ describe("createSchema — nodes table", () => {
     expect(tables).toContain("nodes");
   });
 
-  it("nodes table has exactly 8 columns: id, type, cycle_created, cycle_modified, content_hash, token_count, file_path, status", () => {
+  it("nodes table has exactly 10 columns: id, type, cycle_created, cycle_modified, content_hash, token_count, file_path, status, org_id, codebase_id", () => {
     const db = freshDb();
     const cols = columnNames(db, "nodes");
     const expected = [
@@ -67,11 +67,13 @@ describe("createSchema — nodes table", () => {
       "token_count",
       "file_path",
       "status",
+      "org_id",
+      "codebase_id",
     ];
     for (const col of expected) {
       expect(cols, `expected nodes to have column '${col}'`).toContain(col);
     }
-    expect(cols.length).toBe(8);
+    expect(cols.length).toBe(10);
   });
 });
 
@@ -489,14 +491,14 @@ describe("createSchema — node_file_refs table", () => {
 // ---------------------------------------------------------------------------
 
 describe("createSchema — schema version", () => {
-  it("CURRENT_SCHEMA_VERSION is 8", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe(8);
+  it("CURRENT_SCHEMA_VERSION is 9", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(9);
   });
 
-  it("sets user_version = 8 after createSchema", () => {
+  it("sets user_version = 9 after createSchema", () => {
     const db = freshDb();
     const version = db.pragma("user_version", { simple: true }) as number;
-    expect(version).toBe(8);
+    expect(version).toBe(9);
   });
 });
 
@@ -976,7 +978,7 @@ describe("checkSchemaVersion", () => {
     try {
       {
         const db = new Database(dbPath);
-        db.pragma("user_version = 99"); // stale — current is 8
+        db.pragma("user_version = 99"); // stale — current is 9
         db.close();
       }
 
@@ -1000,9 +1002,9 @@ describe("checkSchemaVersion", () => {
     }
   });
 
-  it("returns true when user_version matches CURRENT_SCHEMA_VERSION (8)", () => {
+  it("returns true when user_version matches CURRENT_SCHEMA_VERSION (9)", () => {
     const db = new Database(":memory:");
-    db.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`); // 8
+    db.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`); // 9
     const result = checkSchemaVersion(db, "/nonexistent/path/not/used.db");
     expect(result).toBe(true);
     db.close();

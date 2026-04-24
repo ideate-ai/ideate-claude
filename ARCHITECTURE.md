@@ -132,7 +132,7 @@ resolveArtifactDir()       # Find .ideate/ via env var or directory walk
 
 **Readiness gate**: tool calls arriving before the index rebuild completes block on the `indexReady` Promise (exported from tools/index.ts). Once `signalIndexReady()` is called after `rebuildIndex()` finishes, the gate opens and all pending tool calls proceed. If `rebuildIndex()` fails, the gate rejects and tool calls return errors.
 
-**Artifact directory**: The server operates on `.ideate/` — a structured subdirectory of the project root containing YAML artifact files organized by type. The `.ideate/config.json` file marks the directory and stores the schema version.
+**Artifact directory**: The server operates on the artifact tree located by reading `<project-root>/.ideate.json` — a JSON pointer file that specifies `artifact_directory` (defaults to `.ideate/`). The `.ideate.json` file carries `schema_version` (currently `9`) and all workspace configuration fields.
 
 **Database location**: `.ideate/index.db` — colocated with the artifacts it indexes. WAL mode and `busy_timeout = 5000` are set for concurrent access safety.
 
@@ -265,7 +265,7 @@ The indexer converts the YAML artifact files under `.ideate/` into the SQLite in
 index.ts startup
   │
   ├─ resolveArtifactDir()
-  │   walks up the directory tree looking for .ideate/config.json
+  │   walks up the directory tree looking for .ideate.json
   │
   ├─ runPendingMigrations()
   │   apply any pending YAML/config/directory migrations
@@ -837,7 +837,7 @@ Based on the context assembly research (`context-assembly-strategies.yaml`, Ques
 | `mcp/artifact-server/src/tools/write.ts` | `ideate_append_journal`, `ideate_archive_cycle`, `ideate_write_work_items`, `ideate_update_work_items`, `ideate_write_artifact` |
 | `mcp/artifact-server/src/tools/events.ts` | `ideate_emit_event` (hook dispatch) |
 | `mcp/artifact-server/src/tools/autopilot-state.ts` | `ideate_manage_autopilot_state` (get or update autopilot session state) |
-| `mcp/artifact-server/src/tools/config.ts` | `handleUpdateConfig` (deep-merge patch into config.json with validation) |
+| `mcp/artifact-server/src/tools/config.ts` | `handleUpdateConfig` (deep-merge patch into `.ideate.json` with validation) |
 | `mcp/artifact-server/src/adapter.ts` | `StorageAdapter` interface, error classes (`StorageAdapterError`, `NotFoundError`, etc.), `selectAdapter` factory |
 | `mcp/artifact-server/src/adapters/local/writer.ts` | `LocalAdapter` write operations: `putNode`, `patchNode`, `deleteNode`, `putEdge`, `removeEdges`, `batchMutate`, `appendJournalEntry`, `archiveCycle` |
 | `mcp/artifact-server/src/adapters/local/reader.ts` | `LocalAdapter` read operations: `getNode`, `getNodes`, `readNodeContent`, `getEdges`, `traverse`, `queryGraph`, `queryNodes`, `nextId`, `countNodes`, `getDomainState`, `getConvergenceData` |

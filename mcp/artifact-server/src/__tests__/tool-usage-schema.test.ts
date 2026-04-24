@@ -30,11 +30,11 @@ function indexList(db: Database.Database, table: string): Array<{ name: string }
 // ---------------------------------------------------------------------------
 
 describe("tool_usage schema — user_version", () => {
-  it("sets PRAGMA user_version to 8 after createSchema", () => {
+  it("sets PRAGMA user_version to 9 after createSchema", () => {
     const db = freshDb();
     const version = db.pragma("user_version", { simple: true }) as number;
-    expect(version).toBe(8);
-    expect(CURRENT_SCHEMA_VERSION).toBe(8);
+    expect(version).toBe(9);
+    expect(CURRENT_SCHEMA_VERSION).toBe(9);
   });
 });
 

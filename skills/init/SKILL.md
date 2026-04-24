@@ -27,7 +27,7 @@ Determine the **project root** — the directory to initialize. Use this precede
 1. If the user provided a path argument, resolve it to an absolute path and use it as the project root.
 2. Otherwise, use the current working directory.
 
-**Check if the artifact directory already exists** by calling `ideate_get_workspace_status()`.
+**Check if the artifact directory already exists** by calling `ideate_get_workspace_status()`. The MCP server walks up the directory tree to find `.ideate.json` at the project root, reads its `artifact_directory` field, and validates that the artifact tree exists at that resolved path.
 
 If the status is NOT `not_initialized` — the project already has an artifact directory — **stop immediately** and report:
 

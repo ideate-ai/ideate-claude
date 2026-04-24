@@ -24,10 +24,12 @@ import type {
 } from "../../adapter.js";
 import { indexFiles as indexerIndexFiles, removeFiles as indexerRemoveFiles } from "../../indexer.js";
 import { ValidationError } from "../../adapter.js";
+import { CROSS_CODEBASE_SENTINEL } from "../../adapter.js";
 import { LocalWriterAdapter, type LocalWriterConfig } from "./writer.js";
 import { LocalReaderAdapter } from "./reader.js";
 import { LocalContextAdapter } from "./context.js";
 import { artifactWatcher } from "../../watcher.js";
+import { hasV4ScopingColumns } from "../../schema.js";
 
 // ---------------------------------------------------------------------------
 // LocalAdapter — full StorageAdapter implementation for local .ideate/ storage
@@ -36,11 +38,61 @@ import { artifactWatcher } from "../../watcher.js";
 export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
   private reader: LocalReaderAdapter;
   private contextAdapter: LocalContextAdapter;
+  /** Cached result of hasV4Columns() — null means not yet computed. */
+  private _hasV4ColumnsCache: boolean | null = null;
 
   constructor(config: LocalWriterConfig) {
     super(config);
     this.reader = new LocalReaderAdapter(this.db, this.drizzleDb, this.ideateDir);
     this.contextAdapter = new LocalContextAdapter(this.drizzleDb, this.db);
+  }
+
+  // -------------------------------------------------------------------------
+  // Scope helpers — filter nodes by (org_id, codebase_id) when v4 columns exist
+  // -------------------------------------------------------------------------
+
+  /**
+   * Returns true when v4 scoping columns exist in the database.
+   * Result is cached per-instance after first call (lazy-init, M1).
+   */
+  private hasV4Columns(): boolean {
+    if (this._hasV4ColumnsCache !== null) return this._hasV4ColumnsCache;
+    this._hasV4ColumnsCache = hasV4ScopingColumns(this.db);
+    return this._hasV4ColumnsCache;
+  }
+
+  /**
+   * Filter a node by the current default scope. Returns null if the node
+   * does not match the scope (and scope enforcement is active).
+   *
+   * When called with a cross-codebase sentinel ('*'), all nodes pass.
+   * When defaultScope is null or v4 columns don't exist, all nodes pass.
+   */
+  private nodeMatchesScope(id: string, scopeOverride?: { codebase_id?: string }): boolean {
+    if (!this.defaultScope || !this.hasV4Columns()) return true;
+    const codebaseId = scopeOverride?.codebase_id ?? this.defaultScope.codebase_id;
+    if (codebaseId === CROSS_CODEBASE_SENTINEL) return true;
+
+    try {
+      const row = this.db
+        .prepare(`SELECT org_id, codebase_id FROM nodes WHERE id = ?`)
+        .get(id) as { org_id: string; codebase_id: string } | undefined;
+      if (!row) return false;
+      return row.org_id === this.defaultScope.org_id && row.codebase_id === codebaseId;
+    } catch {
+      return true; // fallback: allow on error
+    }
+  }
+
+  /**
+   * Returns the scope to push into SQL queries when v4 columns are active
+   * and the sentinel is not in use. Returns null when scope should not be
+   * applied (pre-v4 schema, no defaultScope, or cross-codebase sentinel).
+   */
+  private effectiveScopeForRead(): { org_id: string; codebase_id: string } | null {
+    if (!this.defaultScope || !this.hasV4Columns()) return null;
+    if (this.defaultScope.codebase_id === CROSS_CODEBASE_SENTINEL) return null;
+    return { org_id: this.defaultScope.org_id, codebase_id: this.defaultScope.codebase_id };
   }
 
   // -------------------------------------------------------------------------
@@ -68,14 +120,27 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
   // -------------------------------------------------------------------------
 
   async getNode(id: string): Promise<Node | null> {
-    return this.reader.getNode(id);
+    const node = await this.reader.getNode(id);
+    if (node === null) return null;
+    if (!this.nodeMatchesScope(id)) return null;
+    return node;
   }
 
   async getNodes(ids: string[]): Promise<Map<string, Node>> {
-    return this.reader.getNodes(ids);
+    const all = await this.reader.getNodes(ids);
+    if (!this.defaultScope || !this.hasV4Columns()) return all;
+    const result = new Map<string, Node>();
+    for (const [nodeId, node] of all) {
+      if (this.nodeMatchesScope(nodeId)) {
+        result.set(nodeId, node);
+      }
+    }
+    return result;
   }
 
   async readNodeContent(id: string): Promise<string> {
+    // Scope guard: return empty string for nodes outside the current scope.
+    if (!this.nodeMatchesScope(id)) return "";
     return this.reader.readNodeContent(id);
   }
 
@@ -95,7 +160,22 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
   // -------------------------------------------------------------------------
 
   async traverse(options: TraversalOptions): Promise<TraversalResult> {
-    return this.contextAdapter.traverse(options);
+    // Scope-filter seed IDs: exclude seeds that don't match the current scope.
+    if (this.defaultScope && this.hasV4Columns() && this.defaultScope.codebase_id !== CROSS_CODEBASE_SENTINEL) {
+      const filteredSeeds = options.seed_ids.filter((id) => this.nodeMatchesScope(id));
+      if (filteredSeeds.length !== options.seed_ids.length) {
+        options = { ...options, seed_ids: filteredSeeds };
+      }
+    }
+    const result = await this.contextAdapter.traverse(options);
+    // Scope-filter traversal results post-read.
+    if (this.defaultScope && this.hasV4Columns() && this.defaultScope.codebase_id !== CROSS_CODEBASE_SENTINEL) {
+      return {
+        ...result,
+        ranked_nodes: result.ranked_nodes.filter((entry) => this.nodeMatchesScope(entry.node.id)),
+      };
+    }
+    return result;
   }
 
   async queryGraph(
@@ -109,7 +189,18 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
     if (!Number.isInteger(offset) || offset < 0) {
       throw new ValidationError("Offset must be a non-negative integer", "INVALID_OFFSET", { offset });
     }
-    return this.reader.queryGraph(query, limit, offset);
+    // Scope-check the origin node before traversal.
+    if (!this.nodeMatchesScope(query.origin_id)) {
+      const { NotFoundError } = await import("../../adapter.js");
+      throw new NotFoundError(query.origin_id);
+    }
+    const result = await this.reader.queryGraph(query, limit, offset);
+    // Scope-filter traversal results post-read.
+    if (this.defaultScope && this.hasV4Columns() && this.defaultScope.codebase_id !== CROSS_CODEBASE_SENTINEL) {
+      const filtered = result.nodes.filter((entry) => this.nodeMatchesScope(entry.node.id));
+      return { nodes: filtered, total_count: filtered.length };
+    }
+    return result;
   }
 
   // -------------------------------------------------------------------------
@@ -127,7 +218,9 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
     if (!Number.isInteger(offset) || offset < 0) {
       throw new ValidationError("Offset must be a non-negative integer", "INVALID_OFFSET", { offset });
     }
-    return this.reader.queryNodes(filter, limit, offset);
+    // Push scope predicate into SQL so total_count reflects in-scope rows (S4).
+    const scope = this.effectiveScopeForRead();
+    return this.reader.queryNodes(filter, limit, offset, scope ?? undefined);
   }
 
   async indexFiles(paths: string[]): Promise<void> {
@@ -162,7 +255,8 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
     filter: NodeFilter,
     group_by: "status" | "type" | "domain" | "severity"
   ): Promise<Array<{ key: string; count: number }>> {
-    return this.reader.countNodes(filter, group_by);
+    const scope = this.effectiveScopeForRead();
+    return this.reader.countNodes(filter, group_by, scope ?? undefined);
   }
 
   async getDomainState(
@@ -172,14 +266,16 @@ export class LocalAdapter extends LocalWriterAdapter implements StorageAdapter {
     decisions: Array<{ id: string; description: string | null; status: string | null }>;
     questions: Array<{ id: string; description: string | null; status: string | null }>;
   }>> {
-    return this.reader.getDomainState(domains);
+    const scope = this.effectiveScopeForRead();
+    return this.reader.getDomainState(domains, scope ?? undefined);
   }
 
   async getConvergenceData(cycle: number): Promise<{
     findings_by_severity: Record<string, number>;
     cycle_summary_content: string | null;
   }> {
-    return this.reader.getConvergenceData(cycle);
+    const scope = this.effectiveScopeForRead();
+    return this.reader.getConvergenceData(cycle, scope ?? undefined);
   }
 
   async getToolUsage(filter?: ToolUsageFilter): Promise<ToolUsageRow[]> {

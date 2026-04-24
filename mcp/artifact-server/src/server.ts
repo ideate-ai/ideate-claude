@@ -25,10 +25,12 @@ import { RemoteAdapter } from "./adapters/remote/index.js";
 import { ValidatingAdapter } from "./validating.js";
 import { signalIndexReady } from "./tools/index.js";
 import { artifactWatcher, BatchChangeEvent } from "./watcher.js";
-import { createIdeateDir, CONFIG_SCHEMA_VERSION, IDEATE_SUBDIRS, IdeateConfigJson, resolveArtifactDir, readIdeateConfig, readRawConfig } from "./config.js";
+import { createIdeateProject, DEFAULT_ARTIFACT_DIRECTORY, IDEATE_SUBDIRS, IdeateConfigJson, resolveArtifactDir, findIdeateJson, readRawConfig } from "./config.js";
 import { createSchema, checkSchemaVersion } from "./schema.js";
 import { rebuildIndex, RebuildStats } from "./indexer.js";
 import { runPendingMigrations } from "./migrations.js";
+import { runV4Migration } from "./adapters/local/migrations/v4-add-codebase-id.js";
+import { resolveDefaultScope } from "./default-scope-resolver.js";
 import * as dbSchema from "./db.js";
 import { log } from "./logger.js";
 
@@ -94,13 +96,17 @@ export function selectAdapter(
 
   if (backend === "local" || backend === undefined) {
     if (!db || !drizzleDb) throw new Error("Local backend requires db and drizzleDb");
-    return new LocalAdapter({ db, drizzleDb, ideateDir: dir });
+    // Resolve default scope (org_id, codebase_id) from config or cwd heuristic.
+    // This runs once at startup and the result is cached on the adapter instance.
+    const default_scope = resolveDefaultScope(config);
+    log.info("server", `resolved default scope: org_id=${default_scope.org_id} codebase_id=${default_scope.codebase_id}`);
+    return new LocalAdapter({ db, drizzleDb, ideateDir: dir, default_scope });
   }
 
   if (backend === "remote") {
     const remoteConfig = config.remote;
     if (!remoteConfig || !remoteConfig.endpoint) {
-      throw new Error("Remote backend requires 'remote.endpoint' in config.json");
+      throw new Error("Remote backend requires 'remote.endpoint' in .ideate.json");
     }
     return new RemoteAdapter(remoteConfig);
   }
@@ -172,6 +178,11 @@ export function openDatabase(dir: string): InstanceType<typeof Database> {
   }
   try {
     createSchema(newDb);
+    // Run the v4 local adapter migration (adds org_id + codebase_id scoping columns).
+    // Idempotent: no-op if columns already exist (fresh DB born v4 via createSchema).
+    // This covers the upgrade path: existing v3 DBs get the columns + backfill on
+    // first server startup after this version is deployed.
+    runV4Migration(newDb);
   } catch (err) {
     newDb.close();
     throw err;
@@ -186,8 +197,17 @@ export function openDatabase(dir: string): InstanceType<typeof Database> {
 const watchedDirs = new Set<string>();
 
 export function initServer(dir: string, state: ServerState): void {
+  // P-120: Warn when the resolved artifact_directory path does not exist on disk.
+  // The server continues with an empty index — this is informational only.
+  if (!fs.existsSync(dir)) {
+    log.warn("server", `artifact_directory '${dir}' does not exist — starting with empty index`);
+    // Create the directory so subsequent startup steps (openDatabase, rebuildIndex)
+    // proceed normally without crashing.
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
   // Run pending migrations before opening the database.
-  // Migrations may transform YAML files, config.json, or directory structure.
+  // Migrations may transform YAML files, .ideate.json, or directory structure.
   // They run against the artifact directory (dir), not the SQLite index.
   const migrationResult = runPendingMigrations(dir);
   if (migrationResult.migrationsRun > 0) {
@@ -311,19 +331,23 @@ export function handleBootstrapDormant(
   cwd?: string
 ): string {
   const projectRoot = cwd ?? process.cwd();
-  const existingConfig = readIdeateConfig(projectRoot);
+  const existingResult = findIdeateJson(projectRoot);
 
-  if (existingConfig) {
-    const warning = tryInitServer(existingConfig.artifactDir, state);
+  if (existingResult) {
+    const warning = tryInitServer(existingResult.artifactDir, state);
     return buildBootstrapResponse(warning ?? undefined);
   }
 
-  // No existing .ideate/ — create fresh
+  // No existing .ideate.json — create fresh
   const projectName = args.project_name as string | undefined;
-  const config: IdeateConfigJson = { schema_version: CONFIG_SCHEMA_VERSION };
+  const artifactDirectoryName =
+    typeof args.artifact_directory_name === "string" && args.artifact_directory_name.trim() !== ""
+      ? args.artifact_directory_name.trim()
+      : DEFAULT_ARTIFACT_DIRECTORY;
+  const config: Partial<IdeateConfigJson> = {};
   if (projectName) config.project_name = projectName;
 
-  const ideateDir = createIdeateDir(projectRoot, config);
+  const ideateDir = createIdeateProject(projectRoot, config, artifactDirectoryName);
   const warning = tryInitServer(ideateDir, state);
   return buildBootstrapResponse(warning ?? undefined);
 }

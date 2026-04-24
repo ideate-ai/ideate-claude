@@ -8,7 +8,7 @@ A Claude Code plugin providing a structured SDLC workflow. Ideate takes a rough 
 agents/          # Specialized agents (code-reviewer, architect, domain-curator, etc.)
 skills/          # User-invocable skills (plan, execute, review, refine, autopilot)
 scripts/         # Utility scripts (validate-specs.sh, migrate-to-optimized.sh)
-.ideate/          # Ideate's own artifact directory — uses the same structure it creates
+.ideate/          # Artifact workspace (per-project or monorepo-integrated). The plugin participates in a monorepo-level artifact workspace when developed in that environment; the authoritative .ideate/ lives at the monorepo root. Standalone plugin use works with a local .ideate/ in the user's project root.
 ```
 
 ## Skills
@@ -27,26 +27,38 @@ scripts/         # Utility scripts (validate-specs.sh, migrate-to-optimized.sh)
 
 ## Artifact structure
 
-Skills produce YAML artifacts in `.ideate/`, accessed exclusively through MCP tools:
+Skills produce YAML artifacts accessed exclusively through MCP tools. The layout is anchored by a pointer file at the project root:
 
 ```
-.ideate/
-├── config.json              # Schema version, agent budgets, PPR config
-├── projects/                # PR-{NNN}.yaml per project
-├── phases/                  # PH-{NNN}.yaml per phase (scoped within a project)
-├── plan/                    # architecture.yaml, overview.yaml, execution-strategy.yaml
-├── steering/                # guiding-principles.yaml, constraints.yaml, research/
-├── work-items/              # WI-{NNN}.yaml per work item
-├── principles/              # GP-{NN}.yaml per guiding principle
-├── constraints/             # C-{NN}.yaml per constraint
-├── policies/                # P-{NN}.yaml per domain policy
-├── decisions/               # D-{NN}.yaml per domain decision
-├── questions/               # Q-{NN}.yaml per domain question
-├── interviews/              # refine-{NNN}/ per cycle
-├── cycles/                  # {NNN}/ per cycle (findings, journal entries, summaries)
-├── modules/                 # Module specs (if used)
-└── research/                # RF-*.yaml research findings
+<project-root>/
+├── .ideate.json             # Config pointer (schema_version 9, artifact_directory)
+└── .ideate/                 # Artifact tree (default; overridable via artifact_directory)
+    ├── projects/            # PR-{NNN}.yaml per project
+    ├── phases/              # PH-{NNN}.yaml per phase (scoped within a project)
+    ├── plan/                # architecture.yaml, overview.yaml, execution-strategy.yaml
+    ├── steering/            # guiding-principles.yaml, constraints.yaml, research/
+    ├── work-items/          # WI-{NNN}.yaml per work item
+    ├── principles/          # GP-{NN}.yaml per guiding principle
+    ├── constraints/         # C-{NN}.yaml per constraint
+    ├── policies/            # P-{NN}.yaml per domain policy
+    ├── decisions/           # D-{NN}.yaml per domain decision
+    ├── questions/           # Q-{NN}.yaml per domain question
+    ├── interviews/          # refine-{NNN}/ per cycle
+    ├── cycles/              # {NNN}/ per cycle (findings, journal entries, summaries)
+    ├── modules/             # Module specs (if used)
+    └── research/            # RF-*.yaml research findings
 ```
+
+`.ideate.json` is a JSON file at the project root. Minimal example:
+
+```json
+{
+  "schema_version": 9,
+  "artifact_directory": ".ideate"
+}
+```
+
+The `artifact_directory` field is a path relative to `.ideate.json`'s containing directory (or an absolute path that passes through unchanged). When absent, the default is `".ideate"`. All other configuration fields (`agent_budgets`, `model_overrides`, `spawn_mode`, etc.) are co-located in `.ideate.json` rather than inside the artifact tree.
 
 All artifacts are YAML files with one file per artifact. The domain layer (policies, decisions, questions) is maintained by the domain-curator agent after each review cycle. `cycles/` contains immutable cycle-scoped artifacts (findings, journal entries, summaries).
 

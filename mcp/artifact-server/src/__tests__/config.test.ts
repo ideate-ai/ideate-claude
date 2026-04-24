@@ -4,10 +4,12 @@ import os from "os";
 import path from "path";
 import {
   readIdeateConfig,
+  readIdeateJson,
+  findIdeateJson,
   readRawConfig,
   findIdeateConfig,
   resolveArtifactDir,
-  createIdeateDir,
+  createIdeateProject,
   writeConfig,
   getConfigWithDefaults,
   CONFIG_SCHEMA_VERSION,
@@ -15,6 +17,7 @@ import {
   DEFAULT_PPR_CONFIG,
   DEFAULT_CIRCUIT_BREAKER_THRESHOLD,
   DEFAULT_APPETITE,
+  DEFAULT_ARTIFACT_DIRECTORY,
   IDEATE_SUBDIRS,
 } from "../config.js";
 import type { IdeateConfigJson } from "../config.js";
@@ -47,77 +50,46 @@ it("CONFIG_SCHEMA_VERSION equals CURRENT_SCHEMA_VERSION", () => {
 });
 
 // -----------------------------------------------------------------------
-// readIdeateConfig
+// readIdeateConfig (deprecated stub — always returns null)
 // -----------------------------------------------------------------------
 
 describe("readIdeateConfig", () => {
-  it("returns config when .ideate/config.json exists with valid schema_version", () => {
-    write(
-      ".ideate/config.json",
+  it("returns null regardless of directory contents (legacy stub)", () => {
+    // Write a legacy artifact directory config file (historical location, no longer read).
+    const legacyDir = path.join(tmpDir, ".ideate");
+    fs.mkdirSync(legacyDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(legacyDir, "config.json"),
       JSON.stringify({ schema_version: 2, project_name: "test" })
     );
-    const result = readIdeateConfig(tmpDir);
-    expect(result).toEqual({ artifactDir: path.join(tmpDir, ".ideate") });
+    // readIdeateConfig is a no-op stub; the legacy artifact-directory config path is
+    // no longer supported. callers must use readIdeateJson() instead.
+    expect(readIdeateConfig(tmpDir)).toBeNull();
   });
 
   it("returns null when .ideate directory does not exist", () => {
     expect(readIdeateConfig(tmpDir)).toBeNull();
   });
-
-  it("returns null when config.json is missing from .ideate/", () => {
-    fs.mkdirSync(path.join(tmpDir, ".ideate"), { recursive: true });
-    expect(readIdeateConfig(tmpDir)).toBeNull();
-  });
-
-  it("returns null when schema_version is missing", () => {
-    write(
-      ".ideate/config.json",
-      JSON.stringify({ project_name: "test" })
-    );
-    expect(readIdeateConfig(tmpDir)).toBeNull();
-  });
-
-  it("returns null when schema_version is not a number", () => {
-    write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: "2" })
-    );
-    expect(readIdeateConfig(tmpDir)).toBeNull();
-  });
-
-  it("returns null when JSON is malformed", () => {
-    write(".ideate/config.json", "{ not valid json }");
-    expect(readIdeateConfig(tmpDir)).toBeNull();
-  });
-
-  it("returns config when only schema_version is present (project_name optional)", () => {
-    write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
-    );
-    const result = readIdeateConfig(tmpDir);
-    expect(result).toEqual({ artifactDir: path.join(tmpDir, ".ideate") });
-  });
 });
 
 // -----------------------------------------------------------------------
-// findIdeateConfig
+// findIdeateConfig (deprecated wrapper around findIdeateJson)
 // -----------------------------------------------------------------------
 
 describe("findIdeateConfig", () => {
-  it("finds .ideate/config.json in the start directory", () => {
+  it("finds .ideate.json in the start directory and returns artifactDir", () => {
     write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: ".ideate" })
     );
     const result = findIdeateConfig(tmpDir);
     expect(result).toBe(path.join(tmpDir, ".ideate"));
   });
 
-  it("finds .ideate/config.json in a parent directory", () => {
+  it("finds .ideate.json in a parent directory", () => {
     write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION })
     );
     const subDir = path.join(tmpDir, "src", "components");
     fs.mkdirSync(subDir, { recursive: true });
@@ -125,25 +97,147 @@ describe("findIdeateConfig", () => {
     expect(result).toBe(path.join(tmpDir, ".ideate"));
   });
 
-  it("returns path to .ideate/ directory (not config.json)", () => {
-    write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
-    );
-    const result = findIdeateConfig(tmpDir);
-    expect(result).toBe(path.join(tmpDir, ".ideate"));
-    expect(result!.endsWith(".ideate")).toBe(true);
-  });
-
-  it("returns null when no .ideate/config.json exists in any ancestor", () => {
+  it("returns null when no .ideate.json exists in any ancestor", () => {
     const result = findIdeateConfig(tmpDir);
     expect(result).toBeNull();
   });
 
-  it("ignores .ideate.json (legacy format)", () => {
-    // Old-style .ideate.json at root should NOT be found
-    write(".ideate.json", JSON.stringify({ artifactDir: "specs" }));
+  it("returns null when only the legacy artifact-directory config file exists (no .ideate.json)", () => {
+    // @deprecated Legacy path: the artifact-directory config file is no longer used.
+    // findIdeateConfig delegates to findIdeateJson which only looks for .ideate.json.
+    const legacyDir = path.join(tmpDir, ".ideate");
+    fs.mkdirSync(legacyDir, { recursive: true });
+    fs.writeFileSync(path.join(legacyDir, "config.json"), JSON.stringify({ schema_version: 2 }));
     const result = findIdeateConfig(tmpDir);
+    expect(result).toBeNull();
+  });
+});
+
+// -----------------------------------------------------------------------
+// readIdeateJson
+// -----------------------------------------------------------------------
+
+describe("readIdeateJson", () => {
+  it("parses a valid .ideate.json with artifact_directory set", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: "my-artifacts" }),
+      "utf8"
+    );
+    const result = readIdeateJson(configPath);
+    expect(result.configPath).toBe(configPath);
+    expect(result.artifactDir).toBe(path.join(tmpDir, "my-artifacts"));
+    expect(result.config.schema_version).toBe(CONFIG_SCHEMA_VERSION);
+  });
+
+  it("defaults artifact_directory to .ideate when field is absent", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION }),
+      "utf8"
+    );
+    const result = readIdeateJson(configPath);
+    expect(result.artifactDir).toBe(path.join(tmpDir, ".ideate"));
+  });
+
+  it("resolves a relative artifact_directory relative to the config file directory", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: "./custom/artifacts" }),
+      "utf8"
+    );
+    const result = readIdeateJson(configPath);
+    expect(result.artifactDir).toBe(path.join(tmpDir, "custom", "artifacts"));
+  });
+
+  it("passes through an absolute artifact_directory unchanged", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    const absoluteArtifactDir = "/absolute/path/to/artifacts";
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: absoluteArtifactDir }),
+      "utf8"
+    );
+    const result = readIdeateJson(configPath);
+    expect(result.artifactDir).toBe(absoluteArtifactDir);
+  });
+
+  it("throws when JSON is malformed", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(configPath, "{ not valid json }", "utf8");
+    expect(() => readIdeateJson(configPath)).toThrow();
+  });
+
+  it("throws when schema_version does not equal 9", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: 5 }),
+      "utf8"
+    );
+    expect(() => readIdeateJson(configPath)).toThrow(/schema_version mismatch/);
+  });
+
+  it("throws when schema_version is absent (undefined !== 9)", () => {
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ project_name: "test" }),
+      "utf8"
+    );
+    expect(() => readIdeateJson(configPath)).toThrow(/schema_version mismatch/);
+  });
+});
+
+// -----------------------------------------------------------------------
+// findIdeateJson
+// -----------------------------------------------------------------------
+
+describe("findIdeateJson", () => {
+  it("finds .ideate.json in cwd and returns configPath and artifactDir", () => {
+    write(
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: "specs" })
+    );
+    const result = findIdeateJson(tmpDir);
+    expect(result).not.toBeNull();
+    expect(result!.configPath).toBe(path.join(tmpDir, ".ideate.json"));
+    expect(result!.artifactDir).toBe(path.join(tmpDir, "specs"));
+  });
+
+  it("finds .ideate.json two levels above cwd (ancestor walk)", () => {
+    write(
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION })
+    );
+    const deepDir = path.join(tmpDir, "a", "b");
+    fs.mkdirSync(deepDir, { recursive: true });
+    const result = findIdeateJson(deepDir);
+    expect(result).not.toBeNull();
+    expect(result!.configPath).toBe(path.join(tmpDir, ".ideate.json"));
+    expect(result!.artifactDir).toBe(path.join(tmpDir, ".ideate"));
+  });
+
+  it("returns null when no .ideate.json exists in any ancestor", () => {
+    const result = findIdeateJson(tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it("returns null when only the legacy artifact-directory config file exists (no .ideate.json)", () => {
+    // @deprecated Legacy path: the artifact-directory config file is no longer used.
+    const legacyDir = path.join(tmpDir, ".ideate");
+    fs.mkdirSync(legacyDir, { recursive: true });
+    fs.writeFileSync(path.join(legacyDir, "config.json"), JSON.stringify({ schema_version: 2 }));
+    const result = findIdeateJson(tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it("returns null when .ideate.json exists but is malformed (does not walk further up)", () => {
+    write(".ideate.json", "{ not valid json");
+    const result = findIdeateJson(tmpDir);
     expect(result).toBeNull();
   });
 });
@@ -161,19 +255,19 @@ describe("resolveArtifactDir", () => {
     expect(result).toBe("/absolute/path/to/specs");
   });
 
-  it("falls back to .ideate/config.json when artifact_dir is absent", () => {
+  it("falls back to .ideate.json when artifact_dir is absent", () => {
     write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION })
     );
     const result = resolveArtifactDir({}, tmpDir);
     expect(result).toBe(path.join(tmpDir, ".ideate"));
   });
 
-  it("prefers explicit artifact_dir over .ideate/config.json", () => {
+  it("prefers explicit artifact_dir over .ideate.json", () => {
     write(
-      ".ideate/config.json",
-      JSON.stringify({ schema_version: 2 })
+      ".ideate.json",
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION })
     );
     const result = resolveArtifactDir(
       { artifact_dir: "/explicit/path" },
@@ -182,11 +276,11 @@ describe("resolveArtifactDir", () => {
     expect(result).toBe("/explicit/path");
   });
 
-  it("throws when no artifact_dir and no .ideate/config.json", () => {
-    expect(() => resolveArtifactDir({}, tmpDir)).toThrow("artifact_dir");
+  it("throws when no artifact_dir and no .ideate.json — message mentions .ideate.json", () => {
+    expect(() => resolveArtifactDir({}, tmpDir)).toThrow(".ideate.json");
   });
 
-  it("throws when artifact_dir is an empty string and no .ideate/config.json", () => {
+  it("throws when artifact_dir is an empty string and no .ideate.json", () => {
     expect(() => resolveArtifactDir({ artifact_dir: "  " }, tmpDir)).toThrow(
       "artifact_dir"
     );
@@ -194,54 +288,96 @@ describe("resolveArtifactDir", () => {
 });
 
 // -----------------------------------------------------------------------
-// createIdeateDir
+// createIdeateProject (WI-980: new project layout)
 // -----------------------------------------------------------------------
 
-describe("createIdeateDir", () => {
-  it("creates .ideate/ directory with all expected subdirectories", () => {
-    const ideateDir = createIdeateDir(tmpDir);
-    expect(ideateDir).toBe(path.join(tmpDir, ".ideate"));
-    expect(fs.existsSync(ideateDir)).toBe(true);
+describe("createIdeateProject", () => {
+  it("creates <projectRoot>/.ideate.json with schema_version and artifact_directory", () => {
+    createIdeateProject(tmpDir);
+    const ideateJsonPath = path.join(tmpDir, ".ideate.json");
+    expect(fs.existsSync(ideateJsonPath)).toBe(true);
+    const parsed = JSON.parse(fs.readFileSync(ideateJsonPath, "utf8"));
+    expect(parsed.schema_version).toBe(CONFIG_SCHEMA_VERSION);
+    expect(parsed.artifact_directory).toBe(DEFAULT_ARTIFACT_DIRECTORY);
+  });
 
+  it("creates <projectRoot>/<artifact_directory>/ directory", () => {
+    createIdeateProject(tmpDir);
+    const artifactDir = path.join(tmpDir, DEFAULT_ARTIFACT_DIRECTORY);
+    expect(fs.existsSync(artifactDir)).toBe(true);
+    expect(fs.statSync(artifactDir).isDirectory()).toBe(true);
+  });
+
+  it("creates all IDEATE_SUBDIRS inside the artifact directory", () => {
+    const artifactDir = createIdeateProject(tmpDir);
     for (const sub of IDEATE_SUBDIRS) {
-      expect(fs.existsSync(path.join(ideateDir, sub))).toBe(true);
+      expect(fs.existsSync(path.join(artifactDir, sub))).toBe(true);
     }
   });
 
-  it("writes config.json with default config", () => {
-    const ideateDir = createIdeateDir(tmpDir);
-    const configPath = path.join(ideateDir, "config.json");
-    expect(fs.existsSync(configPath)).toBe(true);
-    const parsed = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(parsed).toEqual({ schema_version: CONFIG_SCHEMA_VERSION });
+  it("does NOT create config.json inside the artifact directory", () => {
+    const artifactDir = createIdeateProject(tmpDir);
+    const legacyConfigPath = path.join(artifactDir, "config.json");
+    expect(fs.existsSync(legacyConfigPath)).toBe(false);
   });
 
-  it("writes config.json with custom config", () => {
-    const config: IdeateConfigJson = {
-      schema_version: 2,
-      project_name: "my-project",
-    };
-    const ideateDir = createIdeateDir(tmpDir, config);
-    const parsed = JSON.parse(
-      fs.readFileSync(path.join(ideateDir, "config.json"), "utf8")
-    );
-    expect(parsed).toEqual({
-      schema_version: 2,
-      project_name: "my-project",
-    });
+  it("returns the absolute path to the artifact directory", () => {
+    const result = createIdeateProject(tmpDir);
+    expect(result).toBe(path.join(tmpDir, DEFAULT_ARTIFACT_DIRECTORY));
   });
 
-  it("is idempotent — can be called on existing .ideate/", () => {
-    createIdeateDir(tmpDir);
+  it("includes project_name in .ideate.json when provided", () => {
+    createIdeateProject(tmpDir, { project_name: "my-project" });
+    const parsed = JSON.parse(fs.readFileSync(path.join(tmpDir, ".ideate.json"), "utf8"));
+    expect(parsed.project_name).toBe("my-project");
+    expect(parsed.schema_version).toBe(CONFIG_SCHEMA_VERSION);
+  });
+
+  it("is idempotent — second call does not overwrite .ideate.json", () => {
+    createIdeateProject(tmpDir);
+    // Manually modify .ideate.json to detect overwrite
+    const ideateJsonPath = path.join(tmpDir, ".ideate.json");
+    const originalContent = fs.readFileSync(ideateJsonPath, "utf8");
+    const modified = JSON.parse(originalContent);
+    modified.user_modified = true;
+    fs.writeFileSync(ideateJsonPath, JSON.stringify(modified, null, 2), "utf8");
+
+    // Second call should not throw and should NOT overwrite the modified file
+    createIdeateProject(tmpDir);
+    const afterContent = JSON.parse(fs.readFileSync(ideateJsonPath, "utf8"));
+    expect(afterContent.user_modified).toBe(true);
+  });
+
+  it("is idempotent — second call does not error and all subdirs still exist", () => {
+    const artifactDir = createIdeateProject(tmpDir);
     // Should not throw when called again
-    const ideateDir = createIdeateDir(tmpDir);
-    expect(fs.existsSync(path.join(ideateDir, "config.json"))).toBe(true);
+    expect(() => createIdeateProject(tmpDir)).not.toThrow();
+    for (const sub of IDEATE_SUBDIRS) {
+      expect(fs.existsSync(path.join(artifactDir, sub))).toBe(true);
+    }
   });
 
-  it("created directory is discoverable by findIdeateConfig", () => {
-    createIdeateDir(tmpDir);
+  it("custom artifact_directory_name creates artifact tree at that path", () => {
+    const customName = ".ideate-experiment";
+    const artifactDir = createIdeateProject(tmpDir, {}, customName);
+    expect(artifactDir).toBe(path.join(tmpDir, customName));
+    expect(fs.existsSync(artifactDir)).toBe(true);
+    for (const sub of IDEATE_SUBDIRS) {
+      expect(fs.existsSync(path.join(artifactDir, sub))).toBe(true);
+    }
+  });
+
+  it("custom artifact_directory_name is recorded in .ideate.json", () => {
+    const customName = "graph";
+    createIdeateProject(tmpDir, {}, customName);
+    const parsed = JSON.parse(fs.readFileSync(path.join(tmpDir, ".ideate.json"), "utf8"));
+    expect(parsed.artifact_directory).toBe(customName);
+  });
+
+  it(".ideate.json created by createIdeateProject is discoverable by findIdeateConfig", () => {
+    createIdeateProject(tmpDir);
     const result = findIdeateConfig(tmpDir);
-    expect(result).toBe(path.join(tmpDir, ".ideate"));
+    expect(result).toBe(path.join(tmpDir, DEFAULT_ARTIFACT_DIRECTORY));
   });
 });
 
@@ -250,17 +386,18 @@ describe("createIdeateDir", () => {
 // -----------------------------------------------------------------------
 
 describe("writeConfig", () => {
-  it("writes config.json to the specified directory", () => {
+  it("writes .ideate.json to the project root (parent of artifact directory)", () => {
     const ideateDir = path.join(tmpDir, ".ideate");
     fs.mkdirSync(ideateDir, { recursive: true });
     writeConfig(ideateDir, { schema_version: 2 });
-    const configPath = path.join(ideateDir, "config.json");
+    // writeConfig writes to <parent>/.ideate.json, not inside the artifact dir
+    const configPath = path.join(tmpDir, ".ideate.json");
     expect(fs.existsSync(configPath)).toBe(true);
     const parsed = JSON.parse(fs.readFileSync(configPath, "utf8"));
     expect(parsed).toEqual({ schema_version: 2 });
   });
 
-  it("overwrites existing config.json", () => {
+  it("overwrites existing .ideate.json at project root", () => {
     const ideateDir = path.join(tmpDir, ".ideate");
     fs.mkdirSync(ideateDir, { recursive: true });
     writeConfig(ideateDir, { schema_version: 1 });
@@ -269,12 +406,33 @@ describe("writeConfig", () => {
       project_name: "updated",
     });
     const parsed = JSON.parse(
-      fs.readFileSync(path.join(ideateDir, "config.json"), "utf8")
+      fs.readFileSync(path.join(tmpDir, ".ideate.json"), "utf8")
     );
     expect(parsed).toEqual({
       schema_version: 2,
       project_name: "updated",
     });
+  });
+
+  it("writes to .ideate.json located via findIdeateJson for nested artifact_directory (not just path.dirname)", () => {
+    // Set up: .ideate.json at tmpDir with artifact_directory pointing into a nested path.
+    const configPath = path.join(tmpDir, ".ideate.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ schema_version: CONFIG_SCHEMA_VERSION, artifact_directory: "./custom/nested/artifacts" }),
+      "utf8"
+    );
+    const nestedIdeateDir = path.join(tmpDir, "custom", "nested", "artifacts");
+    fs.mkdirSync(nestedIdeateDir, { recursive: true });
+
+    // writeConfig with the nested artifact directory must locate the .ideate.json at tmpDir, not at tmpDir/custom/nested/.
+    writeConfig(nestedIdeateDir, { schema_version: CONFIG_SCHEMA_VERSION, project_name: "nested-proj" });
+
+    const parsed = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(parsed.project_name).toBe("nested-proj");
+    // Confirm no config was misplaced to the nested intermediate level.
+    expect(fs.existsSync(path.join(tmpDir, "custom", "nested", ".ideate.json"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, "custom", ".ideate.json"))).toBe(false);
   });
 });
 
@@ -429,6 +587,51 @@ describe("getConfigWithDefaults", () => {
 });
 
 // -----------------------------------------------------------------------
+// IdeateConfigJson — artifact_directory field (WI-978)
+// -----------------------------------------------------------------------
+
+describe("IdeateConfigJson artifact_directory field", () => {
+  it("parses inline JSON with artifact_directory set to ./.ideate", () => {
+    const raw: IdeateConfigJson = JSON.parse(
+      JSON.stringify({ schema_version: 9, artifact_directory: "./.ideate" })
+    );
+    expect(raw.artifact_directory).toBe("./.ideate");
+    expect(raw.schema_version).toBe(9);
+  });
+
+  it("parses inline JSON without artifact_directory and defaults to .ideate via getConfigWithDefaults", () => {
+    const ideateDir = path.join(tmpDir, ".ideate");
+    fs.mkdirSync(ideateDir, { recursive: true });
+    // Write a config without artifact_directory to the project-root .ideate.json
+    const raw: IdeateConfigJson = { schema_version: 9 };
+    fs.writeFileSync(
+      path.join(tmpDir, ".ideate.json"),
+      JSON.stringify(raw, null, 2),
+      "utf8"
+    );
+
+    const result = getConfigWithDefaults(ideateDir);
+    expect(result.artifact_directory).toBe(DEFAULT_ARTIFACT_DIRECTORY);
+    expect(result.artifact_directory).toBe(".ideate");
+  });
+
+  it("parses inline JSON with artifact_directory set to a custom path and preserves it", () => {
+    const ideateDir = path.join(tmpDir, ".ideate");
+    fs.mkdirSync(ideateDir, { recursive: true });
+    const raw: IdeateConfigJson = { schema_version: 9, artifact_directory: "./custom-artifacts" };
+    // Write to the project-root .ideate.json (parent of artifact dir)
+    fs.writeFileSync(
+      path.join(tmpDir, ".ideate.json"),
+      JSON.stringify(raw, null, 2),
+      "utf8"
+    );
+
+    const result = getConfigWithDefaults(ideateDir);
+    expect(result.artifact_directory).toBe("./custom-artifacts");
+  });
+});
+
+// -----------------------------------------------------------------------
 // handleUpdateConfig
 // -----------------------------------------------------------------------
 
@@ -523,7 +726,9 @@ describe("handleUpdateConfig", () => {
   });
 
   it("returns error when agent_budget value is 0 — config is not written", async () => {
-    const before = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    // Config is now at <parent>/.ideate.json, not inside the artifact directory
+    const configFilePath = path.join(path.dirname(ideateDir), ".ideate.json");
+    const before = fs.readFileSync(configFilePath, "utf8");
     const result = JSON.parse(
       await handleUpdateConfig(ctx, { patch: { agent_budgets: { "code-reviewer": 0 } } })
     );
@@ -532,12 +737,13 @@ describe("handleUpdateConfig", () => {
     expect(result.errors.some((e: string) => e.includes("code-reviewer"))).toBe(true);
 
     // Config must not have changed
-    const after = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    const after = fs.readFileSync(configFilePath, "utf8");
     expect(after).toBe(before);
   });
 
   it("returns error when model_overrides value is empty string — config is not written", async () => {
-    const before = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    const configFilePath = path.join(path.dirname(ideateDir), ".ideate.json");
+    const before = fs.readFileSync(configFilePath, "utf8");
     const result = JSON.parse(
       await handleUpdateConfig(ctx, {
         patch: { model_overrides: { "domain-curator": "" } },
@@ -547,12 +753,13 @@ describe("handleUpdateConfig", () => {
     expect(Array.isArray(result.errors)).toBe(true);
     expect(result.errors.some((e: string) => e.includes("domain-curator"))).toBe(true);
 
-    const after = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    const after = fs.readFileSync(configFilePath, "utf8");
     expect(after).toBe(before);
   });
 
   it("returns error when ppr.alpha is 1.5 — config is not written", async () => {
-    const before = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    const configFilePath = path.join(path.dirname(ideateDir), ".ideate.json");
+    const before = fs.readFileSync(configFilePath, "utf8");
     const result = JSON.parse(
       await handleUpdateConfig(ctx, { patch: { ppr: { alpha: 1.5 } } })
     );
@@ -560,7 +767,7 @@ describe("handleUpdateConfig", () => {
     expect(Array.isArray(result.errors)).toBe(true);
     expect(result.errors.some((e: string) => e.includes("ppr.alpha"))).toBe(true);
 
-    const after = fs.readFileSync(path.join(ideateDir, "config.json"), "utf8");
+    const after = fs.readFileSync(configFilePath, "utf8");
     expect(after).toBe(before);
   });
 
@@ -577,9 +784,11 @@ describe("handleUpdateConfig", () => {
     expect(result.updated_keys).not.toContain("agent_budgets");
   });
 
-  it("written config.json is sparse — only patched keys are present", async () => {
-    // Start from a minimal config with no optional keys
-    const sparseDir = path.join(tmpDir, "sparse-test-ideate");
+  it("written .ideate.json is sparse — only patched keys are present", async () => {
+    // Start from a minimal config with no optional keys.
+    // Use a dedicated project root so it doesn't collide with the outer beforeEach.
+    const sparseProjectRoot = path.join(tmpDir, "sparse-project");
+    const sparseDir = path.join(sparseProjectRoot, ".ideate");
     fs.mkdirSync(sparseDir, { recursive: true });
     writeConfig(sparseDir, { schema_version: 2 });
     const sparseCtx = makeCtx(sparseDir);
@@ -592,7 +801,7 @@ describe("handleUpdateConfig", () => {
     );
     expect(result.status).toBe("updated");
 
-    // Read config.json as raw JSON — ppr and model_overrides must NOT be present
+    // Read .ideate.json as raw JSON — ppr and model_overrides must NOT be present
     const raw = readRawConfig(sparseDir);
     expect(raw.agent_budgets).toEqual({ "code-reviewer": 100 });
     expect(raw.ppr).toBeUndefined();
@@ -614,8 +823,10 @@ describe("handleUpdateConfig", () => {
   });
 
   it("null-signal on last key produces absent model_overrides (sparse invariant)", async () => {
-    // Start from a config with only one model_override key
-    const sparseDir = path.join(tmpDir, "null-signal-sparse-ideate");
+    // Start from a config with only one model_override key.
+    // Use a dedicated project root so it doesn't collide with the outer beforeEach.
+    const nullSignalProjectRoot = path.join(tmpDir, "null-signal-project");
+    const sparseDir = path.join(nullSignalProjectRoot, ".ideate");
     fs.mkdirSync(sparseDir, { recursive: true });
     writeConfig(sparseDir, { schema_version: 2 });
     const sparseCtx = makeCtx(sparseDir);
@@ -631,8 +842,10 @@ describe("handleUpdateConfig", () => {
   });
 
   it("null-signal on non-existent key is a no-op", async () => {
-    // Start from a minimal config with no model_overrides
-    const sparseDir = path.join(tmpDir, "noop-null-signal-ideate");
+    // Start from a minimal config with no model_overrides.
+    // Use a dedicated project root so it doesn't collide with the outer beforeEach.
+    const noopProjectRoot = path.join(tmpDir, "noop-project");
+    const sparseDir = path.join(noopProjectRoot, ".ideate");
     fs.mkdirSync(sparseDir, { recursive: true });
     writeConfig(sparseDir, { schema_version: 2 });
     const sparseCtx = makeCtx(sparseDir);

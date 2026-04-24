@@ -1311,7 +1311,7 @@ describe("indexFiles — non-YAML file path", () => {
     const db = freshDb();
     // Pass a path to a .json file that does not exist on disk.
     // indexSingleFile catches the read error and returns a silent no-op.
-    const fakePath = path.join(tmpDir, ".ideate", "config.json");
+    const fakePath = path.join(tmpDir, ".ideate.json");
 
     const result = indexFiles(db, drizzle(db, { schema: dbSchema }), [fakePath]);
 

@@ -16,5 +16,13 @@ export default defineConfig({
     hookTimeout: 5_000,
     teardownTimeout: 5_000,
     include: ["src/__tests__/**/*.test.ts", "tests/**/*.test.ts"],
+    // Watchers (chokidar) and SQLite handles across 50+ files OOM a 32GB box
+    // when vitest fans out to CPU count. Serialize files in a single fork.
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
   },
 });

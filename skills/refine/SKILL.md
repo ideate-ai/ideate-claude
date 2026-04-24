@@ -32,10 +32,9 @@ Also hold `{config}.spawn_mode` — either `"subagent"` (default) or `"teammate"
 
 Determine the **project root** — the directory containing the ideate artifact directory. Use this precedence:
 
-1. If the user provided a path argument, resolve it. If it points to a directory containing an ideate configuration, use it as the project root. If it points to a subdirectory, walk up to find the configuration in an ancestor.
-2. Check the current working directory and walk up to find the ideate configuration.
-3. Check for a project-level ideate pointer in the current working directory — if found, use its `artifactDir` value (resolved relative to that file's location) to locate the project root.
-4. Otherwise ask: "Where is the project root? (The directory containing the ideate artifact directory)"
+1. If the user provided a path argument, resolve it. If it points to a directory containing an ideate configuration, use it as the project root. If it points to a subdirectory, walk up to find `.ideate.json` in an ancestor.
+2. Check the current working directory and walk up the directory tree to find `.ideate.json` at the project root. The MCP server reads its `artifact_directory` field (resolved relative to that file's location, default `.ideate`) to locate the artifact tree.
+3. Otherwise ask: "Where is the project root? (The directory containing the ideate artifact directory)"
 
 Validate by calling `ideate_get_workspace_status` with the resolved path. If the MCP server cannot find artifacts, stop and report the error. Do not proceed without a valid artifact directory.
 

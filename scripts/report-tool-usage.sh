@@ -167,13 +167,35 @@ const { ValidatingAdapter } = await import(distUrl + 'validating.js');
 const { handleGetToolUsage } = await import(distUrl + 'tools/tool-usage.js');
 
 // ---------------------------------------------------------------------------
-// Read backend from config.json — the only .ideate/ file this script reads
+// Read backend from .ideate.json — walk up from ideateDir to find project root
 // ---------------------------------------------------------------------------
+function findIdeateJson(startDir) {
+  let dir = startDir;
+  while (true) {
+    const candidate = path.join(dir, '.ideate.json');
+    try {
+      readFileSync(candidate); // probe existence
+      return candidate;
+    } catch (_) {}
+    const parent = path.dirname(dir);
+    if (parent === dir) return null; // filesystem root reached
+    dir = parent;
+  }
+}
+
 let configJson = {};
+const ideateJsonPath = findIdeateJson(path.dirname(ideateDir));
+if (!ideateJsonPath) {
+  process.stderr.write(
+    'Error: no .ideate.json found in ' + path.dirname(ideateDir) + ' or any ancestor.\n' +
+    'Create a .ideate.json at the project root (see ideate docs).\n'
+  );
+  process.exit(2);
+}
 try {
-  configJson = JSON.parse(readFileSync(path.join(ideateDir, 'config.json'), 'utf8'));
+  configJson = JSON.parse(readFileSync(ideateJsonPath, 'utf8'));
 } catch (err) {
-  process.stderr.write('Error: could not read .ideate/config.json: ' + err.message + '\n');
+  process.stderr.write('Error: could not read ' + ideateJsonPath + ': ' + err.message + '\n');
   process.exit(2);
 }
 const backend = configJson.backend ?? 'local';
@@ -208,20 +230,20 @@ if (backend === 'local' || backend === undefined) {
   const remoteConfig = configJson.remote;
   if (!remoteConfig || !remoteConfig.endpoint) {
     process.stderr.write(
-      'Error: backend is "remote" but config.json is missing remote.endpoint.\n' +
-      'Add a "remote" block with "endpoint", "org_id", and "codebase_id" to .ideate/config.json.\n'
+      'Error: backend is "remote" but .ideate.json is missing remote.endpoint.\n' +
+      'Add a "remote" block with "endpoint", "org_id", and "codebase_id" to .ideate.json at the project root.\n'
     );
     process.exit(2);
   }
   if (!remoteConfig.org_id) {
     process.stderr.write(
-      'Error: backend is "remote" but config.json is missing remote.org_id.\n'
+      'Error: backend is "remote" but .ideate.json is missing remote.org_id.\n'
     );
     process.exit(2);
   }
   if (!remoteConfig.codebase_id) {
     process.stderr.write(
-      'Error: backend is "remote" but config.json is missing remote.codebase_id.\n'
+      'Error: backend is "remote" but .ideate.json is missing remote.codebase_id.\n'
     );
     process.exit(2);
   }
@@ -245,7 +267,7 @@ if (backend === 'local' || backend === undefined) {
   backendNote = 'Note: remote backend tool_usage endpoint is not yet available; data may be empty.';
 } else {
   process.stderr.write(
-    'Error: unknown backend "' + backend + '" in config.json.\n' +
+    'Error: unknown backend "' + backend + '" in .ideate.json.\n' +
     'Valid values are "local" (default) or "remote".\n'
   );
   process.exit(2);

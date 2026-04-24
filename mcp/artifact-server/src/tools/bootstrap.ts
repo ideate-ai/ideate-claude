@@ -1,10 +1,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { ToolContext } from "../types.js";
-import { createIdeateDir, CONFIG_SCHEMA_VERSION, IdeateConfigJson, IDEATE_SUBDIRS } from "../config.js";
+import {
+  createIdeateProject,
+  IdeateConfigJson,
+  IDEATE_SUBDIRS,
+  DEFAULT_ARTIFACT_DIRECTORY,
+} from "../config.js";
 
 // ---------------------------------------------------------------------------
-// handleBootstrapWorkspace — create .ideate/ directory structure
+// handleBootstrapWorkspace — create .ideate.json + artifact directory structure
 // ---------------------------------------------------------------------------
 
 export async function handleBootstrapWorkspace(
@@ -12,14 +17,20 @@ export async function handleBootstrapWorkspace(
   args: Record<string, unknown>
 ): Promise<string> {
   const projectName = args.project_name as string | undefined;
+  const artifactDirectoryName =
+    typeof args.artifact_directory_name === "string" && args.artifact_directory_name.trim() !== ""
+      ? args.artifact_directory_name.trim()
+      : DEFAULT_ARTIFACT_DIRECTORY;
 
-  // Derive the project root from the ideateDir (strip trailing .ideate)
+  // Derive the project root from the ideateDir (strip trailing artifact dir component).
+  // ctx.ideateDir is the artifact directory; the project root is one level up.
   const projectRoot = path.dirname(ctx.ideateDir);
 
-  // If config.json already exists, don't overwrite — just ensure subdirs exist
-  const configPath = path.join(ctx.ideateDir, "config.json");
-  if (fs.existsSync(configPath)) {
-    // Ensure all subdirectories exist (idempotent)
+  // Idempotency: if .ideate.json already exists do not overwrite it, but still
+  // ensure all subdirectories exist inside the (possibly pre-existing) artifact dir.
+  const ideateJsonPath = path.join(projectRoot, ".ideate.json");
+  if (fs.existsSync(ideateJsonPath)) {
+    // Ensure all subdirectories exist (idempotent directory creation).
     for (const sub of IDEATE_SUBDIRS) {
       fs.mkdirSync(path.join(ctx.ideateDir, sub), { recursive: true });
     }
@@ -30,14 +41,13 @@ export async function handleBootstrapWorkspace(
     );
   }
 
-  const config: IdeateConfigJson = {
-    schema_version: CONFIG_SCHEMA_VERSION,
-  };
+  // Build config for .ideate.json — only include project_name when provided.
+  const configFields: Omit<IdeateConfigJson, "schema_version" | "artifact_directory"> = {};
   if (projectName) {
-    config.project_name = projectName;
+    configFields.project_name = projectName;
   }
 
-  createIdeateDir(projectRoot, config);
+  createIdeateProject(projectRoot, configFields, artifactDirectoryName);
 
   return JSON.stringify(
     {

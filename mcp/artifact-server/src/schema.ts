@@ -6,7 +6,7 @@ import * as fs from "fs";
 // ---------------------------------------------------------------------------
 
 // SQLite user_version for the artifact index schema. CONFIG_SCHEMA_VERSION in config.ts must stay synced (asserted by config.test.ts:46).
-export const CURRENT_SCHEMA_VERSION = 8;
+export const CURRENT_SCHEMA_VERSION = 9;
 
 // ---------------------------------------------------------------------------
 // Edge type enumeration
@@ -434,7 +434,9 @@ export function createSchema(db: Database.Database): void {
         content_hash   TEXT NOT NULL,
         token_count    INTEGER,
         file_path      TEXT NOT NULL,
-        status         TEXT
+        status         TEXT,
+        org_id         TEXT NOT NULL DEFAULT 'ideate',
+        codebase_id    TEXT NOT NULL DEFAULT 'plugin-claude'
       )
     `);
 
@@ -713,10 +715,45 @@ export function createSchema(db: Database.Database): void {
     db.exec(`CREATE INDEX IF NOT EXISTS idx_domain_policies_domain ON domain_policies(domain)`);
     db.exec(`CREATE INDEX IF NOT EXISTS idx_domain_questions_domain ON domain_questions(domain)`);
 
+    // ----- Composite scope index on nodes (for v4 scoped reads) -----
+    // The idx_nodes_org_codebase index is also created by runV4Migration for
+    // upgrade-path DBs. Using IF NOT EXISTS makes both paths idempotent.
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_nodes_org_codebase
+        ON nodes(org_id, codebase_id)
+    `);
+
     db.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`);
   });
 
   transaction();
+}
+
+// ---------------------------------------------------------------------------
+// hasV4ScopingColumns — check if the local adapter v4 migration has run
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when the database has been migrated to local adapter schema v4
+ * (i.e., the meta table exists and records local_schema_version >= 4).
+ * Used to determine whether scoping columns (org_id, codebase_id) are present.
+ *
+ * Shared helper used by both writer.ts and index.ts to avoid duplication.
+ */
+export function hasV4ScopingColumns(db: Database.Database): boolean {
+  try {
+    const tableRow = db
+      .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='meta'`)
+      .get() as { name: string } | undefined;
+    if (!tableRow) return false;
+    const row = db
+      .prepare(`SELECT value FROM meta WHERE key = 'local_schema_version'`)
+      .get() as { value: string } | undefined;
+    if (!row) return false;
+    return parseInt(row.value, 10) >= 4;
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------

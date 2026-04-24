@@ -1,13 +1,13 @@
 /**
  * migrations.ts — Automatic migration infrastructure for ideate artifact directories.
  *
- * Each migration transforms YAML artifacts, config.json, or directory structure
+ * Each migration transforms YAML artifacts, .ideate.json, or directory structure
  * from one schema version to the next. Migrations are:
  * - Ordered: run in sequence from current version to target version
  * - Idempotent: running on already-migrated data is a no-op
  * - Forward-only: no rollback mechanism (git provides rollback if needed)
  *
- * The migration registry is checked on every server startup. If config.json
+ * The migration registry is checked on every server startup. If .ideate.json
  * schema_version is behind CONFIG_SCHEMA_VERSION, pending migrations run
  * automatically before the index rebuild.
  */
@@ -144,6 +144,17 @@ export const MIGRATIONS: Migration[] = [
       }
     },
   },
+  {
+    fromVersion: 8,
+    toVersion: 9,
+    description:
+      "Added artifact_directory field to IdeateConfigJson (WI-978). Type-only config schema change; " +
+      "no SQLite DDL or data transforms required. The field defaults to '.ideate' when absent.",
+    migrate: (_ideateDir: string) => {
+      // No-op — artifact_directory is an optional field with a default value.
+      // No data transforms or DDL changes are needed.
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -160,8 +171,8 @@ export interface MigrationResult {
 /**
  * Run all pending migrations for the given artifact directory.
  *
- * Reads config.json schema_version, finds migrations that need to run,
- * executes them in order, and updates schema_version after each successful
+ * Reads .ideate.json schema_version (via readRawConfig), finds migrations that need
+ * to run, executes them in order, and updates schema_version after each successful
  * migration.
  *
  * @param ideateDir - Path to the .ideate/ directory

@@ -40,7 +40,7 @@ Also hold `{config}.spawn_mode` — either `"subagent"` (default) or `"teammate"
 
 Parse the invocation for:
 
-1. **Project root** — Call `ideate_get_workspace_status()` to resolve the project root. If a positional argument is provided, pass it as a hint. If none found, ask: "Where is the project root?"
+1. **Project root** — Call `ideate_get_workspace_status()` to resolve the project root. The MCP server walks up the directory tree to find `.ideate.json` at the project root, reads its `artifact_directory` field, and validates that the artifact tree exists at that resolved path. If a positional argument is provided, pass it as a hint. If none found, ask: "Where is the project root?"
 
 2. **Review mode flags and arguments**:
    - No arguments (beyond project root): **cycle review** (default)

@@ -47,11 +47,13 @@ import type {
   BatchMutateInput,
   BatchMutateResult,
   NodeType,
+  ArtifactScope,
 } from "../../adapter.js";
 import { ValidationError, StorageAdapterError } from "../../adapter.js";
 import { CYCLE_SCOPED_TYPES } from "../../validating.js";
 import { log } from "../../logger.js";
 import { NODE_TYPE_REGISTRY } from "../../node-type-registry.js";
+import { hasV4ScopingColumns } from "../../schema.js";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -185,12 +187,22 @@ export interface LocalWriterConfig {
   db: Database.Database;
   drizzleDb: DrizzleDb;
   ideateDir: string;
+  /**
+   * Default scope (org_id, codebase_id) resolved at startup via
+   * resolveDefaultScope(). When present, write operations use this scope
+   * to populate org_id/codebase_id columns if the schema has been migrated
+   * to v4 (columns exist). When absent, writes proceed without scoping
+   * (backward compatibility for pre-v4 schemas).
+   */
+  default_scope?: ArtifactScope;
 }
 
 export class LocalWriterAdapter {
   protected db: Database.Database;
   protected drizzleDb: DrizzleDb;
   protected ideateDir: string;
+  /** Default scope resolved at startup. Null = no scoping (pre-v4 schema). */
+  protected defaultScope: ArtifactScope | null;
 
   /** Cached current cycle number from domains/index.yaml */
   private _cachedCycleNumber: number | null = null;
@@ -204,6 +216,7 @@ export class LocalWriterAdapter {
     this.db = config.db;
     this.drizzleDb = config.drizzleDb;
     this.ideateDir = config.ideateDir;
+    this.defaultScope = config.default_scope ?? null;
   }
 
   // -------------------------------------------------------------------------
@@ -214,6 +227,41 @@ export class LocalWriterAdapter {
     if (this._isShutDown) {
       throw new StorageAdapterError("adapter shut down", "ADAPTER_SHUT_DOWN");
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Scope helpers (v4 migration)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Validate that a write can proceed given the current scope configuration.
+   * Throws a descriptive error when the DB has v4 scoping columns but no
+   * default scope has been configured (no silent fallback for writes).
+   */
+  protected assertScopeForWrite(): void {
+    if (this.defaultScope !== null) return; // Scope configured — OK
+    if (hasV4ScopingColumns(this.db)) {
+      throw new StorageAdapterError(
+        "LocalAdapter write requires org_id + codebase_id scope but none is configured. " +
+        "Set default_scope when constructing LocalAdapter after running the v4 migration, " +
+        "or run resolveDefaultScope() and pass the result as default_scope.",
+        "MISSING_SCOPE"
+      );
+    }
+    // Pre-v4 schema — no scoping columns, proceed as before
+  }
+
+  /**
+   * Stamp a written node row with org_id and codebase_id.
+   * Called inside the existing SQLite transaction after upsertNode.
+   * No-op when v4 columns are not present or defaultScope is null.
+   */
+  protected stampScope(id: string): void {
+    if (this.defaultScope === null) return;
+    if (!hasV4ScopingColumns(this.db)) return;
+    this.db
+      .prepare(`UPDATE nodes SET org_id = ?, codebase_id = ? WHERE id = ?`)
+      .run(this.defaultScope.org_id, this.defaultScope.codebase_id, id);
   }
 
   /** Called by LocalAdapter.shutdown() to flip the writer's shutdown flag. */
@@ -289,6 +337,7 @@ export class LocalWriterAdapter {
 
   async putNode(input: MutateNodeInput): Promise<MutateNodeResult> {
     this.assertNotShutDown();
+    this.assertScopeForWrite();
     const { id, type, properties: content, cycle } = input;
 
     // Determine output path
@@ -406,6 +455,7 @@ export class LocalWriterAdapter {
 
         upsertNode(this.drizzleDb, nodeRow);
         upsertExtensionTableRow(this.drizzleDb, type, id, extensionContent, cycleForNode);
+        this.stampScope(id);
       });
       upsertPhase.exclusive();
     } catch (dbErr) {
@@ -441,6 +491,7 @@ export class LocalWriterAdapter {
 
   async patchNode(input: UpdateNodeInput): Promise<UpdateNodeResult> {
     this.assertNotShutDown();
+    this.assertScopeForWrite();
     const { id, properties } = input;
 
     // Determine file path for work items (only work_item type supports patchNode for now)
@@ -626,6 +677,7 @@ export class LocalWriterAdapter {
 
   async deleteNode(id: string): Promise<DeleteNodeResult> {
     this.assertNotShutDown();
+    this.assertScopeForWrite();
     const nodeRow = this.db.prepare(
       `SELECT file_path FROM nodes WHERE id = ?`
     ).get(id) as { file_path: string } | undefined;
@@ -740,6 +792,7 @@ export class LocalWriterAdapter {
 
   async batchMutate(input: BatchMutateInput): Promise<BatchMutateResult> {
     this.assertNotShutDown();
+    this.assertScopeForWrite();
     const { nodes, edges: extraEdges = [] } = input;
     const results: MutateNodeResult[] = [];
     const errors: Array<{ id: string; error: string }> = [];
@@ -990,6 +1043,7 @@ export class LocalWriterAdapter {
 
           upsertNode(this.drizzleDb, nodeRow);
           upsertExtensionTableRow(this.drizzleDb, type, id, properties, precomp.cycleForNode);
+          this.stampScope(id);
         }
 
         // Insert extra edges
@@ -1245,6 +1299,7 @@ export class LocalWriterAdapter {
     cycle: number;
   }): Promise<string> {
     this.assertNotShutDown();
+    this.assertScopeForWrite();
     return this.putNodeForJournal({
       skill: args.skill,
       date: args.date,
@@ -1259,13 +1314,14 @@ export class LocalWriterAdapter {
   // Three-phase P-44-compliant write: reserve seq (tx1) → YAML (no tx) → finalize (tx2).
   // -------------------------------------------------------------------------
 
-  async putNodeForJournal(args: {
+  protected async putNodeForJournal(args: {
     skill: string;
     date: string;
     entryType: string;
     body: string;
     cycleNumber: number;
   }): Promise<string> {
+    this.assertScopeForWrite();
     const { skill, date, entryType, body, cycleNumber } = args;
     const cycleStr = String(cycleNumber).padStart(3, "0");
 
@@ -1367,6 +1423,7 @@ export class LocalWriterAdapter {
           content: body,
         };
         upsertJournalEntry(this.drizzleDb, journalRow);
+        this.stampScope(id);
       }).exclusive();
     } catch (txErr) {
       // Rollback: remove YAML and delete placeholder (both best-effort).

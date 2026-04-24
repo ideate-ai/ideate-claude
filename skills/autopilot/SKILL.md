@@ -39,7 +39,7 @@ Store both values. All subsequent phases reference these.
 
 # Phase 2: Locate and Validate Artifact Directory
 
-Determine the **project root** by calling `ideate_get_workspace_status()`. If a candidate artifact directory was provided as an argument, pass it to the call. If no argument, the MCP server resolves from the current working directory. If the MCP server cannot find artifacts, stop and report the error.
+Determine the **project root** by calling `ideate_get_workspace_status()`. The MCP server walks up the directory tree to find `.ideate.json` at the project root, reads its `artifact_directory` field, and validates that the artifact tree exists at that resolved path. If a candidate artifact directory was provided as an argument, pass it to the call. If no argument, the MCP server resolves from the current working directory. If the MCP server cannot find artifacts, stop and report the error.
 
 Store the project root as `{project_root}`. All MCP tool calls use this implicitly.
 

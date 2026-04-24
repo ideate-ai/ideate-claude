@@ -584,6 +584,11 @@ export const TOOLS: Tool[] = [
           description:
             "Optional project name to store in project config.",
         },
+        artifact_directory_name: {
+          type: "string",
+          description:
+            "Optional relative path for the artifact tree directory (default: '.ideate'). Use to create an alternate artifact tree, e.g. '.ideate-experiment'.",
+        },
       },
       required: [],
     },

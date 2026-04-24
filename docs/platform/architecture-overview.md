@@ -98,7 +98,7 @@ Tool handler: handleWriteArtifact(ctx, args)
 Tool handler: handleAssembleContext(ctx, args)
   │
   ├── Parse seed_ids, token_budget, include_types         ← stays in handler
-  ├── Load PPR config from config.json                    ← stays in handler
+  ├── Load PPR config from .ideate.json                   ← stays in handler
   │
   └── adapter.traverse({                                  ← adapter call
   │     seed_ids, alpha, max_iterations,
@@ -430,9 +430,11 @@ The helper sub-functions `runFilterMode`, `runGraphMode`, and `buildSummaryMap` 
 
 ---
 
-## 4. Config.json Extension
+## 4. `.ideate.json` Schema
 
-### 4.1 Current Schema (version 3)
+### 4.1 Historical: Schema version 3 (legacy `.ideate/config.json`)
+
+> Historical: workspaces created before schema version 9 stored configuration in `.ideate/config.json` (inside the artifact directory). This path is no longer supported. The current pointer file is `<project-root>/.ideate.json`.
 
 ```json
 {
@@ -453,11 +455,12 @@ The helper sub-functions `runFilterMode`, `runGraphMode`, and `buildSummaryMap` 
 }
 ```
 
-### 4.2 Extended Schema (version 4)
+### 4.2 Extended Schema (schema_version 9, `.ideate.json`)
 
 ```json
 {
-  "schema_version": 4,
+  "schema_version": 9,
+  "artifact_directory": ".ideate",
   "project_name": "ideate",
   "agent_budgets": { ... },
   "model_overrides": { ... },
@@ -527,11 +530,11 @@ export interface IdeateConfigJson {
 
 ### 4.5 Migration
 
-The schema version bumps from 3 to 4. The migration (in `migrations.ts`) is additive:
+The schema version bumps from 3 to 9. The migration (in `migrations.ts`) is additive:
 - Add `"backend": "local"` if absent (no behavior change for existing users)
 - No `remote` block is added (only created when user configures remote mode)
 
-Existing `config.json` files with `schema_version: 3` continue to work because `backend` defaults to `"local"` when absent.
+Historical: `.ideate.json` files with `schema_version: 3` (the old `.ideate/config.json` layout) are migrated automatically. The `backend` field defaults to `"local"` when absent.
 
 ---
 
@@ -582,8 +585,8 @@ Recommended work item decomposition:
 
 ### 5.3 Phase 3: Config Extension
 
-**WI-557: Add backend config to config.json**
-- Bump schema_version to 4
+**WI-557: Add backend config to `.ideate.json`**
+- Bump schema_version to 9 (pointer file at project root)
 - Add migration in migrations.ts
 - Add backend/remote fields to IdeateConfigJson
 - Wire config into adapter factory (selectAdapter)

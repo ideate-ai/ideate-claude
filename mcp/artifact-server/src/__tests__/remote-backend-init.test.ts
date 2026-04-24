@@ -13,7 +13,7 @@
  * preserved: state.db is non-null and index.db is created.
  *
  * Architecture:
- *   - Each test creates a fresh tmp directory and writes a minimal config.json.
+ *   - Each test creates a fresh tmp directory and writes a minimal .ideate.json.
  *   - initServer is called directly (no MCP transport).
  *   - The remote backend requires a 'remote.endpoint' value; we supply a fake
  *     URL so selectAdapter does not throw.
@@ -47,7 +47,7 @@ afterEach(async () => {
 });
 
 /**
- * Create a .ideate/ directory with a remote-backend config.json.
+ * Create a .ideate/ artifact directory and a root .ideate.json with remote-backend config.
  * Returns the path to the created .ideate/ directory.
  */
 function createRemoteIdeateDir(dir: string): string {

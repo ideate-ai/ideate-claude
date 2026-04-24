@@ -717,10 +717,10 @@ For `batchMutate`, the RemoteAdapter sends a single `batchMutateNodes` GraphQL m
 
 ## 7. Adapter Factory
 
-`AdapterConfig` is the internal schema of the parsed `config.json` file. It is **not** a parameter to `selectAdapter`; the factory reads it from disk via `readRawConfig(dir)`.
+`AdapterConfig` is the internal schema of the parsed `.ideate.json` file. It is **not** a parameter to `selectAdapter`; the factory reads it from disk via `readRawConfig(dir)`.
 
 ```typescript
-/** Shape of the parsed config.json consumed internally by selectAdapter. */
+/** Shape of the parsed .ideate.json consumed internally by selectAdapter. */
 interface AdapterConfig {
   backend: "local" | "remote";
   /** Local-mode configuration. */
@@ -744,7 +744,7 @@ interface AdapterConfig {
 }
 
 /**
- * Select and instantiate the appropriate StorageAdapter based on config.json
+ * Select and instantiate the appropriate StorageAdapter based on .ideate.json
  * in the given ideate directory.
  *
  * @param dir - Path to the ideate directory
