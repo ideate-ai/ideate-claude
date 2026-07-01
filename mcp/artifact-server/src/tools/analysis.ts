@@ -36,10 +36,21 @@ function parseCycleFromIndex(indexMd: string): number | null {
 
 type PrincipleVerdict = "pass" | "fail" | "unknown";
 
+// WI-221: "stale" is a distinct source (not a new verdict value) used when a
+// spec-adherence artifact WAS found but is determined to belong to a prior
+// cycle (a reused cycle-directory slot that was never refreshed for the
+// requested cycle). verdict is always "unknown" in this case — see
+// detectStaleness() below. Keeping "stale" as a `source` rather than adding a
+// fourth verdict value preserves the three-way pass/fail/unknown branch
+// semantics that skills/autopilot/phases/review.md depends on (Q-159).
 interface PrincipleResult {
   verdict: PrincipleVerdict;
-  source: "step1" | "step2" | "step3";
+  source: "step1" | "step2" | "step3" | "stale";
   warning?: string;
+  /** Present only when source === "stale": the cycle the stale artifact actually belongs to. */
+  staleArtifactCycle?: number | null;
+  /** Present only when source === "stale": the stale artifact's node-level cycle_modified field. */
+  staleArtifactCycleModified?: number | null;
 }
 
 // Maximum characters to include in a Step 3 "unknown format" content snippet.
@@ -75,6 +86,12 @@ const SNIPPET_MAX_CHARS = 200;
  *      (bare synonym — no bold, no Adherence/Violation qualifier)
  *  10. `**Principle Verdict: Pass**` / `**Principle Verdict: Fail**`
  *      (bare synonym all-bold variant)
+ *  11. `## Verdict: Pass|Fail`
+ *      (WI-221 — compact markdown heading fallback; anchored to the start of
+ *      a `## Verdict:` heading line so body prose mentioning "verdict" does
+ *      not false-positive. Seen from reviewer output that summarizes with a
+ *      top-level heading instead of a "Principle ... Verdict" tag — this was
+ *      one of the phrasings that failed to parse during PR-002.)
  *
  * Note: verdicts other than Pass/Fail (e.g., Unknown, Inconclusive) produce verdict=unknown via the step3 fallback, not an explicit pattern match.
  *
@@ -124,6 +141,19 @@ function parsePrincipleVerdict(content: string): PrincipleResult {
   for (const re of STEP1_FAIL_RES) {
     if (re.test(content)) return { verdict: "fail", source: "step1" };
   }
+
+  // WI-221: `## Verdict: Pass|Fail` heading fallback — a compact heading style
+  // distinct from the "Principle ... Verdict" tag patterns above. Anchored to
+  // the start of a markdown heading line (`##` + "Verdict:") in multiline mode
+  // so prose elsewhere in the content containing the word "verdict" cannot
+  // false-positive. Leading whitespace is tolerated (`[ \t]*`) because content
+  // read via the raw-YAML-fallback path (reader.ts getConvergenceData) can be
+  // indented under a `content: |-` block scalar. This was one of the PR-002
+  // failing phrasings.
+  const HEADING_VERDICT_PASS_RE = /^[ \t]*##\s+Verdict:\s*Pass\b/im;
+  const HEADING_VERDICT_FAIL_RE = /^[ \t]*##\s+Verdict:\s*Fail\b/im;
+  if (HEADING_VERDICT_PASS_RE.test(content)) return { verdict: "pass", source: "step1" };
+  if (HEADING_VERDICT_FAIL_RE.test(content)) return { verdict: "fail", source: "step1" };
 
   // Step 2: find ## Principle Adherence / ## Principle Violation / ## Guiding Principle section.
   // Only the first STEP2_WINDOW_LINES non-empty lines of the section body are examined;
@@ -196,6 +226,7 @@ function parsePrincipleVerdict(content: string): PrincipleResult {
     "Principle Violation Verdict: Pass|Fail, " +
     "Principle Verdict: Pass|Fail (bare synonym), " +
     "**Principle Verdict: Pass|Fail** (bare synonym all-bold), " +
+    "## Verdict: Pass|Fail (heading fallback), " +
     "## Principle Adherence|Violation|Guiding Principle (exact heading) section body heuristic";
   const warningText =
     `unexpected format; patterns tried: ${patternsTriedDesc}; ` +
@@ -207,6 +238,96 @@ function parsePrincipleVerdict(content: string): PrincipleResult {
     source: "step3",
     warning: yamlSafeWarning,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Staleness detection (WI-221 — Q-160-class cycle-slot-reuse bug)
+//
+// A cycle_summary artifact's on-disk YAML (id/type/cycle/cycle_modified/
+// content) is written via LocalAdapter.putNode (writer.ts) and re-read verbatim
+// by getConvergenceData whenever the SQLite document_artifacts row for that
+// node has no populated `content` column (the raw-file fallback branch of
+// reader.ts:getConvergenceData — this happens whenever a document_artifacts
+// row is absent or has a NULL content/cycle, which is exactly the branch that
+// selects a row by file_path pattern alone, without verifying its embedded
+// cycle field). In that branch, `cycle_summary_content` is the FULL raw YAML
+// text, including a top-level `cycle:` (and `cycle_modified:`) field — so a
+// reused cycle-directory slot (a spec-adherence.yaml whose *content* was
+// written for an earlier, different cycle than the one the directory name /
+// query now represents) is detectable directly from that text.
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract a top-level (column-0) `field: <integer>` YAML scalar from raw
+ * artifact content. Anchored to the start of a line so indented/nested
+ * fields (e.g. inside a `content: |-` block scalar) are never matched.
+ */
+function extractTopLevelIntField(content: string, field: string): number | null {
+  const re = new RegExp(`^${field}:\\s*(\\d+)\\s*$`, "m");
+  const match = content.match(re);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+/**
+ * Detect whether `content` (the string returned by getConvergenceData for the
+ * requested cycle) is actually a leftover artifact from a PRIOR cycle — i.e.
+ * its own embedded `cycle:` field is strictly less than `requestedCycle`.
+ * Returns null when no embedded cycle field is present (nothing to compare —
+ * this is the common case when the artifact was read via the SQLite
+ * document_artifacts.content path rather than the raw-file fallback) or when
+ * the embedded cycle is >= requestedCycle (not stale).
+ */
+function detectEmbeddedStaleness(
+  content: string,
+  requestedCycle: number
+): { artifactCycle: number; cycleModified: number | null } | null {
+  const artifactCycle = extractTopLevelIntField(content, "cycle");
+  if (artifactCycle === null || artifactCycle >= requestedCycle) return null;
+  const cycleModified = extractTopLevelIntField(content, "cycle_modified");
+  return { artifactCycle, cycleModified };
+}
+
+/**
+ * Best-effort lookup of the canonical spec-adherence/summary node's own
+ * bookkeeping metadata, used to enrich diagnostics when getConvergenceData
+ * returned no content at all for the requested cycle (i.e. we cannot tell
+ * from the (absent) content whether that's because review simply hasn't run
+ * yet for this cycle, or because a stale artifact from an earlier cycle is
+ * sitting in the index under a business `cycle` field that no longer matches
+ * the requested cycle). Node ids "spec-adherence" and "summary" are global
+ * (not cycle-scoped — see skills/review/SKILL.md Phase 4.2/6.7), so a single
+ * getNode lookup per id reflects whatever cycle that artifact was LAST
+ * written for, regardless of the cycle currently being queried.
+ *
+ * Never throws — adapter errors are swallowed and treated as "no signal",
+ * since this is diagnostic enrichment only and must not block the primary
+ * convergence response.
+ */
+async function fetchStaleArtifactMeta(
+  ctx: ToolContext,
+  requestedCycle: number
+): Promise<{ id: string; artifactCycle: number; cycleModified: number | null } | null> {
+  if (!ctx.adapter) return null;
+  for (const id of ["spec-adherence", "summary"]) {
+    try {
+      const node = await ctx.adapter.getNode(id);
+      if (!node) continue;
+      const rawCycle = node.properties?.["cycle"];
+      const artifactCycle =
+        typeof rawCycle === "number"
+          ? rawCycle
+          : typeof rawCycle === "string" && /^\d+$/.test(rawCycle)
+            ? parseInt(rawCycle, 10)
+            : null;
+      if (artifactCycle !== null && artifactCycle < requestedCycle) {
+        return { id, artifactCycle, cycleModified: node.cycle_modified };
+      }
+    } catch {
+      // Best-effort — adapter/backend errors here must not block the response.
+      continue;
+    }
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -243,18 +364,59 @@ export async function handleGetConvergenceStatus(
     // P-33: do NOT emit absolute paths. Use artifact-type + relative path + filenames only.
     const checkedFiles = ["spec-adherence.yaml", "summary.yaml"];
     const paddedCycle = String(cycleNumber).padStart(3, "0");
-    const warningText =
+    let warningText =
       `no cycle_summary found for cycle ${cycleNumber}; ` +
       `artifact type: cycle_summary; ` +
       `relative path: cycles/${paddedCycle}; ` +
       `checked filenames: ${checkedFiles.join(", ")}`;
+
+    // WI-221: enrich with staleness diagnostics when a spec-adherence/summary
+    // artifact DOES exist but belongs to an earlier cycle — this is the
+    // signature of a reused cycle-directory slot that review has not yet (or
+    // failed to) refresh for the requested cycle. Surfacing this lets the
+    // caller/human distinguish "review simply hasn't run yet" from "a stale
+    // artifact exists and needs the review phase re-run" automatically,
+    // instead of requiring manual inspection (the PR-002 failure mode).
+    const staleMeta = await fetchStaleArtifactMeta(ctx, cycleNumber);
+    if (staleMeta) {
+      warningText +=
+        `; stale artifact detected: '${staleMeta.id}' was last written for cycle ${staleMeta.artifactCycle}` +
+        (staleMeta.cycleModified !== null ? ` (cycle_modified: ${staleMeta.cycleModified})` : "") +
+        `, which predates the requested cycle ${cycleNumber}; it was NOT used as authoritative; ` +
+        `re-run the review phase for cycle ${cycleNumber} to refresh this cycle-directory slot`;
+    }
+
     principleResult = {
       verdict: "unknown",
       source: "step3",
       warning: warningText.replace(/'/g, "''"),
+      ...(staleMeta
+        ? { staleArtifactCycle: staleMeta.artifactCycle, staleArtifactCycleModified: staleMeta.cycleModified }
+        : {}),
     };
   } else {
-    principleResult = parsePrincipleVerdict(cycleSummaryContent);
+    // WI-221: before trusting a parsed verdict, verify the returned content
+    // actually belongs to the requested cycle. A cycle-directory slot can be
+    // reused (see skills/review/SKILL.md "Cycle-Slot Hygiene") — never return
+    // a stale artifact's verdict as authoritative.
+    const staleness = detectEmbeddedStaleness(cycleSummaryContent, cycleNumber);
+    if (staleness) {
+      const warningText =
+        `stale spec-adherence artifact detected: artifact belongs to cycle ${staleness.artifactCycle}` +
+        (staleness.cycleModified !== null ? ` (cycle_modified: ${staleness.cycleModified})` : "") +
+        `, but convergence was requested for cycle ${cycleNumber}; this cycle-directory slot was reused ` +
+        `and the artifact was not refreshed for the current cycle; its verdict is NOT authoritative; ` +
+        `re-run the review phase for cycle ${cycleNumber} before re-checking convergence`;
+      principleResult = {
+        verdict: "unknown",
+        source: "stale",
+        warning: warningText.replace(/'/g, "''"),
+        staleArtifactCycle: staleness.artifactCycle,
+        staleArtifactCycleModified: staleness.cycleModified,
+      };
+    } else {
+      principleResult = parsePrincipleVerdict(cycleSummaryContent);
+    }
   }
 
   const critSigCount = (findingsBySeverity["critical"] ?? 0) + (findingsBySeverity["significant"] ?? 0);
@@ -283,8 +445,19 @@ export async function handleGetConvergenceStatus(
 
   if (principleResult.warning) {
     // Use single-quoted YAML scalar; internal single quotes are already escaped as ''
-    // by parsePrincipleVerdict, so this emission is always valid YAML.
+    // by parsePrincipleVerdict (or escaped inline above for the stale-artifact and
+    // no-cycle-summary-found paths), so this emission is always valid YAML.
     lines.push(`principle_verdict_warning: '${principleResult.warning}'`);
+  }
+
+  // WI-221: surface staleness diagnostics as discrete machine-readable fields
+  // (in addition to the prose warning above) so callers don't need to parse
+  // the warning string to detect and act on cycle-slot reuse.
+  if (principleResult.staleArtifactCycle !== undefined && principleResult.staleArtifactCycle !== null) {
+    lines.push(`stale_artifact_cycle: ${principleResult.staleArtifactCycle}`);
+    lines.push(
+      `stale_artifact_cycle_modified: ${principleResult.staleArtifactCycleModified ?? "null"}`
+    );
   }
 
   return lines.join("\n");

@@ -229,6 +229,8 @@ Spawn three review agents simultaneously. Each receives the relevant subset of c
 
 All three agents run in parallel. Do not wait for one to finish before starting another.
 
+Each reviewer's `ideate_write_artifact` call below MUST run even if the reviewer's session fails or times out — see "Cycle-Slot Hygiene (WI-221)" under Error Handling for the required placeholder-content fallback.
+
 ## 4.1 code-reviewer
 
 **Agent**: ideate:code-reviewer
@@ -663,9 +665,14 @@ When reviewing sequentially yourself, follow each agent's checklist and output f
 
 If a reviewer session fails or times out:
 1. Note the failure in the summary ("code-quality review was not completed due to {reason}").
-2. Proceed with the outputs that do exist.
-3. Do not attempt to re-run the failed reviewer automatically. The user can re-run `/ideate:review` if they want a complete set.
-4. Missing reviewer output means the summary will have blind spots. State which evaluation pillar is affected (requirements fulfillment or technical correctness).
+2. **Still write the cycle-slot artifact for the failed reviewer, tagged with the current cycle** (see "Cycle-Slot Hygiene (WI-221)" below) — do NOT simply skip the `ideate_write_artifact` call for that reviewer. Call `ideate_write_artifact` with the reviewer's normal type/id (`code-quality` for code-reviewer, `spec-adherence` for spec-reviewer, `gap-analysis` for gap-analyst) and `cycle: N`, using placeholder content: `## Verdict: Unknown\n\nReviewer failed to produce output: {reason}. No verdict could be determined for cycle {N}.` This overwrites whatever was previously in that cycle-slot artifact's id, guaranteeing `ideate_get_convergence_status` never reads a leftover artifact from an earlier cycle when it queries cycle N.
+3. Proceed with the outputs that do exist.
+4. Do not attempt to re-run the failed reviewer automatically. The user can re-run `/ideate:review` if they want a complete set.
+5. Missing reviewer output means the summary will have blind spots. State which evaluation pillar is affected (requirements fulfillment or technical correctness).
+
+## Cycle-Slot Hygiene (WI-221)
+
+**Invariant**: every cycle review MUST overwrite the current cycle's slot for each of `code-quality`, `spec-adherence`, `gap-analysis`, `decision-log`, and `summary` via `ideate_write_artifact({..., cycle: N})` — even when a reviewer fails (see "Reviewer fails or times out" above, which writes a placeholder rather than skipping the call). This is the fix for a Q-160-class bug (WI-221): `ideate_get_convergence_status` selects a cycle's `spec-adherence` artifact by matching its recorded cycle against the requested cycle number. If a cycle-directory slot is ever reused (a cycle number resolved a second time, or a reviewer's write is silently skipped on failure) without a fresh write, the checker can read a leftover artifact from an earlier cycle. `ideate_get_convergence_status` independently detects and refuses to treat such a leftover as authoritative (reporting `principle_verdict: unknown` with staleness diagnostics), but the review phase is the correct place to prevent the leftover from existing in the first place: **always write something for the current cycle's slot, never leave a prior write in place.** Do not rely on `ideate_archive_cycle` for this — archival only relocates completed work items and findings (see Phase 7.5); it does not clear or rotate cycle-summary artifact slots.
 
 ## Missing artifacts
 
@@ -708,3 +715,4 @@ Before completing this skill, verify all of the following:
 11. **Project Progress section present**: The summary output template includes a `## Project Progress` table listing each success criterion with its status (pass / partial / not-started).
 12. **Circuit breaker reads threshold from config**: Phase 1.3 reads `{config}.circuit_breaker_threshold` via `ideate_get_config` (loaded in Phase 0). Default is `5` if the key is absent. If `{phase_cycle_count}` >= threshold, Andon is triggered and the review halts.
 13. **Finding routing guidance present**: Phase 6.4 specifies that critical/significant findings are routed to the current phase, minor findings carry forward, and suggestions are deferred.
+14. **Cycle-slot hygiene documented (WI-221)**: The "Reviewer fails or times out" section requires writing a placeholder cycle-slot artifact (tagged with the current cycle) when a reviewer fails, instead of skipping the write — and the "Cycle-Slot Hygiene (WI-221)" section states the invariant that every cycle review overwrites its slot artifacts, so `ideate_get_convergence_status` never reads a leftover artifact from an earlier cycle.

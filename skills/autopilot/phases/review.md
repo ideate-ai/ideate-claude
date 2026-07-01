@@ -271,7 +271,7 @@ Minor findings: {N}
 
 This section is invoked by the controller immediately after `ideate_get_convergence_status` returns. It defines the three-way branching on `principle_verdict`. The controller reads this section for Phase 6c; Phase 6c-ii is a separate step that only runs if this section confirms convergence.
 
-**Why three branches, not two**: `principle_verdict: unknown` means the automated parser could not read the spec-adherence output — the review text was present but in an unexpected format. This is a *parse failure*, not a *principle violation*. Treating `unknown` the same as `fail` hides tooling defects as convergence failures and can send autopilot into an infinite refine loop that never resolves the underlying parse issue. The `unknown` case must be surfaced explicitly so the user or proxy-human can diagnose and fix the formatter output.
+**Why three branches, not two**: `principle_verdict: unknown` means the automated checker could not establish a trustworthy Pass/Fail verdict for the current cycle — either because the spec-adherence output was present but in an unexpected format (a *parse failure*, `principle_verdict_source: step3`), or because the only spec-adherence artifact found belongs to an earlier cycle (a *stale cycle-slot artifact*, `principle_verdict_source: stale` — WI-221). Neither case is a *principle violation*. Treating `unknown` the same as `fail` hides tooling/data defects as convergence failures and can send autopilot into an infinite refine loop that never resolves the underlying issue. The `unknown` case must be surfaced explicitly, with the specific cause distinguished, so the user or proxy-human can diagnose and resolve it (fix the formatter output, or re-run review to refresh a stale slot) rather than guessing.
 
 #### Step 1: Parse the convergence status payload
 
@@ -281,11 +281,14 @@ The payload from `ideate_get_convergence_status` is YAML text. Parse these field
 - `condition_a` — boolean (zero critical/significant findings)
 - `condition_b` — boolean
 - `principle_verdict` — string: `pass`, `fail`, or `unknown`
-- `principle_verdict_warning` — string (present only when `principle_verdict` is `unknown`). Format: `unexpected format; patterns tried: <patterns>; content snippet: <snippet>`.
+- `principle_verdict_source` — string: `step1`, `step2`, `step3`, or `stale`. `stale` (WI-221) means a spec-adherence artifact WAS found but its own recorded cycle predates `{cycle_number}` — the cycle-directory slot was reused and never refreshed for the current cycle. This is distinct from a generic parser failure (`step3`) and calls for a different remediation (re-run review for the current cycle, not fix the parser).
+- `principle_verdict_warning` — string (present only when `principle_verdict` is `unknown`). Format: `unexpected format; patterns tried: <patterns>; content snippet: <snippet>` for a generic parse failure, or a staleness-specific message (mentioning "stale" and the artifact's recorded cycle) when `principle_verdict_source` is `stale` or when a stale artifact was detected while no content matched the current cycle at all.
+- `stale_artifact_cycle` — integer (present only when a stale artifact was detected, whether or not `principle_verdict_source` is `stale`): the cycle the stale artifact actually belongs to.
+- `stale_artifact_cycle_modified` — integer or `null` (present alongside `stale_artifact_cycle`): the stale artifact's node-level `cycle_modified` bookkeeping field, for additional diagnosis.
 
 When `principle_verdict` is `unknown`, also derive these two discrete diagnostic fields from `principle_verdict_warning`:
 
-- `patterns_tried` — the substring between `patterns tried: ` and `; content snippet:` in `principle_verdict_warning`. If the marker is absent, set to the literal string `"(parse failed — warning format unexpected)"`.
+- `patterns_tried` — the substring between `patterns tried: ` and `; content snippet:` in `principle_verdict_warning`. If the marker is absent (e.g. a staleness warning, which has no "patterns tried" segment), set to the literal string `"(parse failed — warning format unexpected)"`.
 - `content_snippet` — the substring after `content snippet: ` in `principle_verdict_warning` (trailing, no further delimiter). If absent, set to the literal string `"(parse failed — warning format unexpected)"`.
 
 These two fields are surfaced as distinct lines in the Andon event below so that the proxy-human (and any future automated handler) can inspect them without re-parsing the composite warning string.
@@ -304,9 +307,32 @@ Set `{phase_converged}` = false. Proceed to Phase 6d (refinement). This is the n
 
 Resolves Q-159 — unknown verdict must be distinguished from fail so the proxy-human can diagnose parser failures separately from principle violations.
 
-Do NOT proceed to Phase 6d. Instead, raise an Andon event carrying the full diagnostic context:
+Do NOT proceed to Phase 6d. Instead, raise an Andon event carrying the full diagnostic context. The event content differs slightly depending on whether `principle_verdict_source` is `stale` (WI-221 — a spec-adherence artifact exists but belongs to an earlier cycle) or a generic parse failure (`step3`), because the two causes call for different remediation:
 
-1. Formulate the Andon event description, surfacing `patterns_tried` and `content_snippet` as discrete lines:
+1. **If `principle_verdict_source` is `stale`, or `stale_artifact_cycle` is present** (a stale artifact was detected — see Step 1): formulate the Andon event as a cycle-slot staleness event, not a generic parse failure:
+   ```
+   Andon: principle_verdict:unknown (stale cycle-slot artifact) — spec-adherence has not
+   been refreshed for the current cycle.
+   Cycle: {cycle_number}
+   principle_verdict_warning: {principle_verdict_warning field from payload}
+   stale_artifact_cycle: {stale_artifact_cycle field from payload}
+   stale_artifact_cycle_modified: {stale_artifact_cycle_modified field from payload}
+   condition_a: {condition_a} (zero critical/significant findings: {true|false})
+   Cause: a spec-adherence artifact was found, but it was last written for cycle
+   {stale_artifact_cycle} — not the requested cycle {cycle_number}. The cycle-directory
+   slot was reused (or a prior review's write to this slot never completed) and has not
+   been refreshed. This is NOT a parser defect and NOT a confirmed principle violation —
+   there is simply no verified review output for the current cycle yet.
+   Options:
+     (a) Re-run `/ideate:review` for cycle {cycle_number} to refresh the stale slot, then
+         retry the convergence check — this is the preferred resolution.
+     (b) Treat as fail for this cycle — proceed to refinement without a verified review
+         (use only if re-running review is not currently possible).
+     (c) Halt autopilot — stop and let the user inspect the situation directly.
+   ```
+   Do NOT offer "treat as pass" for a stale-artifact Andon — the stale artifact's own verdict must never be treated as authoritative for the current cycle (this is the exact WI-221/PR-002 failure mode: silently trusting a leftover artifact).
+
+2. **Otherwise** (generic parse failure — `principle_verdict_source: step3` with no stale artifact detected), formulate the Andon event surfacing `patterns_tried` and `content_snippet` as discrete lines:
    ```
    Andon: principle_verdict:unknown — spec-adherence output could not be parsed.
    Cycle: {cycle_number}
@@ -325,19 +351,20 @@ Do NOT proceed to Phase 6d. Instead, raise an Andon event carrying the full diag
          directly.
    ```
 
-2. Route to the proxy-human agent via the Andon cord mechanism defined in `execute.md` ("Andon Cord → Proxy-Human Routing"). Pass the full event description above, including the discrete `patterns_tried` and `content_snippet` fields plus the original `principle_verdict_warning` string for completeness. This implements the resolution of **Q-159** (distinguish `unknown` from `fail`) — `unknown` now has a dedicated branch, surfaced diagnostics, and a human-in-the-loop decision path rather than being silently folded into `fail`.
+3. Route to the proxy-human agent via the Andon cord mechanism defined in `execute.md` ("Andon Cord → Proxy-Human Routing"). Pass the full event description above (whichever variant applies), including the discrete diagnostic fields plus the original `principle_verdict_warning` string for completeness. This implements the resolution of **Q-159** (distinguish `unknown` from `fail`) and **WI-221** (distinguish a stale cycle-slot artifact from a generic parser failure) — `unknown` now has a dedicated branch, surfaced diagnostics tailored to the actual cause, and a human-in-the-loop decision path rather than being silently folded into `fail`.
 
-3. Apply the proxy-human decision:
-   - Decision `(a)` — treat as pass: set `{phase_converged}` = `condition_a`. If `condition_a` is true, proceed to Phase 6c-ii. If false, proceed to Phase 6d.
-   - Decision `(b)` — treat as fail: set `{phase_converged}` = false. Proceed to Phase 6d.
-   - Decision `(c)` or `deferred`: set `{phase_converged}` = false. Halt the loop. Proceed to Phases 7–9 (max cycles path, noting parse-failure halt).
+4. Apply the proxy-human decision:
+   - **Stale-artifact variant**: decision `(a)` — re-run review: do not set `{phase_converged}` here; return to Phase 6a/6b for cycle `{cycle_number}` to produce a fresh review, then retry the convergence check. Decision `(b)` — treat as fail: set `{phase_converged}` = false, proceed to Phase 6d. Decision `(c)` or `deferred`: set `{phase_converged}` = false, halt the loop, proceed to Phases 7–9.
+   - **Generic parse-failure variant**: decision `(a)` — treat as pass: set `{phase_converged}` = `condition_a`. If `condition_a` is true, proceed to Phase 6c-ii. If false, proceed to Phase 6d. Decision `(b)` — treat as fail: set `{phase_converged}` = false. Proceed to Phase 6d. Decision `(c)` or `deferred`: set `{phase_converged}` = false. Halt the loop. Proceed to Phases 7–9 (max cycles path, noting parse-failure halt).
 
-4. Journal the outcome via `ideate_append_journal`:
+5. Journal the outcome via `ideate_append_journal`:
    ```markdown
    ## [autopilot] {date} — Cycle {N} — principle_verdict:unknown Andon
+   principle_verdict_source: {step3 | stale}
    principle_verdict_warning: {warning text}
+   stale_artifact_cycle: {value, if present}
    proxy-human decision: {(a) | (b) | (c) | deferred}
-   outcome: {treat-as-pass | treat-as-fail | halted}
+   outcome: {treat-as-pass | treat-as-fail | re-run-review | halted}
    ```
 
 #### Step 3: Update session state
@@ -418,6 +445,8 @@ Before returning to the controller, verify:
 - [x] Phase 6c section defines three-way branch: pass → converge, fail → refine, unknown → Andon
 - [x] unknown branch carries principle_verdict_warning, patterns_tried, and content snippet from payload
 - [x] unknown treated as parse failure (not principle violation) — rationale documented in Phase 6c section
+- [x] WI-221: unknown sub-case `principle_verdict_source: stale` is distinguished from generic parse failure (`step3`) in Step 1 parsing, the Andon event, and the proxy-human decision options — stale never offers "treat as pass"
+- [x] WI-221: stale-artifact Andon carries `stale_artifact_cycle` and `stale_artifact_cycle_modified` from the payload; unknown (including stale) is still never folded into fail
 - [x] pass branch behavior unchanged — cycles with principle_verdict:pass still converge on Condition B
 - [x] Q-159 (distinguish unknown from fail) resolved by the three-way branch; closed via `ideate_write_artifact` with type `question`, status `resolved`
 - [x] patterns_tried and content_snippet extracted from principle_verdict_warning as discrete Andon payload fields (Phase 6c Step 1)

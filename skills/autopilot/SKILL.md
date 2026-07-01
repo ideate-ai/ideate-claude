@@ -161,7 +161,7 @@ Before each cycle begins, resolve `{cycle_number}` so that it never collides wit
 3. Set `{cycle_number} = max(current_cycle, cycles_completed) + 1`.
 4. If this is not the first iteration of the loop, `{cycle_number}` must be strictly greater than the previous iteration's `{cycle_number}` — if not, increment by 1 until it is.
 
-This prevents the findings-table and convergence-checker from reading legacy artifacts left in reused cycle-directory slots (see domain decision on Q-160).
+This prevents the findings-table and convergence-checker from reading legacy artifacts left in reused cycle-directory slots (see domain decision on Q-160). It is a prevention measure at the number-resolution layer; `ideate_get_convergence_status` also independently detects and refuses to trust a stale artifact if a slot is ever reused despite this rule (WI-221 — `principle_verdict_source: stale`), and `skills/review/SKILL.md` ("Cycle-Slot Hygiene") guarantees the review phase always overwrites the current cycle's slot artifacts. The three layers (numbering, write-side hygiene, read-side detection) are defense-in-depth for the same class of bug.
 
 At the start of each cycle, print:
 ```
@@ -189,11 +189,11 @@ Continue here after all four review artifacts have been written via MCP and the 
 
 ### 6c: Phase Convergence Check
 
-Call `ideate_get_convergence_status({cycle_number})` — parses the spec-adherence review artifact and `{last_cycle_findings}` and returns a convergence status object with `converged: true|false`, `condition_a: true|false` (zero critical/significant findings), `condition_b: true|false` (principle adherence verdict), `principle_verdict: pass|fail|unknown`, and (when unknown) `principle_verdict_warning`.
+Call `ideate_get_convergence_status({cycle_number})` — parses the spec-adherence review artifact and `{last_cycle_findings}` and returns a convergence status object with `converged: true|false`, `condition_a: true|false` (zero critical/significant findings), `condition_b: true|false` (principle adherence verdict), `principle_verdict: pass|fail|unknown`, `principle_verdict_source: step1|step2|step3|stale`, and (when unknown) `principle_verdict_warning` plus (when a stale cycle-directory slot is detected — WI-221) `stale_artifact_cycle` and `stale_artifact_cycle_modified`.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
-Read `{phases_dir}/review.md` "Phase 6c: Convergence Branch (three-way)" section. Follow those instructions to determine `{phase_converged}`. That section handles the three-way branch on `principle_verdict` (pass/fail/unknown) and updates session state. `principle_verdict: unknown` is a parse failure, not a principle violation — it must not be silently folded into the fail path.
+Read `{phases_dir}/review.md` "Phase 6c: Convergence Branch (three-way)" section. Follow those instructions to determine `{phase_converged}`. That section handles the three-way branch on `principle_verdict` (pass/fail/unknown) and updates session state. `principle_verdict: unknown` is never a principle violation — it covers both a parser failure (`principle_verdict_source: step3`) and a stale, reused cycle-directory slot (`principle_verdict_source: stale`, WI-221); neither must be silently folded into the fail path.
 
 After that section completes: if `{phase_converged}` is true, proceed to Phase 6c-ii. If false, proceed to Phase 6d (or halt if the proxy-human decision was to halt).
 
