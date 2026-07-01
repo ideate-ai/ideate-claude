@@ -1,4 +1,5 @@
 import type { ToolContext } from "../types.js";
+import { normalizeWorkItemStatus } from "../node-type-registry.js";
 
 // ---------------------------------------------------------------------------
 // Internal pagination constant
@@ -29,9 +30,13 @@ interface WorkItemData {
  *
  * Strategy: queryNodes({ type: 'work_item' }) applies D-131 by default
  * (excludes done/obsolete when no status filter is given). To capture ALL
- * statuses we run three passes — one for each terminal status and one for the
- * non-terminal set — then merge unique IDs, fetch full nodes via getNodes(),
- * and extract the needed properties.
+ * statuses — including legacy synonyms such as 'complete'/'completed' that
+ * predate the WI-220 canonical vocabulary — we run explicit passes for the
+ * two terminal statuses plus the legacy synonyms, and one pass for the
+ * non-terminal set, then merge unique IDs, fetch full nodes via getNodes(),
+ * and extract the needed properties. Raw status values are normalized via
+ * normalizeWorkItemStatus() at classification time in
+ * handleGetExecutionStatus (not here — this function only collects IDs).
  */
 async function fetchAllWorkItems(ctx: ToolContext): Promise<WorkItemData[]> {
   if (!ctx.adapter) {
@@ -47,7 +52,11 @@ async function fetchAllWorkItems(ctx: ToolContext): Promise<WorkItemData[]> {
   const passes = [
     adapter.queryNodes({ type: "work_item", status: "done" }, QUERY_LIMIT, 0),
     adapter.queryNodes({ type: "work_item", status: "obsolete" }, QUERY_LIMIT, 0),
+    // Legacy synonyms (pre-WI-220 data) — normally already covered by the
+    // no-filter pass below (D-131 only excludes done/obsolete), but queried
+    // explicitly for defensiveness/clarity.
     adapter.queryNodes({ type: "work_item", status: "complete" }, QUERY_LIMIT, 0),
+    adapter.queryNodes({ type: "work_item", status: "completed" }, QUERY_LIMIT, 0),
     // No status filter → D-131 returns non-terminal items (everything except done/obsolete)
     adapter.queryNodes({ type: "work_item" }, QUERY_LIMIT, 0),
   ];
@@ -246,17 +255,22 @@ export async function handleGetExecutionStatus(
   const readySet = new Set<string>();
   const blockedMap = new Map<string, string[]>(); // id → unsatisfied dep IDs
 
-  // First pass: determine completed and obsolete items
+  // First pass: determine completed and obsolete items.
+  //
+  // WI-220: status values are normalized through the canonical work_item
+  // status vocabulary (node-type-registry.ts) before classification. Only
+  // 'done' and 'obsolete' are terminal — legacy synonyms ('complete',
+  // 'completed') normalize to 'done'; null/'unknown'/unrecognized values
+  // normalize to 'pending' (non-terminal). This ensures finished legacy
+  // items are correctly excluded from the "ready" set instead of leaking
+  // through as actionable work.
   for (const item of workItems) {
-    const status = (item.status ?? "").toLowerCase();
+    const status = normalizeWorkItemStatus(item.status);
     if (status === "obsolete") {
       obsoleteSet.add(item.id);
       continue;
     }
-    const isComplete =
-      status === "done" ||
-      status === "complete" ||
-      journalCompleted.has(item.id);
+    const isComplete = status === "done" || journalCompleted.has(item.id);
     if (isComplete) {
       completedSet.add(item.id);
     }

@@ -14,6 +14,11 @@ import {
   NODE_TYPE_REGISTRY,
   QUERYABLE_NODE_TYPES,
   NODE_TYPE_ID_PREFIXES,
+  WORK_ITEM_STATUSES,
+  WORK_ITEM_STATUS_SYNONYMS,
+  TERMINAL_WORK_ITEM_STATUSES,
+  normalizeWorkItemStatus,
+  isTerminalWorkItemStatus,
 } from "../node-type-registry.js";
 import type { NodeType } from "../adapter.js";
 
@@ -270,5 +275,138 @@ describe("summarySelector presence", () => {
         ).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. WI-220 — canonical work_item status vocabulary
+// ---------------------------------------------------------------------------
+
+describe("WORK_ITEM_STATUSES canonical enum", () => {
+  it("is exactly the five canonical values", () => {
+    expect([...WORK_ITEM_STATUSES].sort()).toEqual(
+      ["blocked", "done", "in_progress", "obsolete", "pending"].sort()
+    );
+  });
+
+  it("TERMINAL_WORK_ITEM_STATUSES contains exactly done and obsolete", () => {
+    expect([...TERMINAL_WORK_ITEM_STATUSES].sort()).toEqual(["done", "obsolete"]);
+    expect(TERMINAL_WORK_ITEM_STATUSES.has("pending")).toBe(false);
+    expect(TERMINAL_WORK_ITEM_STATUSES.has("in_progress")).toBe(false);
+    expect(TERMINAL_WORK_ITEM_STATUSES.has("blocked")).toBe(false);
+  });
+
+  it("WORK_ITEM_STATUS_SYNONYMS maps legacy values to canonical values only", () => {
+    for (const canonical of Object.values(WORK_ITEM_STATUS_SYNONYMS)) {
+      expect(WORK_ITEM_STATUSES as readonly string[]).toContain(canonical);
+    }
+    expect(WORK_ITEM_STATUS_SYNONYMS.complete).toBe("done");
+    expect(WORK_ITEM_STATUS_SYNONYMS.completed).toBe("done");
+    expect(WORK_ITEM_STATUS_SYNONYMS.unknown).toBe("pending");
+  });
+});
+
+describe("normalizeWorkItemStatus — canonical values pass through", () => {
+  it.each(WORK_ITEM_STATUSES)("preserves canonical value '%s'", (status) => {
+    expect(normalizeWorkItemStatus(status)).toBe(status);
+  });
+
+  it("is case-insensitive and trims whitespace for canonical values", () => {
+    expect(normalizeWorkItemStatus("DONE")).toBe("done");
+    expect(normalizeWorkItemStatus("  pending  ")).toBe("pending");
+    expect(normalizeWorkItemStatus("Obsolete")).toBe("obsolete");
+  });
+});
+
+describe("normalizeWorkItemStatus — legacy synonym mapping", () => {
+  it("maps 'complete' -> 'done'", () => {
+    expect(normalizeWorkItemStatus("complete")).toBe("done");
+  });
+
+  it("maps 'completed' -> 'done'", () => {
+    expect(normalizeWorkItemStatus("completed")).toBe("done");
+  });
+
+  it("maps 'unknown' -> 'pending'", () => {
+    expect(normalizeWorkItemStatus("unknown")).toBe("pending");
+  });
+
+  it("is case-insensitive for legacy synonyms", () => {
+    expect(normalizeWorkItemStatus("Completed")).toBe("done");
+    expect(normalizeWorkItemStatus("COMPLETE")).toBe("done");
+    expect(normalizeWorkItemStatus("Unknown")).toBe("pending");
+  });
+});
+
+describe("normalizeWorkItemStatus — null/empty/unanticipated values default to 'pending'", () => {
+  it("maps null -> 'pending'", () => {
+    expect(normalizeWorkItemStatus(null)).toBe("pending");
+  });
+
+  it("maps undefined -> 'pending'", () => {
+    expect(normalizeWorkItemStatus(undefined)).toBe("pending");
+  });
+
+  it("maps empty string -> 'pending'", () => {
+    expect(normalizeWorkItemStatus("")).toBe("pending");
+    expect(normalizeWorkItemStatus("   ")).toBe("pending");
+  });
+
+  it("maps an unanticipated/typo'd value to 'pending' rather than passing it through", () => {
+    const result = normalizeWorkItemStatus("not_a_real_status");
+    expect(result).toBe("pending");
+    expect(result).not.toBe("not_a_real_status");
+  });
+
+  it("maps a non-string value (number) to 'pending'", () => {
+    expect(normalizeWorkItemStatus(42)).toBe("pending");
+  });
+});
+
+describe("normalizeWorkItemStatus — idempotency", () => {
+  const sampleRawValues = [
+    "pending",
+    "in_progress",
+    "done",
+    "obsolete",
+    "blocked",
+    "complete",
+    "completed",
+    "unknown",
+    null,
+    undefined,
+    "",
+    "typo_status",
+    "DONE",
+    " Completed ",
+  ];
+
+  it.each(sampleRawValues)("normalizing twice equals normalizing once for %j", (raw) => {
+    const once = normalizeWorkItemStatus(raw);
+    const twice = normalizeWorkItemStatus(once);
+    expect(twice).toBe(once);
+  });
+});
+
+describe("isTerminalWorkItemStatus", () => {
+  it("returns true for done and obsolete (canonical)", () => {
+    expect(isTerminalWorkItemStatus("done")).toBe(true);
+    expect(isTerminalWorkItemStatus("obsolete")).toBe(true);
+  });
+
+  it("returns true for legacy synonyms that normalize to done", () => {
+    expect(isTerminalWorkItemStatus("complete")).toBe(true);
+    expect(isTerminalWorkItemStatus("completed")).toBe(true);
+  });
+
+  it("returns false for pending, in_progress, blocked", () => {
+    expect(isTerminalWorkItemStatus("pending")).toBe(false);
+    expect(isTerminalWorkItemStatus("in_progress")).toBe(false);
+    expect(isTerminalWorkItemStatus("blocked")).toBe(false);
+  });
+
+  it("returns false for null/unknown (normalizes to pending, non-terminal)", () => {
+    expect(isTerminalWorkItemStatus(null)).toBe(false);
+    expect(isTerminalWorkItemStatus("unknown")).toBe(false);
   });
 });

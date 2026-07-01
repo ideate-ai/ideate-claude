@@ -178,6 +178,64 @@ describe("handleGetExecutionStatus — obsolete items", () => {
 });
 
 // ---------------------------------------------------------------------------
+// WI-220 — legacy status synonyms ('complete', 'completed') must be treated
+// as terminal (done) and excluded from the ready list, matching the
+// canonical vocabulary in node-type-registry.ts (only done/obsolete are
+// terminal). This regression-tests the "finished legacy items surfaced as
+// ready" bug.
+// ---------------------------------------------------------------------------
+
+describe("handleGetExecutionStatus — legacy status synonym normalization", () => {
+  it("'completed' items are counted as Completed, not Ready", async () => {
+    insertNode("WI-101", "work_item", { status: "completed" });
+    insertWorkItem("WI-101", "Legacy completed item");
+
+    const result = await handleGetExecutionStatus(ctx, {});
+
+    expect(result).toContain("Completed: 1");
+    expect(result).toContain("Ready to execute: 0");
+    expect(result).not.toContain("WI-101");
+  });
+
+  it("'complete' items are counted as Completed, not Ready", async () => {
+    insertNode("WI-102", "work_item", { status: "complete" });
+    insertWorkItem("WI-102", "Legacy complete item");
+
+    const result = await handleGetExecutionStatus(ctx, {});
+
+    expect(result).toContain("Completed: 1");
+    expect(result).toContain("Ready to execute: 0");
+  });
+
+  it("legacy-synonym items satisfy dependencies for downstream items (treated as done)", async () => {
+    insertNode("WI-201", "work_item", { status: "completed" });
+    insertWorkItem("WI-201", "Legacy completed dependency");
+
+    insertNode("WI-202", "work_item", { status: "pending" });
+    insertWorkItem("WI-202", "Downstream item", { depends: ["WI-201"] });
+
+    const result = await handleGetExecutionStatus(ctx, {});
+
+    expect(result).toContain("Ready to execute: 1");
+    expect(result).toContain("WI-202");
+    expect(result).toContain("Blocked: 0");
+    expect(result).not.toMatch(/WI-202 blocked by/);
+  });
+
+  it("only done/obsolete are terminal — 'blocked' and 'in_progress' status items remain actionable, not silently completed", async () => {
+    insertNode("WI-301", "work_item", { status: "in_progress" });
+    insertWorkItem("WI-301", "In-progress item");
+
+    const result = await handleGetExecutionStatus(ctx, {});
+
+    // 'in_progress' is not terminal, so with no unsatisfied deps it is ready.
+    expect(result).toContain("Completed: 0");
+    expect(result).toContain("Ready to execute: 1");
+    expect(result).toContain("WI-301");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Helper: insert a finding row
 // ---------------------------------------------------------------------------
 

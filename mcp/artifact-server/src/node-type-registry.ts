@@ -635,3 +635,95 @@ export const TYPE_TO_EXTENSION_TABLE: Record<string, AnyTable | undefined> = Obj
     .filter(([, spec]) => spec.extensionTable !== null)
     .map(([type, spec]) => [type, spec.extensionTable as AnyTable])
 );
+
+// ---------------------------------------------------------------------------
+// WI-220 — canonical work_item status vocabulary
+//
+// Problem: work_item status values in the wild are a mix of
+// unknown/complete/completed/done (plus obsolete/pending/blocked/in_progress),
+// causing get_execution_status and get_workspace_status counts to disagree
+// and finished legacy items to be miscategorised as "ready".
+//
+// This section is the single source of truth for the canonical status enum
+// and the legacy-synonym → canonical mapping. It is consumed by:
+//   - tools/execution.ts        (get_execution_status classification)
+//   - scripts/migrate-status-vocab.ts (one-time data migration)
+//
+// NOTE ON ENFORCEMENT SCOPE: work_item status is stored on the base `nodes`
+// row (nodes.status), not in the work_items extension table (work_items has
+// no status column — see schema.ts). NodeTypeSpec.buildRow only builds
+// extension-table rows, so buildRowWorkItem does not (and should not) touch
+// status. Actual persistence of nodes.status happens in
+// adapters/local/writer.ts (putNode/patchNode/batchMutate) and indexer.ts,
+// which are outside this work item's declared file scope. normalizeWorkItemStatus
+// is exported here as the canonical validator/normalizer so those write paths
+// have a single, correct function to call; wiring it into writer.ts/indexer.ts
+// is left to a follow-up change (see WI-220 completion notes).
+// ---------------------------------------------------------------------------
+
+/** Canonical work_item status vocabulary (WI-220). */
+export const WORK_ITEM_STATUSES = [
+  "pending",
+  "in_progress",
+  "done",
+  "obsolete",
+  "blocked",
+] as const;
+
+export type WorkItemStatus = (typeof WORK_ITEM_STATUSES)[number];
+
+const WORK_ITEM_STATUS_SET: ReadonlySet<string> = new Set(WORK_ITEM_STATUSES);
+
+/**
+ * Statuses considered terminal/finished for execution-readiness purposes.
+ * Per WI-220 design: only 'done' and 'obsolete' are terminal — legacy
+ * synonyms (complete/completed) must be normalized to 'done' before this
+ * check is meaningful (see normalizeWorkItemStatus).
+ */
+export const TERMINAL_WORK_ITEM_STATUSES: ReadonlySet<WorkItemStatus> = new Set([
+  "done",
+  "obsolete",
+]);
+
+/**
+ * Legacy status synonyms observed in the wild, mapped to their canonical
+ * equivalent. Any raw value not present in WORK_ITEM_STATUSES and not present
+ * in this map is treated as unrecognized and normalized to 'pending' by
+ * normalizeWorkItemStatus (never silently passed through).
+ */
+export const WORK_ITEM_STATUS_SYNONYMS: Readonly<Record<string, WorkItemStatus>> = {
+  complete: "done",
+  completed: "done",
+  unknown: "pending",
+};
+
+/**
+ * Normalize a raw (possibly legacy, null, or unanticipated) status value to
+ * the canonical work_item status vocabulary. This is the enforcement point
+ * referenced by WI-220's acceptance criteria.
+ *
+ * Mapping:
+ *   - null / undefined / "" / "unknown"   -> "pending"
+ *   - "complete" / "completed"            -> "done"
+ *   - any of WORK_ITEM_STATUSES verbatim  -> preserved as-is (case-insensitive)
+ *   - anything else (typos, future values, unanticipated legacy values)
+ *                                          -> "pending" (safe default; never
+ *                                             silently passed through)
+ */
+export function normalizeWorkItemStatus(raw: unknown): WorkItemStatus {
+  if (raw === null || raw === undefined) return "pending";
+  const s = String(raw).trim().toLowerCase();
+  if (s === "") return "pending";
+  if (WORK_ITEM_STATUS_SET.has(s)) return s as WorkItemStatus;
+  if (Object.prototype.hasOwnProperty.call(WORK_ITEM_STATUS_SYNONYMS, s)) {
+    return WORK_ITEM_STATUS_SYNONYMS[s];
+  }
+  // Unrecognized value — normalize to the safe default rather than passing
+  // the raw (non-canonical) string through.
+  return "pending";
+}
+
+/** True when `raw`, once normalized, is a terminal (done/obsolete) status. */
+export function isTerminalWorkItemStatus(raw: unknown): boolean {
+  return TERMINAL_WORK_ITEM_STATUSES.has(normalizeWorkItemStatus(raw));
+}
