@@ -1,4 +1,6 @@
-import { stringify as stringifyYaml } from "yaml";
+import * as fs from "fs";
+import * as path from "path";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { ToolContext } from "../types.js";
 import { TYPE_TO_EXTENSION_TABLE } from "../node-type-registry.js";
 
@@ -21,6 +23,98 @@ function getAdapter(ctx: ToolContext) {
 }
 
 // ---------------------------------------------------------------------------
+// Cycle resolution helpers for handleAppendJournal
+//
+// WI-219: append_journal used to default its cycle to 0 whenever no journal
+// entries existed yet (see the "legacy fallback" below), then hand that 0 to
+// adapter.appendJournalEntry — which the ValidatingAdapter rejects with
+// "cycle must be a positive integer, received 0". This happened even while
+// the domain/autopilot cycle was already advanced (e.g. 5/6), because the
+// old logic never consulted domain or autopilot state at all.
+//
+// The fix resolves the cycle the same way ideate_get_convergence_status /
+// ideate_get_domain_state do it (tools/analysis.ts): a live read of
+// domains/index.yaml's `current_cycle` field, taken at call time rather than
+// from any cached/startup value. That is combined with the autopilot
+// session's `cycles_completed` counter (tools/autopilot-state.ts), and the
+// higher of the two wins — matching the autopilot cycle numbering, which
+// tracks one ahead of the last fully-archived domain cycle while a cycle is
+// in progress.
+// ---------------------------------------------------------------------------
+
+function readFileSafe(filePath: string): string | null {
+  try {
+    return fs.readFileSync(filePath, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse `current_cycle: N` from domains/index.yaml (or legacy index.md)
+ * content. Mirrors tools/analysis.ts's parseCycleFromIndex — kept local
+ * to write.ts to avoid introducing a cross-module dependency for a
+ * two-line regex.
+ */
+function parseDomainCurrentCycle(indexContent: string): number | null {
+  const match = indexContent.match(/^current_cycle:\s*(\d+)/m);
+  if (match) return parseInt(match[1], 10);
+  return null;
+}
+
+/** Live-read the domain's current_cycle from domains/index.yaml under ctx.ideateDir. */
+function resolveDomainCurrentCycle(ctx: ToolContext): number | null {
+  const indexYamlPath = path.join(ctx.ideateDir, "domains", "index.yaml");
+  const indexMdPath = path.join(ctx.ideateDir, "domains", "index.md");
+  const indexContent = readFileSafe(indexYamlPath) ?? readFileSafe(indexMdPath);
+  return indexContent !== null ? parseDomainCurrentCycle(indexContent) : null;
+}
+
+/**
+ * Live-read autopilot-state.yaml's cycles_completed field, preferring the
+ * adapter (so this stays consistent with scoped/remote backends) and
+ * falling back to a direct filesystem read — matching the pattern used by
+ * tools/autopilot-state.ts's readAutopilotState.
+ */
+async function resolveAutopilotCyclesCompleted(ctx: ToolContext): Promise<number | null> {
+  let raw: string | null = null;
+  if (ctx.adapter) {
+    try {
+      raw = await ctx.adapter.readNodeContent("autopilot-state");
+    } catch {
+      raw = null;
+    }
+  } else {
+    raw = readFileSafe(path.join(ctx.ideateDir, "autopilot-state.yaml"));
+  }
+  if (!raw) return null;
+  try {
+    const parsed = parseYaml(raw) as Record<string, unknown> | null;
+    const value = parsed?.["cycles_completed"];
+    return typeof value === "number" && Number.isInteger(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve the "current cycle" for journal attribution: max(domain's
+ * current_cycle, autopilot's cycles_completed), ignoring any non-positive
+ * or missing source. Returns null when neither source yields a positive
+ * integer.
+ */
+async function resolveJournalCycle(ctx: ToolContext): Promise<number | null> {
+  const domainCycle = resolveDomainCurrentCycle(ctx);
+  const autopilotCycles = await resolveAutopilotCyclesCompleted(ctx);
+
+  const candidates = [domainCycle, autopilotCycles].filter(
+    (n): n is number => typeof n === "number" && Number.isInteger(n) && n > 0
+  );
+  if (candidates.length === 0) return null;
+  return Math.max(...candidates);
+}
+
+// ---------------------------------------------------------------------------
 // handleAppendJournal — per-entry YAML journal write
 // ---------------------------------------------------------------------------
 
@@ -39,18 +133,39 @@ export async function handleAppendJournal(
 
   const adapter = getAdapter(ctx);
 
-  // Determine cycle number: use caller-supplied cycle_number, or query for max
-  let cycleNumber = 0;
+  // Determine cycle number:
+  //   1. Explicit caller-supplied cycle_number wins outright (unchanged
+  //      behavior — including that an explicit non-positive value is still
+  //      rejected by the adapter's validation, same as before).
+  //   2. Otherwise resolve from workspace state: max(domain.current_cycle,
+  //      autopilot.cycles_completed). This is what fixes the deterministic
+  //      "cycle must be a positive integer, received 0" failure during
+  //      autopilot cycles.
+  //   3. If workspace state doesn't resolve to a positive cycle (e.g. no
+  //      domain index, no autopilot-state.yaml yet), fall back to the
+  //      historical max cycle_created observed across existing journal
+  //      entries — this preserves the pre-fix behavior for workspaces that
+  //      only ever set cycle via journal history.
+  //   4. If nothing above resolves to a positive integer (a genuinely fresh,
+  //      uninitialized workspace with no domain/autopilot/journal history),
+  //      default to cycle 1 rather than throwing.
+  let cycleNumber: number;
   if (args.cycle_number !== undefined && args.cycle_number !== null) {
     cycleNumber = args.cycle_number as number;
   } else {
-    // Adapter path: query journal entries to find the max cycle_created.
-    // queryNodes returns NodeMeta rows which include cycle_created.
-    const result = await adapter.queryNodes({ type: "journal_entry" }, 1000, 0);
-    for (const { node } of result.nodes) {
-      if (node.cycle_created !== null && node.cycle_created > cycleNumber) {
-        cycleNumber = node.cycle_created;
+    const resolved = await resolveJournalCycle(ctx);
+    if (resolved !== null) {
+      cycleNumber = resolved;
+    } else {
+      // Legacy fallback: max cycle_created observed across existing journal entries.
+      let maxObserved = 0;
+      const result = await adapter.queryNodes({ type: "journal_entry" }, 1000, 0);
+      for (const { node } of result.nodes) {
+        if (node.cycle_created !== null && node.cycle_created > maxObserved) {
+          maxObserved = node.cycle_created;
+        }
       }
+      cycleNumber = maxObserved > 0 ? maxObserved : 1;
     }
   }
 
