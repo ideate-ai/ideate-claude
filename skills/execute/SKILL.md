@@ -250,6 +250,7 @@ The worker prompt must instruct the agent to:
 - Respect all constraints from the digest (retrieve full constraints via `ideate_get_context_package()` if needed)
 - Not make design decisions beyond what the spec prescribes
 - Report completion with a list of files created or modified
+- Halt and report if required ideate_* MCP tools are unavailable — never read or write .ideate/ paths directly as a substitute (P-31)
 
 The worker prompt must also include this self-check instruction (≤200 words):
 
