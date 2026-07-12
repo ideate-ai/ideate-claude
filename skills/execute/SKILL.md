@@ -57,7 +57,7 @@ Load all plan artifacts via MCP tools:
 2. Call `ideate_artifact_query({type: "execution_strategy"})` — returns the execution strategy.
 3. Call `ideate_artifact_query({type: "overview"})` — returns the project overview (if it exists). If absent, note and continue.
 4. Call `ideate_artifact_query({type: "module_spec"})` — returns all module specs (if they exist).
-5. Call `ideate_artifact_query({type: "work_item"})` — returns all work items.
+5. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_claim`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1`: the opaque `spec` payload IS the work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes). Hold `{board_items}` — the set of work items that live on the board, with their board item IDs. Items returned only by the artifact query are legacy v2 items; both kinds execute in the same plan. If the work-state tools are absent, the artifact query alone is the complete set (v2 fallback path) and `{board_items}` is empty.
 6. Call `ideate_artifact_query({type: "research"})` — returns all research findings (if they exist).
 7. Call `ideate_artifact_query({type: "journal_entry"})` — returns project history (if it exists). If absent, note and continue.
 
@@ -88,6 +88,8 @@ Call `ideate_get_execution_status()` — returns completed, pending, and blocked
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
 Use the returned `completed` set as `completed_items`. Report: "Found {N} already-completed items. These will be skipped."
+
+**Board-aware completion (v3)**: For items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what the journal-derived scan says, and an item whose board status is `open` or `claimed` is NOT completed even if a journal entry suggests otherwise. Merge `completed_items` accordingly. If the work-state tools are absent, the journal-derived scan alone decides (v2 fallback path).
 
 If no completed items are returned and no in-progress items are returned, this is a fresh execution. Report nothing and proceed.
 
@@ -220,6 +222,17 @@ This call is best-effort — if it fails, continue without interruption.
 - variables: { "WORK_ITEM_ID": "{work_item_id}", "VERDICT": "{review_verdict}" }
 
 Where `{review_verdict}` is `"pass"` if the review passed without rework, `"rework"` if it passed after rework, or `"fail"` if unresolvable. This call is best-effort — if it fails, continue without interruption.
+
+## Board Claim Discipline (v3)
+
+For each work item in `{board_items}`, the coordinator holds the board lease around the worker's lifetime. If the item is NOT in `{board_items}` — a legacy v2 item, or the work-state tools are absent — skip this block entirely: the v2 flow in the rest of this phase is the complete behavior (fallback path).
+
+- **Claim before spawn**: After the skip check and the `work_item.started` hook, call `work_claim(id: {board item ID}, actor: {human: "{user}", agent: "{worker agent type}"})`. Hold the returned claim token. If the claim is rejected (dependencies not done, or already claimed), do NOT spawn the worker — re-check with `work_get`; if the board state contradicts the plan's dependency ordering, route to the Andon cord.
+- **Renew on long items**: The default lease is hours-scale. Before spawning any rework pass on the same item — and at any natural checkpoint on an item that has been in flight for a long stretch — call `work_renew` with the held token. A rejected renew means the lease expired and the item may have been reclaimed: stop work on it and route to the Andon cord.
+- **Complete on review pass**: When the item passes incremental review (findings handled, rework done), call `work_complete` with the held token and a `note` summarizing the outcome in one or two sentences (what was built, rework rounds, review verdict). The note is not optional on this path — via the completion-record hook it becomes the item's durable process record (boundary contract capture point 1).
+- **Release on failure**: If the item cannot proceed (worker retry exhausted, Andon-blocked, user stops execution), call `work_release` with the held token and a handoff `note` stating what was attempted and what remains. Never leave a claim to expire silently when the outcome is known.
+
+The board's claim discipline REPLACES v2 work-item status updates for items in `{board_items}` — neither the coordinator nor its workers issue `ideate_update_work_items` status changes for board items. Phases, findings, and journal entries stay v2 for all items. The `work_item.started` / `work_item.completed` event hooks continue to fire for all items regardless of path.
 
 ## Context for Every Worker
 
@@ -537,6 +550,15 @@ Rework: {N} minor, {N} significant findings fixed from incremental review.
 
 The journal is strictly append-only. Never edit or delete existing entries.
 
+**v3 process record (additive)**: If the v3 record tool `record_append` is present in the session (mechanical tool-presence detection — GP-24), journal-grade happenings ALSO flow to the process record — one `record_append` per happening, kind per event:
+
+- Group completion → `record_append(kind="group-complete", claim="Group {N} complete: {item list}", scope="execute", content={the journal body})`
+- Andon resolution → `kind="andon-resolution"`, claim = the user's decision in one sentence
+- Execution pause → `kind="execution-paused"`, claim = what remains and why it stopped
+- Final summary → `kind="execution-complete"`, claim = the one-line outcome
+
+Do NOT duplicate per-item completion records here — for board items, `work_complete`'s note already produces the completion record. The v2 journal write above remains authoritative and unchanged; if `record_append` is absent, the journal write alone is the complete behavior (fallback path).
+
 ---
 
 # Phase 11: Status Reporting
@@ -611,8 +633,8 @@ Run `/ideate:review` for a comprehensive multi-perspective evaluation of the com
 If a subagent or teammate fails (crashes, times out, produces no output):
 
 1. Record the failure in the journal
-2. Retry once with the same work item and context
-3. If the retry fails, add to the Andon cord queue with the failure details
+2. Retry once with the same work item and context. For board items, call `work_renew` with the held token before respawning — the claim stays held across the retry.
+3. If the retry fails, add to the Andon cord queue with the failure details. For board items, call `work_release` with the held token and a handoff note (see Board Claim Discipline); for legacy v2 items there is no board state to release (fallback path).
 4. Continue with other work items that do not depend on the failed item
 
 ## Code-reviewer failure
@@ -638,9 +660,10 @@ If the user stops execution partway through:
 
 1. Report current status (Phase 11 format)
 2. Write a journal entry noting the pause and which items remain
-3. List what would be needed to resume (which items are next, any pending Andon cord issues)
+3. For any board item still claimed but not complete, call `work_release` with the held token and a handoff note describing partial progress (Board Claim Discipline — never leave a claim to expire silently). Legacy v2 items have no board state to release (fallback path).
+4. List what would be needed to resume (which items are next, any pending Andon cord issues)
 
-The user can re-run `/ideate:execute` to resume. The skill should detect already-completed items (via `ideate_get_execution_status`) and skip them.
+The user can re-run `/ideate:execute` to resume. The skill should detect already-completed items (via `ideate_get_execution_status`, and for board items via `work_list` status — board status is authoritative; the journal-derived scan is the fallback when the work-state tools are absent) and skip them.
 
 ---
 
@@ -674,3 +697,4 @@ This skill document satisfies the MCP abstraction boundary (GP-14):
 - [x] Phase steering loaded in Phase 2 and surfaced in Phase 4 execution plan and Phase 6 worker context
 - [x] Work item selection filtered to active phase's `work_items` array (with backward compat for null phase or absent list)
 - [x] Status report in Phase 11 includes current phase ID and type
+- [x] Every v3 board/record call site (`work_list`, `work_claim`, `work_renew`, `work_complete`, `work_release`, `work_get`, `record_append`) is paired with an explicit v2 fallback in the same section, and detection is mechanical tool presence (GP-24)

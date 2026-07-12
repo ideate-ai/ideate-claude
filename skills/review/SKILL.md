@@ -121,7 +121,7 @@ For cycle reviews, additionally load:
 
 5. Call `ideate_get_domain_state()` — returns all domain policies, decisions, and questions across all domains.
 6. Current-cycle findings: call `ideate_artifact_query({type: "finding"})` with `filters: { cycle: N }` to load findings from the current cycle. Do NOT load findings from prior cycles — the domain layer already distills them.
-7. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. The manifest (Phase 3.5) will index these for reviewers.
+7. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_events`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1` (the opaque `spec` payload is the work-item body). If the tools are absent, the artifact query alone is the complete set (v2 fallback path). The manifest (Phase 3.5) will index these for reviewers.
 
 Do NOT load all prior cycle archives — the domain layer already distills history.
 
@@ -181,6 +181,8 @@ All reviewer output is written through these MCP calls. The skill never creates 
 For **cycle reviews only**, generate a lightweight manifest that reviewers use as an index instead of reading all work items and incremental reviews upfront.
 
 Call `ideate_get_review_manifest()`. It returns a pre-built manifest table matching work items to incremental reviews with verdicts and finding counts. Hold the response as `{manifest_content}`.
+
+**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools are present in the session (mechanical tool-presence detection — GP-24), append to `{manifest_content}` one row per board item from the Phase 2.2 `work_list`: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path). No other review-flow change — findings, cycle summaries, and archival stay v2 for all items.
 
 Call `ideate_write_artifact({type: "cycle_summary", id: "review-manifest", content: {cycle: N, content: {manifest_content}}})` to persist the manifest.
 

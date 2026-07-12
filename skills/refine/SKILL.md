@@ -75,7 +75,7 @@ Then load remaining context via MCP tools:
 1. Call `ideate_artifact_query({type: "overview"})` — retrieves the project overview.
 2. Call `ideate_artifact_query({type: "module_spec"})` — retrieves module specs (if they exist).
 3. Call `ideate_artifact_query({type: "execution_strategy"})` — retrieves the execution strategy.
-4. Call `ideate_artifact_query({type: "work_item"})` — retrieves current work items. If prior cycles have been archived, note their existence but do not load them unless the user's changes specifically reference prior work.
+4. Call `ideate_artifact_query({type: "work_item"})` — retrieves current work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_create`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and treat items whose `spec_format` is `ideate/wi-v1` as current work items alongside the artifact results (the opaque `spec` payload is the work-item body). If the work-state tools are absent, the artifact query alone is the complete set — this is the v2 fallback path. If prior cycles have been archived, note their existence but do not load them unless the user's changes specifically reference prior work.
 5. Call `ideate_artifact_query({type: "interview"})` — retrieves the original interview transcript.
 6. Call `ideate_artifact_query({type: "research"})` — retrieves all research findings.
 7. Call `ideate_artifact_query({type: "journal_entry"})` — retrieves project history (if it exists).
@@ -299,9 +299,18 @@ Use `ideate_write_artifact` with type `execution_strategy` to write a new execut
 
 ## 7h. Work Items — NEW Items
 
-**Determine the next ID**: Call `ideate_get_next_id({type: "work_item"})` to obtain the next available WI number. Use 3-digit zero-padded numbering.
+**Determine the next ID**: Call `ideate_get_next_id({type: "work_item"})` to obtain the next available WI number. Use 3-digit zero-padded numbering. **Board-aware numbering (v3)**: if the v3 work-state tools are present, also call `work_list` and take the maximum across the artifact index and any board items carrying `spec_format: ideate/wi-v1` (the board is invisible to `ideate_get_next_id`; without this check, numbering can collide).
 
-Call `ideate_write_work_items({items_array})` — atomically creates individual work item artifacts for each new work item.
+**v3 board path**: If the v3 work-state tools (`work_create`, `work_claim`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create each new work item ON THE BOARD. Call `work_create` per item with:
+
+- `title`: `"WI-{NNN}: {title}"`
+- `spec`: the full work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes) as an opaque payload — the board never parses it
+- `spec_format`: `"ideate/wi-v1"`
+- `depends_on`: the board item IDs of dependency items created in this same batch. A dependency on a legacy (v2 artifact) work item cannot be a board dependency — record it inside the spec payload's dependencies section and note it in the refinement summary so the executor enforces it manually.
+
+Hold the mapping `{WI number → board item ID}` for Section 7i — the phase's `work_items` array continues to record WI designations (phases stay v2). Do NOT also write v2 work-item artifacts on this path; the board is the single home for these items.
+
+**v2 fallback (pre-v3 projects only)**: If the v3 work-state tools are NOT present, call `ideate_write_work_items({items_array})` — atomically creates individual work item artifacts for each new work item. This is the complete legacy behavior, unchanged.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
@@ -427,6 +436,8 @@ New work items: {NNN-NNN range}
 {Summary of what this refinement cycle addresses.}
 ```
 
+**v3 process record (additive)**: If the v3 record tool `record_append` is present in the session (mechanical tool-presence detection — GP-24), ALSO append the same happening to the process record: `record_append(kind="plan-complete", claim="Refinement planning completed: WI-{NNN}–WI-{NNN}", scope="refine", content={the journal body above})`. This is additive — the v2 journal write above still happens and remains authoritative for pre-v3 readers. If `record_append` is absent, the v2 journal write alone is the complete behavior (fallback path).
+
 ---
 
 # Phase 8: Present Refinement Summary
@@ -491,5 +502,6 @@ Before completing, verify:
 - [x] Active project queried via `ideate_artifact_query({type: "project", filters: {status: "active"}})` — not via `ideate_get_workspace_status`
 - [x] Phase transitions recommended to user and confirmed before executing — not forced
 - [x] After creating work items, current phase `work_items` list updated (if active project exists)
+- [x] Every v3 board/record call site (`work_list`, `work_create`, `record_append`) is paired with an explicit v2 fallback in the same section, and detection is mechanical tool presence (GP-24)
 - [x] After phase transition, project `current_phase_id` and `horizon` updated
 - [x] Zero occurrences of `ideate_get_project_status` in this skill
