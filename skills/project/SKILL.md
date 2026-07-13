@@ -43,7 +43,7 @@ If the argument starts with `phase`, route to the phase command handler. Otherwi
 
 ## show (default)
 
-Call `ideate_get_workspace_status({view: "project"})`. Display the result as-is.
+Call `ideate_get_workspace_status({view: "project"})`. Display the result as-is. **Board-aware (v3)**: `ideate_get_workspace_status` sees only v2 work items. If the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and append a board-items section (board status authoritative), mirroring `skills/status/SKILL.md`'s board supplement; if absent, the v2 view alone is complete (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback." (Or, if a v2-only project view is preferred here, point the user to `/ideate:status` for the board-merged view — but do not silently under-report.)
 
 ## create
 

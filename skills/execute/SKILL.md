@@ -610,7 +610,7 @@ Report status to the user at these milestones:
 - **Andon cord presentation**: When presenting issues (Phase 9), include current progress.
 - **Halfway point**: When approximately half the work items are complete, report overall progress.
 
-Call `ideate_get_workspace_status()` — returns a structured project status summary including completed, in-progress, remaining, rework, and Andon cord item counts. Use the response directly to populate the status report below.
+Call `ideate_get_workspace_status()` — returns a structured project status summary including completed, in-progress, remaining, rework, and Andon cord item counts (a v2-only aggregation over work-item artifacts). **Board-aware (v3)**: `ideate_get_workspace_status` does not see board items. If the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board-item counts — board status is authoritative for board items — so the status report reflects board-resident work, not just v2 (mirrors `skills/status/SKILL.md`'s board supplement). If the tools are absent, the v2 summary alone is complete (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback." Use the merged result to populate the status report below.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 

@@ -18,7 +18,7 @@ import { dirname, join } from 'node:path';
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { run } from './check-board-awareness.mjs';
+import { run, COVERAGE_MANIFEST } from './check-board-awareness.mjs';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -42,8 +42,20 @@ afterEach(() => {
   }
 });
 
+// P-48 (WI-324): registers a fixture test AND records its exact title so the
+// "coverage manifest completeness" tests below can assert every
+// COVERAGE_MANIFEST.fixtureName corresponds to a REAL, REGISTERED test — not
+// just a manifest entry claiming a fixture exists. This is how the manifest
+// stays honest: a fixtureName that doesn't match any `fixture(...)` call
+// here fails the binding test, not just a human's read-through.
+const REGISTERED_FIXTURE_NAMES = new Set();
+function fixture(name, fn) {
+  REGISTERED_FIXTURE_NAMES.add(name);
+  it(name, fn);
+}
+
 describe('check-board-awareness: run(rootDir) — falsification fixtures', () => {
-  it('is NOT vacuous: a known-unbranched call site is flagged as a violation naming the file', () => {
+  fixture('is NOT vacuous: a known-unbranched call site is flagged as a violation naming the file', () => {
     const root = fixtureRoot();
     writeFile(
       root,
@@ -129,7 +141,7 @@ describe('check-board-awareness: run(rootDir) — falsification fixtures', () =>
     assert.deepEqual(violations, []);
   });
 
-  it('ideate_artifact_query({type: "work_item"}) unbranched IS flagged, and clears with a board token', () => {
+  fixture('ideate_artifact_query({type: "work_item"}) unbranched IS flagged, and clears with a board token', () => {
     const unbranchedRoot = fixtureRoot();
     writeFile(
       unbranchedRoot,
@@ -241,6 +253,367 @@ describe('check-board-awareness: run(rootDir) — falsification fixtures', () =>
     const { ok, failures } = run(root);
     assert.equal(ok, false);
     assert.ok(failures.length > 0);
+  });
+});
+
+describe('check-board-awareness: WI-324 / P-48 hardening — new monitored shapes', () => {
+  fixture(
+    'ideate_get_execution_status: unbranched call is flagged; a board-awareness token within the read window clears',
+    () => {
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Completed Items Scan',
+          '',
+          'Call `ideate_get_execution_status()` — returns completed, pending, and blocked work item sets.',
+          '',
+        ].join('\n'),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_get_execution_status'));
+
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Completed Items Scan',
+          '',
+          'Call `ideate_get_execution_status()` — returns completed, pending, and blocked work item sets. **Board-aware merge (v3)**: also call `work_list` and merge board status for board items.',
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+    },
+  );
+
+  fixture(
+    'ideate_get_workspace_status: unbranched progress read is flagged; a board token clears; a project-root-resolution call is out of scope',
+    () => {
+      // Unbranched work-item-PROGRESS read (in scope via the {view:...} form
+      // OR same-line progress vocabulary) with no board token → flagged.
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Status Report',
+          '',
+          'Call `ideate_get_workspace_status({view: "project"})` — returns completed, in-progress, and remaining item counts. Display the result.',
+          '',
+        ].join('\n'),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_get_workspace_status'));
+
+      // Same progress read, board branch added in-window → clears.
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Status Report',
+          '',
+          'Call `ideate_get_workspace_status({view: "project"})` — returns completed, in-progress, and remaining item counts. **Board-aware (v3)**: also call `work_list` and merge board-item counts.',
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+
+      // WI-324 rework: the VERIFICATION use is also board-sensitive (WI-322
+      // moved init work-item creation onto the board). An unbranched
+      // "verify all work items are present via workspace status" → flagged.
+      const verifyUnbranchedRoot = fixtureRoot();
+      writeFile(
+        verifyUnbranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Verify',
+          '',
+          'All work items should already be written. Verify they are all present via `ideate_get_workspace_status()`.',
+          '',
+        ].join('\n'),
+      );
+      const verifyUnbranched = run(verifyUnbranchedRoot);
+      assert.equal(verifyUnbranched.ok, false);
+      assert.ok(verifyUnbranched.violations.some((v) => v.tool === 'ideate_get_workspace_status'));
+
+      // Same verification read with a work_list board branch in-window → clears.
+      const verifyBranchedRoot = fixtureRoot();
+      writeFile(
+        verifyBranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Verify',
+          '',
+          'All work items should already be written. Verify them via `work_list` if created on the board (board-resident, INVISIBLE to `ideate_get_workspace_status()`); otherwise confirm via `ideate_get_workspace_status()`.',
+          '',
+        ].join('\n'),
+      );
+      const verifyBranched = run(verifyBranchedRoot);
+      assert.equal(verifyBranched.ok, true);
+      assert.deepEqual(verifyBranched.violations, []);
+
+      // A project-root-RESOLUTION call (no progress vocab, no view arg, no
+      // work-item verification vocab) is OUT of scope — resolving a project
+      // path is not board-sensitive, so an unbranched resolution call must NOT
+      // be flagged (mirrors get_artifact_context excluding project/phase loads).
+      const resolutionRoot = fixtureRoot();
+      writeFile(
+        resolutionRoot,
+        'skills/x.md',
+        [
+          '# Phase: Setup',
+          '',
+          'Call `ideate_get_workspace_status()` to identify the project root. The MCP server walks up the directory tree to find the artifact directory.',
+          '',
+        ].join('\n'),
+      );
+      const resolution = run(resolutionRoot);
+      assert.equal(resolution.ok, true);
+      assert.deepEqual(resolution.violations, []);
+    },
+  );
+
+  fixture(
+    'ideate_write_artifact({type: "work_item"}): unbranched write is flagged; a same-line board-create token clears',
+    () => {
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Write Steering Artifacts',
+          '',
+          'Write each work item via `ideate_write_artifact({type: "work_item", id: "WI-001", content: {}})`.',
+          '',
+        ].join('\n'),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_write_artifact(work_item)'));
+
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Write Steering Artifacts',
+          '',
+          '**v2 fallback (pre-v3 projects only)**: write each work item via `ideate_write_artifact({type: "work_item", id: "WI-001", content: {}})`.',
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+    },
+  );
+
+  fixture('work_create: an unbranched call is NEVER flagged, even with zero board tokens anywhere in the file', () => {
+    const root = fixtureRoot();
+    writeFile(
+      root,
+      'skills/x.md',
+      ['# Phase: Create', '', 'Create the item via `work_create({title: "x", spec: {}})`.', ''].join('\n'),
+    );
+
+    const { ok, violations } = run(root);
+
+    assert.equal(ok, true);
+    assert.deepEqual(violations, []);
+    assert.ok(!violations.some((v) => v.tool === 'work_create')); // never emitted for this shape, by design
+  });
+
+  fixture(
+    'ideate_write_work_items: a board token in a SEPARATE paragraph 2 lines away does NOT clear (reproduces the cycle-13 triage false-negative; WRITE_WINDOW catches it)',
+    () => {
+      // Reproduces the exact cycle-13 gap-C2 shape: a board-aware numbering
+      // paragraph sits ~2 lines above an UNBRANCHED write call in its own
+      // separate paragraph. Under the old WINDOW=12 read-window, this board
+      // token falsely cleared the write. WRITE_WINDOW=0 (same
+      // line/paragraph only) must catch it.
+      const root = fixtureRoot();
+      writeFile(
+        root,
+        'skills/x.md',
+        [
+          '# Phase: Write Work Item',
+          '',
+          '**Board-aware numbering (v3)**: also call `work_list` and take the maximum WI number across the artifact index and any board items.',
+          '',
+          'Call `ideate_write_work_items({items: [{id: "WI-001"}]})` to create the work item.',
+          '',
+        ].join('\n'),
+      );
+
+      const { ok, violations } = run(root);
+
+      assert.equal(ok, false);
+      assert.ok(violations.some((v) => v.file === 'skills/x.md' && v.tool === 'ideate_write_work_items'));
+    },
+  );
+
+  fixture(
+    'ideate_write_work_items: a board token on the SAME line/paragraph as the write clears (tightened window still passes the real-tree pattern)',
+    () => {
+      const root = fixtureRoot();
+      writeFile(
+        root,
+        'skills/x.md',
+        [
+          '# Phase: Write Work Item',
+          '',
+          '**v2 fallback (pre-v3 projects only)**: call `ideate_write_work_items({items: [{id: "WI-001"}]})` to create the work item.',
+          '',
+        ].join('\n'),
+      );
+
+      const { ok, violations } = run(root);
+
+      assert.equal(ok, true);
+      assert.deepEqual(violations, []);
+    },
+  );
+
+  fixture(
+    'ideate_assemble_context: unbranched call is flagged; a board token within the read window clears',
+    () => {
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        ['# Phase: Seed PPR', '', 'Call `ideate_assemble_context({artifact_id})` to seed PPR with the work item.', ''].join(
+          '\n',
+        ),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_assemble_context'));
+
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Seed PPR',
+          '',
+          '**Board-aware (v3)**: call `ideate_assemble_context({artifact_id})` to seed PPR with the work item.',
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+    },
+  );
+
+  fixture(
+    'ideate_update_work_items: unbranched call is flagged; a board token within the read window clears',
+    () => {
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        ["Call `ideate_update_work_items({id})` to change the work item's status.", ''].join('\n'),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_update_work_items'));
+
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '**Board-aware (v3)**: for board items, the board owns its own transitions.',
+          "For a v2 item, call `ideate_update_work_items({id})` to change the work item's status.",
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+    },
+  );
+});
+
+describe('check-board-awareness: P-48 coverage manifest completeness', () => {
+  const callPatternNames = () => {
+    // CALL_PATTERNS itself is not exported (it's an internal implementation
+    // detail of run()) — but every violation this file's fixtures produce
+    // carries `tool`, which is exactly CALL_PATTERNS[i].name. We derive the
+    // full name set from a small synthetic tree that trips every pattern at
+    // once (including work_create, which never violates but must still be
+    // recognized as a call site — checked separately below since it can
+    // never appear in a `violations` list by design).
+    const root = fixtureRoot();
+    writeFile(
+      root,
+      'skills/all-shapes.md',
+      [
+        'Call `ideate_get_artifact_context({artifact_id})` for the work item.',
+        'Call `ideate_assemble_context({artifact_id})`.',
+        "Call `ideate_update_work_items({id})` for the work item's status.",
+        'Call `ideate_write_work_items({items: []})`.',
+        'Call `ideate_write_artifact({type: "work_item", id: "WI-001"})`.',
+        'Call `ideate_get_execution_status()`.',
+        'Call `ideate_get_workspace_status({view: "project"})` — completed, in-progress, remaining item counts.',
+        'Call `ideate_artifact_query({type: "work_item"})`.',
+        '',
+      ].join('\n'),
+    );
+    const { violations } = run(root);
+    const names = new Set(violations.map((v) => v.tool));
+    names.add('work_create'); // neverViolation — never appears in `violations`, added manually
+    return names;
+  };
+
+  it('every CALL_PATTERNS shape is enumerated in COVERAGE_MANIFEST — no pattern unmanifested', () => {
+    const patternNames = callPatternNames();
+    const manifestNames = new Set(COVERAGE_MANIFEST.map((e) => e.name));
+
+    for (const name of patternNames) {
+      assert.ok(manifestNames.has(name), `CALL_PATTERNS shape "${name}" has no COVERAGE_MANIFEST entry`);
+    }
+  });
+
+  it('every COVERAGE_MANIFEST entry names a real CALL_PATTERNS shape — no manifest entry describes a nonexistent pattern', () => {
+    const patternNames = callPatternNames();
+
+    for (const entry of COVERAGE_MANIFEST) {
+      assert.ok(patternNames.has(entry.name), `COVERAGE_MANIFEST entry "${entry.name}" does not match any CALL_PATTERNS shape`);
+    }
+  });
+
+  it('every COVERAGE_MANIFEST entry has a corresponding REGISTERED fixture — no claimed-but-untested shape', () => {
+    for (const entry of COVERAGE_MANIFEST) {
+      assert.ok(
+        REGISTERED_FIXTURE_NAMES.has(entry.fixtureName),
+        `COVERAGE_MANIFEST entry "${entry.name}" claims fixtureName "${entry.fixtureName}" but no fixture(...) test with that title is registered`,
+      );
+    }
+  });
+
+  it('every COVERAGE_MANIFEST entry declares a verb (CREATE / COMPLETE / READ / UPDATE)', () => {
+    for (const entry of COVERAGE_MANIFEST) {
+      assert.ok(['CREATE', 'COMPLETE', 'READ', 'UPDATE'].includes(entry.verb), `entry "${entry.name}" has invalid verb "${entry.verb}"`);
+    }
+  });
+
+  it('every COVERAGE_MANIFEST entry documents its window bound with a rationale string', () => {
+    for (const entry of COVERAGE_MANIFEST) {
+      assert.equal(typeof entry.window, 'string');
+      assert.ok(entry.window.length > 0, `entry "${entry.name}" has an empty window rationale`);
+    }
   });
 });
 

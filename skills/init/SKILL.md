@@ -436,7 +436,7 @@ Rewrite the interview artifact with updated `domain` fields on each entry. Call 
 
 # PHASE 8I: PRESENT INIT SUMMARY
 
-After all artifacts are written, call `ideate_get_workspace_status()` to confirm the artifact state, then present a summary:
+After all artifacts are written, call `ideate_get_workspace_status()` to confirm the artifact state (project/phase/interview/strategy are v2). **Board-aware (v3)**: work items created on the board (WI-322 path) are invisible to `ideate_get_workspace_status()`; if the v3 work-state tools are present, ALSO call `work_list` to confirm the board items, so the summary's work-item count reflects board-resident work. Then present a summary:
 
 ```
 ## Init Complete
@@ -1000,7 +1000,7 @@ State whether each group should run in parallel or sequentially, and why.
 
 Verify and write every artifact that has not been written yet. All writes use `ideate_write_artifact`.
 
-**Work items**: All work items should already be written (from Phase 7P.3). Verify they are all present via `ideate_get_workspace_status()`.
+**Work items**: All work items should already be written (from Phase 7P.3). **Board-aware verification (v3)**: if Phase 7P.3 created them on the board (v3 work-state tools present — mechanical tool presence, GP-24), verify them via `work_list` (they are board-resident and INVISIBLE to `ideate_get_workspace_status()`, which is v2-only). Only for the v2 fallback path (pre-v3 projects) verify via `ideate_get_workspace_status()` — note "v3 work-state tools not detected — using v2 artifact fallback" if the tools are absent.
 
 **Execution strategy**: Written in Phase 8P.1. Verify it exists.
 
@@ -1015,7 +1015,7 @@ ideate_append_journal({
 })
 ```
 
-Verify that the following artifacts exist and are complete by calling `ideate_get_workspace_status()`:
+Verify that the following artifacts exist and are complete by calling `ideate_get_workspace_status()` (v2 artifacts) — and, if work items were created on the board (v3 tools present), `work_list` for the board-resident work items, which `ideate_get_workspace_status()` does not see:
 - Project config
 - Project artifact (PR-{NNN})
 - Phase artifacts (PH-{NNN}, one per logical phase)
@@ -1152,7 +1152,7 @@ ideate_append_journal({
 
 # PHASE 11P: VERIFICATION AND SUMMARY
 
-Call `ideate_get_workspace_status()` to confirm all artifacts are present. Then present the plan summary (from Phase 9P.2) if not already presented.
+Call `ideate_get_workspace_status()` to confirm all v2 artifacts are present; **if work items were created on the board (v3 tools present), ALSO call `work_list`** — board items are invisible to `ideate_get_workspace_status()`. Then present the plan summary (from Phase 9P.2) if not already presented.
 
 ---
 
