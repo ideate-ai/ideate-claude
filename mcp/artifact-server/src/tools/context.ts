@@ -1408,5 +1408,16 @@ export async function handleAssembleContext(
     metadata.truncated_types = traversalResult.truncated_types;
   }
 
+  // WI-333 (F-333-001 C1 / D-42): the PPR traversal runs over the v2 graph
+  // ONLY, so on a board-active project the assembled context (including any
+  // work-item section) omits board-resident items/edges. Mark it INCOMPLETE —
+  // presence-only, consistent with the other v2 read tools (WI-326/332).
+  const boardNotice = boardActiveNotice(ctx);
+  if (boardNotice) {
+    (metadata as Record<string, unknown>).board_active = true;
+    (metadata as Record<string, unknown>).work_item_counts_incomplete = true;
+    (metadata as Record<string, unknown>).board_notice = boardNotice;
+  }
+
   return JSON.stringify(metadata, null, 2);
 }
