@@ -1,5 +1,6 @@
 import type { ToolContext } from "../types.js";
 import { NODE_TYPE_ID_PREFIXES, QUERYABLE_NODE_TYPES } from "../node-type-registry.js";
+import { boardActiveNotice } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Adapter resolution
@@ -128,6 +129,15 @@ export async function handleArtifactQuery(
 
   const adapter = getAdapter(ctx);
 
+  // WI-332 (C1 / D-42): a work-item query returns v2 `work_item` nodes ONLY
+  // (both the relatedTo type_filter and the plain type branch). On a board-
+  // active project those results/counts omit board-resident items, so mark the
+  // response INCOMPLETE — including the "no results" returns, where a bare
+  // "No results found." on a board project is itself the silent-miss. Non-
+  // work_item queries are unaffected. Presence-only; no board.db content read.
+  const mark = type === "work_item" ? boardActiveNotice(ctx) : null;
+  const withNotice = (body: string): string => (mark ? `${mark}\n\n${body}` : body);
+
   if (relatedTo) {
     let result;
     try {
@@ -161,9 +171,9 @@ export async function handleArtifactQuery(
 
     if (result.nodes.length === 0) {
       if (result.total_count === 0) {
-        return "No results found.";
+        return withNotice("No results found.");
       }
-      return `No results on this page. **Total**: ${result.total_count} — use lower offset.`;
+      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`);
     }
 
     const tableRows = result.nodes.map((n) => [
@@ -181,7 +191,7 @@ export async function handleArtifactQuery(
       tableRows
     );
 
-    return `${table}\n\n**Total**: ${result.total_count}`;
+    return withNotice(`${table}\n\n**Total**: ${result.total_count}`);
   } else {
     const result = await adapter.queryNodes(
       {
@@ -200,9 +210,9 @@ export async function handleArtifactQuery(
 
     if (result.nodes.length === 0) {
       if (result.total_count === 0) {
-        return "No results found.";
+        return withNotice("No results found.");
       }
-      return `No results on this page. **Total**: ${result.total_count} — use lower offset.`;
+      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`);
     }
 
     const tableRows = result.nodes.map((n) => [
@@ -220,6 +230,6 @@ export async function handleArtifactQuery(
       tableRows
     );
 
-    return `${table}\n\n**Total**: ${result.total_count}`;
+    return withNotice(`${table}\n\n**Total**: ${result.total_count}`);
   }
 }
