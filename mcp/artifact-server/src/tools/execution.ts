@@ -1,5 +1,6 @@
 import type { ToolContext } from "../types.js";
 import { normalizeWorkItemStatus } from "../node-type-registry.js";
+import { boardActiveNotice } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Internal pagination constant
@@ -296,7 +297,13 @@ export async function handleGetExecutionStatus(
   const total = workItems.length;
   const readyList = [...readySet].sort();
 
+  // WI-326 (D-42): mark v2-only counts INCOMPLETE when the board is active.
+  // Board-resident items are invisible to fetchAllWorkItems (v2 nodes only),
+  // so the counts below exclude them; the notice makes that loud, not silent.
+  const notice = boardActiveNotice(ctx);
+
   const lines: string[] = [
+    ...(notice ? [notice, ""] : []),
     "## Execution Status",
     `Completed: ${completedSet.size}`,
     `Obsolete: ${obsoleteSet.size}`,
@@ -423,7 +430,11 @@ export async function handleGetReviewManifest(
 
   const cycleInfo =
     targetCycle !== null ? `(Cycle ${targetCycle})` : "(all cycles)";
+  // WI-326 (D-42): mark the manifest INCOMPLETE when the board is active — its
+  // rows come from v2 work_item nodes only and omit board-resident items.
+  const notice = boardActiveNotice(ctx);
   const lines = [
+    ...(notice ? [notice, ""] : []),
     `## Review Manifest ${cycleInfo}`,
     "",
     header,

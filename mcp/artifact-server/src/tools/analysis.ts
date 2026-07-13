@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { ToolContext } from "../types.js";
+import { boardActiveNotice } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -741,8 +742,14 @@ export async function handleGetWorkspaceStatus(
     | "project"
     | "phase";
 
-  if (view === "project") return buildProjectView(ctx);
-  if (view === "phase") return buildPhaseView(ctx);
+  // WI-326 (D-42): all three views report v2-only work-item counts, so mark
+  // them INCOMPLETE when the board is active (board-resident items are not
+  // counted here). Presence-only; the notice carries no board contents.
+  const notice = boardActiveNotice(ctx);
+  const withNotice = (body: string): string => (notice ? `${notice}\n\n${body}` : body);
+
+  if (view === "project") return withNotice(await buildProjectView(ctx));
+  if (view === "phase") return withNotice(await buildPhaseView(ctx));
 
   // Read cycle number from domains/index.yaml (fall back to index.md for backward compatibility)
   const indexYamlPath = path.join(ctx.ideateDir, "domains", "index.yaml");
@@ -912,5 +919,5 @@ export async function handleGetWorkspaceStatus(
     lines.push(`- Intent: ${activePhase.intent}`);
   }
 
-  return lines.join("\n");
+  return withNotice(lines.join("\n"));
 }
