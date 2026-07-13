@@ -3,8 +3,8 @@ import * as path from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { ToolContext } from "../types.js";
 import { TYPE_TO_EXTENSION_TABLE } from "../node-type-registry.js";
-import { BoardActiveError } from "../adapter.js";
-import { resolveBoardDbPath } from "../board-presence.js";
+import { BoardActiveError, PhaseMembershipTruncationError } from "../adapter.js";
+import { resolveBoardDbPath, isBoardActive } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Adapter resolution
@@ -355,6 +355,72 @@ export async function handleWriteWorkItems(
 }
 
 // ---------------------------------------------------------------------------
+// Phase-membership backstop (WI-331 / II1)
+//
+// The phase read-merge-rewrite path (skills/project/SKILL.md phase
+// start/complete/abandon: read the phase, merge {status}, write it back) can
+// silently drop board-resident WI IDs from work_items — handlePhaseContext
+// relegates board-resident IDs (no v2 node, by design) to a "not indexed"
+// footnote, and putNode is a full REPLACE. That truncates the phase's only
+// v2-side record of board-item membership AND corrupts the P-47 phase-close
+// gate (which trusts phase.work_items). This backstop refuses such a write.
+//
+// Presence-only + self-comparison (Q-55, three-thin-seams): it reads board.db
+// EXISTENCE (isBoardActive) and the on-disk phase's OWN work_items — never
+// board.db contents. It is not a merge engine: a phase's work_items normally
+// only grows (items are obsoleted via status, not removed from the list), so a
+// strict-subset write while the board is active is an accidental truncation
+// and is refused; a genuine removal uses an explicit path.
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a work_items value that may be a JSON string, an array, or absent.
+ * Distinguishes ABSENT/empty ({items:[], unparseable:false}) from PRESENT-but-
+ * unparseable ({items:[], unparseable:true}) so the backstop can fail CLOSED on
+ * a corrupted on-disk list rather than silently treating it as "nothing to drop"
+ * (F-331-001 M2).
+ */
+function parseWorkItemsList(val: unknown): { items: string[]; unparseable: boolean } {
+  if (Array.isArray(val)) return { items: val.map((v) => String(v)), unparseable: false };
+  if (typeof val === "string" && val.trim() !== "") {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return { items: parsed.map((v) => String(v)), unparseable: false };
+      return { items: [], unparseable: true }; // parsed, but not an array
+    } catch {
+      return { items: [], unparseable: true };
+    }
+  }
+  return { items: [], unparseable: false }; // absent / null / empty string
+}
+
+async function assertPhaseMembershipNotTruncated(
+  ctx: ToolContext,
+  id: string,
+  content: Record<string, unknown>
+): Promise<void> {
+  if (!isBoardActive(ctx)) return; // pre-v3 project — backstop never fires
+  const adapter = getAdapter(ctx);
+  const existing = await adapter.getNode(id);
+  if (!existing) return; // new phase — nothing to drop
+  const ex = parseWorkItemsList(existing.properties?.work_items);
+  // Fail CLOSED on a corrupted on-disk list — membership cannot be verified, so
+  // a potentially-truncating write must not proceed (F-331-001 M2).
+  if (ex.unparseable) {
+    throw new PhaseMembershipTruncationError(id, ["<on-disk work_items present but unparseable — membership unverifiable>"]);
+  }
+  if (ex.items.length === 0) return;
+  // A missing or unparseable incoming work_items resolves to an empty set, so an
+  // omit-the-field write (the literal II1 read-merge-rewrite defect, F-331-001
+  // M1) drops every existing member and is refused.
+  const incoming = new Set(parseWorkItemsList(content.work_items).items);
+  const dropped = ex.items.filter((wi) => !incoming.has(wi));
+  if (dropped.length > 0) {
+    throw new PhaseMembershipTruncationError(id, dropped);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // handleWriteArtifact — generic artifact write tool
 // ---------------------------------------------------------------------------
 
@@ -389,6 +455,13 @@ export async function handleWriteArtifact(
   }
 
   const adapter = getAdapter(ctx);
+
+  // WI-331 (II1 backstop): a board-active phase write must not silently drop
+  // existing work_items membership (board-item phase links + the P-47 gate
+  // census). Presence-only + self-comparison; see the helper above.
+  if (type === "phase") {
+    await assertPhaseMembershipNotTruncated(ctx, id, content);
+  }
 
   await adapter.putNode({
     id,

@@ -779,6 +779,28 @@ export class BoardActiveError extends StorageAdapterError {
   }
 }
 
+/**
+ * Thrown by the phase-write backstop (WI-331 / II1) when a board-active phase
+ * write would silently drop existing work_items membership — protecting the
+ * only v2-side record of board-item phase membership (and the P-47 phase-close
+ * gate's census that trusts it). Distinguishable via `instanceof
+ * PhaseMembershipTruncationError` or `code === "PHASE_MEMBERSHIP_TRUNCATION"`.
+ */
+export class PhaseMembershipTruncationError extends StorageAdapterError {
+  constructor(phaseId: string, droppedIds: string[]) {
+    super(
+      `Refused: phase ${phaseId} write would drop work_items members [${droppedIds.join(", ")}] ` +
+        `while the v3 work-state board is active. These may be board-resident items whose only ` +
+        `v2-side phase-membership record is this list; dropping them silently truncates the phase's ` +
+        `board-item membership and corrupts the P-47 phase-close gate's census. Re-include them in ` +
+        `work_items, or use an explicit removal path if the removal is intended.`,
+      "PHASE_MEMBERSHIP_TRUNCATION",
+      { phaseId, droppedIds }
+    );
+    this.name = "PhaseMembershipTruncationError";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Adapter factory
 // ---------------------------------------------------------------------------
