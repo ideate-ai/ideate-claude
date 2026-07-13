@@ -23,7 +23,7 @@ import { getConfigWithDefaults } from "../config.js";
 import { instrumentToolDispatch } from "./instrumentation.js";
 
 // ---------------------------------------------------------------------------
-// TOOLS — all 20 tool definitions with inputSchema
+// TOOLS — all 22 tool definitions with inputSchema
 // ---------------------------------------------------------------------------
 
 export const TOOLS: Tool[] = [
