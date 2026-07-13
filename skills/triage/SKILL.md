@@ -56,7 +56,7 @@ Store the inferred type as `{detected_type}`.
 Call the following MCP tools in parallel:
 
 1. `ideate_artifact_query({type: "phase", filters: {status: "active"}})` — store result as `{active_phases}`.
-2. `ideate_artifact_query({type: "work_item", limit: 50})` — store result as `{recent_items}` for optional dedup check (includes pending, in_progress, and blocked items).
+2. `ideate_artifact_query({type: "work_item", limit: 50})` — store result as `{recent_items}` for optional dedup check (includes pending, in_progress, and blocked items). **Board-aware (v3)**: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board items (`spec_format: ideate/wi-v1`) into `{recent_items}` — otherwise the dedup check cannot detect a duplicate of a board-resident item; if absent, the v2 query alone is complete (v2 fallback path) — note briefly "v3 work-state tools not detected — using v2 artifact fallback" so the reduced dedup scope is visible, not silent (P-45).
 
 If `ideate_artifact_query` is unavailable, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 

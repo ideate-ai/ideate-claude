@@ -72,15 +72,15 @@ Load all plan artifacts via MCP tools:
 2. Call `ideate_artifact_query({type: "execution_strategy"})` — returns the execution strategy.
 3. Call `ideate_artifact_query({type: "overview"})` — returns the project overview (if it exists). If absent, note and continue.
 4. Call `ideate_artifact_query({type: "module_spec"})` — returns all module specs (if they exist).
-5. Call `ideate_artifact_query({type: "work_item"})` — returns all work items.
+5. Call `ideate_artifact_query({type: "work_item"})` — returns all v2 work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1` (the opaque `spec` payload is the work-item body); hold the combined set. If the tools are absent, the artifact query alone is the complete set (v2 fallback path) — say, verbatim, "v3 work-state tools not detected — using v2 artifact fallback"; and if `.ideate-work/` exists on disk at `{project_root}`, this is likely a MISSING BUILD, so route it to the proxy-human as an Andon event rather than silently proceeding on a possible split-brain (per `phases/execute.md`).
 6. Call `ideate_artifact_query({type: "research"})` — returns all research findings (if they exist).
 7. Call `ideate_artifact_query({type: "journal_entry"})` — returns project history (if it exists). If absent, note and continue.
 
-Verify: every work item has an objective, acceptance criteria, file scope, and dependencies. Every dependency reference points to an existing work item.
+Verify: every work item has an objective, acceptance criteria, file scope, and dependencies. Every dependency reference points to an existing work item. (Board items carry these inside their opaque `spec` payload.)
 
 If validation fails, report the specific issues and stop.
 
-If no work items are found, stop and direct the user to run `/ideate:init` first.
+If no work items are found **across both the v2 artifact query and the board** (an empty combined set), stop and direct the user to run `/ideate:init` first. Do not abort on an empty v2 result alone when board items exist — that is the exact board-blindness the cutover closes.
 
 ## Build Completed Items Set
 

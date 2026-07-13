@@ -110,7 +110,7 @@ Requires argument: `switch <id>`.
 ## phase create
 
 Ask for:
-- **Name** — short phase name (auto-suggest by querying work item titles in the project via `ideate_artifact_query({type: "work_item"})` and extracting common themes)
+- **Name** — short phase name (auto-suggest by querying work item titles in the project via `ideate_artifact_query({type: "work_item"})` and extracting common themes). **Board-aware (v3)**: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO include board-item titles from `work_list` (`spec_format: ideate/wi-v1`); if absent, the v2 query alone is complete (v2 fallback) — note briefly "v3 work-state tools not detected — using v2 artifact fallback" (P-45). Auto-suggestion is best-effort, so a missing board here only weakens a suggestion, never blocks.
 - **Type** — one of: research, design, implementation, spike
 - **Description** — what this phase aims to accomplish
 
@@ -151,7 +151,7 @@ This is a **phase transition**. Read the supporting file for the full protocol:
 
 When the current phase has incomplete work items (status != done):
 
-1. Query work items for the current phase: `ideate_artifact_query({type: "work_item"})`, filter by phase and status != done.
+1. Query work items for the current phase: `ideate_artifact_query({type: "work_item"})`, filter by phase and status != done. **Board-aware (v3)**: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO include this phase's board items from `work_list` whose board status is not `done` (board status is authoritative for board items); if absent, the v2 query alone is complete (v2 fallback path — say "v3 work-state tools not detected — using v2 artifact fallback"). A phase-transition incomplete-work prompt that omitted board items would silently drop them from the carry-forward/cancel decision.
 2. Present the list to the user:
    ```
    The current phase has {N} incomplete work items:
