@@ -758,14 +758,23 @@ export class ValidationError extends StorageAdapterError {
  * BoardActiveError` or `code === "BOARD_ACTIVE"`.
  */
 export class BoardActiveError extends StorageAdapterError {
-  constructor(boardDbPath: string) {
-    super(
-      `Refused: this project uses the v3 work-state board (found ${boardDbPath}). ` +
+  /**
+   * @param boardDbPath  the resolved board.db path that triggered the refusal.
+   * @param context      optional per-sink override naming the correct v3 path.
+   *                     When omitted, the message is the WI-321 create-sink
+   *                     message (byte-identical — the create path and its tests
+   *                     are unaffected). The WI-330 update sink passes a context
+   *                     naming the board transition tools instead of work_create.
+   */
+  constructor(boardDbPath: string, context?: { action: string; correctPath: string }) {
+    const message = context
+      ? `Refused: this project uses the v3 work-state board (found ${boardDbPath}). ` +
+        `Work items must be ${context.action} via ${context.correctPath}, not the v2 artifact store. ` +
+        `Using the v2 work-item path here would silently split work off the board.`
+      : `Refused: this project uses the v3 work-state board (found ${boardDbPath}). ` +
         `Work items must be created via the v3 "work_create" tool, not the v2 artifact store. ` +
-        `Creating a v2 work item here would silently split new work off the board.`,
-      "BOARD_ACTIVE",
-      { boardDbPath }
-    );
+        `Creating a v2 work item here would silently split new work off the board.`;
+    super(message, "BOARD_ACTIVE", { boardDbPath });
     this.name = "BoardActiveError";
   }
 }

@@ -235,14 +235,19 @@ export async function handleArchiveCycle(
  * Throws BoardActiveError when the project's v3 work-state board is active
  * (board.db exists at the resolved work_state path). Call this first, before
  * any other work, in every v2 work-item creation/update path.
+ *
+ * `errorContext` lets a sink name the correct v3 path in the refusal: the
+ * create sink (WI-321) omits it and gets the create message; the update sink
+ * (WI-330) passes the board transition tools. Resolves the board path once for
+ * both the existence check and the error message (F-326-001 M1).
  */
-function assertBoardNotActive(ctx: ToolContext): void {
-  // Resolve the board path once and reuse it for both the existence check and
-  // the error message — behavior-identical to the pre-WI-326 (WI-321 original)
-  // guard, avoiding a redundant config read on the throw path (F-326-001 M1).
+function assertBoardNotActive(
+  ctx: ToolContext,
+  errorContext?: { action: string; correctPath: string }
+): void {
   const boardDbPath = resolveBoardDbPath(ctx);
   if (fs.existsSync(boardDbPath)) {
-    throw new BoardActiveError(boardDbPath);
+    throw new BoardActiveError(boardDbPath, errorContext);
   }
 }
 
@@ -419,6 +424,17 @@ export async function handleUpdateWorkItems(
   ctx: ToolContext,
   args: Record<string, unknown>
 ): Promise<string> {
+  // Sink-guard (WI-330): refuse before doing anything else if the v3 board is
+  // active. On a board project there is no legitimate v2 work-item status
+  // update — board transitions (work_claim/work_complete/work_release) are the
+  // single home. Symmetric with the WI-321 create-guard on handleWriteWorkItems
+  // and closing the Q-51 symptom-9 edge (a stale v2 node from a duplicate WI
+  // number must not be silently mutated on a board project — refuse first).
+  assertBoardNotActive(ctx, {
+    action: "transitioned",
+    correctPath: 'the v3 board tools "work_claim" / "work_complete" / "work_release"',
+  });
+
   const updates = args.updates as WorkItemUpdate[];
 
   if (!updates || !Array.isArray(updates)) {
