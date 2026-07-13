@@ -84,8 +84,8 @@ If no work items are found **across both the v2 artifact query and the board** (
 
 ## Build Completed Items Set
 
-1. Call `ideate_get_execution_status()` — returns the completed, pending, and blocked sets. If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
-2. Use the returned `completed` set as `{completed_items}`.
+1. Call `ideate_get_execution_status()` — returns the completed, pending, and blocked sets (a v2-only signal derived from incremental reviews and journal entries). If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
+2. Use the returned `completed` set as `{completed_items}`. **Board-aware merge (v3)**: `ideate_get_execution_status()` does not see board items. If the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board status — board status is authoritative for board items: a board item whose status is `done` is completed regardless of the v2-derived scan, and one whose status is `open`/`in_progress` is NOT, even if a journal entry suggests otherwise (mirrors `phases/execute.md`'s Board-aware completion). If the tools are absent, the v2 scan alone decides (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback."
 
 Report: "Found {N} already-completed items from prior execution."
 

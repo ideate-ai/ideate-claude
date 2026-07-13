@@ -798,7 +798,9 @@ Over-allocate ranges. After reconciliation, renumber to eliminate gaps.
 
 ## 7P.3 Work Item Format
 
-Every work item is written via `ideate_write_artifact` with type `work_item` and id `WI-{NNN}`. Include these fields:
+**Where work items are written (v3 board vs v2 artifact).** If the v3 work-state tools (`work_create`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create each work item ON THE BOARD via `work_create` (per the tool's live schema: `title` `"WI-{NNN}: {title}"`, the full work-item body as the opaque `spec`, `spec_format` `"ideate/wi-v1"`, `actor_human` required — the creating user), mirroring `skills/refine/SKILL.md`'s 7h board path. Do NOT also write a v2 artifact on this path; the board is the single home. **v2 fallback (pre-v3 projects only)**: if the v3 tools are NOT present, write each work item via `ideate_write_artifact` with type `work_item` and id `WI-{NNN}` (the fields below) — say, verbatim, "v3 work-state tools not detected — using v2 artifact fallback"; and if `.ideate-work/` exists on disk at the project root, this is a board project with the tools unavailable (likely a missing build), so WARN and stop rather than splitting the brain: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing." (The v2 artifact server also refuses a work-item write on a board project — WI-321 — so a silent split is impossible; this branch keeps init from hitting that refusal.)
+
+For the v2 fallback path, each work item written via `ideate_write_artifact` with type `work_item` and id `WI-{NNN}` includes these fields:
 
 - `id`, `type`, `title`, `status` (pending), `complexity` (low | medium | high)
 - `scope` — array of `{path, op}` entries (op: create | modify | delete)

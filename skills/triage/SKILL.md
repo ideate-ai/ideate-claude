@@ -163,7 +163,9 @@ Call `ideate_get_next_id({type: "work_item"})` to obtain the next WI number.
 
 **Board-aware numbering (v3)**: `ideate_get_next_id` sees only v2 artifacts — board-resident work items are invisible to it, so its answer can collide with an existing board item's WI number. If the v3 work-state tools (`work_list`, …) are present in the session (mechanical tool presence, never inferred — GP-24), ALSO call `work_list` and take the maximum WI number across the artifact index and any board items carrying `spec_format: ideate/wi-v1`; use max+1 as the next number. If the work-state tools are absent, the `ideate_get_next_id` answer stands (v2 fallback path) — but if `.ideate-work/` exists on disk at the project root, warn loudly before writing (P-45): "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build (run `pnpm install && pnpm run build` in the plugin). The WI number below may COLLIDE with a board item."
 
-Call `ideate_write_work_items` with an array containing one item:
+**Where the item is written (v3 board vs v2 artifact).** If the v3 work-state tools (`work_create`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create the item ON THE BOARD via `work_create` (per the tool's live schema: `title` `"{next_id}: {title}"`, the item body — work_item_type, description, scope, criteria, phase — as the opaque `spec`, `spec_format` `"ideate/wi-v1"`, `actor_human` required). Do NOT also write a v2 artifact; the board is the single home. **v2 fallback (pre-v3 projects only)**: if the v3 tools are NOT present, call `ideate_write_work_items` with the array below — say, verbatim, "v3 work-state tools not detected — using v2 artifact fallback"; and if `.ideate-work/` exists on disk at the project root, WARN and stop rather than splitting the brain: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing." (The v2 artifact server also refuses a work-item write on a board project — WI-321 — so this branch keeps triage from hitting that refusal.)
+
+For the v2 fallback path, call `ideate_write_work_items` with an array containing one item:
 
 ```json
 [{
@@ -209,7 +211,7 @@ Note: triage items are not assumed execution-ready. Run /ideate:refine to incorp
 - [x] No `.ideate/` path references in instructions or output -- only in "What You Do Not Do" and this self-check
 - [x] No `.yaml` filename references -- artifacts referenced by type and designation only
 - [x] All artifact reads via `ideate_artifact_query`
-- [x] Work item written via `ideate_write_work_items` with `work_item_type` field
+- [x] Work item written via `work_create` (v3 board, primary) or `ideate_write_work_items` (v2 fallback) with `work_item_type`
 - [x] Active phase queried via `ideate_artifact_query(type: 'phase', filters: {status: 'active'})`
 - [x] Next ID via `ideate_get_next_id` -- no glob patterns
 - [x] GP-14 guardrail block present

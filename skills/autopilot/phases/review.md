@@ -394,8 +394,8 @@ If `{current_project}` is null, set `{project_complete}` = false and skip to Ste
 Otherwise, retrieve the active project: call `ideate_artifact_query({type: "project", id: "{current_project.id}"})` to get the current project record with its success criteria.
 
 For each criterion in `{project_success_criteria}`:
-1. Determine whether it is satisfied by querying the current cycle's review artifacts (call `ideate_artifact_query({type: "cycle_summary", cycle: {cycle_number}})`) and the current work item completion status (call `ideate_get_execution_status()`).
-2. A criterion is satisfied if: (a) the relevant work items are all done, AND (b) none of the three cycle review artifacts report any Critical or Significant findings that directly contradict the criterion, AND (c) the spec-adherence artifact confirms the relevant principle or requirement is met.
+1. Determine whether it is satisfied by querying the current cycle's review artifacts (call `ideate_artifact_query({type: "cycle_summary", cycle: {cycle_number}})`) and the current work item completion status (call `ideate_get_execution_status()` — a v2-only signal). **Board-aware (v3)**: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and treat a board item's `done` status as authoritative for its completion; if absent, the v2 signal alone decides (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback."
+2. A criterion is satisfied if: (a) the relevant work items are all done — where a board-resident work item's done-ness is read from its board status (`work_list`), not `ideate_get_execution_status()`, so a criterion whose work lives on the board can be correctly judged complete — AND (b) none of the three cycle review artifacts report any Critical or Significant findings that directly contradict the criterion, AND (c) the spec-adherence artifact confirms the relevant principle or requirement is met.
 
 Set `{project_complete}` = true if ALL criteria are satisfied. Set `{project_complete}` = false if any criterion is unsatisfied.
 

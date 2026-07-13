@@ -83,7 +83,7 @@ Items: {list of work item IDs and titles}
 
 Remove all previously completed items from `{completed_items}` that are not part of the newly promoted set. The new cycle begins fresh against the promoted work items.
 
-Call `ideate_get_execution_status()` to refresh the pending/completed sets. Update `{completed_items}` from the returned `completed` set.
+Call `ideate_get_execution_status()` to refresh the pending/completed sets (a v2-only signal). Update `{completed_items}` from the returned `completed` set. **Board-aware merge (v3)**: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board status (authoritative for board items — done/open per the board, not the v2 scan), mirroring `phases/execute.md`'s Board-aware completion; if absent, the v2 scan alone decides (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback."
 
 ### Step 3: Spawn Transition Architect (optional)
 
