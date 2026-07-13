@@ -263,6 +263,20 @@ const CALL_PATTERNS = [
     re: /ideate_get_execution_status\s*\(\s*\)/g,
     boardWindow: WINDOW,
   },
+  // READ verb (WI-327, cycle-14 code-C2/gap-C1 — the FOURTH read shape that
+  // escaped the pre-WI-327 check). `ideate_get_review_manifest` builds its
+  // manifest rows from v2 `work_item` nodes only (fetchAllWorkItems); on a
+  // board project those rows omit board-resident items, and the tool now
+  // prepends the WI-326 loud-incomplete marker. A prose site that surfaces the
+  // manifest without honoring the marker / appending board rows is board-blind
+  // — same class as get_execution_status. Read-shape window (a marker stated
+  // once per subsection still clears). Matches the zero-arg and cycle-arg forms.
+  {
+    name: 'ideate_get_review_manifest',
+    verb: 'READ',
+    re: /ideate_get_review_manifest\s*\(/g,
+    boardWindow: WINDOW,
+  },
   // READ verb (WI-324 rework, incremental-review FOURTH shape). A generic
   // workspace-status tool that computes work-item state v2-only (countNodes)
   // with no board merge — same board-blindness class as get_execution_status.
@@ -361,6 +375,12 @@ export const COVERAGE_MANIFEST = [
   },
   {
     verb: 'READ',
+    name: 'ideate_get_review_manifest',
+    window: 'boardWindow=WINDOW=12 (read-shape window) — WI-327: the 4th read shape (cycle-14 code-C2/gap-C1), builds rows from v2 work_item nodes only; on a board project a surfacing site must honor the WI-326 marker and append board rows',
+    fixtureName: 'ideate_get_review_manifest: unbranched call is flagged; a board token within the read window clears',
+  },
+  {
+    verb: 'READ',
     name: 'ideate_artifact_query(work_item)',
     window: 'boardWindow=WINDOW=12; same-line scope gate for {type: "work_item"}',
     fixtureName: 'ideate_artifact_query({type: "work_item"}) unbranched IS flagged, and clears with a board token',
@@ -372,6 +392,141 @@ export const COVERAGE_MANIFEST = [
     fixtureName: 'ideate_update_work_items: unbranched call is flagged; a board token within the read window clears',
   },
 ];
+
+// --- P-48 REGISTRY GROUNDING (WI-327) ---------------------------------------
+// gap-S1 (cycle-14 capstone, THE ROOT CAUSE): the pre-WI-327 completeness test
+// only cross-checked CALL_PATTERNS against COVERAGE_MANIFEST — two hand-lists
+// validated against EACH OTHER, never against the authoritative tool registry.
+// So a newly-registered v2 work-item-read tool (get_review_manifest was the
+// 4th) sailed through green indefinitely: nothing forced it to be classified.
+//
+// The fix (P-48's how_to_apply, registry-grounding endpoint): every tool in the
+// AUTHORITATIVE v2 registry (mcp/artifact-server/src/tools/index.ts) must be
+// EITHER monitored by a CALL_PATTERNS shape OR carry an explicit
+// excluded-with-rationale entry. A tool in neither breaks the registry-grounded
+// completeness test (registryCoverageGaps below) — it CANNOT silently escape.
+// This is what makes a green check license a class-closed claim.
+
+// Maps each monitored CALL_PATTERNS shape to the registered v2 tool it covers.
+// Some patterns are type-scoped views of a generic tool (e.g.
+// artifact_query(work_item) → ideate_artifact_query). `work_create` is a v3
+// board tool, NOT in the v2 registry — it is the compliant target, monitored
+// for coverage but absent from the registry diff (see registryCoverageGaps).
+export const MONITORED_REGISTRY_TOOLS = {
+  ideate_get_artifact_context: 'ideate_get_artifact_context',
+  ideate_assemble_context: 'ideate_assemble_context',
+  ideate_update_work_items: 'ideate_update_work_items',
+  ideate_write_work_items: 'ideate_write_work_items',
+  'ideate_write_artifact(work_item)': 'ideate_write_artifact',
+  ideate_get_execution_status: 'ideate_get_execution_status',
+  ideate_get_review_manifest: 'ideate_get_review_manifest',
+  ideate_get_workspace_status: 'ideate_get_workspace_status',
+  'ideate_artifact_query(work_item)': 'ideate_artifact_query',
+  // work_create: v3 board tool, not registered in the v2 index.ts — no diff entry.
+};
+
+// Every registered v2 tool NOT monitored above, each with a rationale for why
+// it does not reach the v2 work-item state sink this check guards. P-48: an
+// exclusion is a recorded decision, not a silent gap. Adding a new registered
+// tool without classifying it here (or monitoring it) FAILS registryCoverageGaps.
+export const REGISTRY_EXCLUSIONS = {
+  ideate_get_context_package: 'Returns architecture / guiding principles / constraints — no work-item data.',
+  ideate_get_config: 'Returns project configuration — no work-item data.',
+  ideate_get_convergence_status: 'Returns findings-by-severity + cycle-summary verdict — no work-item counts (WI-326 registry cross-check confirmed).',
+  ideate_get_domain_state: 'Returns domain policies / decisions / questions — no work-item data.',
+  ideate_check_workspace: 'Workspace structure/health diagnostics — no per-item work-item read.',
+  ideate_get_tool_usage: 'Tool-call telemetry — no work-item data.',
+  ideate_append_journal: 'Writes a journal entry — not a work-item write or read.',
+  ideate_archive_cycle: 'Archives completed v2 work items/findings into the cycle-scoped artifact tree; board items are RETAINED on the live board and archived through their own lifecycle (D-40), so this never reaches the v2 work-item sink this check guards.',
+  ideate_emit_event: 'Fires a hook event — no work-item data.',
+  ideate_bootstrap_workspace: 'One-time workspace scaffolding — no work-item read/write.',
+  ideate_get_next_id: 'Allocates the next artifact ID. Board-BLIND for WI numbering (Q-51 symptom-9), but that is a NUMBERING-COLLISION class — compensated at the skill level (WI-315: max across the artifact index and board items) with the durable fix being server-side board-aware numbering — NOT the work-item STATE read/write/complete class this check guards. Tracked separately from board-awareness.',
+  ideate_manage_autopilot_state: 'Reads/writes autopilot session state — no work-item data.',
+  ideate_update_config: 'Writes project configuration — no work-item data.',
+};
+
+// Path (relative to the ideate-claude repo root) of the authoritative v2 tool
+// registry. registryCoverageGaps grounds coverage against THIS file, not
+// against COVERAGE_MANIFEST — that is the whole point of gap-S1's fix.
+export const REGISTRY_PATH = 'mcp/artifact-server/src/tools/index.ts';
+
+// Parse the registered v2 tool names from index.ts. Returns a sorted array of
+// `ideate_*` names taken from the `name: "ideate_..."` tool-definition entries.
+export function readRegisteredTools(repoRoot) {
+  const abs = join(repoRoot, REGISTRY_PATH);
+  const src = readFileSync(abs, 'utf8');
+  const names = new Set();
+  const re = /name:\s*"(ideate_[a-z_]+)"/g;
+  let m;
+  while ((m = re.exec(src)) !== null) names.add(m[1]);
+  return [...names].sort();
+}
+
+// The registry-grounded completeness check (gap-S1 fix). Given the list of
+// registered tool names, returns { unclassified, stale }:
+//   - unclassified: registered tools that are NEITHER monitored NOR excluded —
+//     a new sink-reaching tool cannot hide here; this array being non-empty is
+//     the failure that forces classification.
+//   - stale: monitored/excluded entries that name a tool no longer in the
+//     registry (a rename/removal left a dangling classification).
+// Pure function (takes the name list, not the file) so a fixture can inject a
+// fake registered tool and prove the check is registry-grounded, not
+// self-referential.
+export function registryCoverageGaps(registeredNames) {
+  const registered = new Set(registeredNames);
+  const monitored = new Set(Object.values(MONITORED_REGISTRY_TOOLS));
+  const excluded = new Set(Object.keys(REGISTRY_EXCLUSIONS));
+
+  const unclassified = [...registered]
+    .filter((name) => !monitored.has(name) && !excluded.has(name))
+    .sort();
+
+  const stale = [...monitored, ...excluded]
+    .filter((name) => !registered.has(name))
+    .sort();
+
+  return { unclassified, stale };
+}
+
+// M2 (cycle-14 carry-forward): belt-and-suspenders assertion that the
+// construction guarantees this check RELIES ON are present in the engine
+// source — if one is silently removed, this check (whose whole value now rests
+// on those guards being real) must fail loudly rather than keep passing on
+// prose alone. Reads the engine files under mcp/artifact-server and confirms:
+//   - the write sink-guard (WI-321) AND update guard (WI-330): assertBoardNotActive
+//   - the read loud-incomplete marker (WI-326): boardActiveNotice in the 3 read tools
+//   - the shared presence module (WI-326)
+export function engineGuardsPresent(repoRoot) {
+  const missing = [];
+  // Whitespace-tolerant needles (F-327-001 M2): a Prettier reformat that
+  // wraps `assertBoardNotActive(\n  ctx` must not read as a missing guard.
+  const checks = [
+    { path: 'mcp/artifact-server/src/board-presence.ts', needle: /export function boardActiveNotice\b/, desc: 'WI-326 shared board-presence marker (boardActiveNotice)' },
+    { path: 'mcp/artifact-server/src/tools/write.ts', needle: /assertBoardNotActive\s*\(\s*ctx\b/, desc: 'WI-321/WI-330 write+update sink guard (assertBoardNotActive)' },
+    { path: 'mcp/artifact-server/src/tools/execution.ts', needle: /boardActiveNotice\s*\(\s*ctx\b/, desc: 'WI-326 read marker on get_execution_status / get_review_manifest' },
+    { path: 'mcp/artifact-server/src/tools/analysis.ts', needle: /boardActiveNotice\s*\(\s*ctx\b/, desc: 'WI-326 read marker on get_workspace_status views' },
+  ];
+  for (const c of checks) {
+    let src = '';
+    try {
+      src = readFileSync(join(repoRoot, c.path), 'utf8');
+    } catch {
+      missing.push(`${c.desc}: cannot read ${c.path}`);
+      continue;
+    }
+    if (!c.needle.test(src)) missing.push(`${c.desc}: ${c.needle} not found in ${c.path}`);
+  }
+  // write.ts must guard BOTH sinks — assert the guard appears at least twice
+  // (handleWriteWorkItems + handleUpdateWorkItems).
+  try {
+    const writeSrc = readFileSync(join(repoRoot, 'mcp/artifact-server/src/tools/write.ts'), 'utf8');
+    const guardCalls = (writeSrc.match(/assertBoardNotActive\s*\(\s*ctx\b/g) || []).length;
+    if (guardCalls < 2) missing.push(`WI-321/WI-330: expected assertBoardNotActive on BOTH the create and update sinks, found ${guardCalls} call(s)`);
+  } catch {
+    // already reported above
+  }
+  return { ok: missing.length === 0, missing };
+}
 
 function read(absPath, relPath, failures) {
   try {
@@ -573,13 +728,39 @@ const isMain = (() => {
 })();
 if (isMain) {
   const { ok, violations, failures, summary } = run(ROOT);
-  if (!ok) {
+
+  // P-48 registry grounding (WI-327): coverage is validated against the
+  // authoritative tool registry, not against COVERAGE_MANIFEST alone.
+  let registry = { unclassified: [], stale: [] };
+  let registryReadError = null;
+  try {
+    registry = registryCoverageGaps(readRegisteredTools(ROOT));
+  } catch (err) {
+    registryReadError = err.message ?? String(err);
+  }
+  const registryOk = registryReadError === null && registry.unclassified.length === 0 && registry.stale.length === 0;
+
+  // M2 (WI-327): the construction guarantees this check relies on are present.
+  const guards = engineGuardsPresent(ROOT);
+
+  const allOk = ok && registryOk && guards.ok;
+  if (!allOk) {
     console.error('check-board-awareness: FAILED');
     for (const f of failures) console.error(`  - ${f}`);
     for (const v of violations) {
       console.error(`  - ${v.file}:${v.line}: [${v.tool}] ${v.text}`);
     }
+    if (registryReadError) console.error(`  - registry grounding: could not read ${REGISTRY_PATH} — ${registryReadError}`);
+    for (const name of registry.unclassified) {
+      console.error(`  - registry grounding: tool "${name}" is registered but NEITHER monitored NOR excluded-with-rationale (P-48) — classify it in MONITORED_REGISTRY_TOOLS or REGISTRY_EXCLUSIONS`);
+    }
+    for (const name of registry.stale) {
+      console.error(`  - registry grounding: "${name}" is monitored/excluded but no longer registered — remove the stale classification`);
+    }
+    for (const m of guards.missing) {
+      console.error(`  - engine guard missing: ${m}`);
+    }
     process.exit(1);
   }
-  console.log(summary);
+  console.log(`${summary}; registry-grounded (${readRegisteredTools(ROOT).length} tools classified); engine guards present`);
 }
