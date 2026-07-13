@@ -129,14 +129,23 @@ export async function handleArtifactQuery(
 
   const adapter = getAdapter(ctx);
 
-  // WI-332 (C1 / D-42): a work-item query returns v2 `work_item` nodes ONLY
-  // (both the relatedTo type_filter and the plain type branch). On a board-
-  // active project those results/counts omit board-resident items, so mark the
-  // response INCOMPLETE — including the "no results" returns, where a bare
-  // "No results found." on a board project is itself the silent-miss. Non-
-  // work_item queries are unaffected. Presence-only; no board.db content read.
-  const mark = type === "work_item" ? boardActiveNotice(ctx) : null;
-  const withNotice = (body: string): string => (mark ? `${mark}\n\n${body}` : body);
+  // WI-335 (C1/C2 fix / D-42 / P-49): mark the response INCOMPLETE on a
+  // board-active project whenever it could omit board-resident work items —
+  // gated on RESULT CONTENT, not the request `type` argument. The prior
+  // WI-332 form (`type === "work_item"`) left the UNTYPED paths board-blind:
+  // a related_to graph traversal (depends_on/blocks connect only work-item
+  // nodes) or a filters-only query returns work_item rows unmarked. A static
+  // census (WI-333) cannot catch that conditional misapplication (C2), so the
+  // marker is now correct-by-construction per call: emit when the board is
+  // active AND (the result contains work_item rows, OR the query is untyped
+  // [could return work_item], OR type === "work_item"). Presence-only.
+  const notice = boardActiveNotice(ctx);
+  const withNotice = (body: string, resultHasWorkItems: boolean): string => {
+    if (!notice) return body;
+    const couldOmitBoardItems =
+      resultHasWorkItems || type === undefined || type === "work_item";
+    return couldOmitBoardItems ? `${notice}\n\n${body}` : body;
+  };
 
   if (relatedTo) {
     let result;
@@ -171,9 +180,9 @@ export async function handleArtifactQuery(
 
     if (result.nodes.length === 0) {
       if (result.total_count === 0) {
-        return withNotice("No results found.");
+        return withNotice("No results found.", false);
       }
-      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`);
+      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`, false);
     }
 
     const tableRows = result.nodes.map((n) => [
@@ -191,7 +200,7 @@ export async function handleArtifactQuery(
       tableRows
     );
 
-    return withNotice(`${table}\n\n**Total**: ${result.total_count}`);
+    return withNotice(`${table}\n\n**Total**: ${result.total_count}`, result.nodes.some((n) => n.node.type === "work_item"));
   } else {
     const result = await adapter.queryNodes(
       {
@@ -210,9 +219,9 @@ export async function handleArtifactQuery(
 
     if (result.nodes.length === 0) {
       if (result.total_count === 0) {
-        return withNotice("No results found.");
+        return withNotice("No results found.", false);
       }
-      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`);
+      return withNotice(`No results on this page. **Total**: ${result.total_count} — use lower offset.`, false);
     }
 
     const tableRows = result.nodes.map((n) => [
@@ -230,6 +239,6 @@ export async function handleArtifactQuery(
       tableRows
     );
 
-    return withNotice(`${table}\n\n**Total**: ${result.total_count}`);
+    return withNotice(`${table}\n\n**Total**: ${result.total_count}`, result.nodes.some((n) => n.node.type === "work_item"));
   }
 }
