@@ -58,6 +58,20 @@ export interface IdeateConfigJson {
     /** Auth fields reserved for future use. */
     auth_token?: string | null;
   };
+  /**
+   * v3 delegation-board state configuration (WI-321).
+   * When the board is active (its database file exists on disk), the v2
+   * artifact server refuses work-item writes — see resolveBoardDbPath() and
+   * BoardActiveError in tools/write.ts.
+   */
+  work_state?: {
+    /**
+     * Relative (or absolute) path from the project root (the .ideate.json
+     * file's directory) to the v3 work-state directory. When absent,
+     * defaults to DEFAULT_WORK_STATE_PATH (".ideate-work").
+     */
+    path?: string;
+  };
 }
 
 /**
@@ -86,6 +100,13 @@ export const DEFAULT_BACKEND: BackendType = "local";
  * Relative path from the .ideate.json file's directory to the artifact tree.
  */
 export const DEFAULT_ARTIFACT_DIRECTORY = ".ideate";
+
+/**
+ * Default work_state.path used when the field is absent from .ideate.json.
+ * Relative path from the project root (the .ideate.json file's directory)
+ * to the v3 delegation-board's work-state directory. See WI-321.
+ */
+export const DEFAULT_WORK_STATE_PATH = ".ideate-work";
 
 /**
  * Default agent_budgets used when the field is absent from config.json.

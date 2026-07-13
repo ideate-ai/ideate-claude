@@ -748,6 +748,28 @@ export class ValidationError extends StorageAdapterError {
   }
 }
 
+/**
+ * The project has migrated to the v3 work-state board (its board.db exists
+ * on disk), so the v2 artifact server refuses this work-item write. This is
+ * the sink-guard fix for WI-321: on a board-committed project there is no
+ * legitimate v2 work-item write — board items are the single home — so this
+ * error is thrown instead of silently splitting new work off the board.
+ * Distinguishable from ordinary validation errors via `instanceof
+ * BoardActiveError` or `code === "BOARD_ACTIVE"`.
+ */
+export class BoardActiveError extends StorageAdapterError {
+  constructor(boardDbPath: string) {
+    super(
+      `Refused: this project uses the v3 work-state board (found ${boardDbPath}). ` +
+        `Work items must be created via the v3 "work_create" tool, not the v2 artifact store. ` +
+        `Creating a v2 work item here would silently split new work off the board.`,
+      "BOARD_ACTIVE",
+      { boardDbPath }
+    );
+    this.name = "BoardActiveError";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Adapter factory
 // ---------------------------------------------------------------------------

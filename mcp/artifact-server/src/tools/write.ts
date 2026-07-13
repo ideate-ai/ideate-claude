@@ -3,6 +3,8 @@ import * as path from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { ToolContext } from "../types.js";
 import { TYPE_TO_EXTENSION_TABLE } from "../node-type-registry.js";
+import { findIdeateJson, readRawConfig, DEFAULT_WORK_STATE_PATH } from "../config.js";
+import { BoardActiveError } from "../adapter.js";
 
 // ---------------------------------------------------------------------------
 // Adapter resolution
@@ -206,6 +208,64 @@ export async function handleArchiveCycle(
 }
 
 // ---------------------------------------------------------------------------
+// Board-presence sink-guard (WI-321)
+//
+// Three prior review cycles chased this defect class through prose: skills
+// creating v2 work items on a project that has migrated to the v3 delegation
+// board, silently splitting new work off the board. Rather than guard every
+// prose caller, this guards the single SINK — handleWriteWorkItems is the
+// one v2 work-item creation path, and handleWriteArtifact redirects
+// `type: "work_item"` into it (see below), so guarding here catches both.
+//
+// Board-active signal: the configured work_state.path (default
+// DEFAULT_WORK_STATE_PATH = ".ideate-work") contains board.db, resolved
+// against the project root. A pre-v3 project has no .ideate-work/board.db,
+// so this guard never fires there — the v2 path stays fully intact for
+// legacy projects and the legacy v2 fallback.
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the project root (the directory containing .ideate.json) from
+ * ctx.ideateDir. Prefers walking up from ideateDir to find the actual
+ * .ideate.json pointer (handles nested/absolute artifact_directory values);
+ * falls back to the parent of ideateDir when no pointer exists yet (e.g.
+ * fresh/test contexts that never wrote .ideate.json), which matches the
+ * default artifact_directory (".ideate") layout.
+ */
+function resolveProjectRoot(ctx: ToolContext): string {
+  const found = findIdeateJson(ctx.ideateDir);
+  return found ? path.dirname(found.configPath) : path.dirname(ctx.ideateDir);
+}
+
+/**
+ * Resolve the absolute path to the v3 work-state board's database file,
+ * reading work_state.path from .ideate.json when present and defaulting to
+ * DEFAULT_WORK_STATE_PATH otherwise.
+ */
+function resolveBoardDbPath(ctx: ToolContext): string {
+  const config = readRawConfig(ctx.ideateDir);
+  const configuredPath = config.work_state?.path?.trim();
+  const workStatePath = configuredPath && configuredPath !== "" ? configuredPath : DEFAULT_WORK_STATE_PATH;
+  const projectRoot = resolveProjectRoot(ctx);
+  const workStateDir = path.isAbsolute(workStatePath)
+    ? workStatePath
+    : path.join(projectRoot, workStatePath);
+  return path.join(workStateDir, "board.db");
+}
+
+/**
+ * Throws BoardActiveError when the project's v3 work-state board is active
+ * (board.db exists at the resolved work_state path). Call this first, before
+ * any other work, in every v2 work-item creation path.
+ */
+function assertBoardNotActive(ctx: ToolContext): void {
+  const boardDbPath = resolveBoardDbPath(ctx);
+  if (fs.existsSync(boardDbPath)) {
+    throw new BoardActiveError(boardDbPath);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // handleWriteWorkItems — batch work item creation
 // ---------------------------------------------------------------------------
 
@@ -230,6 +290,11 @@ export async function handleWriteWorkItems(
   ctx: ToolContext,
   args: Record<string, unknown>
 ): Promise<string> {
+  // Sink-guard (WI-321): refuse before doing anything else if the v3 board
+  // is active. This also covers handleWriteArtifact's type:"work_item"
+  // redirect below, since it delegates here.
+  assertBoardNotActive(ctx);
+
   const items = args.items as WorkItemInput[];
 
   if (!items || !Array.isArray(items)) {
