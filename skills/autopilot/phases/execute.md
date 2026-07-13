@@ -17,15 +17,32 @@ Execute all pending work items following the execution strategy (loaded by the c
 
 Call `ideate_get_config()` to read project configuration. Hold the response as `{config}`. Use `{config}.agent_budgets.{agent_name}` as the maxTurns value when spawning agents. If `ideate_get_config` is unavailable or returns no agent_budgets, use the agent's frontmatter maxTurns as fallback. Also hold `{config}.model_overrides` — a map of agent name to model string. When spawning any agent, use `{config}.model_overrides['{agent_name}']` as the model parameter if present and non-empty; otherwise use the hardcoded default listed in the spawn instruction.
 
+### Board-Aware Work Item Read (v3)
+
+Call `ideate_artifact_query({type: "work_item"})` — returns all v2 work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_claim`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1`: the opaque `spec` payload IS the work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes). Hold `{board_items}` — the set of work items that live on the board, with their board item IDs. Items returned only by the artifact query are legacy v2 items; both kinds execute in the same cycle. If the work-state tools are absent, the artifact query alone is the complete set (v2 fallback path) and `{board_items}` is empty — apply the loud-fallback protocol immediately below.
+
+**v3 Detection and Fallback (GP-24 / P-45)**
+
+Detection of the v3 work-state/record tools is mechanical tool presence in the session — never inferred (GP-24). When a v3 tool is ABSENT and a fallback branch is taken, the fallback must be LOUD, never silent (P-45):
+
+- Say in your output, verbatim: "v3 work-state tools not detected — using v2 artifact fallback." Where a journal write is already in flow, include the same line in the journal body.
+- **Missing-build escalation**: if `.ideate-work/` exists on disk at `{project_root}`, this project has previously used the board — the absence is then almost certainly a MISSING BUILD (the v3 server runs from `dist/`, which is git-ignored and never auto-built), not a pre-v3 project. Escalate the note to a warning: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing, or new work will silently split between v2 artifacts and the board." Autopilot runs unattended — there is no user to give the chance to fix it before proceeding, so route this warning to the proxy-human agent as an Andon event (see "Andon Cord → Proxy-Human Routing" below) rather than silently continuing on a project with a possible split-brain.
+
+Every v2-fallback branch in this phase document applies this protocol; the sections below reference it rather than restating it.
+
+**Resolve `{user}`**: the human principal for board actor attribution. Read `git config user.name` in `{project_root}`; if unset or empty, use the literal string `"autopilot"` (autopilot runs unattended — there is no user to ask). Hold this as `{user}` for the rest of this phase.
+
 ### Prepare Context Digest
 
 Before spawning workers, assemble a **context digest** for each pending work item using PPR-based context assembly. This provides graph-aware, relevance-ranked context within a token budget.
 
 **PPR-based context assembly**: For each pending work item, call `ideate_assemble_context({seed_ids: [{current_work_item_id}], token_budget: {config}.ppr.default_token_budget, include_types: ["architecture", "guiding_principle", "constraint"]})`. The tool runs Personalized PageRank over the artifact graph, ranks all artifacts by relevance to the seed work item, and assembles context within the token budget. Always-include types (architecture, principles, constraints) are included regardless of PPR score.
 
+**Board items (v3)**: a board item is not in the artifact graph — do not seed PPR with its WI designation (the seed resolves to nothing). For items in `{board_items}`, skip the PPR call and use the manual fallback below for project-scoped context; the item-scoped spec comes from the board payload (see **Sourcing a Work Item's Spec/Context (Board-Aware)**).
+
 Hold the returned context as `{ppr_context[item_id]}`. Pass it to the worker as their context digest.
 
-**Fallback**: If `ideate_assemble_context` is unavailable or returns an error, fall back to the existing manual context digest construction:
+**Fallback**: If `ideate_assemble_context` is unavailable or returns an error — or the current work item is a board item (see above) — fall back to the existing manual context digest construction:
 
 Call `ideate_get_context_package()` — returns the architecture document, guiding principles, and constraints as a single pre-assembled package. Hold the result as `{context_package}`.
 
@@ -42,30 +59,35 @@ For each pending work item:
 
 Store as `{work_item_context_digest[item_id]}`. Pass to the worker instead of the raw architecture content. Include a note that the full documents are available via MCP tools if more detail is needed.
 
-### Context for Every Worker
+### Sourcing a Work Item's Spec/Context (Board-Aware)
 
-Call `ideate_get_artifact_context({artifact_id})` — returns pre-assembled context including work item spec, module spec, domain policies, and research. Also provide the project source root path and relevant domain policies (if not already included). Skip the manual file reads in steps 1–8 below.
+- **Board items (v3)** — for items in `{board_items}`: the opaque `spec` payload (already held from `work_list`) IS the work-item spec — objective, acceptance criteria, file scope, dependencies, implementation notes — supplemented by `work_get` for current state and `work_events` for prior lifecycle (a previously released item's handoff note is required reading before respawning). Do NOT call `ideate_get_artifact_context` with a board item's WI designation: board items have no v2 artifact, and the call fails with "Artifact not found". Module spec / domain policies / research for a board item come from the project-scoped `{context_package}` (and `ideate_artifact_query({type: "module_spec"})` / `{type: "research"}` if needed), keyed off the item's file scope, since the board payload is opaque to the server.
+- **v2 items (fallback)** — for legacy items not in `{board_items}` (or when the work-state tools are absent, per the loud-fallback protocol above): call `ideate_get_artifact_context({artifact_id})` — returns the work item spec, module spec, domain policies, and research as one pre-assembled package.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
+
+### Context for Every Worker
+
+Also provide the project source root path and relevant domain policies (if not already included).
 
 **GP-14 enforcement**: If an MCP tool call fails, report the error and stop. Do NOT fall back to reading, grepping, or globbing .ideate/ files directly. The MCP abstraction boundary (GP-14) is inviolable — a tool failure is a signal to fix the tool, not to bypass it.
 
 Every worker subagent receives:
 
-1. The work item context — from `ideate_get_artifact_context({artifact_id})`, which returns the work item spec (including inline implementation notes), module spec, domain policies, and relevant research as a single pre-assembled package.
-2. _(Implementation notes are inline in the work item YAML `notes` field, included in the response above.)_
+1. The work item context — per **Sourcing a Work Item's Spec/Context (Board-Aware)** above (board `spec` payload plus `work_get`/`work_events` for a board item; the `ideate_get_artifact_context` package for a v2 item).
+2. _(Implementation notes are inline in the board `spec` payload, or in the v2 work item's `notes` field — included in the context above.)_
 3. The context digest — `{ppr_context[item_id]}` from the PPR-based context assembly in the "Prepare Context Digest" step above, or `{work_item_context_digest[item_id]}` if fallback was used. Includes a note that full documents are available via MCP tools if more detail is needed.
-4. The relevant module spec — included in the `ideate_get_artifact_context` response if applicable; otherwise the full architecture doc from `{context_package}`.
+4. The relevant module spec — from the canonical source above (for a board item, resolved from its file scope via `{context_package}`; for a v2 item, included in the `ideate_get_artifact_context` response). If the item spans modules or no modules exist, the full architecture doc from `{context_package}` is used instead.
 5. _(Included in context digest)_
 6. _(Included in context digest)_
-7. Relevant research — included in the `ideate_get_artifact_context` response.
+7. Relevant research — from the canonical source above.
 8. Project source root — the absolute path `{project_source_root}`.
 
 All paths provided to workers must be absolute.
 
 ### Work Item Type Context Adjustment
 
-After loading the work item spec (from `ideate_get_artifact_context({artifact_id})`), read `work_item_type` from the artifact. Adjust the context loading depth for that work item's worker as follows:
+After loading the work item spec per **Sourcing a Work Item's Spec/Context (Board-Aware)** above (board `spec` payload for items in `{board_items}` — read `work_item_type` from the payload if it carries one, else default to feature; `ideate_get_artifact_context` for v2 items), read `work_item_type`. Adjust the context loading depth for that work item's worker as follows:
 
 - **feature, spike**: Full context — architecture, principles, module spec, dependencies. (This is the default path; no change from existing behavior.)
 - **bug**: Focused context — related findings (from `ideate_artifact_query({type: "finding"})` filtered to the affected file paths), affected file history if available, and reproduction information from the work item notes. Omit module specs for unrelated modules.
@@ -114,9 +136,20 @@ This call is best-effort — if it fails, continue without interruption.
 
 Where `{review_verdict}` is `"pass"` if the review passed without rework, `"rework"` if it passed after rework, or `"fail"` if unresolvable. This call is best-effort — if it fails, continue without interruption.
 
-**Update work item status**: After each work item passes incremental review (findings handled, rework complete if any) and after emitting the `work_item.completed` event, call `ideate_update_work_items({updates: [{id: "{work_item_id}", status: "done"}]})` to transition the work item from 'pending' to 'done'. This ensures `ideate_get_execution_status` reflects completed items. If the call fails, log the error but continue — the status update is informational, not blocking.
+### Board Claim Discipline (v3)
 
-**Refreshing execution status mid-cycle**: If the `{completed_items}` set needs to be refreshed mid-cycle (e.g., after a partial failure and retry), call `ideate_get_execution_status()` — returns current completed, pending, and blocked sets. Use the returned `completed` set to update `{completed_items}` before skipping decisions. If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
+For each work item in `{board_items}`, the coordinator holds the board lease around the worker's lifetime. If the item is NOT in `{board_items}` — a legacy v2 item, or the work-state tools are absent — skip this block entirely: the v2 flow in the rest of this phase is the complete behavior (fallback path).
+
+- **Claim before spawn**: After the skip check and the `work_item.started` hook, call `work_claim` per the tool's self-describing schema (P-44: the schema, not this text, is authoritative for parameter names and shapes). Supply the item's board ID, `{user}` (resolved above) as the human principal, and the worker's agent type as the acting agent — the actor fields are flattened strings (no nested `actor` object), and the human principal is required. Hold the returned claim token. If the claim is rejected (dependencies not done, or already claimed), do NOT spawn the worker — re-check with `work_get`; if the board state contradicts the plan's dependency ordering, route to the Andon cord → proxy-human (see below).
+- **Renew on long items**: The default lease is hours-scale. Before spawning any rework pass on the same item — and at any natural checkpoint on an item that has been in flight for a long stretch — call `work_renew` with the held token. A rejected renew means the lease expired and the item may have been reclaimed: stop work on it and route to the Andon cord → proxy-human.
+- **Complete on review pass**: When the item passes incremental review (findings handled, rework done), call `work_complete` with the held token and a `note` summarizing the outcome in one or two sentences (what was built, rework rounds, review verdict). The note is not optional on this path — it becomes the item's durable process record.
+- **Release on failure**: If the item cannot proceed (worker retry exhausted, Andon-blocked, cycle stopped), call `work_release` with the held token and a handoff `note` stating what was attempted and what remains. Never leave a claim to expire silently when the outcome is known.
+
+The board's claim discipline REPLACES v2 work-item status updates for items in `{board_items}` — neither the coordinator nor its workers issue `ideate_update_work_items` status changes for board items. Findings and journal entries stay v2 for all items. The `work_item.started` / `work_item.completed` event hooks continue to fire for all items regardless of path.
+
+**Update work item status**: After each work item passes incremental review (findings handled, rework complete if any) and after emitting the `work_item.completed` event: **board items** (in `{board_items}`) do NOT get a separate status-update call — `work_complete` in Board Claim Discipline above IS the status transition. **v2 items** (fallback path): call `ideate_update_work_items({updates: [{id: "{work_item_id}", status: "done"}]})` to transition the work item from 'pending' to 'done'. This ensures `ideate_get_execution_status` reflects completed items. If the call fails, log the error but continue — the status update is informational, not blocking.
+
+**Refreshing execution status mid-cycle**: If the `{completed_items}` set needs to be refreshed mid-cycle (e.g., after a partial failure and retry), call `ideate_get_execution_status()` — returns current completed, pending, and blocked sets. Use the returned `completed` set to update `{completed_items}` before skipping decisions. **Board-aware completion (v3)**: for items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what `ideate_get_execution_status` reports, and an item whose board status is `open` or `in_progress` is NOT completed even if the execution-status scan suggests otherwise (check via `work_list` or `work_get`). Merge `{completed_items}` accordingly. If the work-state tools are absent, `ideate_get_execution_status` alone decides (v2 fallback path — apply the loud-fallback protocol above). If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
 ### Execution Modes
 
@@ -248,8 +281,8 @@ When an Andon event occurs (scope-changing finding, merge conflict, spec ambigui
 
 If a subagent fails (crashes, times out, produces no output):
 1. Record the failure in the journal
-2. Retry once with the same work item and context
-3. If the retry fails, route to proxy-human as an Andon event
+2. Retry once with the same work item and context. For board items, call `work_renew` with the held token before respawning — the claim stays held across the retry.
+3. If the retry fails, route to proxy-human as an Andon event. For board items, call `work_release` with the held token and a handoff note (Board Claim Discipline above) before routing; legacy v2 items have no board state to release (fallback path).
 4. Continue with items that do not depend on the failed item
 
 ### Journal Updates (Per Work Item)
@@ -281,7 +314,7 @@ After each item completes, call `ideate_manage_autopilot_state({action: "get"})`
 
 - All pending work items have been attempted (skipped, completed, or failed+deferred)
 - Each completed item has an incremental review finding written via `ideate_write_artifact`
-- Each completed item has its status updated to 'done' via `ideate_update_work_items`
+- Each completed item has its status updated to 'done' — via `work_complete` (Board Claim Discipline) for board items, via `ideate_update_work_items` for v2 items
 - `total_items_executed` is updated via `ideate_manage_autopilot_state`
 - Journal has an entry for each completed item (via `ideate_append_journal`)
 
@@ -291,7 +324,8 @@ Return to the controller. The controller will proceed to Phase 6b (review.md).
 
 - Findings (F-{WI}-{SEQ}) — one per work item reviewed, via `ideate_write_artifact`
 - Journal entries — appended per work item and per Andon event, via `ideate_append_journal`
-- Work item status — updated to 'done' for each completed item, via `ideate_update_work_items`
+- Work item status — updated to 'done' for each completed item, via `work_complete` for board items and via `ideate_update_work_items` for v2 items
+- Board claims — claimed via `work_claim`, renewed via `work_renew`, completed via `work_complete`, released via `work_release` (all for items in `{board_items}`)
 - Autopilot session state — `total_items_executed` and `workspace_label` updated via `ideate_manage_autopilot_state`
 - Proxy-human decisions (PHD-{cycle}-{seq}) — if Andon events occurred, via `ideate_write_artifact` with type `proxy_human_decision`
 
@@ -303,6 +337,10 @@ Before returning to the controller, verify:
 - [x] No occurrences of `ideate_get_project_status` in this file
 - [x] Workspace rename on phase transition uses `ideate_manage_autopilot_state`, not direct file writes
 - [x] Every completed work item has a finding written via `ideate_write_artifact`
-- [x] Every completed work item has status updated via `ideate_update_work_items`
+- [x] Every completed board item has status updated via `work_complete`; every completed v2 item has status updated via `ideate_update_work_items` — no universal `ideate_update_work_items` call survives outside the v2 branch
 - [x] `total_items_executed` updated via `ideate_manage_autopilot_state` after each item
 - [x] Journal entries written via `ideate_append_journal`, not direct file writes
+- [x] Board-Aware Work Item Read establishes `{board_items}` via mechanical tool-presence detection (GP-24), with a loud v2 fallback and `.ideate-work/` missing-build escalation (P-45)
+- [x] `ideate_get_artifact_context` is called only inside the v2 branch of "Sourcing a Work Item's Spec/Context (Board-Aware)" — board items are sourced from the board `spec` payload plus `work_get`/`work_events`
+- [x] Board Claim Discipline block covers claim-before-spawn, renew-before-rework, complete-on-pass, and release-on-failure, with actor parameters as flattened `actor_human`/`actor_agent` strings (no nested `actor` object), per P-44
+- [x] Worker Agent Failure and Andon routing renew/release the board claim for board items before retrying or escalating

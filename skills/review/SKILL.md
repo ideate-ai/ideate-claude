@@ -186,7 +186,7 @@ For **cycle reviews only**, generate a lightweight manifest that reviewers use a
 
 Call `ideate_get_review_manifest()`. It returns a pre-built manifest table matching work items to incremental reviews with verdicts and finding counts. Hold the response as `{manifest_content}`.
 
-**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools are present in the session (mechanical tool-presence detection — GP-24), append to `{manifest_content}` one row per board item from the Phase 2.2 `work_list`: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path — apply the loud-fallback protocol from 2.2). No other review-flow change — findings, cycle summaries, and archival stay v2 for all items.
+**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools are present in the session (mechanical tool-presence detection — GP-24), append to `{manifest_content}` one row per board item from the Phase 2.2 `work_list`: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. **Mark each board row** (e.g. a `board` tag in the row) so the Phase 4a reviewer prompts can tell which items need the CLI-fallback line. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path — apply the loud-fallback protocol from 2.2). No other review-flow change — findings, cycle summaries, and archival stay v2 for all items.
 
 **Reviewer CLI fallback for board evidence**: reviewer subagents usually lack the v3 MCP tools but have Bash. When a finding needs deeper checking than the coordinator's one-line manifest summary, a reviewer can pull a board item's full immutable event history directly: `node plugin/bin/ideate-work events --id <board-item-id>` (run from the project root; `--json` on read verbs for structured output). Include this line in reviewer prompts whenever the manifest carries board rows, so board-item evidence is independently verifiable rather than coordinator-mediated.
 
@@ -214,7 +214,7 @@ Before spawning reviewers, assess severity and priority for each work item in sc
 
 For each work item in the review manifest:
 
-1. Read `severity`, `priority`, and `work_item_type` from work item metadata (from `ideate_artifact_query({type: "work_item"})`). If either severity or priority is absent, default to `medium`.
+1. Read `severity`, `priority`, and `work_item_type` from work item metadata. **Board-aware (v3)**: for a board item (present in the Phase 2.2 `work_list` with `spec_format: ideate/wi-v1`), read these from its `spec` payload if it carries them; for a v2 item, read from `ideate_artifact_query({type: "work_item"})` — which does NOT return board items. If either severity or priority is absent (common for board items, whose opaque payload need not carry them), default to `medium` — the default path spawns all three reviewers, so an absent value never silently reduces coverage.
 
 2. **Default**: Spawn all three reviewers (code-reviewer, spec-reviewer, gap-analyst).
 
@@ -263,6 +263,8 @@ Each reviewer's `ideate_write_artifact` call below MUST run even if the reviewer
 >
 > Follow the output format defined in your agent instructions. Verdict is Fail if there are any Critical or Significant findings or unmet acceptance criteria. Otherwise Pass.
 >
+> **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
+>
 > Return your complete findings as the final section of your response. Use the standard review output format (Verdict, Critical/Significant/Minor Findings sections). Do NOT use the Write tool — return the content in your response.
 
 After this agent returns:
@@ -292,6 +294,8 @@ After this agent returns:
 > This is a capstone review. Focus on cross-cutting adherence: do all components collectively follow the architecture? Are interfaces consistent across module boundaries? Are guiding principles upheld across the entire codebase, not just within individual work items?
 >
 > Follow the output format defined in your agent instructions. Include all sections even if empty.
+>
+> **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
 >
 > Return your complete findings as the final section of your response. Use the standard review output format (Verdict, Critical/Significant/Minor Findings sections). Do NOT use the Write tool — return the content in your response.
 
@@ -324,6 +328,8 @@ After this agent returns:
 > This is a capstone review. Focus on gaps that span the full project: missing requirements from the interview that fell through the cracks across all work items, integration gaps between components, infrastructure that no single work item was responsible for, implicit requirements that the project as a whole should meet.
 >
 > Follow the output format defined in your agent instructions. Include all sections even if empty.
+>
+> **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
 >
 > Return your complete findings as the final section of your response. Use the standard review output format (Verdict, Critical/Significant/Minor Findings sections). Do NOT use the Write tool — return the content in your response.
 

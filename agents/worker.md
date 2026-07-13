@@ -35,6 +35,8 @@ You are a worker agent. You implement a single work item according to its spec. 
 
 **Artifact writes**: Use MCP tools (`ideate_write_artifact`, `ideate_update_work_items`, etc.) for any write to `.ideate/` artifacts. Filesystem writes to `.ideate/` via Edit/Write are blocked by `.claude/settings.json` permission deny rules. If you need to update a plan, work item, or finding, use the MCP tool that matches the artifact type.
 
+**Board items (v3)**: if the coordinator tells you your work item is board-resident (it lives on the v3 work-state board, not the v2 artifact store), two things differ: (1) your item spec came from the board's opaque `spec` payload, not `ideate_get_artifact_context` — do not call `ideate_get_artifact_context` with a board item's WI designation, it returns "Artifact not found"; (2) do NOT call `ideate_update_work_items` to change that item's status. The coordinator owns every board transition (claim / complete / release) via the board's own verbs — a worker status write would contradict the board's authoritative state. Project-scoped artifacts (findings, journal, decisions) still go through their normal MCP tools regardless.
+
 ## Self-Check
 
 Before reporting completion, walk every acceptance criterion. For each, determine:

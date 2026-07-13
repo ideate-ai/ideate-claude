@@ -171,7 +171,7 @@ Before spawning workers, assemble a **context digest** for the current work item
 
 **PPR-based context assembly**: Call `ideate_assemble_context({seed_ids: [{current_work_item_id}], token_budget: {config}.ppr.default_token_budget, include_types: ["architecture", "guiding_principle", "constraint"]})`. The tool runs Personalized PageRank over the artifact graph, ranks all artifacts by relevance to the seed work item, and assembles context within the token budget. Always-include types (architecture, principles, constraints) are included regardless of PPR score.
 
-**Board items (v3)**: a board item is not in the artifact graph — do not seed PPR with its WI designation (the seed resolves to nothing). For board items, use the manual fallback below for project-scoped context; the item-scoped spec comes from the board payload (see Context for Every Worker).
+**Board items (v3)**: a board item is not in the artifact graph — do not seed PPR with its WI designation (the seed resolves to nothing). For board items, use the manual fallback below for project-scoped context; the item-scoped spec comes from the board payload (see **Sourcing a work item's spec/context (CANONICAL)**).
 
 Hold the returned context as `{ppr_context}`. Pass it to workers as their context digest.
 
@@ -194,7 +194,7 @@ Workers receive the digest plus instructions to retrieve full documents via MCP 
 
 ## Work Item Type Context Adjustment
 
-After loading the work item spec (from `ideate_get_artifact_context({artifact_id})` for v2 items; from the board `spec` payload for items in `{board_items}` — read `work_item_type` from the payload if it carries one, else default to feature), read `work_item_type`. Adjust the context loading depth for that work item's worker as follows:
+After loading the work item spec per **Sourcing a work item's spec/context (CANONICAL)** in Phase 6 (board `spec` payload for items in `{board_items}` — read `work_item_type` from the payload if it carries one, else default to feature; `ideate_get_artifact_context` for v2 items), read `work_item_type`. Adjust the context loading depth for that work item's worker as follows:
 
 - **feature, spike**: Full context — architecture, principles, module spec, dependencies. (This is the default path; no change from existing behavior.)
 - **bug**: Focused context — related findings (from `ideate_artifact_query({type: "finding"})` filtered to the affected file paths), affected file history if available, and reproduction information from the work item notes. Omit module specs for unrelated modules.
@@ -247,24 +247,50 @@ For each work item in `{board_items}`, the coordinator holds the board lease aro
 
 The board's claim discipline REPLACES v2 work-item status updates for items in `{board_items}` — neither the coordinator nor its workers issue `ideate_update_work_items` status changes for board items. Phases, findings, and journal entries stay v2 for all items. The `work_item.started` / `work_item.completed` event hooks continue to fire for all items regardless of path.
 
+## Sourcing a work item's spec/context (CANONICAL)
+
+This is the single source of truth for how any phase obtains an item-scoped
+work-item spec and context. Every other section that needs a work item's
+spec/module-spec/research REFERENCES this block rather than restating it
+(P-46: a capability branch lives in one place so a fix cannot miss a sibling
+site). "The item context" below means whichever branch applies to the item.
+
+- **Board items (v3)** — for items in `{board_items}`: the opaque `spec`
+  payload (already held from `work_list`) IS the work-item spec — objective,
+  acceptance criteria, file scope, dependencies, implementation notes —
+  supplemented by `work_get` for current state and `work_events` for prior
+  lifecycle (a previously released item's handoff note is required reading
+  before respawning). Do NOT call `ideate_get_artifact_context` or
+  `ideate_assemble_context` with a board item's WI designation: board items
+  have no v2 artifact, and the call fails with "Artifact not found". Module
+  spec / domain policies / research for a board item come from the
+  project-scoped sources below, keyed off the item's file scope, since the
+  board payload is opaque to the server.
+- **v2 items (fallback)** — for legacy items not in `{board_items}` (or when
+  the work-state tools are absent, per the loud-fallback protocol): call
+  `ideate_get_artifact_context({artifact_id})` — returns the work item spec,
+  module spec, domain policies, and research as one pre-assembled package.
+
+Project-SCOPED context (architecture, principles, constraints, and the
+Phase 4.5 digest) is the same for both branches — it comes from
+`ideate_get_context_package()` and is never item-scoped.
+
+If the ideate MCP artifact server is not available, stop and report: "The
+ideate MCP artifact server is required but not available. Verify .mcp.json
+configuration."
+
 ## Context for Every Worker
-
-**Board items (v3)**: for items in `{board_items}`, build the worker's item context from the BOARD, not the artifact server. The opaque `spec` payload (already held from `work_list`) IS the work-item spec — objective, acceptance criteria, file scope, dependencies, implementation notes — supplemented by `work_get` for current state and `work_events` for prior lifecycle (a previously released item's handoff note is required reading before respawning). Do NOT call `ideate_get_artifact_context` or `ideate_assemble_context` with a board item's WI designation: board items have no v2 artifact, and the call fails with "Artifact not found". Project-scoped context (architecture, principles, constraints, domain policies) still comes from `ideate_get_context_package()` and the Phase 4.5 digest — those are not item-scoped. The v2 path below is the explicit fallback, applying to legacy (non-board) items.
-
-**v2 items (fallback)**: Call `ideate_get_artifact_context({artifact_id})` — returns pre-assembled context including work item spec, module spec, domain policies, and research. Also provide the project source root path and relevant domain policies (if not already included).
-
-If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
 Regardless of execution mode, every worker (subagent, teammate, or the main session in sequential mode) receives:
 
-1. **The work item context** — from `ideate_get_artifact_context({artifact_id})`, which returns the work item spec (including inline implementation notes), module spec, domain policies, and relevant research as a single pre-assembled package.
+1. **The work item context** — the item spec, per **Sourcing a work item's spec/context (CANONICAL)** above (board payload for board items; the `ideate_get_artifact_context` package for v2 items).
 2. **Context digest** — the PPR-assembled context from Phase 4.5 (`{ppr_context}`), or the manual context digest if fallback was used. Includes paths to the full documents if the worker needs more detail.
-3. **The relevant module spec** — included in the `ideate_get_artifact_context` response if applicable. If the work item spans modules or no modules exist, the full architecture doc from the context package is used instead.
+3. **The relevant module spec** — from the canonical source above (for a board item, resolved from its file scope via the project-scoped context; for a v2 item, included in the `ideate_get_artifact_context` response). If the work item spans modules or no modules exist, the full architecture doc from the context package is used instead.
 4. _(Included in context digest)_
 5. _(Included in context digest)_
-6. **Relevant research** — included in the `ideate_get_artifact_context` response for research referenced in the work item's implementation notes or relevant to its scope.
+6. **Relevant research** — for research referenced in the item's implementation notes or relevant to its scope (from the canonical source above).
 7. **Project source root** — the absolute path to the project source root derived in Phase 1, so workers know where to create and modify source files.
-8. **Relevant domain policies** — included in the `ideate_get_artifact_context` response. Domain policies supplement the guiding principles — they are more specific rules derived from prior review cycles.
+8. **Relevant domain policies** — domain policies that apply to the item's scope (from the canonical source above). They supplement the guiding principles — more specific rules derived from prior review cycles.
 9. **Phase steering** — if `{phase_steering}` is non-null, include it verbatim under a "Phase Steering" heading. Instruct the worker: "Phase steering supplements workspace-level principles. Apply it as additional guidance specific to this phase." If `{phase_steering}` is null, omit this item.
 
 All paths provided to workers must be absolute. Do not use relative paths that depend on the worker's current working directory matching the artifact directory.
@@ -377,7 +403,7 @@ If the Agent tool is not available but the session-spawner MCP server (from exte
 When a work item completes (in any execution mode), spawn the `ideate:code-reviewer` agent immediately.
 
 Provide the code-reviewer with:
-- The work item spec (from the `ideate_get_artifact_context` response used in Phase 6)
+- The work item spec — per **Sourcing a work item's spec/context (CANONICAL)** in Phase 6 (the board `spec` payload for a board item; the `ideate_get_artifact_context` response for a v2 item). Do NOT call `ideate_get_artifact_context` for a board item's designation — it returns "Artifact not found".
 - The list of files created or modified by the worker
 - The architecture document and guiding principles (from the `{context_package}` loaded in Phase 2)
 - The worker's self-check results (the `## Self-Check` section from the worker's completion report)

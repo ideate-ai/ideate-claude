@@ -20,11 +20,15 @@ Retrieve the cycle's review artifacts via `ideate_artifact_query({type: "cycle_s
 1. Determine whether an existing work item covers the fix, or whether a new work item is needed.
 2. If a new work item is needed, create it.
 
-   Call `ideate_write_work_items({items_array})` — atomically creates individual work items (WI-{NNN}) for each new work item.
+   **Board-aware numbering (v3)**: if the v3 work-state tools are present, call `work_list` in addition to the artifact index (`ideate_get_next_id({type: "work_item"})`) and take the maximum WI number across both — the board is invisible to the artifact index alone, and without this check, numbering can collide.
+
+   **v3 board path**: If the v3 work-state tools (`work_create`, `work_claim`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create the new work item ON THE BOARD via `work_create`, called per the tool's self-describing schema (P-44: the schema, not this text, is authoritative for parameter names and shapes; the creating actor's human principal is REQUIRED, with actor fields as flattened strings — no nested `actor` object). Supply: the title formatted `"WI-{NNN}: {title}"`; the full work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes) as the opaque `spec` payload with `spec_format: "ideate/wi-v1"`; the creating actor — `{user}` (read `git config user.name` in `{project_root}`, defaulting to the literal string `"autopilot"` if unset, since this loop runs unattended) as the human principal, plus the acting agent's name; and `depends_on` — the board item IDs of any dependency items created in this same batch. A dependency on a legacy (v2 artifact) work item cannot be a board dependency — record it inside the spec payload's dependencies section instead and note it in the refinement journal entry so the executor enforces it manually.
+
+   **v2 fallback (pre-v3 projects, or v3 tools absent)**: Call `ideate_write_work_items({items_array})` — atomically creates individual work items (WI-{NNN}) for each new work item. This is the complete legacy behavior, unchanged. Apply the loud-fallback protocol: say in your output, verbatim, "v3 work-state tools not detected — using v2 artifact fallback." **Missing-build escalation**: if `.ideate-work/` exists on disk at `{project_root}`, this project has previously used the board — the absence is then almost certainly a MISSING BUILD (the v3 server runs from `dist/`, which is git-ignored and never auto-built), not a pre-v3 project. Escalate to a warning: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing, or new work will silently split between v2 artifacts and the board." Autopilot runs unattended — route this warning to the proxy-human agent as an Andon event (per `execute.md` "Andon Cord → Proxy-Human Routing") rather than silently writing v2 items on a project with existing board state.
 
    If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
-3. If an existing work item needs rework, append a rework note to its spec and remove it from `{completed_items}`.
+3. If an existing work item needs rework, append a rework note to its spec and remove it from `{completed_items}`. **Board items**: a board item's state lives on the board, not in an editable v2 spec — if a board item needs rework, do not attempt to edit its `spec` payload (opaque, immutable per the board's design); instead create a new dependent work item via the v3 board path above describing the required follow-up, and note the relationship in the refinement journal entry.
 
 **Work item cap**: Create one work item per distinct finding group (e.g., one for all role-system findings, one for all README schema findings), not one per individual finding instance.
 
@@ -65,7 +69,7 @@ Call `ideate_artifact_query({type: "project", id: "{current_project}"})` to retr
 - `horizon.next` — the list of phase IDs to promote into active scope
 - `horizon.later` — any phases beyond the next horizon (may be absent)
 
-For each work item in `horizon.next`, call `ideate_update_work_items({updates: [{id: "{work_item_id}", status: "pending", phase: "active"}]})` to promote it from horizon to active scope.
+For each work item in `horizon.next`: if it is a **board item** (in `{board_items}` / carries `spec_format: ideate/wi-v1`), do NOT call `ideate_update_work_items` for it — a board item has no v2 artifact record, so that call has nothing to update and would error (it operates on the v2 store only). A board item's lifecycle status lives on the board (`work_get`/`work_list`); its phase membership is recorded when the phase artifact's `work_items` array is written (see below and the phase-artifact update), which is v2-phase machinery that stays v2 regardless of the board cutover. For a **v2 item**, call `ideate_update_work_items({updates: [{id: "{work_item_id}", status: "pending", phase: "active"}]})` to promote it from horizon to active scope.
 
 Update the project artifact to reflect the promotion: call `ideate_write_artifact({type: "project", id: "{current_project}", content: {horizon: {next: {horizon.later items or []}, later: []}}})`. Preserve all other project artifact fields.
 
@@ -123,8 +127,8 @@ Return to the controller (Phase 6c-ii). The controller will start the next cycle
 
 ## Artifacts Written (all via MCP)
 
-- Work items (WI-{NNN}) — new items created via `ideate_write_work_items` (normal refinement)
-- Work item status — promoted items updated via `ideate_update_work_items` (phase transition)
+- Work items — new board items created via `work_create` (v3 board path) or new v2 artifacts via `ideate_write_work_items` (v2 fallback, normal refinement)
+- Work item status — promoted items updated via `ideate_update_work_items` (phase transition; v2-phase machinery for both board and v2 items — see note in Phase Transition Step 1)
 - Execution strategy — horizon updated via `ideate_write_artifact` (phase transition)
 - Journal entries — refinement summary and/or phase transition entry appended via `ideate_append_journal`
 
@@ -140,3 +144,6 @@ Before returning to the controller, verify:
 - [x] `{completed_items}` refreshed via `ideate_get_execution_status` after phase transition
 - [x] Divergence check present in normal refinement path (pending count not decreasing)
 - [x] Journal updated via `ideate_append_journal`, not direct file writes
+- [x] Work item creation branches on mechanical v3 tool-presence (GP-24): `work_create` with board-aware numbering (`work_list` + `ideate_get_next_id`) when v3 tools are present; `ideate_write_work_items` as the loud, explicit v2 fallback (P-45) with the missing-build escalation
+- [x] `work_create` actor parameters are flattened `actor_human`/`actor_agent` strings (no nested `actor` object), per P-44
+- [x] Phase Transition Step 1 notes that `ideate_update_work_items` promotion is v2-phase machinery only — a board item's lifecycle status still lives on the board, not in this v2 status field

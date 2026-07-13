@@ -62,9 +62,13 @@ Call `ideate_get_review_manifest()` — returns a pre-built manifest table match
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
+**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools (`work_list`, `work_events`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — call `work_list` and hold `{board_items}`: items whose `spec_format` is `ideate/wi-v1` (the opaque `spec` payload is the work-item body). Append to `{manifest_content}` one row per board item: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. **Mark each board row** (e.g. a `board` tag) so the reviewer prompts below and the Proportional Review Depth step can tell which items need the CLI-fallback line / spec-payload read. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path) and `{board_items}` is empty — apply the loud-fallback protocol: say in your output, verbatim, "v3 work-state tools not detected — using v2 artifact fallback." If `.ideate-work/` exists on disk at `{project_root}`, escalate: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build (run `pnpm install && pnpm run build` in the plugin). Board items will be INVISIBLE to this review." A review that silently omits board items misstates coverage — since autopilot runs unattended, route this warning to the proxy-human agent as an Andon event (per `execute.md` "Andon Cord → Proxy-Human Routing") rather than silently proceeding with incomplete coverage.
+
+**Reviewer CLI fallback for board evidence**: reviewer subagents usually lack the v3 MCP tools but have Bash. When a finding needs deeper checking than the manifest's one-line summary, a reviewer can pull a board item's full immutable event history directly: `node plugin/bin/ideate-work events --id <board-item-id>` (run from `{project_source_root}`; `--json` on read verbs for structured output).
+
 Call `ideate_write_artifact({type: "cycle_summary", id: "review-manifest", content: {cycle: {cycle_number}, content: {manifest_content}}, cycle: {cycle_number}})` to write the manifest.
 
-If `{diff_mode}` = `"differential"`: filter the manifest to work items whose scope includes at least one file in `{changed_files}`. Include a note: "Differential review — scope: {N} changed files + {M} boundary files."
+If `{diff_mode}` = `"differential"`: filter the manifest to work items whose scope includes at least one file in `{changed_files}`. Include a note: "Differential review — scope: {N} changed files + {M} boundary files." **Board rows (v3)**: board items carry an opaque `spec` payload with no server-parsed `scope` field, so this file-scope filter cannot match them. Do NOT drop board rows in differential mode — always include every board item from `{board_items}` in the filtered manifest (the Proportional Review Depth step already treats board items as full-coverage-by-default, so including them never under-reviews; silently dropping them is the exact board-blindness this cutover closes).
 
 ### Proportional Review Depth
 
@@ -72,7 +76,7 @@ Before spawning reviewers, assess severity and priority for each work item in th
 
 For each work item:
 
-1. Read `severity`, `priority`, and `work_item_type` from work item metadata (from `ideate_artifact_query({type: "work_item"})`). If either severity or priority is absent, default to `medium`.
+1. Read `severity`, `priority`, and `work_item_type` from work item metadata. **Board-aware (v3)**: for a board item (present in `{board_items}`, established via `work_list` in the Generate Review Manifest step), read these fields from its `spec` payload if it carries them; for a v2 item, read from `ideate_artifact_query({type: "work_item"})`, which does NOT return board items. If either severity or priority is absent (common for board items, whose opaque payload need not carry them), default to `medium` — the default path spawns all three reviewers, so an absent value never silently reduces coverage.
 
 2. **Default**: Spawn all three reviewers (code-reviewer, spec-reviewer, gap-analyst).
 
@@ -122,6 +126,8 @@ Spawn all three simultaneously. Do not wait for one before starting another.
   >
   > Verdict is Fail if there are any Critical or Significant findings or unmet acceptance criteria. Otherwise Pass.
   >
+  > **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
+  >
   > Return your complete findings as the final section of your response. Use the standard review output format. Do NOT use the Write tool — return the content in your response.
 
 **ideate:spec-reviewer**
@@ -144,6 +150,8 @@ Spawn all three simultaneously. Do not wait for one before starting another.
   >
   > For each guiding principle, state whether it is satisfied or violated. The `## Principle Violations` and `## Principle Adherence Evidence` sections of your output are used for automated convergence checking — ensure both sections are present even if empty.
   >
+  > **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
+  >
   > Return your complete findings as the final section of your response. Use the standard review output format. Do NOT use the Write tool — return the content in your response.
 
 **ideate:gap-analyst**
@@ -165,6 +173,8 @@ Spawn all three simultaneously. Do not wait for one before starting another.
   > Project source code is at: {project_source_root} — read source files as needed.
   >
   > Focus on gaps spanning the full project: missing requirements from the interview, integration gaps between components, implicit requirements the project as a whole should meet.
+  >
+  > **Board evidence (v3)**: if the manifest marks an item as a `board` row and you need its full lifecycle beyond the manifest's one-line summary, pull the authoritative event trail directly (requires Bash): `node plugin/bin/ideate-work events --id <board-item-id>` from the project root (`--json` for structured output). Use this to verify a finding against a board item rather than trusting the coordinator's summary.
   >
   > Return your complete findings as the final section of your response. Use the standard review output format. Do NOT use the Write tool — return the content in your response.
 
@@ -451,3 +461,6 @@ Before returning to the controller, verify:
 - [x] Q-159 (distinguish unknown from fail) resolved by the three-way branch; closed via `ideate_write_artifact` with type `question`, status `resolved`
 - [x] patterns_tried and content_snippet extracted from principle_verdict_warning as discrete Andon payload fields (Phase 6c Step 1)
 - [x] Branch A clarifies that `converged` equals `condition_a` when `condition_b` is already true — routing uses `converged` from payload
+- [x] Generate Review Manifest establishes `{board_items}` via mechanical tool-presence detection (GP-24) and appends board rows to the manifest, with a loud v2 fallback and `.ideate-work/` missing-build escalation (P-45)
+- [x] Proportional Review Depth's severity/priority/work_item_type read branches on `{board_items}` (spec payload) vs. v2 (`ideate_artifact_query`) — no universal `ideate_artifact_query({type: "work_item"})` read survives outside the v2 branch
+- [x] All three reviewer prompts (code-reviewer, spec-reviewer, gap-analyst) carry the board-evidence CLI-fallback line for `board`-tagged manifest rows
