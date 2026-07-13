@@ -161,6 +161,8 @@ If no similar item found, skip this prompt and proceed directly.
 
 Call `ideate_get_next_id({type: "work_item"})` to obtain the next WI number.
 
+**Board-aware numbering (v3)**: `ideate_get_next_id` sees only v2 artifacts — board-resident work items are invisible to it, so its answer can collide with an existing board item's WI number. If the v3 work-state tools (`work_list`, …) are present in the session (mechanical tool presence, never inferred — GP-24), ALSO call `work_list` and take the maximum WI number across the artifact index and any board items carrying `spec_format: ideate/wi-v1`; use max+1 as the next number. If the work-state tools are absent, the `ideate_get_next_id` answer stands (v2 fallback path) — but if `.ideate-work/` exists on disk at the project root, warn loudly before writing (P-45): "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build (run `pnpm install && pnpm run build` in the plugin). The WI number below may COLLIDE with a board item."
+
 Call `ideate_write_work_items` with an array containing one item:
 
 ```json

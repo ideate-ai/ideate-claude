@@ -75,10 +75,19 @@ Then load remaining context via MCP tools:
 1. Call `ideate_artifact_query({type: "overview"})` — retrieves the project overview.
 2. Call `ideate_artifact_query({type: "module_spec"})` — retrieves module specs (if they exist).
 3. Call `ideate_artifact_query({type: "execution_strategy"})` — retrieves the execution strategy.
-4. Call `ideate_artifact_query({type: "work_item"})` — retrieves current work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_create`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and treat items whose `spec_format` is `ideate/wi-v1` as current work items alongside the artifact results (the opaque `spec` payload is the work-item body). If the work-state tools are absent, the artifact query alone is the complete set — this is the v2 fallback path. If prior cycles have been archived, note their existence but do not load them unless the user's changes specifically reference prior work.
+4. Call `ideate_artifact_query({type: "work_item"})` — retrieves current work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_create`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and treat items whose `spec_format` is `ideate/wi-v1` as current work items alongside the artifact results (the opaque `spec` payload is the work-item body). If the work-state tools are absent, the artifact query alone is the complete set — this is the v2 fallback path; apply the loud-fallback protocol (v3 Detection and Fallback, below). If prior cycles have been archived, note their existence but do not load them unless the user's changes specifically reference prior work.
 5. Call `ideate_artifact_query({type: "interview"})` — retrieves the original interview transcript.
 6. Call `ideate_artifact_query({type: "research"})` — retrieves all research findings.
 7. Call `ideate_artifact_query({type: "journal_entry"})` — retrieves project history (if it exists).
+
+### v3 Detection and Fallback (GP-24 / P-45)
+
+Detection of the v3 work-state/record tools is mechanical tool presence in the session — never inferred (GP-24). When a v3 tool is ABSENT and a fallback branch is taken, the fallback must be LOUD, never silent (P-45):
+
+- Say in your output, verbatim: "v3 work-state tools not detected — using v2 artifact fallback." Where a journal write is already in flow, include the same line in the journal body.
+- **Missing-build escalation**: if `.ideate-work/` exists on disk at the project root, this project has previously used the board — the absence is then almost certainly a MISSING BUILD (the v3 server runs from `dist/`, which is git-ignored and never auto-built), not a pre-v3 project. Escalate to a warning: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing, or new work will silently split between v2 artifacts and the board." Give the user the chance to fix it before proceeding — creating this cycle's work items in the wrong store is the split-brain the cutover exists to prevent.
+
+Every v2-fallback branch in this skill applies this protocol; later sections reference it rather than restating it.
 
 ## 3.1 Domain Layer (Primary Source for Current State)
 
@@ -301,16 +310,16 @@ Use `ideate_write_artifact` with type `execution_strategy` to write a new execut
 
 **Determine the next ID**: Call `ideate_get_next_id({type: "work_item"})` to obtain the next available WI number. Use 3-digit zero-padded numbering. **Board-aware numbering (v3)**: if the v3 work-state tools are present, also call `work_list` and take the maximum across the artifact index and any board items carrying `spec_format: ideate/wi-v1` (the board is invisible to `ideate_get_next_id`; without this check, numbering can collide).
 
-**v3 board path**: If the v3 work-state tools (`work_create`, `work_claim`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create each new work item ON THE BOARD. Call `work_create` per item with:
+**v3 board path**: If the v3 work-state tools (`work_create`, `work_claim`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — create each new work item ON THE BOARD via `work_create`, called per the tool's self-describing schema (P-44: the schema, not this text, is authoritative for parameter names and shapes; the creating actor's human principal is REQUIRED, with the actor fields as flattened strings). Semantics to supply through that schema, per item:
 
-- `title`: `"WI-{NNN}: {title}"`
-- `spec`: the full work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes) as an opaque payload — the board never parses it
-- `spec_format`: `"ideate/wi-v1"`
-- `depends_on`: the board item IDs of dependency items created in this same batch. A dependency on a legacy (v2 artifact) work item cannot be a board dependency — record it inside the spec payload's dependencies section and note it in the refinement summary so the executor enforces it manually.
+- the title, formatted `"WI-{NNN}: {title}"`
+- the full work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes) as the opaque spec payload — the board never parses it — with spec format hint `"ideate/wi-v1"`
+- the creating actor: the refining user as the human principal, plus the acting agent's name
+- dependencies: the board item IDs of dependency items created in this same batch only. A dependency on a legacy (v2 artifact) work item cannot be a board dependency — record it inside the spec payload's dependencies section and note it in the refinement summary so the executor enforces it manually.
 
 Hold the mapping `{WI number → board item ID}` for Section 7i — the phase's `work_items` array continues to record WI designations (phases stay v2). Do NOT also write v2 work-item artifacts on this path; the board is the single home for these items.
 
-**v2 fallback (pre-v3 projects only)**: If the v3 work-state tools are NOT present, call `ideate_write_work_items({items_array})` — atomically creates individual work item artifacts for each new work item. This is the complete legacy behavior, unchanged.
+**v2 fallback (pre-v3 projects only)**: If the v3 work-state tools are NOT present, call `ideate_write_work_items({items_array})` — atomically creates individual work item artifacts for each new work item. This is the complete legacy behavior, unchanged — apply the loud-fallback protocol (Phase 3), including its missing-build escalation: on a project with existing board state, STOP and surface the warning before writing v2 items.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
@@ -436,7 +445,7 @@ New work items: {NNN-NNN range}
 {Summary of what this refinement cycle addresses.}
 ```
 
-**v3 process record (additive)**: If the v3 record tool `record_append` is present in the session (mechanical tool-presence detection — GP-24), ALSO append the same happening to the process record: `record_append(kind="plan-complete", claim="Refinement planning completed: WI-{NNN}–WI-{NNN}", scope="refine", content={the journal body above})`. This is additive — the v2 journal write above still happens and remains authoritative for pre-v3 readers. If `record_append` is absent, the v2 journal write alone is the complete behavior (fallback path).
+**v3 process record (additive)**: If the v3 record tool `record_append` is present in the session (mechanical tool-presence detection — GP-24), ALSO append the same happening to the process record: `record_append(kind="plan-complete", claim="Refinement planning completed: WI-{NNN}–WI-{NNN}", scope="refine", content={the journal body above})`. This is additive — the v2 journal write above still happens and remains authoritative for pre-v3 readers. If `record_append` is absent, the v2 journal write alone is the complete behavior (fallback path — apply the loud-fallback protocol from Phase 3).
 
 ---
 

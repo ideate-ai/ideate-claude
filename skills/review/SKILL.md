@@ -121,9 +121,13 @@ For cycle reviews, additionally load:
 
 5. Call `ideate_get_domain_state()` — returns all domain policies, decisions, and questions across all domains.
 6. Current-cycle findings: call `ideate_artifact_query({type: "finding"})` with `filters: { cycle: N }` to load findings from the current cycle. Do NOT load findings from prior cycles — the domain layer already distills them.
-7. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_events`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1` (the opaque `spec` payload is the work-item body). If the tools are absent, the artifact query alone is the complete set (v2 fallback path). The manifest (Phase 3.5) will index these for reviewers.
+7. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_list`, `work_events`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1` (the opaque `spec` payload is the work-item body). If the tools are absent, the artifact query alone is the complete set (v2 fallback path — apply the loud-fallback protocol: v3 Detection and Fallback, below). The manifest (Phase 3.5) will index these for reviewers.
 
 Do NOT load all prior cycle archives — the domain layer already distills history.
+
+### v3 Detection and Fallback (GP-24 / P-45)
+
+Detection of the v3 work-state tools is mechanical tool presence in the session — never inferred (GP-24). When they are ABSENT and the v2 fallback is taken, the fallback must be LOUD (P-45): say in your output, verbatim, "v3 work-state tools not detected — using v2 artifact fallback." If `.ideate-work/` exists on disk at the project root, escalate: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build (run `pnpm install && pnpm run build` in the plugin). Board items will be INVISIBLE to this review." A review that silently omits board items misstates coverage.
 
 ## 2.3 Domain review context
 
@@ -182,7 +186,9 @@ For **cycle reviews only**, generate a lightweight manifest that reviewers use a
 
 Call `ideate_get_review_manifest()`. It returns a pre-built manifest table matching work items to incremental reviews with verdicts and finding counts. Hold the response as `{manifest_content}`.
 
-**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools are present in the session (mechanical tool-presence detection — GP-24), append to `{manifest_content}` one row per board item from the Phase 2.2 `work_list`: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path). No other review-flow change — findings, cycle summaries, and archival stay v2 for all items.
+**Board-aware manifest rows (v3)**: `ideate_get_review_manifest()` sees only v2 artifacts. If the v3 work-state tools are present in the session (mechanical tool-presence detection — GP-24), append to `{manifest_content}` one row per board item from the Phase 2.2 `work_list`: WI designation, title, board status, and — via `work_events(id)` — a one-line lifecycle summary (claimed/completed/released, by which actor, with the completion note). Board events are the authoritative status trail for these items; do not second-guess them from journal entries. If the work-state tools are absent, the server manifest alone is complete (v2 fallback path — apply the loud-fallback protocol from 2.2). No other review-flow change — findings, cycle summaries, and archival stay v2 for all items.
+
+**Reviewer CLI fallback for board evidence**: reviewer subagents usually lack the v3 MCP tools but have Bash. When a finding needs deeper checking than the coordinator's one-line manifest summary, a reviewer can pull a board item's full immutable event history directly: `node plugin/bin/ideate-work events --id <board-item-id>` (run from the project root; `--json` on read verbs for structured output). Include this line in reviewer prompts whenever the manifest carries board rows, so board-item evidence is independently verifiable rather than coordinator-mediated.
 
 Call `ideate_write_artifact({type: "cycle_summary", id: "review-manifest", content: {cycle: N, content: {manifest_content}}})` to persist the manifest.
 
@@ -718,3 +724,4 @@ Before completing this skill, verify all of the following:
 12. **Circuit breaker reads threshold from config**: Phase 1.3 reads `{config}.circuit_breaker_threshold` via `ideate_get_config` (loaded in Phase 0). Default is `5` if the key is absent. If `{phase_cycle_count}` >= threshold, Andon is triggered and the review halts.
 13. **Finding routing guidance present**: Phase 6.4 specifies that critical/significant findings are routed to the current phase, minor findings carry forward, and suggestions are deferred.
 14. **Cycle-slot hygiene documented (WI-221)**: The "Reviewer fails or times out" section requires writing a placeholder cycle-slot artifact (tagged with the current cycle) when a reviewer fails, instead of skipping the write — and the "Cycle-Slot Hygiene (WI-221)" section states the invariant that every cycle review overwrites its slot artifacts, so `ideate_get_convergence_status` never reads a leftover artifact from an earlier cycle.
+15. **Board-aware paths paired and loud**: every v3 board call site (`work_list`, `work_events`) is paired with an explicit v2 fallback referencing the loud-fallback protocol (GP-24 detection, P-45 loudness), and the reviewer CLI fallback (`ideate-work events`) is documented for board-row evidence.

@@ -34,6 +34,8 @@ If the MCP server cannot find a project, stop and report the error. Do not proce
 
 Store the project root path returned by the server. All subsequent MCP tool calls use this implicitly.
 
+**Resolve `{user}` once**: the human principal for board actor attribution. Read `git config user.name` in the project root; if unset or empty, ask the user once ("Who is the human principal for board claims?") and hold the answer for the whole run. Every board verb that attributes an actor uses this value.
+
 ## Query Active Phase
 
 After locating the project root, call `ideate_artifact_query({type: "phase", filters: {status: "active"}})` to check whether an active phase exists. Hold the result as `{active_phase}`.
@@ -57,9 +59,18 @@ Load all plan artifacts via MCP tools:
 2. Call `ideate_artifact_query({type: "execution_strategy"})` — returns the execution strategy.
 3. Call `ideate_artifact_query({type: "overview"})` — returns the project overview (if it exists). If absent, note and continue.
 4. Call `ideate_artifact_query({type: "module_spec"})` — returns all module specs (if they exist).
-5. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_claim`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1`: the opaque `spec` payload IS the work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes). Hold `{board_items}` — the set of work items that live on the board, with their board item IDs. Items returned only by the artifact query are legacy v2 items; both kinds execute in the same plan. If the work-state tools are absent, the artifact query alone is the complete set (v2 fallback path) and `{board_items}` is empty.
+5. Call `ideate_artifact_query({type: "work_item"})` — returns all work items. **Board-aware read (v3)**: if the v3 work-state tools (`work_claim`, `work_list`, …) are present in the session — detection is mechanical tool presence, never inferred (GP-24) — ALSO call `work_list` and include items whose `spec_format` is `ideate/wi-v1`: the opaque `spec` payload IS the work-item body (objective, acceptance criteria, file scope, dependencies, implementation notes). Hold `{board_items}` — the set of work items that live on the board, with their board item IDs. Items returned only by the artifact query are legacy v2 items; both kinds execute in the same plan. If the work-state tools are absent, the artifact query alone is the complete set (v2 fallback path) and `{board_items}` is empty — apply the loud-fallback protocol (v3 Detection and Fallback, below).
 6. Call `ideate_artifact_query({type: "research"})` — returns all research findings (if they exist).
 7. Call `ideate_artifact_query({type: "journal_entry"})` — returns project history (if it exists). If absent, note and continue.
+
+### v3 Detection and Fallback (GP-24 / P-45)
+
+Detection of the v3 work-state/record tools is mechanical tool presence in the session — never inferred (GP-24). When a v3 tool is ABSENT and a fallback branch is taken, the fallback must be LOUD, never silent (P-45):
+
+- Say in your output, verbatim: "v3 work-state tools not detected — using v2 artifact fallback." Where a journal write is already in flow, include the same line in the journal body.
+- **Missing-build escalation**: if `.ideate-work/` exists on disk at the project root, this project has previously used the board — the absence is then almost certainly a MISSING BUILD (the v3 server runs from `dist/`, which is git-ignored and never auto-built), not a pre-v3 project. Escalate the note to a warning: "WARNING: this project has board state (.ideate-work/ exists) but the v3 tools are unavailable — likely a missing build. Run `pnpm install && pnpm run build` in the plugin before continuing, or new work will silently split between v2 artifacts and the board." Give the user the chance to fix it before proceeding.
+
+Every v2-fallback branch in this skill applies this protocol; the sections below reference it rather than restating it.
 
 **Work Item Format**: Each work item contains structured fields (id, title, complexity, scope, depends, blocks, criteria) plus inline implementation notes in the `notes` field. Access work items exclusively through MCP tools.
 
@@ -89,7 +100,7 @@ If the ideate MCP artifact server is not available, stop and report: "The ideate
 
 Use the returned `completed` set as `completed_items`. Report: "Found {N} already-completed items. These will be skipped."
 
-**Board-aware completion (v3)**: For items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what the journal-derived scan says, and an item whose board status is `open` or `claimed` is NOT completed even if a journal entry suggests otherwise. Merge `completed_items` accordingly. If the work-state tools are absent, the journal-derived scan alone decides (v2 fallback path).
+**Board-aware completion (v3)**: For items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what the journal-derived scan says, and an item whose board status is `open` or `claimed` is NOT completed even if a journal entry suggests otherwise. Merge `completed_items` accordingly. If the work-state tools are absent, the journal-derived scan alone decides (v2 fallback path — apply the loud-fallback protocol).
 
 If no completed items are returned and no in-progress items are returned, this is a fresh execution. Report nothing and proceed.
 
@@ -160,9 +171,11 @@ Before spawning workers, assemble a **context digest** for the current work item
 
 **PPR-based context assembly**: Call `ideate_assemble_context({seed_ids: [{current_work_item_id}], token_budget: {config}.ppr.default_token_budget, include_types: ["architecture", "guiding_principle", "constraint"]})`. The tool runs Personalized PageRank over the artifact graph, ranks all artifacts by relevance to the seed work item, and assembles context within the token budget. Always-include types (architecture, principles, constraints) are included regardless of PPR score.
 
+**Board items (v3)**: a board item is not in the artifact graph — do not seed PPR with its WI designation (the seed resolves to nothing). For board items, use the manual fallback below for project-scoped context; the item-scoped spec comes from the board payload (see Context for Every Worker).
+
 Hold the returned context as `{ppr_context}`. Pass it to workers as their context digest.
 
-**Fallback**: If `ideate_assemble_context` is unavailable or returns an error, fall back to the existing manual context digest construction:
+**Fallback**: If `ideate_assemble_context` is unavailable or returns an error — or the current work item is a board item (see above) — fall back to the existing manual context digest construction:
 
 1. Use the `{context_package}` loaded in Phase 2 (from `ideate_get_context_package()`), which contains the full architecture document, guiding principles, and constraints.
 2. For each module in the current batch (as determined by the execution strategy groups):
@@ -181,7 +194,7 @@ Workers receive the digest plus instructions to retrieve full documents via MCP 
 
 ## Work Item Type Context Adjustment
 
-After loading the work item spec (from `ideate_get_artifact_context({artifact_id})`), read `work_item_type` from the artifact. Adjust the context loading depth for that work item's worker as follows:
+After loading the work item spec (from `ideate_get_artifact_context({artifact_id})` for v2 items; from the board `spec` payload for items in `{board_items}` — read `work_item_type` from the payload if it carries one, else default to feature), read `work_item_type`. Adjust the context loading depth for that work item's worker as follows:
 
 - **feature, spike**: Full context — architecture, principles, module spec, dependencies. (This is the default path; no change from existing behavior.)
 - **bug**: Focused context — related findings (from `ideate_artifact_query({type: "finding"})` filtered to the affected file paths), affected file history if available, and reproduction information from the work item notes. Omit module specs for unrelated modules.
@@ -227,7 +240,7 @@ Where `{review_verdict}` is `"pass"` if the review passed without rework, `"rewo
 
 For each work item in `{board_items}`, the coordinator holds the board lease around the worker's lifetime. If the item is NOT in `{board_items}` — a legacy v2 item, or the work-state tools are absent — skip this block entirely: the v2 flow in the rest of this phase is the complete behavior (fallback path).
 
-- **Claim before spawn**: After the skip check and the `work_item.started` hook, call `work_claim(id: {board item ID}, actor: {human: "{user}", agent: "{worker agent type}"})`. Hold the returned claim token. If the claim is rejected (dependencies not done, or already claimed), do NOT spawn the worker — re-check with `work_get`; if the board state contradicts the plan's dependency ordering, route to the Andon cord.
+- **Claim before spawn**: After the skip check and the `work_item.started` hook, call `work_claim` per the tool's self-describing schema (P-44: the schema, not this text, is authoritative for parameter names and shapes). Supply the item's board ID, `{user}` (from Phase 1) as the human principal, and the worker's agent type as the acting agent — the actor fields are flattened strings and the human principal is required. Hold the returned claim token. If the claim is rejected (dependencies not done, or already claimed), do NOT spawn the worker — re-check with `work_get`; if the board state contradicts the plan's dependency ordering, route to the Andon cord.
 - **Renew on long items**: The default lease is hours-scale. Before spawning any rework pass on the same item — and at any natural checkpoint on an item that has been in flight for a long stretch — call `work_renew` with the held token. A rejected renew means the lease expired and the item may have been reclaimed: stop work on it and route to the Andon cord.
 - **Complete on review pass**: When the item passes incremental review (findings handled, rework done), call `work_complete` with the held token and a `note` summarizing the outcome in one or two sentences (what was built, rework rounds, review verdict). The note is not optional on this path — via the completion-record hook it becomes the item's durable process record (boundary contract capture point 1).
 - **Release on failure**: If the item cannot proceed (worker retry exhausted, Andon-blocked, user stops execution), call `work_release` with the held token and a handoff `note` stating what was attempted and what remains. Never leave a claim to expire silently when the outcome is known.
@@ -236,7 +249,9 @@ The board's claim discipline REPLACES v2 work-item status updates for items in `
 
 ## Context for Every Worker
 
-Call `ideate_get_artifact_context({artifact_id})` — returns pre-assembled context including work item spec, module spec, domain policies, and research. Also provide the project source root path and relevant domain policies (if not already included).
+**Board items (v3)**: for items in `{board_items}`, build the worker's item context from the BOARD, not the artifact server. The opaque `spec` payload (already held from `work_list`) IS the work-item spec — objective, acceptance criteria, file scope, dependencies, implementation notes — supplemented by `work_get` for current state and `work_events` for prior lifecycle (a previously released item's handoff note is required reading before respawning). Do NOT call `ideate_get_artifact_context` or `ideate_assemble_context` with a board item's WI designation: board items have no v2 artifact, and the call fails with "Artifact not found". Project-scoped context (architecture, principles, constraints, domain policies) still comes from `ideate_get_context_package()` and the Phase 4.5 digest — those are not item-scoped. The v2 path below is the explicit fallback, applying to legacy (non-board) items.
+
+**v2 items (fallback)**: Call `ideate_get_artifact_context({artifact_id})` — returns pre-assembled context including work item spec, module spec, domain policies, and research. Also provide the project source root path and relevant domain policies (if not already included).
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
@@ -557,7 +572,7 @@ The journal is strictly append-only. Never edit or delete existing entries.
 - Execution pause → `kind="execution-paused"`, claim = what remains and why it stopped
 - Final summary → `kind="execution-complete"`, claim = the one-line outcome
 
-Do NOT duplicate per-item completion records here — for board items, `work_complete`'s note already produces the completion record. The v2 journal write above remains authoritative and unchanged; if `record_append` is absent, the journal write alone is the complete behavior (fallback path).
+Do NOT duplicate per-item completion records here — for board items, `work_complete`'s note already produces the completion record. The v2 journal write above remains authoritative and unchanged; if `record_append` is absent, the journal write alone is the complete behavior (fallback path — apply the loud-fallback protocol from Phase 2).
 
 ---
 
@@ -663,7 +678,7 @@ If the user stops execution partway through:
 3. For any board item still claimed but not complete, call `work_release` with the held token and a handoff note describing partial progress (Board Claim Discipline — never leave a claim to expire silently). Legacy v2 items have no board state to release (fallback path).
 4. List what would be needed to resume (which items are next, any pending Andon cord issues)
 
-The user can re-run `/ideate:execute` to resume. The skill should detect already-completed items (via `ideate_get_execution_status`, and for board items via `work_list` status — board status is authoritative; the journal-derived scan is the fallback when the work-state tools are absent) and skip them.
+The user can re-run `/ideate:execute` to resume. The skill should detect already-completed items (via `ideate_get_execution_status`, and for board items via `work_list` status — board status is authoritative; the journal-derived scan is the fallback when the work-state tools are absent, with the loud-fallback protocol applied) and skip them.
 
 ---
 
