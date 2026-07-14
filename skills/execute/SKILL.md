@@ -72,6 +72,16 @@ Detection of the v3 work-state/record tools is mechanical tool presence in the s
 
 Every v2-fallback branch in this skill applies this protocol; the sections below reference it rather than restating it.
 
+#### Board-active read marker (WI-326 / D-42) — CANONICAL
+
+The v2 work-item read/aggregation tools (`ideate_get_execution_status`, `ideate_get_review_manifest`, `ideate_get_workspace_status`) attach a loud marker to their response when the board is active — a `work_item_counts_incomplete: true` token under a `⚠ BOARD ACTIVE` heading. This marker means the tool's work-item counts/rows are derived from v2 artifacts ONLY and exclude board-resident items. Whenever this skill surfaces a count/status from one of those tools and the response carries the marker: (a) do NOT report the v2 count as complete/authoritative; (b) merge board items via `work_list` (board status authoritative) as the board-aware branches below already instruct; (c) surface the P-45 loud note naming `work_list` as the source of the board-resident remainder. The engine emits the marker; this skill (and its consumers) must surface it — a v2 count reported without the merge on a board project is the exact read-blindness D-42 closes. Sites below reference this block rather than restating it.
+
+#### BoardActiveError (BOARD_ACTIVE) recovery (WI-321 / WI-330) — CANONICAL
+
+If a v2 work-item **write** (`ideate_write_work_items`, or `ideate_write_artifact({type:"work_item"})`) or **update** (`ideate_update_work_items`) is refused with a typed `BoardActiveError` (`code: "BOARD_ACTIVE"`), the project's board is active and there is no legitimate v2 work-item write/update: switch to the board tool the error names — `work_create` for creation; `work_claim` / `work_complete` / `work_release` for status transitions. Never retry the v2 path, and never fall back to a direct `.ideate/` write as a substitute (GP-14). This is the write-side twin of the read marker above: the engine refuses; the skill recovers onto the board.
+
+This block is a CANONICAL forward-reference for every skill whose fallback branches perform a v2 work-item write/update — `execute` (here), and the write-path skills `triage` / `init` / `refine` / `project`. Those skills should point at this block rather than restate BOARD_ACTIVE handling; wiring their references (they already branch to the board when v3 tools are present, so BOARD_ACTIVE is a defense-in-depth safety net) is a fast-follow, not a WI-328 deliverable.
+
 **Work Item Format**: Each work item contains structured fields (id, title, complexity, scope, depends, blocks, criteria) plus inline implementation notes in the `notes` field. Access work items exclusively through MCP tools.
 
 All artifacts except overview and journal entries are required.
@@ -100,7 +110,7 @@ If the ideate MCP artifact server is not available, stop and report: "The ideate
 
 Use the returned `completed` set as `completed_items`. Report: "Found {N} already-completed items. These will be skipped."
 
-**Board-aware completion (v3)**: For items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what the journal-derived scan says, and an item whose board status is `open` or `claimed` is NOT completed even if a journal entry suggests otherwise. Merge `completed_items` accordingly. If the work-state tools are absent, the journal-derived scan alone decides (v2 fallback path — apply the loud-fallback protocol).
+**Board-aware completion (v3)**: For items in `{board_items}`, board status is authoritative: an item whose board status is `done` is completed regardless of what the journal-derived scan says, and an item whose board status is `open` or `claimed` is NOT completed even if a journal entry suggests otherwise. Merge `completed_items` accordingly. `ideate_get_execution_status` carries the board-active read marker (see "Board-active read marker" above) when the board is active — honor it: its `Completed`/`Ready` counts are v2-only and this board merge is what completes them; surface the P-45 loud note. If the work-state tools are absent, the journal-derived scan alone decides (v2 fallback path — apply the loud-fallback protocol).
 
 If no completed items are returned and no in-progress items are returned, this is a fresh execution. Report nothing and proceed.
 
@@ -610,7 +620,7 @@ Report status to the user at these milestones:
 - **Andon cord presentation**: When presenting issues (Phase 9), include current progress.
 - **Halfway point**: When approximately half the work items are complete, report overall progress.
 
-Call `ideate_get_workspace_status()` — returns a structured project status summary including completed, in-progress, remaining, rework, and Andon cord item counts (a v2-only aggregation over work-item artifacts). **Board-aware (v3)**: `ideate_get_workspace_status` does not see board items. If the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board-item counts — board status is authoritative for board items — so the status report reflects board-resident work, not just v2 (mirrors `skills/status/SKILL.md`'s board supplement). If the tools are absent, the v2 summary alone is complete (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback." Use the merged result to populate the status report below.
+Call `ideate_get_workspace_status()` — returns a structured project status summary including completed, in-progress, remaining, rework, and Andon cord item counts (a v2-only aggregation over work-item artifacts). **Board-aware (v3)**: `ideate_get_workspace_status` does not see board items and carries the board-active read marker (see "Board-active read marker" above) when the board is active. Honor it: if the v3 work-state tools are present (mechanical tool presence, GP-24), ALSO call `work_list` and merge board-item counts — board status is authoritative for board items — so the status report reflects board-resident work, not just v2 (mirrors `skills/status/SKILL.md`'s board supplement), and surface the P-45 loud note. If the tools are absent, the v2 summary alone is complete (v2 fallback) — note "v3 work-state tools not detected — using v2 artifact fallback." Use the merged result to populate the status report below.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
@@ -739,3 +749,5 @@ This skill document satisfies the MCP abstraction boundary (GP-14):
 - [x] Work item selection filtered to active phase's `work_items` array (with backward compat for null phase or absent list)
 - [x] Status report in Phase 11 includes current phase ID and type
 - [x] Every v3 board/record call site (`work_list`, `work_claim`, `work_renew`, `work_complete`, `work_release`, `work_get`, `record_append`) is paired with an explicit v2 fallback in the same section, and detection is mechanical tool presence (GP-24)
+- [x] Board-active read marker (WI-326/D-42) block present and referenced from every v2 count-surfacing site (Completed Items Scan `get_execution_status`; Phase 11 `get_workspace_status`)
+- [x] BoardActiveError (BOARD_ACTIVE) recovery block present and consistent with the WI-321/WI-330 typed error (create→`work_create`; update→`work_claim`/`work_complete`/`work_release`)

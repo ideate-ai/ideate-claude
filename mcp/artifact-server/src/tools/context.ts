@@ -3,6 +3,7 @@ import * as path from "path";
 import { parse as parseYaml } from "yaml";
 import type { ToolContext } from "../types.js";
 import { getConfigWithDefaults } from "../config.js";
+import { boardActiveNotice } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Adapter resolution
@@ -357,7 +358,15 @@ async function handlePhaseContext(
 
   sections.push(phaseSection.join("\n"));
 
-  // Load work item summaries
+  // Load work item summaries.
+  //
+  // WI-332 (II1 visibility / D-42): the roster resolves work_items via v2
+  // getNodes ONLY. Board-resident IDs (no v2 node, by design) fall into the
+  // "not indexed" footnote. On a board-active project, mark the section
+  // INCOMPLETE and warn that those IDs must be PRESERVED on any write-back — a
+  // read-merge-rewrite that drops them is the II1 truncation the WI-331 backstop
+  // refuses. Presence-only; no board.db content read.
+  const boardMarker = boardActiveNotice(ctx);
   const workItemIds = parseJsonArray(phaseWorkItemsRaw);
   if (workItemIds.length > 0) {
     let wiRows: WISummaryRow[];
@@ -391,16 +400,27 @@ async function handlePhaseContext(
         );
       }
 
-      // List any IDs not found in DB
+      // List any IDs not found in DB.
       const foundIds = new Set(wiRows.map((r) => r.id));
       const missingIds = workItemIds.filter((id) => !foundIds.has(id));
       if (missingIds.length > 0) {
-        wiSection.push("", `*Work items not indexed: ${missingIds.join(", ")}*`);
+        wiSection.push(
+          "",
+          boardMarker
+            ? `*Work items not indexed: ${missingIds.join(", ")}* — on a board-active project these are BOARD-RESIDENT items (no v2 node, by design). PRESERVE them in work_items on any write-back: a merge that drops them silently truncates board-item phase membership (the WI-331 backstop refuses such a write).`
+            : `*Work items not indexed: ${missingIds.join(", ")}*`
+        );
       }
 
-      sections.push(wiSection.join("\n"));
+      const wiBody = wiSection.join("\n");
+      sections.push(boardMarker && missingIds.length > 0 ? `${boardMarker}\n\n${wiBody}` : wiBody);
     } else {
-      sections.push(`## Work Items\n\n*Work items listed in phase not found in index: ${workItemIds.join(", ")}*`);
+      const body =
+        `## Work Items\n\n*Work items listed in phase not found in index: ${workItemIds.join(", ")}*` +
+        (boardMarker
+          ? ` — on a board-active project these are likely BOARD-RESIDENT (no v2 node). PRESERVE them on any write-back; the WI-331 backstop refuses a phase write that drops them.`
+          : "");
+      sections.push(boardMarker ? `${boardMarker}\n\n${body}` : body);
     }
   }
 
@@ -1386,6 +1406,17 @@ export async function handleAssembleContext(
     traversalResult.truncated_types.length > 0
   ) {
     metadata.truncated_types = traversalResult.truncated_types;
+  }
+
+  // WI-333 (F-333-001 C1 / D-42): the PPR traversal runs over the v2 graph
+  // ONLY, so on a board-active project the assembled context (including any
+  // work-item section) omits board-resident items/edges. Mark it INCOMPLETE —
+  // presence-only, consistent with the other v2 read tools (WI-326/332).
+  const boardNotice = boardActiveNotice(ctx);
+  if (boardNotice) {
+    (metadata as Record<string, unknown>).board_active = true;
+    (metadata as Record<string, unknown>).work_item_counts_incomplete = true;
+    (metadata as Record<string, unknown>).board_notice = boardNotice;
   }
 
   return JSON.stringify(metadata, null, 2);

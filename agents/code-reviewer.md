@@ -9,7 +9,6 @@ tools:
   - ideate_artifact_query
   - ideate_get_context_package
   - ideate_get_domain_state
-  - ideate_get_review_manifest
   - ideate_get_artifact_context
 model: sonnet
 background: false

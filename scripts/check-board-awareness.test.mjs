@@ -18,7 +18,21 @@ import { dirname, join } from 'node:path';
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { run, COVERAGE_MANIFEST } from './check-board-awareness.mjs';
+import {
+  run,
+  COVERAGE_MANIFEST,
+  MONITORED_REGISTRY_TOOLS,
+  REGISTRY_EXCLUSIONS,
+  readRegisteredTools,
+  registryCoverageGaps,
+  engineGuardsPresent,
+  readMarkerCensusGaps,
+  markerRequiredReadTools,
+  READ_MARKER_TOOL_SITES,
+  READ_MARKER_EXCLUSIONS,
+  SCOPE_PREMISES,
+  sliceFunctionBody,
+} from './check-board-awareness.mjs';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -517,6 +531,41 @@ describe('check-board-awareness: WI-324 / P-48 hardening — new monitored shape
   );
 
   fixture(
+    'ideate_get_review_manifest: unbranched call is flagged; a board token within the read window clears',
+    () => {
+      const unbranchedRoot = fixtureRoot();
+      writeFile(
+        unbranchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Generate Review Manifest',
+          '',
+          'Call `ideate_get_review_manifest()` — returns the manifest table of work items and verdicts.',
+          '',
+        ].join('\n'),
+      );
+      const unbranched = run(unbranchedRoot);
+      assert.equal(unbranched.ok, false);
+      assert.ok(unbranched.violations.some((v) => v.tool === 'ideate_get_review_manifest'));
+
+      const branchedRoot = fixtureRoot();
+      writeFile(
+        branchedRoot,
+        'skills/x.md',
+        [
+          '# Phase: Generate Review Manifest',
+          '',
+          'Call `ideate_get_review_manifest()` — returns the manifest table. **Board-aware (v3)**: honor the incomplete marker and append `work_list` board rows.',
+          '',
+        ].join('\n'),
+      );
+      const branched = run(branchedRoot);
+      assert.equal(branched.ok, true);
+      assert.deepEqual(branched.violations, []);
+    },
+  );
+
+  fixture(
     'ideate_update_work_items: unbranched call is flagged; a board token within the read window clears',
     () => {
       const unbranchedRoot = fixtureRoot();
@@ -566,6 +615,7 @@ describe('check-board-awareness: P-48 coverage manifest completeness', () => {
         'Call `ideate_write_work_items({items: []})`.',
         'Call `ideate_write_artifact({type: "work_item", id: "WI-001"})`.',
         'Call `ideate_get_execution_status()`.',
+        'Call `ideate_get_review_manifest()`.',
         'Call `ideate_get_workspace_status({view: "project"})` — completed, in-progress, remaining item counts.',
         'Call `ideate_artifact_query({type: "work_item"})`.',
         '',
@@ -614,6 +664,155 @@ describe('check-board-awareness: P-48 coverage manifest completeness', () => {
       assert.equal(typeof entry.window, 'string');
       assert.ok(entry.window.length > 0, `entry "${entry.name}" has an empty window rationale`);
     }
+  });
+});
+
+describe('check-board-awareness: WI-327 / P-48 registry grounding', () => {
+  it('every registered v2 tool is classified — monitored or excluded-with-rationale (real registry)', () => {
+    const registered = readRegisteredTools(REPO_ROOT);
+    assert.ok(registered.length > 0, 'no registered tools parsed from index.ts');
+    const { unclassified, stale } = registryCoverageGaps(registered);
+    assert.deepEqual(unclassified, [], `registered tools not classified: ${unclassified.join(', ')}`);
+    assert.deepEqual(stale, [], `stale classifications (tool no longer registered): ${stale.join(', ')}`);
+  });
+
+  it('is registry-grounded, NOT self-referential: a NEW registered tool breaks the check (gap-S1)', () => {
+    // The core P-48 fix. A self-referential (CALL_PATTERNS↔COVERAGE_MANIFEST)
+    // check would stay green when a new registered read tool appears — that is
+    // exactly how get_review_manifest (the 4th shape) escaped for two cycles.
+    // registryCoverageGaps must flag an injected fake registered tool.
+    const registered = readRegisteredTools(REPO_ROOT);
+    const withFake = [...registered, 'ideate_fake_new_read_tool'];
+    const { unclassified } = registryCoverageGaps(withFake);
+    assert.ok(
+      unclassified.includes('ideate_fake_new_read_tool'),
+      'a newly-registered tool must be flagged unclassified — the check would be self-referential otherwise',
+    );
+  });
+
+  it('detects a stale classification: a monitored/excluded tool no longer in the registry', () => {
+    const registered = readRegisteredTools(REPO_ROOT).filter((n) => n !== 'ideate_get_review_manifest');
+    const { stale } = registryCoverageGaps(registered);
+    assert.ok(stale.includes('ideate_get_review_manifest'), 'a classification naming an unregistered tool must be flagged stale');
+  });
+
+  it('monitored and excluded sets are disjoint (no tool both monitored and excluded)', () => {
+    const monitored = new Set(Object.values(MONITORED_REGISTRY_TOOLS));
+    const overlap = Object.keys(REGISTRY_EXCLUSIONS).filter((n) => monitored.has(n));
+    assert.deepEqual(overlap, [], `tools both monitored and excluded: ${overlap.join(', ')}`);
+  });
+
+  it('every REGISTRY_EXCLUSIONS entry has a non-empty rationale string', () => {
+    for (const [name, rationale] of Object.entries(REGISTRY_EXCLUSIONS)) {
+      assert.equal(typeof rationale, 'string');
+      assert.ok(rationale.length > 0, `exclusion "${name}" has an empty rationale`);
+    }
+  });
+
+  it('M2: the engine construction guarantees (WI-321/326/330) are present in the source', () => {
+    const { ok, missing } = engineGuardsPresent(REPO_ROOT);
+    assert.equal(ok, true, `missing engine guards: ${missing.join('; ')}`);
+  });
+
+  it('engineGuardsPresent is non-vacuous: an empty tree reports all guards missing', () => {
+    const emptyRoot = fixtureRoot();
+    const { ok, missing } = engineGuardsPresent(emptyRoot);
+    assert.equal(ok, false);
+    assert.ok(missing.length > 0);
+  });
+});
+
+describe('check-board-awareness: WI-333 / P-48 engine-marker census (registry-grounded)', () => {
+  it('markerRequiredReadTools derives the READ/COMPLETE set from CALL_PATTERNS (not a hardcoded list)', () => {
+    const tools = markerRequiredReadTools();
+    // The 6 known READ/COMPLETE monitored shapes must be present...
+    for (const name of [
+      'ideate_get_artifact_context',
+      'ideate_assemble_context',
+      'ideate_get_execution_status',
+      'ideate_get_review_manifest',
+      'ideate_get_workspace_status',
+      'ideate_artifact_query(work_item)',
+    ]) {
+      assert.ok(tools.includes(name), `expected marker-required read tool "${name}"`);
+    }
+    // ...and no CREATE/UPDATE shape (those use the write guard, not the marker).
+    for (const name of ['ideate_write_work_items', 'ideate_update_work_items', 'work_create']) {
+      assert.ok(!tools.includes(name), `CREATE/UPDATE shape "${name}" must not be in the read-marker set`);
+    }
+  });
+
+  it('is registry-grounded, NOT self-referential: a monitored read tool with no marker/exclusion is flagged (S1)', () => {
+    // A self-referential census (a hardcoded 3-tool list) would stay green when
+    // a new monitored read tool appears — exactly how C1 slipped through.
+    const gaps = readMarkerCensusGaps(['ideate_fake_new_read_tool'], () => 'no marker in here');
+    assert.ok(gaps.some((g) => g.name === 'ideate_fake_new_read_tool'));
+  });
+
+  it('is HANDLER-level, not file-level: a marker in a DIFFERENT function does NOT clear the tool (F-333-001 C1)', () => {
+    // get_execution_status anchors on handleGetExecutionStatus. A file where the
+    // marker lives in an unrelated function must still be flagged — the exact
+    // false-green C1 exposed for assemble_context sharing a file with a marked
+    // handlePhaseContext.
+    const src = [
+      'async function handleGetExecutionStatus(ctx) {',
+      '  return "no marker here";',
+      '}',
+      'async function someOtherHandler(ctx) {',
+      '  const n = boardActiveNotice(ctx);',
+      '}',
+    ].join('\n');
+    const gaps = readMarkerCensusGaps(['ideate_get_execution_status'], () => src);
+    assert.ok(gaps.some((g) => g.name === 'ideate_get_execution_status'));
+  });
+
+  it('passes a mapped read tool when the marker is inside its OWN handler', () => {
+    const src = 'async function handleGetExecutionStatus(ctx) {\n  const n = boardActiveNotice(ctx);\n}\n';
+    const gaps = readMarkerCensusGaps(['ideate_get_execution_status'], () => src);
+    assert.deepEqual(gaps, []);
+  });
+
+  it('flags a tool whose anchor function is absent from the file', () => {
+    const gaps = readMarkerCensusGaps(['ideate_get_execution_status'], () => 'function unrelated() {}');
+    assert.ok(gaps.some((g) => g.name === 'ideate_get_execution_status' && /not found/.test(g.reason)));
+  });
+
+  it('sliceFunctionBody bounds a function to the next top-level declaration', () => {
+    const src = 'async function a(ctx) {\n  MARK_A;\n}\nexport function b() {\n  MARK_B;\n}\n';
+    const body = sliceFunctionBody(src, 'a');
+    assert.ok(body.includes('MARK_A'));
+    assert.ok(!body.includes('MARK_B'));
+  });
+
+  it('every marker-required read tool is classified — mapped-to-a-handler or excluded-with-rationale', () => {
+    for (const name of markerRequiredReadTools()) {
+      const classified = name in READ_MARKER_TOOL_SITES || name in READ_MARKER_EXCLUSIONS;
+      assert.ok(classified, `marker-required read tool "${name}" is neither mapped nor excluded`);
+    }
+  });
+
+  it('every READ_MARKER_EXCLUSIONS entry has a non-empty rationale', () => {
+    for (const [name, rationale] of Object.entries(READ_MARKER_EXCLUSIONS)) {
+      assert.equal(typeof rationale, 'string');
+      assert.ok(rationale.length > 0, `read-marker exclusion "${name}" has an empty rationale`);
+    }
+  });
+
+  it('every SCOPE_PREMISES entry records a shape, a scoped_by, and a non-empty rationale (II1 root: premises are data, not comments)', () => {
+    assert.ok(SCOPE_PREMISES.length > 0);
+    for (const p of SCOPE_PREMISES) {
+      assert.equal(typeof p.shape, 'string');
+      assert.ok(p.shape.length > 0);
+      assert.equal(typeof p.scoped_by, 'string');
+      assert.ok(p.scoped_by.length > 0);
+      assert.equal(typeof p.rationale, 'string');
+      assert.ok(p.rationale.length > 0, `scope premise for "${p.shape}" has an empty rationale`);
+    }
+  });
+
+  it('the real-tree engine census passes (all marker-required read tools are marked after WI-326/332)', () => {
+    const { ok, missing } = engineGuardsPresent(REPO_ROOT);
+    assert.equal(ok, true, `engine census gaps: ${missing.join('; ')}`);
   });
 });
 

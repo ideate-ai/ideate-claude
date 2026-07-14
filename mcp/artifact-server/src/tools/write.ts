@@ -3,8 +3,8 @@ import * as path from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { ToolContext } from "../types.js";
 import { TYPE_TO_EXTENSION_TABLE } from "../node-type-registry.js";
-import { findIdeateJson, readRawConfig, DEFAULT_WORK_STATE_PATH } from "../config.js";
-import { BoardActiveError } from "../adapter.js";
+import { BoardActiveError, PhaseMembershipTruncationError } from "../adapter.js";
+import { resolveBoardDbPath, isBoardActive } from "../board-presence.js";
 
 // ---------------------------------------------------------------------------
 // Adapter resolution
@@ -218,50 +218,36 @@ export async function handleArchiveCycle(
 // `type: "work_item"` into it (see below), so guarding here catches both.
 //
 // Board-active signal: the configured work_state.path (default
-// DEFAULT_WORK_STATE_PATH = ".ideate-work") contains board.db, resolved
-// against the project root. A pre-v3 project has no .ideate-work/board.db,
-// so this guard never fires there — the v2 path stays fully intact for
-// legacy projects and the legacy v2 fallback.
+// ".ideate-work") contains board.db, resolved against the project root. A
+// pre-v3 project has no .ideate-work/board.db, so this guard never fires
+// there — the v2 path stays fully intact for legacy projects and the legacy
+// v2 fallback.
+//
+// WI-326 extracted the board-presence detection (resolveProjectRoot /
+// resolveBoardDbPath / isBoardActive) into the shared ../board-presence.js
+// module, so the WRITE sink-guard here and the READ loud-incomplete marker
+// share one source of truth. assertBoardNotActive stays here because it is
+// write-specific — it throws BoardActiveError, whereas the read side emits a
+// non-throwing marker.
 // ---------------------------------------------------------------------------
-
-/**
- * Resolve the project root (the directory containing .ideate.json) from
- * ctx.ideateDir. Prefers walking up from ideateDir to find the actual
- * .ideate.json pointer (handles nested/absolute artifact_directory values);
- * falls back to the parent of ideateDir when no pointer exists yet (e.g.
- * fresh/test contexts that never wrote .ideate.json), which matches the
- * default artifact_directory (".ideate") layout.
- */
-function resolveProjectRoot(ctx: ToolContext): string {
-  const found = findIdeateJson(ctx.ideateDir);
-  return found ? path.dirname(found.configPath) : path.dirname(ctx.ideateDir);
-}
-
-/**
- * Resolve the absolute path to the v3 work-state board's database file,
- * reading work_state.path from .ideate.json when present and defaulting to
- * DEFAULT_WORK_STATE_PATH otherwise.
- */
-function resolveBoardDbPath(ctx: ToolContext): string {
-  const config = readRawConfig(ctx.ideateDir);
-  const configuredPath = config.work_state?.path?.trim();
-  const workStatePath = configuredPath && configuredPath !== "" ? configuredPath : DEFAULT_WORK_STATE_PATH;
-  const projectRoot = resolveProjectRoot(ctx);
-  const workStateDir = path.isAbsolute(workStatePath)
-    ? workStatePath
-    : path.join(projectRoot, workStatePath);
-  return path.join(workStateDir, "board.db");
-}
 
 /**
  * Throws BoardActiveError when the project's v3 work-state board is active
  * (board.db exists at the resolved work_state path). Call this first, before
- * any other work, in every v2 work-item creation path.
+ * any other work, in every v2 work-item creation/update path.
+ *
+ * `errorContext` lets a sink name the correct v3 path in the refusal: the
+ * create sink (WI-321) omits it and gets the create message; the update sink
+ * (WI-330) passes the board transition tools. Resolves the board path once for
+ * both the existence check and the error message (F-326-001 M1).
  */
-function assertBoardNotActive(ctx: ToolContext): void {
+function assertBoardNotActive(
+  ctx: ToolContext,
+  errorContext?: { action: string; correctPath: string }
+): void {
   const boardDbPath = resolveBoardDbPath(ctx);
   if (fs.existsSync(boardDbPath)) {
-    throw new BoardActiveError(boardDbPath);
+    throw new BoardActiveError(boardDbPath, errorContext);
   }
 }
 
@@ -369,6 +355,72 @@ export async function handleWriteWorkItems(
 }
 
 // ---------------------------------------------------------------------------
+// Phase-membership backstop (WI-331 / II1)
+//
+// The phase read-merge-rewrite path (skills/project/SKILL.md phase
+// start/complete/abandon: read the phase, merge {status}, write it back) can
+// silently drop board-resident WI IDs from work_items — handlePhaseContext
+// relegates board-resident IDs (no v2 node, by design) to a "not indexed"
+// footnote, and putNode is a full REPLACE. That truncates the phase's only
+// v2-side record of board-item membership AND corrupts the P-47 phase-close
+// gate (which trusts phase.work_items). This backstop refuses such a write.
+//
+// Presence-only + self-comparison (Q-55, three-thin-seams): it reads board.db
+// EXISTENCE (isBoardActive) and the on-disk phase's OWN work_items — never
+// board.db contents. It is not a merge engine: a phase's work_items normally
+// only grows (items are obsoleted via status, not removed from the list), so a
+// strict-subset write while the board is active is an accidental truncation
+// and is refused; a genuine removal uses an explicit path.
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a work_items value that may be a JSON string, an array, or absent.
+ * Distinguishes ABSENT/empty ({items:[], unparseable:false}) from PRESENT-but-
+ * unparseable ({items:[], unparseable:true}) so the backstop can fail CLOSED on
+ * a corrupted on-disk list rather than silently treating it as "nothing to drop"
+ * (F-331-001 M2).
+ */
+function parseWorkItemsList(val: unknown): { items: string[]; unparseable: boolean } {
+  if (Array.isArray(val)) return { items: val.map((v) => String(v)), unparseable: false };
+  if (typeof val === "string" && val.trim() !== "") {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return { items: parsed.map((v) => String(v)), unparseable: false };
+      return { items: [], unparseable: true }; // parsed, but not an array
+    } catch {
+      return { items: [], unparseable: true };
+    }
+  }
+  return { items: [], unparseable: false }; // absent / null / empty string
+}
+
+async function assertPhaseMembershipNotTruncated(
+  ctx: ToolContext,
+  id: string,
+  content: Record<string, unknown>
+): Promise<void> {
+  if (!isBoardActive(ctx)) return; // pre-v3 project — backstop never fires
+  const adapter = getAdapter(ctx);
+  const existing = await adapter.getNode(id);
+  if (!existing) return; // new phase — nothing to drop
+  const ex = parseWorkItemsList(existing.properties?.work_items);
+  // Fail CLOSED on a corrupted on-disk list — membership cannot be verified, so
+  // a potentially-truncating write must not proceed (F-331-001 M2).
+  if (ex.unparseable) {
+    throw new PhaseMembershipTruncationError(id, ["<on-disk work_items present but unparseable — membership unverifiable>"]);
+  }
+  if (ex.items.length === 0) return;
+  // A missing or unparseable incoming work_items resolves to an empty set, so an
+  // omit-the-field write (the literal II1 read-merge-rewrite defect, F-331-001
+  // M1) drops every existing member and is refused.
+  const incoming = new Set(parseWorkItemsList(content.work_items).items);
+  const dropped = ex.items.filter((wi) => !incoming.has(wi));
+  if (dropped.length > 0) {
+    throw new PhaseMembershipTruncationError(id, dropped);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // handleWriteArtifact — generic artifact write tool
 // ---------------------------------------------------------------------------
 
@@ -404,6 +456,13 @@ export async function handleWriteArtifact(
 
   const adapter = getAdapter(ctx);
 
+  // WI-331 (II1 backstop): a board-active phase write must not silently drop
+  // existing work_items membership (board-item phase links + the P-47 gate
+  // census). Presence-only + self-comparison; see the helper above.
+  if (type === "phase") {
+    await assertPhaseMembershipNotTruncated(ctx, id, content);
+  }
+
   await adapter.putNode({
     id,
     type: type as import("../adapter.js").NodeType,
@@ -438,6 +497,17 @@ export async function handleUpdateWorkItems(
   ctx: ToolContext,
   args: Record<string, unknown>
 ): Promise<string> {
+  // Sink-guard (WI-330): refuse before doing anything else if the v3 board is
+  // active. On a board project there is no legitimate v2 work-item status
+  // update — board transitions (work_claim/work_complete/work_release) are the
+  // single home. Symmetric with the WI-321 create-guard on handleWriteWorkItems
+  // and closing the Q-51 symptom-9 edge (a stale v2 node from a duplicate WI
+  // number must not be silently mutated on a board project — refuse first).
+  assertBoardNotActive(ctx, {
+    action: "transitioned",
+    correctPath: 'the v3 board tools "work_claim" / "work_complete" / "work_release"',
+  });
+
   const updates = args.updates as WorkItemUpdate[];
 
   if (!updates || !Array.isArray(updates)) {
