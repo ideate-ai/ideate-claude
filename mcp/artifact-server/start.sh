@@ -36,24 +36,35 @@ fi
 PKG_VERSION="$(node -e "process.stdout.write(require('$DIR/package.json').version)")"
 BUILD_VERSION_FILE="$DIR/dist/.build-version"
 
-needs_build() {
-  [ ! -f "$BUILD_VERSION_FILE" ] && return 0
-  [ "$(cat "$BUILD_VERSION_FILE")" != "$PKG_VERSION" ] && return 0
-  # Any source / build-config file newer than the last successful build?
-  if [ -n "$(find "$DIR/src" "$DIR/tsconfig.json" "$DIR/package.json" \
-              -newer "$BUILD_VERSION_FILE" 2>/dev/null | head -n 1)" ]; then
-    return 0
-  fi
-  return 1
-}
+# needs_build() is factored into scripts/build-freshness.sh so the shipped code
+# and its test (src/__tests__/build-freshness.test.ts) exercise the same function.
+. "$DIR/scripts/build-freshness.sh"
 
-if needs_build; then
-  echo "ideate-artifact-server: building (version $PKG_VERSION, source changed or first run)..." >&2
-  if ! npm run build --prefix "$DIR"; then
-    echo "ideate-artifact-server: npm run build failed" >&2
-    exit 1
+if needs_build "$DIR" "$PKG_VERSION" "$BUILD_VERSION_FILE"; then
+  # Serialize concurrent builds. Multiple MCP hosts (Claude Desktop, an IDE, ...)
+  # can each spawn this script against the same $DIR; without a lock their
+  # `prebuild: rm -rf dist` + `tsc` interleave and can leave dist/index.js
+  # missing/truncated for whichever host reaches `exec` first. The lock dir lives
+  # under node_modules/ — git-ignored, and NOT wiped by `rm -rf dist`.
+  LOCK="$DIR/node_modules/.ideate-build.lock"
+  if mkdir "$LOCK" 2>/dev/null; then
+    # We hold the lock: build, and release it even on failure/interrupt.
+    trap 'rmdir "$LOCK" 2>/dev/null' EXIT INT TERM
+    echo "ideate-artifact-server: building (version $PKG_VERSION, source changed or first run)..." >&2
+    if ! npm run build --prefix "$DIR"; then
+      echo "ideate-artifact-server: npm run build failed" >&2
+      exit 1
+    fi
+    printf '%s' "$PKG_VERSION" > "$BUILD_VERSION_FILE"
+    rmdir "$LOCK" 2>/dev/null
+    trap - EXIT INT TERM
+  else
+    # Another process is building. Wait (bounded) for it to finish, then proceed;
+    # if that build failed, `exec node` below fails loudly and the next launch retries.
+    echo "ideate-artifact-server: another process is building; waiting..." >&2
+    i=0
+    while [ -d "$LOCK" ] && [ "$i" -lt 180 ]; do sleep 1; i=$((i + 1)); done
   fi
-  printf '%s' "$PKG_VERSION" > "$BUILD_VERSION_FILE"
 fi
 
 exec node "$DIR/dist/index.js"

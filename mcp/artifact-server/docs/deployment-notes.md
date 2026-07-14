@@ -113,12 +113,15 @@ sh scripts/restart.sh
 The MCP host (Claude Desktop, VS Code) will spawn a fresh server process on the
 next tool call. You do not need to restart the MCP host itself.
 
-The `start.sh` wrapper checks whether the `package.json` version has changed
-since the last build and, if so, rebuilds automatically before starting.
-**Note**: `start.sh` only triggers a rebuild when the `package.json` version
-string changes — it does NOT rebuild on every invocation or on source-only
-edits. If you have edited source files without bumping the version, you must
-run `npm run build` manually before using `start.sh` as a restart path.
+The `start.sh` wrapper rebuilds `dist/` automatically before starting whenever
+it is stale, so you normally do **not** need a manual `npm run build`. It
+rebuilds when any of: `dist/index.js` or the build marker is missing, the built
+`package.json` version differs from the marker, **or any `src/`/`tsconfig.json`/
+`package.json` file is newer than the last build** (an mtime check — a `git pull`
+or a source edit triggers a rebuild on the next server start). Committed source
+changes therefore go live on the next launch without a version bump. (Concurrent
+builds across multiple MCP hosts are serialized by a `node_modules/.ideate-build.lock`
+mutex.)
 
 ```sh
 # Equivalent alternative if using start.sh:
