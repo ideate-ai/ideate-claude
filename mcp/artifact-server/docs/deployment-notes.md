@@ -203,4 +203,5 @@ process with the new build automatically.
 | Variable | Default | Purpose |
 |---|---|---|
 | `IDEATE_MCP_LOG` | `~/.claude/logs/ideate-mcp.log` | Path for persistent log file |
+| `IDEATE_MCP_LOG_MAX_BYTES` | `10485760` (10 MiB) | Max log-file size. The log is a bounded circular buffer: when it exceeds this, the oldest lines are dropped and only the most-recent ~half are kept (newest logs always win). An already-oversize file is trimmed on the next server start. Prevents the unbounded growth that could reach many GB. |
 | `IDEATE_MCP_DEBUG` | unset | Set to any value to enable debug-level logging |
