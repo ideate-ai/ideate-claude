@@ -125,11 +125,15 @@ If no active project is found, set `{active_project}` to `null` and `{current_ph
 
 # Phase 4: Determine Refinement Mode
 
-Assess what is driving this refinement. There are two primary modes:
+Assess what is driving this refinement. There are three primary modes:
 
-**Post-review correction** — Review findings exist and contain critical or significant issues. The user likely wants to fix what was found. In this mode, the review findings drive the interview.
+**Post-review correction** — Review findings exist and contain critical or significant issues. The user likely wants to fix what was found. In this mode, the review findings drive the interview. Produces work items.
 
-**Requirement evolution** — The user wants to change or extend what the project does. Prior review findings may or may not be relevant. In this mode, the user's stated intent drives the interview.
+**Requirement evolution** — The user wants to change or extend what the project does. Prior review findings may or may not be relevant. In this mode, the user's stated intent drives the interview. Produces work items.
+
+**Alignment / recalibration** — The purpose is to *align on a spec or design*, or to *recalibrate the project's shared understanding* (decisions, steering, principles, constraints, or an existing work item's spec) — NOT to add features or fix findings. An alignment cycle persists the **conversation beats** — the decisions reached and their rationale, the interview, and any updated steering/spec artifacts — and **may legitimately produce ZERO new work items**. This is the mode for "let's talk this through and record where we landed," and it is the correct channel for spec/design alignment, so design work is captured in ideate rather than leaking into a raw doc or a general brainstorm skill. Set `{alignment_mode: true}` when this is the driver; it changes Phase 5 completion detection and Phase 7 outputs (see those phases).
+
+**Mode is not always exclusive.** A cycle can be primarily alignment yet still surface one or two concrete work items, or primarily change-planning yet record a load-bearing decision. `{alignment_mode}` means "producing work items is NOT required for this cycle to be complete" — not "work items are forbidden." When the driver is ambiguous — the user says "let's discuss / recalibrate / align on X" rather than "add / fix / change Y" — ask which it is before interviewing rather than defaulting to work-item production.
 
 If review findings exist (check the loaded project/phase context from Phase 3), note this to the user and ask:
 
@@ -215,11 +219,17 @@ This track is often brief. If nothing about execution needs to change, accept th
 
 ## Completion Detection
 
-The interview is complete when:
+For **change-planning** cycles (post-review correction, requirement evolution), the interview is complete when:
 - The scope of changes is clear
 - Conflicts with existing artifacts are resolved (or explicitly accepted as tensions)
 - Review findings (if applicable) have been triaged
 - Enough detail exists to produce work items that meet spec sufficiency
+
+For **alignment / recalibration** cycles (`{alignment_mode}`), the interview is complete when:
+- The decision(s) or realignment the cycle set out to reach have been made, and their rationale — including the alternatives rejected and why — is clear enough to persist
+- Conflicts with existing principles, constraints, or specs are resolved or explicitly accepted as tensions
+- It is clear which existing artifacts the alignment changes (steering, an overview, a specific work item's spec) — even when that set is empty
+- Do NOT hold the interview open waiting for work items to materialize; reaching the alignment IS completion
 
 Do not extend the interview beyond what is needed. Refinement interviews are typically shorter than initial planning interviews because most context already exists.
 
@@ -247,6 +257,8 @@ Research artifacts follow the naming convention in the artifact conventions. If 
 # Phase 7: Produce and Update Artifacts
 
 After the interview is complete and any research has been integrated, produce artifacts. The key rule: **update what changed, leave the rest alone.**
+
+**Alignment-cycle outputs (`{alignment_mode}`).** In an alignment / recalibration cycle, the primary output is the persisted **conversation beats**, not new work items. Do all of the "update what changed" steps that apply — interview (7a), principles (7b), constraints (7c), overview/steering (7d), architecture (7e), module specs (7f) — PLUS the decisions step (7k), which is where an alignment cycle's value mostly lands. **Skip** the work-item-production steps — execution strategy (7g), new work items (7h/7h-auto), and the phase work-items updates in 7i — whenever the cycle produces no new work items. Producing zero new work items is a valid, expected outcome; do NOT invent work items to satisfy the pipeline. If the alignment reshaped an EXISTING work item, update it in place (see the existing-item note in 7h) rather than creating a new one. Everything else in Phase 7 applies unchanged.
 
 ## 7a. Interview YAML — APPEND
 
@@ -320,6 +332,8 @@ Use `ideate_write_artifact` with type `execution_strategy` to write a new execut
 Hold the mapping `{WI number → board item ID}` for Section 7i — the phase's `work_items` array continues to record WI designations (phases stay v2). Do NOT also write v2 work-item artifacts on this path; the board is the single home for these items.
 
 **v2 fallback (pre-v3 projects only)**: If the v3 work-state tools are NOT present, call `ideate_write_work_items({items_array})` — atomically creates individual work item artifacts for each new work item. This is the complete legacy behavior, unchanged — apply the loud-fallback protocol (Phase 3), including its missing-build escalation: on a project with existing board state, STOP and surface the warning before writing v2 items.
+
+**Editing an EXISTING work item's spec** (alignment cycles, or when a change reshapes an item already on the board — including deferring or descoping one): do NOT create a new item to restate an existing one. On the v3 board path, read the item first with `work_get` (for its current `version`), then update it via `work_update_meta` (optimistic CAS on that version) — changing title/spec/depends as the alignment dictates. On the v2 fallback path, use `ideate_update_work_items`. Record the reason for the edit in the decisions step (7k) and the journal (7j). This is a spec edit, not new-item creation, and does not count toward the auto-phase-chunking threshold.
 
 If the ideate MCP artifact server is not available, stop and report: "The ideate MCP artifact server is required but not available. Verify .mcp.json configuration."
 
@@ -431,6 +445,18 @@ If `{phase_transition_requested}` is true:
 
 If a user-defined new phase was gathered in Phase 4.2 (empty horizon case), create the phase artifact using the same steps above with the user-provided name, description, and type.
 
+## 7k. Decisions — PERSIST the conversation beats
+
+Run this **before 7j** so the journal can cite the decision records. This is where an **alignment cycle's** primary value lands — and it applies to any cycle that reached a load-bearing decision, not only alignment ones.
+
+For each decision the cycle settled, capture: the choice made, WHY (including the alternatives rejected and why), what future work it is load-bearing for, and how it can later be checked.
+
+**v3 path**: if the record tool `record_decision` is present (mechanical tool-presence detection — GP-24), call `record_decision(claim, rationale, scope, task_id?, verification_anchor?)` — one call per distinct decision. `claim` states the decision as a claim; `rationale` carries the reasoning and the rejected alternatives; `scope` names what the decision steers; `task_id` is the affected work item when one is in scope; `verification_anchor` is how the decision can later be checked (a file, command, artifact id, or dataset). These records are append-only and recallable — they are the durable memory of *why*, not just *what*.
+
+**v2 fallback**: if `record_decision` is absent (apply the loud-fallback protocol from Phase 3), capture each decision in the interview YAML (7a) with its rationale, and additionally, for decisions that steer a domain, write a `domain_decision` artifact via `ideate_write_artifact` (id via `ideate_get_next_id({type: "domain_decision"})`). The interview + journal are then the complete record.
+
+Do not skip this step in an alignment cycle: if the cycle produced no work items **and** no decisions were persisted, nothing durable was captured and the cycle failed its purpose.
+
 ## 7j. Journal — APPEND Refinement Entry
 
 Call `ideate_append_journal("refine", {date}, {entry_type}, {body})` — appends a structured journal entry atomically.
@@ -458,16 +484,19 @@ After all artifacts are written, present a summary to the user covering:
 3. **Principles** — Any principles changed, deprecated, or added (or "all principles unchanged")
 4. **Constraints** — Any constraints changed or added (or "all constraints unchanged")
 5. **Architecture** — Whether architecture was modified (or "architecture unchanged")
-6. **New work items** — List with numbers, titles, and complexity. Show dependency graph if items have dependencies.
-7. **Execution strategy** — Mode, parallelism, expected ordering
-8. **Review findings addressed** — If this was post-review, which findings are addressed by the new work items and which were deferred
-9. **Open concerns** — Anything unresolved, tensions accepted, risks identified
+6. **Decisions recorded** — The load-bearing decisions persisted this cycle (7k), each with its record id. For an **alignment cycle this is the headline output** — present it before work items.
+7. **New work items** — List with numbers, titles, and complexity; show the dependency graph if items have dependencies. For an alignment cycle with no new items, state **"none — alignment cycle"**. Note any existing work-item specs edited in place (7h existing-item note).
+8. **Execution strategy** — Mode, parallelism, expected ordering. Omit for alignment cycles that produced no new work items.
+9. **Review findings addressed** — If this was post-review, which findings are addressed by the new work items and which were deferred.
+10. **Open concerns** — Anything unresolved, tensions accepted, risks identified.
 
 Format the summary for readability. Use a table for work items if there are more than three.
 
 After presenting the summary, call `ideate_emit_event` with:
 - event: "plan.complete"
 - variables: { "WORK_ITEM_COUNT": "{new_work_item_count}", "CYCLE": "{cycle_number}" }
+
+For an alignment cycle that produced no new work items, pass `"WORK_ITEM_COUNT": "0"` — the event still fires; the cycle completed by persisting decisions and updated artifacts, not by creating work.
 
 This call is best-effort — if it fails, continue without interruption.
 
@@ -511,6 +540,7 @@ Before completing, verify:
 - [x] Active project queried via `ideate_artifact_query({type: "project", filters: {status: "active"}})` — not via `ideate_get_workspace_status`
 - [x] Phase transitions recommended to user and confirmed before executing — not forced
 - [x] After creating work items, current phase `work_items` list updated (if active project exists)
-- [x] Every v3 board/record call site (`work_list`, `work_create`, `record_append`) is paired with an explicit v2 fallback in the same section, and detection is mechanical tool presence (GP-24)
+- [x] Every v3 board/record call site (`work_list`, `work_create`, `record_append`, `record_decision`, `work_update_meta`) is paired with an explicit v2 fallback in the same section, and detection is mechanical tool presence (GP-24)
+- [x] Alignment mode (`{alignment_mode}`): a zero-work-item outcome is valid; decisions are persisted (7k) via `record_decision` on v3 or interview + `domain_decision` on v2; existing work items are edited in place (`work_update_meta` / `ideate_update_work_items`), not duplicated; the interview is not held open waiting for work items
 - [x] After phase transition, project `current_phase_id` and `horizon` updated
 - [x] Zero occurrences of `ideate_get_project_status` in this skill
